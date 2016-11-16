@@ -15,17 +15,47 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Interfaces, // this includes the LCL widgetset
-  Forms, form_participant, datamodule
+  Interfaces  // this includes the LCL widgetset
+  , StrUtils
+  , Forms
+  , form_matrixgame
+  , form_chooseactor, game_message
   { you can add units after this };
+
+const
+  PAdmin : array [0..3] of string = ('--admin','--adm','-admin','-adm');
+  PPlayer : array [0..3] of string = ('--player','--play','-player','-play');
+  PWatcher : array [0..3] of string = ('--watcher','--watch','-watcher','-watch');
 
 {$R *.res}
 
 begin
-  RequireDerivedFormResource := True;
+  //RequireDerivedFormResource := True;
   Application.Initialize;
-  Application.CreateForm(TForm1, Form1);
-  Application.CreateForm(TDataModule1, DataModule1);
+  Application.CreateForm(TFormMatrixGame, FormMatrixGame);
+  if Paramcount > 0 then
+    begin
+      if AnsiMatchStr(lowercase(ParamStr(0)), PAdmin) then
+        FormMatrixGame.GameActor := gaAdmin;
+      if AnsiMatchStr(lowercase(ParamStr(0)), PPlayer) then
+        FormMatrixGame.GameActor := gaPlayer;
+      if AnsiMatchStr(lowercase(ParamStr(0)), PWatcher) then
+        FormMatrixGame.GameActor := gaWatcher;
+    end
+  else
+    begin
+      Form1 := TForm1.Create(nil);
+      if Form1.ShowModal = 1 then
+        begin
+          case Form1.GameActor of
+            gaAdmin:FormMatrixGame.GameActor := gaAdmin;
+            gaPlayer: {FormMatrixGame.GameActor := gaPlayer};
+            gaWatcher: {FormMatrixGame.GameActor := gaWatcher};
+          end;
+        end
+      else Exit;
+      Form1.Free;
+    end;
   Application.Run;
 end.
 
