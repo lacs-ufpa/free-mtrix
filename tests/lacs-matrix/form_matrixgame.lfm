@@ -1,12 +1,18 @@
-object Form1: TForm1
-  Left = 109
-  Height = 600
-  Top = 138
-  Width = 1095
-  Caption = 'Form1'
-  ClientHeight = 600
-  ClientWidth = 1095
+object FormMatrixGame: TFormMatrixGame
+  Left = 117
+  Height = 599
+  Top = 142
+  Width = 1159
+  HorzScrollBar.Page = 1138
+  VertScrollBar.Page = 542
+  AutoScroll = True
+  Caption = 'FormMatrixGame'
+  ClientHeight = 599
+  ClientWidth = 1159
   Font.Name = 'Monospace'
+  OnActivate = FormActivate
+  OnClose = FormClose
+  OnCreate = FormCreate
   LCLVersion = '1.6.0.4'
   object StringGridMatrix: TStringGrid
     AnchorSideLeft.Control = Owner
@@ -16,16 +22,16 @@ object Form1: TForm1
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 344
+    Height = 345
     Top = 0
-    Width = 715
+    Width = 709
     AutoEdit = False
     BorderSpacing.Right = 150
     BorderSpacing.Bottom = 197
     ColCount = 11
     DefaultRowHeight = 30
+    Enabled = False
     FixedRows = 0
-    Flat = True
     Options = [goFixedHorzLine, goHorzLine, goDrawFocusSelected, goRowSelect, goSmoothScroll]
     RowCount = 10
     TabOrder = 0
@@ -33,26 +39,8 @@ object Form1: TForm1
     OnBeforeSelection = StringGridMatrixBeforeSelection
     OnDrawCell = StringGridMatrixDrawCell
   end
-  object CheckBoxDrawDots: TCheckBox
-    Left = 728
-    Height = 21
-    Top = 248
-    Width = 87
-    Caption = 'DrawDots'
-    OnChange = CheckBoxDrawDotsChange
-    TabOrder = 1
-  end
-  object Button1: TButton
-    Left = 728
-    Height = 25
-    Top = 216
-    Width = 75
-    Caption = 'Button1'
-    OnClick = Button1Click
-    TabOrder = 2
-  end
   object GBIndividualPoints: TGroupBox
-    Left = 720
+    Left = 796
     Height = 122
     Top = 0
     Width = 170
@@ -67,7 +55,7 @@ object Form1: TForm1
     ChildSizing.ControlsPerLine = 2
     ClientHeight = 105
     ClientWidth = 166
-    TabOrder = 3
+    TabOrder = 1
     object LabelIndA: TLabel
       Left = 10
       Height = 15
@@ -126,7 +114,7 @@ object Form1: TForm1
     end
   end
   object GBGrupo: TGroupBox
-    Left = 896
+    Left = 968
     Height = 122
     Top = 0
     Width = 170
@@ -138,7 +126,7 @@ object Form1: TForm1
     ChildSizing.ControlsPerLine = 1
     ClientHeight = 105
     ClientWidth = 166
-    TabOrder = 4
+    TabOrder = 2
     object LabelGroupCount: TLabel
       Left = 35
       Height = 15
@@ -154,7 +142,7 @@ object Form1: TForm1
       Transparent = False
     end
   end
-  object GBChoicesLastTurn: TGroupBox
+  object GBLastChoice: TGroupBox
     AnchorSideLeft.Control = Owner
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
@@ -162,225 +150,19 @@ object Form1: TForm1
     AnchorSideBottom.Side = asrBottom
     Left = 0
     Height = 124
-    Top = 476
-    Width = 1095
+    Top = 475
+    Width = 1159
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
-    Caption = 'Escolhas na jogada passada'
+    Caption = 'Escolhas na última jogada'
     ChildSizing.LeftRightSpacing = 10
     ChildSizing.TopBottomSpacing = 5
     ChildSizing.HorizontalSpacing = 10
     ChildSizing.ControlsPerLine = 6
     ClientHeight = 107
-    ClientWidth = 1091
-    TabOrder = 5
-    object IndLastResponse: TGroupBox
-      Left = 10
-      Height = 97
-      Top = 5
-      Width = 138
-      AutoSize = True
-      Caption = 'Você'
-      ChildSizing.LeftRightSpacing = 20
-      ChildSizing.TopBottomSpacing = 20
-      ChildSizing.HorizontalSpacing = 30
-      ChildSizing.VerticalSpacing = 10
-      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 2
-      ClientHeight = 80
-      ClientWidth = 134
-      TabOrder = 0
-      object LabelLastColor: TLabel
-        Left = 20
-        Height = 15
-        Top = 20
-        Width = 48
-        AutoSize = False
-        Caption = 'Cor:'
-        ParentColor = False
-      end
-      object PanelLastColor: TPanel
-        Left = 98
-        Height = 15
-        Top = 20
-        Width = 16
-        Color = clBlack
-        ParentColor = False
-        TabOrder = 0
-      end
-      object LabelLastLine: TLabel
-        Left = 20
-        Height = 15
-        Top = 45
-        Width = 48
-        AutoSize = False
-        Caption = 'Linha:'
-        ParentColor = False
-      end
-      object LabelLastLineNumber: TLabel
-        Left = 98
-        Height = 15
-        Top = 45
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-    end
-    object IndLastResponse1: TGroupBox
-      Left = 170
-      Height = 97
-      Top = 5
-      Width = 138
-      AutoSize = True
-      Caption = 'João'
-      ChildSizing.LeftRightSpacing = 20
-      ChildSizing.TopBottomSpacing = 20
-      ChildSizing.HorizontalSpacing = 30
-      ChildSizing.VerticalSpacing = 10
-      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 2
-      ClientHeight = 80
-      ClientWidth = 134
-      TabOrder = 1
-      object LabelYouLastChoiceColor1: TLabel
-        Left = 20
-        Height = 15
-        Top = 20
-        Width = 48
-        AutoSize = False
-        Caption = 'Cor:'
-        ParentColor = False
-      end
-      object Panel2: TPanel
-        Left = 98
-        Height = 15
-        Top = 20
-        Width = 16
-        Color = clBlack
-        ParentColor = False
-        TabOrder = 0
-      end
-      object Label6: TLabel
-        Left = 20
-        Height = 15
-        Top = 45
-        Width = 48
-        AutoSize = False
-        Caption = 'Linha:'
-        ParentColor = False
-      end
-      object Label7: TLabel
-        Left = 98
-        Height = 15
-        Top = 45
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-    end
-    object IndLastResponse2: TGroupBox
-      Left = 322
-      Height = 97
-      Top = 5
-      Width = 138
-      AutoSize = True
-      Caption = 'Maria'
-      ChildSizing.LeftRightSpacing = 20
-      ChildSizing.TopBottomSpacing = 20
-      ChildSizing.HorizontalSpacing = 30
-      ChildSizing.VerticalSpacing = 10
-      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 2
-      ClientHeight = 80
-      ClientWidth = 134
-      TabOrder = 2
-      object LabelYouLastChoiceColor2: TLabel
-        Left = 20
-        Height = 15
-        Top = 20
-        Width = 48
-        AutoSize = False
-        Caption = 'Cor:'
-        ParentColor = False
-      end
-      object Panel3: TPanel
-        Left = 98
-        Height = 15
-        Top = 20
-        Width = 16
-        Color = clBlack
-        ParentColor = False
-        TabOrder = 0
-      end
-      object Label8: TLabel
-        Left = 20
-        Height = 15
-        Top = 45
-        Width = 48
-        AutoSize = False
-        Caption = 'Linha:'
-        ParentColor = False
-      end
-      object Label9: TLabel
-        Left = 98
-        Height = 15
-        Top = 45
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-    end
-  end
-  object rgMatrixType: TRadioGroup
-    Left = 728
-    Height = 59
-    Top = 272
-    Width = 119
-    AutoFill = True
-    AutoSize = True
-    Caption = 'MatrixType'
-    ChildSizing.LeftRightSpacing = 6
-    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-    ChildSizing.EnlargeVertical = crsHomogenousChildResize
-    ChildSizing.ShrinkHorizontal = crsScaleChilds
-    ChildSizing.ShrinkVertical = crsScaleChilds
-    ChildSizing.Layout = cclLeftToRightThenTopToBottom
-    ChildSizing.ControlsPerLine = 1
-    ClientHeight = 42
-    ClientWidth = 115
-    ItemIndex = 0
-    Items.Strings = (
-      'Rows'
-      'Rows & Cols'
-    )
-    OnClick = rgMatrixTypeClick
-    TabOrder = 6
-  end
-  object GBChoicesCurrentTurn: TGroupBox
-    AnchorSideLeft.Control = Owner
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = Owner
-    AnchorSideBottom.Side = asrBottom
-    Left = 0
-    Height = 124
-    Top = 349
-    Width = 1095
-    Anchors = [akLeft, akRight, akBottom]
-    AutoSize = True
-    BorderSpacing.Bottom = 127
-    Caption = 'Escolhas nesta jogada'
-    ChildSizing.LeftRightSpacing = 10
-    ChildSizing.TopBottomSpacing = 5
-    ChildSizing.HorizontalSpacing = 10
-    ChildSizing.ControlsPerLine = 6
-    ClientHeight = 107
-    ClientWidth = 1091
-    TabOrder = 7
-    object IndCurrentResponse1: TGroupBox
+    ClientWidth = 1155
+    TabOrder = 3
+    object GBLastChoiceP0: TGroupBox
       Left = 10
       Height = 97
       Top = 5
@@ -433,7 +215,7 @@ object Form1: TForm1
         ParentColor = False
       end
     end
-    object IndLastResponse4: TGroupBox
+    object GBLastChoiceP1: TGroupBox
       Left = 170
       Height = 97
       Top = 5
@@ -486,7 +268,7 @@ object Form1: TForm1
         ParentColor = False
       end
     end
-    object IndLastResponse5: TGroupBox
+    object GBLastChoiceP2: TGroupBox
       Left = 322
       Height = 97
       Top = 5
@@ -539,5 +321,187 @@ object Form1: TForm1
         ParentColor = False
       end
     end
+  end
+  object GBAdmin: TGroupBox
+    Left = 796
+    Height = 208
+    Top = 137
+    Width = 336
+    Caption = 'Administrador'
+    ClientHeight = 191
+    ClientWidth = 332
+    TabOrder = 4
+    Visible = False
+    object rgMatrixType: TRadioGroup
+      Left = 10
+      Height = 59
+      Top = 8
+      Width = 119
+      AutoFill = True
+      AutoSize = True
+      Caption = 'MatrixType'
+      ChildSizing.LeftRightSpacing = 6
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.EnlargeVertical = crsHomogenousChildResize
+      ChildSizing.ShrinkHorizontal = crsScaleChilds
+      ChildSizing.ShrinkVertical = crsScaleChilds
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 1
+      ClientHeight = 42
+      ClientWidth = 115
+      ItemIndex = 0
+      Items.Strings = (
+        'Rows'
+        'Rows & Cols'
+      )
+      OnClick = rgMatrixTypeClick
+      TabOrder = 0
+    end
+    object CheckBoxDrawDots: TCheckBox
+      Left = 10
+      Height = 21
+      Top = 80
+      Width = 119
+      AutoSize = False
+      Caption = 'DrawDots'
+      OnChange = CheckBoxDrawDotsChange
+      TabOrder = 1
+    end
+    object Button1: TButton
+      Left = 10
+      Height = 25
+      Top = 112
+      Width = 119
+      Caption = 'Button1'
+      OnClick = Button1Click
+      TabOrder = 2
+    end
+    object Button2: TButton
+      Left = 10
+      Height = 25
+      Top = 144
+      Width = 119
+      Caption = 'Button2'
+      TabOrder = 3
+    end
+    object GBExperiment: TGroupBox
+      Left = 159
+      Height = 172
+      Top = 8
+      Width = 178
+      AutoSize = True
+      Caption = 'Experiment'
+      ChildSizing.LeftRightSpacing = 20
+      ChildSizing.TopBottomSpacing = 20
+      ChildSizing.HorizontalSpacing = 30
+      ChildSizing.VerticalSpacing = 10
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 2
+      ClientHeight = 155
+      ClientWidth = 174
+      TabOrder = 4
+      object LabelExpCond: TLabel
+        Left = 20
+        Height = 15
+        Top = 20
+        Width = 88
+        AutoSize = False
+        Caption = 'Condição:'
+        ParentColor = False
+      end
+      object LabelExpCondCount: TLabel
+        Left = 138
+        Height = 15
+        Top = 20
+        Width = 16
+        AutoSize = False
+        Caption = 'NA'
+        ParentColor = False
+      end
+      object LabelExpGen: TLabel
+        Left = 20
+        Height = 15
+        Top = 45
+        Width = 88
+        Caption = 'Generation:'
+        ParentColor = False
+      end
+      object LabelExpGenCount: TLabel
+        Left = 138
+        Height = 15
+        Top = 45
+        Width = 16
+        Caption = 'NA'
+        ParentColor = False
+      end
+      object LabelExpCycle: TLabel
+        Left = 20
+        Height = 15
+        Top = 70
+        Width = 88
+        Caption = 'Cycle:'
+        ParentColor = False
+      end
+      object LabelExpCycleCount: TLabel
+        Left = 138
+        Height = 15
+        Top = 70
+        Width = 16
+        Caption = 'NA'
+        ParentColor = False
+      end
+      object LabelExpNxtPlayer: TLabel
+        Left = 20
+        Height = 15
+        Top = 95
+        Width = 88
+        Caption = 'Prox. Jog.:'
+        ParentColor = False
+      end
+      object LabelExpNxtPlayerCount: TLabel
+        Left = 138
+        Height = 15
+        Top = 95
+        Width = 16
+        Caption = 'NA'
+        ParentColor = False
+      end
+      object Label21: TLabel
+        Left = 20
+        Height = 15
+        Top = 120
+        Width = 88
+        Caption = 'NA'
+        ParentColor = False
+      end
+      object Label22: TLabel
+        Left = 138
+        Height = 15
+        Top = 120
+        Width = 16
+        Caption = 'NA'
+        ParentColor = False
+      end
+    end
+  end
+  object btnConfirmRow: TButton
+    Left = 712
+    Height = 25
+    Top = 320
+    Width = 83
+    Caption = 'Confirmar'
+    OnClick = btnConfirmRowClick
+    TabOrder = 5
+    Visible = False
+  end
+  object Button3: TButton
+    Left = 632
+    Height = 25
+    Top = 384
+    Width = 75
+    Caption = 'Button3'
+    OnClick = Button3Click
+    TabOrder = 6
   end
 end
