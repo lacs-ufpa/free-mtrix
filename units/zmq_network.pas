@@ -130,6 +130,7 @@ end;
 destructor TZMQPollThread.Destroy;
 begin
   FContext.Free;
+  FPoller.Terminate;
   FPoller.Free;
   FSubscriber.Free;
   inherited Destroy;
@@ -147,8 +148,8 @@ end;
 
 destructor TZMQPusher.Destroy;
 begin
+  FPusher.Free; // also can be freed by freeing the context
   FContext.Free;
-  FPusher.Free;
   inherited Destroy;
 end;
 
