@@ -75,7 +75,6 @@ type
     procedure Button3Click(Sender: TObject);
     procedure CheckBoxDrawDotsChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure rgMatrixTypeClick(Sender: TObject);
     procedure StringGridMatrixBeforeSelection(Sender: TObject; aCol, aRow: integer);
@@ -253,20 +252,20 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
 
   procedure SetZMQAdmin;
   begin
-    FZMQActor := TZMQAdmin.Create;
+    FZMQActor := TZMQAdmin.Create(Self);
     GBAdmin.Visible:= True;
   end;
 
   procedure SetZMQPlayer;
   begin
-    FZMQActor := TZMQPlayer.Create;
+    FZMQActor := TZMQPlayer.Create(Self);
     btnConfirmRow.Visible := True;
     StringGridMatrix.Enabled := True
   end;
 
   procedure SetZMQWatcher;
   begin
-    FZMQActor := TZMQWatcher.Create;
+    FZMQActor := TZMQWatcher.Create(Self);
   end;
 
 begin
@@ -319,11 +318,6 @@ begin
   StringGridMatrix.FocusRectVisible := False;
 end;
 
-procedure TFormMatrixGame.FormClose(Sender: TObject;
-  var CloseAction: TCloseAction);
-begin
-  FZMQActor.Free;
-end;
 
 procedure TFormMatrixGame.FormCreate(Sender: TObject);
 begin

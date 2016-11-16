@@ -62,7 +62,7 @@
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="units/zmq_pub_sub.pas"/>
+        <Filename Value="units/zmq_network.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
