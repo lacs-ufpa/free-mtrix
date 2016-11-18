@@ -19,13 +19,12 @@ uses
 
   //, zmq_pub_sub
   , game_zmq_actors
+  , game_actors
   ;
 
 type
 
   { TFormMatrixGame }
-
-  TGameActor = ( gaNone, gaAdmin, gaPlayer, gaWatcher );
 
   TFormMatrixGame = class(TForm)
     btnConfirmRow: TButton;
@@ -65,14 +64,19 @@ type
     LabelYouLastChoiceColor3: TLabel;
     LabelYouLastChoiceColor4: TLabel;
     LabelExpCond: TLabel;
+    ChatMemoRecv: TMemo;
+    ChatMemoSend: TMemo;
+    ChatPanel: TPanel;
     Panel4: TPanel;
     Panel5: TPanel;
     PanelCurrentColor1: TPanel;
     rgMatrixType: TRadioGroup;
+    ChatSplitter: TSplitter;
     StringGridMatrix: TStringGrid;
     procedure btnConfirmRowClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure ChatMemoSendKeyPress(Sender: TObject; var Key: char);
     procedure CheckBoxDrawDotsChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -85,6 +89,7 @@ type
     FZMQActor : TZMQActor;
     FGameActor : TGameActor;
     //FGameActors : TGameActors;
+    function GetSelectedColorF(AStringGrid : TStringGrid) : UTF8string;
     function GetSelectedRowF(AStringGrid : TStringGrid) : UTF8string;
     function GetRowColor(ARow : integer) : TColor;
     procedure SetGameActor(AValue: TGameActor);
@@ -96,15 +101,9 @@ type
 var
   FormMatrixGame: TFormMatrixGame;
 
-const
-  // row colors
-  ccYellow = $00FFFF;
-  ccRed = $FF0018;
-  ccGreen = $006400;
-  ccBlue = $0000FF;
-  ccMagenta = $8B008B;
-
 implementation
+
+uses LCLType, game_resources;
 
 // uses datamodule;
 var
@@ -227,6 +226,19 @@ begin
   end;
 end;
 
+function TFormMatrixGame.GetSelectedColorF(AStringGrid : TStringGrid): UTF8string;
+var LColor : TColor;
+begin
+  LColor := GetRowColor(AStringGrid.Selection.Top);
+  case LColor of
+    ccYellow: Result := 'Y';
+    ccBlue : Result := 'B';
+    ccGreen: Result := 'G';
+    ccRed: Result := 'R';
+    ccMagenta: Result := 'M';
+  end;
+end;
+
 function TFormMatrixGame.GetSelectedRowF(AStringGrid: TStringGrid): UTF8string;
 begin
   Result := IntToStr(AStringGrid.Selection.Top);
@@ -260,7 +272,7 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
   begin
     FZMQActor := TZMQPlayer.Create(Self);
     btnConfirmRow.Visible := True;
-    StringGridMatrix.Enabled := True
+    StringGridMatrix.Enabled := True;
   end;
 
   procedure SetZMQWatcher;
@@ -284,25 +296,37 @@ end;
 
 procedure TFormMatrixGame.MessageReceived(AMessage: TStringList);
 
-  procedure PlayerArrived(AMessage: TStringList);
+  procedure SendChat;
+  begin
+    ChatMemoRecv.Lines.Append(('['+AMessage[1]+']: ')+AMessage[2]);
+  end;
+
+  procedure PlayerChoice;
+  begin
+
+  end;
+
+  procedure PlayerArrived;
   begin
     WriteLn('arrived');
   end;
 
-  procedure PlayerLogin(AMessage : TStringList);
+  procedure PlayerLogin;
   begin
     WriteLn('login');
   end;
 
-  procedure PlayerLogout(AMessage : TStringList);
+  procedure PlayerLogout;
   begin
     WriteLn('logout');
   end;
 begin
   case AMessage[0] of
-    'Player.Arrived' : PlayerArrived(AMessage);
-    'Player.Login' : PlayerLogin(AMessage);
-    'Player.Logout': PlayerLogout(AMessage);
+    'Player.Choice' : PlayerChoice;
+    'Player.Arrived' : PlayerArrived;
+    'Player.Login' : PlayerLogin;
+    'Player.Logout': PlayerLogout;
+    'Player.SendChat','Admin.SendChat': SendChat;
   end;
 end;
 
@@ -387,6 +411,27 @@ begin
   //S.Free;
 end;
 
+procedure TFormMatrixGame.ChatMemoSendKeyPress(Sender: TObject; var Key: char);
+begin
+  if Key = Char(VK_RETURN) then
+    begin
+      if FZMQActor.ClassType = TZMQAdmin then
+        TZMQAdmin(FZMQActor).SendMessage(['Admin.SendChat', CPlayerNamesMale[0], ChatMemoSend.Lines.Text]);
+
+      if FZMQActor.ClassType = TZMQPlayer then
+        TZMQPlayer(FZMQActor).SendMessage(['Player.SendChat', CPlayerNamesFemale[0], ChatMemoSend.Lines.Text]);
+
+      with ChatMemoSend do
+        begin
+          Clear;
+          SelStart:=0;
+          SelLength:=0;
+          SetFocus;
+        end;
+      Key := Char(VK_UNKNOWN);
+    end;
+end;
+
 procedure TFormMatrixGame.btnConfirmRowClick(Sender: TObject);
 begin
   if FZMQActor.ClassType = TZMQPlayer then
@@ -395,7 +440,10 @@ begin
       //MustDrawSelection := False;
       StringGridMatrix.Enabled:= False;
       btnConfirmRow.Visible:=False;
-      TZMQPlayer(FZMQActor).SendMessage(['Player.ChosenRow', TZMQPlayer(FZMQActor).ID, GetSelectedRowF(StringGridMatrix)]);
+      TZMQPlayer(FZMQActor).SendMessage(['Player.Choice',
+                                         TZMQPlayer(FZMQActor).ID,
+                                         GetSelectedRowF(StringGridMatrix),
+                                         GetSelectedColorF(StringGridMatrix)]);
     end;
 end;
 

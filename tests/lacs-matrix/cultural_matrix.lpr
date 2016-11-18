@@ -16,11 +16,9 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces  // this includes the LCL widgetset
-  , StrUtils
-  , Forms
-  , form_matrixgame
-  , form_chooseactor, game_message
-  { you can add units after this };
+  , StrUtils, Forms, form_matrixgame, form_chooseactor, game_actors,
+  game_experiment, game_file_methods, game_resources, game_control,
+  string_methods, game_actors_point;
 
 const
   PAdmin : array [0..3] of string = ('--admin','--adm','-admin','-adm');
@@ -49,7 +47,7 @@ begin
         begin
           case Form1.GameActor of
             gaAdmin:FormMatrixGame.GameActor := gaAdmin;
-            gaPlayer: {FormMatrixGame.GameActor := gaPlayer};
+            gaPlayer: FormMatrixGame.GameActor := gaPlayer;
             gaWatcher: {FormMatrixGame.GameActor := gaWatcher};
           end;
         end
