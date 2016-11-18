@@ -5,54 +5,212 @@ unit game_actors;
 interface
 
 uses
-  Classes, SysUtils
-  , game_zmq_actors
+  Classes, SysUtils, PopupNotifier
+  , game_actors_point
   ;
 type
 
-  { TActor }
+  TGameActor = ( gaNone, gaAdmin, gaPlayer, gaWatcher );
+  TGamePlayerStatus = (gpsWaiting, gpsPlaying, gpsPlayed);
 
-  TActor = class(TComponent)
+  TGameRow = (grNone,
+              grOne,grTwo,grThree,grFour,grFive,grSix,grSeven,grEight,grNine,grTen,  // 10 rows
+              grEven,grOdd,
+              grDiff,grAll,grNot,grSome); //meta only
+
+  TGameRows = set of TGameRow;
+
+  TGameColor = (gcNone,
+                gcYellow,gcRed,gcGreen,gcBlue,gcMagenta, // 5 colors
+                gcDiff,gcEqual,gcAll,gcNot,gcSome); //meta only
+
+  TGameColors = set of TGameColor;
+
+  TGameEndCondition = (gecInterlockingPorcentage,gecAbsoluteCycles,gecWhichComeFirst);
+  TGameOperator = (goNONE, goAND, goOR);
+  TGameStyle = (gtNone, gtRowsOnly, gtColorsOnly, gtRowsAndColors, gtRowsOrColors);
+
+  TGameConsequenceStyle = (gscNone, gscMessage, gscBroadcastMessage, gscPoints, gscVariablePoints);
+  TConsequenceStyle = set of TGameConsequenceStyle;
+
+  TGamePromptStyle = (gsYes, gsNo, gsAll, gsMetacontingency, gsContingency, gsBasA, gsRevertPoints);
+  TPromptStyle = set of TGamePromptStyle;
+
+const
+  // colors
+  ccYellow = $00FFFF;
+  ccRed = $FF0018;
+  ccGreen = $006400;
+  ccBlue = $0000FF;
+  ccMagenta = $8B008B;
+
+type
+
+   { TCriteria }
+
+   TCriteria = record
+     Style : TGameStyle;
+     Rows : TGameRows;
+     Colors : TGameColors;
+   end;
+
+   { TConsequence }
+
+   TConsequence = class(TComponent)
+   public
+     Style : TConsequenceStyle;
+     Message : TPopupNotifier;
+     Points : record
+      A, B, G : TGamePoint;
+     end;
+     procedure Present; virtual;
+   end;
+
+  { TContingency }
+
+  TContingency = class(TComponent)
   private
-    FZMQActor : TZMQActor;
+    FFired: Boolean;
+    FOnCriteria: TNotifyEvent;
+    procedure CriteriaEvent;
   public
-    constructor Create(AZMQActor : TZMQActor; AOwner : TComponent);
-    procedure SendMessage(AMessage : array of UTF8string);
+    Meta : Boolean; //True: Consequence occurs OnEndTurn, False: Consequence occurs OnEndCycle
+    Consequence : TConsequence;
+    Criteria : TCriteria;
+    property OnCriteria : TNotifyEvent read FOnCriteria write FOncriteria;
+    property Fired : Boolean read FFired;
   end;
 
-  TAdmin = record
+  { TContingencies }
 
+  TContingencies = array of TContingency;
+
+  { TPrompt }
+
+  TPrompt = class(TConsequence)
+  public
+    PromptStyle : TPromptStyle;
+    PromptTargets : ^TContingencies;
+    PromptMessage : string;
+    procedure Present; override;
   end;
 
-  TChoice = record
-    Row : ShortInt;
-    Color : integer;
+  TEndConditionCriterium = record
+    Value : TGameEndCondition;
+    InterlockingPorcentage,
+    LastCycles,
+    AbsoluteCyles: integer;
+  end;
+
+  TPoints = record
+    A, B, G: integer;
+  end;
+
+  TCondition = record
+    Contingencies : TContingencies; // for producing points during the condition
+
+    Points : record
+      Count : TPoints; // sum of points produced during the condition
+      OnStart : TPoints; // points to add at the beginning of the condition
+    end;
+
+    Turn : record // for changing cycles
+      Count,  // current turn
+      Value : integer; // PlayersPerTurn, CycleIncrement
+      Random: Boolean; // if we should change Players[i].Turn OnCycle
+    end;
+
+    Cycles : record // for changing generations
+      Count, // current cycle
+      Value, // CyclesPerLineage, GenegarationIncrement
+      Generation : integer;
+    end;
+    Prompt : TPrompt; // onEndCycle
+    EndCriterium : TEndConditionCriterium; // to change from one condition to another
+  end;
+
+  TPLayerPoints = record
+    A, B : integer
+  end;
+
+  TPlayerChoice =  record
+    Row : TGameRow;
+    Color : TGameColor;
   end;
 
   TPlayer = record
-    ID : UTF8string;
-    Choice,
-    ChoiceLast : TChoice;
+    ID,
+    Nicname,
+    Login,
+    Password : UTF8string;
+    Status : TGamePlayerStatus;
+    Data : TStringList;
+    Choice : record
+      Current, Last : TPlayerChoice;
+    end;
+    Points : TPLayerPoints;
+    Turn : ShortInt;
   end;
-
-  TWatcher = record
-
-  end;
-
 
 implementation
 
-{ TActor }
+uses Forms,ButtonPanel,Controls,StdCtrls,ExtCtrls;
 
-constructor TActor.Create(AZMQActor: TZMQActor; AOwner: TComponent);
+{ TContingency }
+
+procedure TContingency.CriteriaEvent;
 begin
-  inherited Create(AOwner);
-  FZMQActor := AZMQActor;
+
 end;
 
-procedure TActor.SendMessage(AMessage: array of UTF8string);
-begin
+{ TPrompt }
 
+procedure TPrompt.Present;
+
+  function AskQuestion: boolean;
+  var
+    dlg: TForm;
+    buttonPanel: TButtonPanel;
+    mainPanel: TPanel;
+    mr: TModalResult;
+  begin
+    dlg:=TForm.CreateNew(nil);
+    try
+      with dlg do begin
+        BorderStyle:=bsNone;
+        WindowState:=wsFullScreen;
+        //Position:=poScreenCenter;
+        Caption:='Task ' + IntToStr(0 {Succ(0)});
+        buttonPanel:=TButtonPanel.Create(dlg);
+        with buttonPanel do begin
+          ShowButtons:=[pbCancel, pbOK];
+          ShowBevel:=False;
+          Parent:=dlg;
+        end;
+        mainPanel:=TPanel.Create(dlg);
+        with mainPanel do begin
+          Align:=alClient;
+          Caption:=Format('Task %d - GUI buttons/edits etc. go here',[0]);
+          Parent:=dlg;
+        end;
+
+        mr:=ShowModal;
+        Result:=(mr = mrOK);
+      end;
+    finally
+      dlg.Free;
+    end;
+  end;
+begin
+  inherited Present;
+  //SendMessage(AskQuestion);
+end;
+
+{ TConsequence }
+
+procedure TConsequence.Present;
+begin
+  AbstractError;
 end;
 
 end.

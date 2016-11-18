@@ -140,7 +140,7 @@ end;
 
 constructor TZMQPusher.Create;
 begin
-  FID := s_random(10);
+  FID := s_random(20);
   FContext := TZMQContext.create;
   FPusher := FContext.Socket( stPush );
   FPusher.connect('tcp://localhost:5057');

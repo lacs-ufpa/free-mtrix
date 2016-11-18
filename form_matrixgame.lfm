@@ -1,14 +1,14 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 117
-  Height = 599
-  Top = 142
-  Width = 1159
-  HorzScrollBar.Page = 1138
+  Left = 301
+  Height = 632
+  Top = 130
+  Width = 1278
+  HorzScrollBar.Page = 1278
   VertScrollBar.Page = 542
   AutoScroll = True
   Caption = 'FormMatrixGame'
-  ClientHeight = 599
-  ClientWidth = 1159
+  ClientHeight = 622
+  ClientWidth = 1278
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   OnCreate = FormCreate
@@ -113,11 +113,15 @@ object FormMatrixGame: TFormMatrixGame
     end
   end
   object GBGrupo: TGroupBox
-    Left = 968
+    AnchorSideLeft.Control = GBIndividualPoints
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = GBIndividualPoints
+    Left = 976
     Height = 122
     Top = 0
     Width = 170
     AutoSize = True
+    BorderSpacing.Left = 10
     Caption = ' Pontuação do Grupo '
     ChildSizing.LeftRightSpacing = 35
     ChildSizing.TopBottomSpacing = 45
@@ -149,8 +153,8 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 0
     Height = 124
-    Top = 475
-    Width = 1159
+    Top = 498
+    Width = 1492
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
     Caption = 'Escolhas na última jogada'
@@ -159,7 +163,7 @@ object FormMatrixGame: TFormMatrixGame
     ChildSizing.HorizontalSpacing = 10
     ChildSizing.ControlsPerLine = 6
     ClientHeight = 107
-    ClientWidth = 1155
+    ClientWidth = 1488
     TabOrder = 3
     object GBLastChoiceP0: TGroupBox
       Left = 10
@@ -322,10 +326,14 @@ object FormMatrixGame: TFormMatrixGame
     end
   end
   object GBAdmin: TGroupBox
-    Left = 796
+    AnchorSideLeft.Control = GBGrupo
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = GBGrupo
+    Left = 1156
     Height = 208
-    Top = 137
+    Top = 0
     Width = 336
+    BorderSpacing.Left = 10
     Caption = 'Administrador'
     ClientHeight = 191
     ClientWidth = 332
@@ -495,12 +503,74 @@ object FormMatrixGame: TFormMatrixGame
     Visible = False
   end
   object Button3: TButton
-    Left = 632
+    Left = 1176
     Height = 25
-    Top = 384
+    Top = 216
     Width = 75
     Caption = 'Button3'
     OnClick = Button3Click
     TabOrder = 6
+  end
+  object ChatPanel: TPanel
+    AnchorSideLeft.Control = GBIndividualPoints
+    AnchorSideTop.Control = GBIndividualPoints
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = GBGrupo
+    AnchorSideRight.Side = asrBottom
+    Left = 796
+    Height = 354
+    Top = 132
+    Width = 350
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Top = 10
+    ClientHeight = 354
+    ClientWidth = 350
+    TabOrder = 7
+    object ChatMemoRecv: TMemo
+      AnchorSideBottom.Control = ChatSplitter
+      Left = 6
+      Height = 221
+      Top = 6
+      Width = 338
+      Align = alTop
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      BorderSpacing.Left = 5
+      BorderSpacing.Top = 5
+      BorderSpacing.Right = 5
+      BorderSpacing.Bottom = 5
+      Constraints.MinHeight = 100
+      Enabled = False
+      Lines.Strings = (
+        '[Chat]'
+      )
+      ScrollBars = ssAutoVertical
+      TabOrder = 0
+      WantReturns = False
+    end
+    object ChatSplitter: TSplitter
+      Cursor = crVSplit
+      Left = 0
+      Height = 5
+      Top = 232
+      Width = 348
+      Align = alNone
+      Anchors = [akLeft, akRight]
+      ResizeAnchor = akTop
+    end
+    object ChatMemoSend: TMemo
+      AnchorSideTop.Control = ChatSplitter
+      AnchorSideTop.Side = asrBottom
+      Left = 6
+      Height = 106
+      Top = 242
+      Width = 338
+      Align = alBottom
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      BorderSpacing.Around = 5
+      OnKeyPress = ChatMemoSendKeyPress
+      ScrollBars = ssAutoVertical
+      TabOrder = 2
+      WantTabs = True
+    end
   end
 end
