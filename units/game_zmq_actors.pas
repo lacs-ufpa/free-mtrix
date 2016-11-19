@@ -12,21 +12,24 @@ uses
 
 type
 
+  // Everything sent is received by everybody connected.
+
   { TZMQActor }
 
   TZMQActor = class(TComponent)
   private
+    FID: UTF8string;
     FSubscriber: TZMQPollThread;
     FOnMessageReceived : TMessRecvProc;
-    function GetActorID: UTF8string; virtual;
   protected
     procedure MessageReceived(AMultipartMessage : TStringList);
   public
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
     procedure Start; virtual;
+    procedure SetID(S:string);
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
-    property ID : UTF8string read GetActorID;
+    property ID : UTF8string read FID;
   end;
 
   { TZMQPlayer }
@@ -34,13 +37,11 @@ type
   TZMQPlayer = class(TZMQActor)
   private
     FPusher : TZMQPusher;
-    function GetActorID: UTF8string; override;
   public
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
     procedure Start; override;
     procedure SendMessage(AMessage : array of UTF8string);
-    property ID : UTF8string read GetActorID;
   end;
 
   { TZMQAdmin }
@@ -100,11 +101,6 @@ begin
   FPusher.SendMessage(AMessage);
 end;
 
-function TZMQPlayer.GetActorID: UTF8string;
-begin
-  Result := FPusher.ID;
-end;
-
 constructor TZMQPlayer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -125,10 +121,9 @@ end;
 
 { TZMQActor }
 
-function TZMQActor.GetActorID: UTF8string;
+procedure TZMQActor.SetID(S: string);
 begin
-  AbstractError;
-  Result := '';
+  FID := S;
 end;
 
 procedure TZMQActor.MessageReceived(AMultipartMessage: TStringList);

@@ -20,6 +20,7 @@ resourcestring
   KEY_RESEARCHER = 'Pesquisador.Responsável';
   KEY_GEN_PLAYER_AS_NEEDED = 'GerarJogadoresAutomaticamente';
   KEY_CURRENT_CONDITION = 'ComeçarNaCondição';
+  KEY_MATRIX_TYPE= 'TipoDaMatrix';
 
   SEC_PLAYER = 'Jogador.';
   KEY_PLAYER_TEMP = 'Data.X';
@@ -34,12 +35,7 @@ resourcestring
   KEY_PLAYER_STATUS = 'Status';
 
   SEC_CONDITION = 'Condição.';
-  KEY_CONTINGENCY = 'Contingência.';
-  KEY_METACONTINGENCY = 'Metacontingência.';
-
-  KEY_RESPONSE = '.RespostaEsperada'; // ROW,COLOR,OPCODE
-  KEY_CONSEQUE = '.Consequência'; // A,B,G,CSQCODE
-  KEY_CONSEQUE_MESSAGE = '.Consequência.Mensagem';
+  KEY_COND_NAME = 'Nome';
 
   KEY_TURN_VALUE = 'Rodada.NúmeroDeJogadores';  // 3
   KEY_TURN_COUNT = 'Rodada.IniciarNaJogada';    // 1
@@ -56,7 +52,14 @@ resourcestring
   KEY_PROMPT_STYLE = 'Questão.Estilo'; // string
   KEY_PROMPT_MESSAGE = 'Questão.Mensagem'; // string
 
-  KEY_ENDCRITERIA = '.Critério.DeFinalizaçãoDaCondição'; //2,50,10,30,
+  KEY_ENDCRITERIA = 'Critério.DeFinalizaçãoDaCondição'; //2,50,10,30,
+
+  KEY_CONTINGENCY = 'Contingência.';
+  KEY_METACONTINGENCY = 'Metacontingência.';
+
+  KEY_RESPONSE = '.RespostaEsperada'; // ROW,COLOR,OPCODE
+  KEY_CONSEQUE = '.Consequência'; // A,B,G,CSQCODE
+  KEY_CONSEQUE_MESSAGE = '.Consequência.Mensagem';
 
   VAL_RESEARCHER = 'Pesquisador';
 
@@ -92,6 +95,21 @@ const
     'Vitória','Marta','Carlota','Iara','Yasmin',
     'Nicole','Luísa','Daniela','Núria','Bruna',
     'Victória','Alícia','Rafaela','Helena','Miriam');
+
+  C_PLAYER_TEMPLATE : TPlayer = (
+    ID : '';
+    Nicname : '';
+    Login :'';
+    Password : '';
+    Status : gpsWaiting;
+    Data : nil;
+    Choice : (
+      Current : (Row:grNone; Color:gcNone;);
+      Last : (Row:grNone; Color:gcNone;);
+    );
+    Points : (A:0; B:0);
+    Turn : -1;
+  );
 
   //C_OPERANT_1 : TContingency =
   //  (
@@ -238,6 +256,7 @@ const
 
   C_CONDITION_TEMPLATE : TCondition =
     (
+      ConditionName : '';
       Contingencies : nil;
 
       Points : (
