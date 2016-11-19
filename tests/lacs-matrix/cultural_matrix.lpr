@@ -16,10 +16,15 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces  // this includes the LCL widgetset
-  , StrUtils, Forms, form_matrixgame, form_chooseactor, game_actors,
-  game_experiment, game_file_methods, game_resources, game_control,
-  string_methods, game_actors_point;
+  , StrUtils, Forms, Classes, sysutils, Dialogs
+  , form_matrixgame, form_chooseactor, game_actors
+  , zhelpers
+  ;
 
+
+var
+  ID : TStringList;
+  F : string;
 const
   PAdmin : array [0..3] of string = ('--admin','--adm','-admin','-adm');
   PPlayer : array [0..3] of string = ('--player','--play','-player','-play');
@@ -30,15 +35,38 @@ const
 begin
   //RequireDerivedFormResource := True;
   Application.Initialize;
+  F := ExtractFilePath(Application.ExeName)+PathDelim+'id';
+  ID := TStringList.Create;
+  if FileExists(F) then
+    try
+      ID.LoadFromFile(F);
+      F := ID.Text;
+    finally
+      ID.Free;
+    end
+  else
+    try
+      ID.Text := s_random(32);
+      ID.SaveToFile(F);
+      F := ID.Text;
+    except
+      on E: Exception do
+        begin
+          ID.Free;
+          ShowMessage(E.Message);
+          Exit;
+        end;
+    end;
   Application.CreateForm(TFormMatrixGame, FormMatrixGame);
+  FormMatrixGame.SetID(F);
   if Paramcount > 0 then
     begin
       if AnsiMatchStr(lowercase(ParamStr(0)), PAdmin) then
-        FormMatrixGame.GameActor := gaAdmin;
+        FormMatrixGame.SetGameActor(gaAdmin);
       if AnsiMatchStr(lowercase(ParamStr(0)), PPlayer) then
-        FormMatrixGame.GameActor := gaPlayer;
+        FormMatrixGame.SetGameActor(gaPlayer);
       if AnsiMatchStr(lowercase(ParamStr(0)), PWatcher) then
-        FormMatrixGame.GameActor := gaWatcher;
+        FormMatrixGame.SetGameActor(gaWatcher);
     end
   else
     begin
@@ -46,14 +74,15 @@ begin
       if Form1.ShowModal = 1 then
         begin
           case Form1.GameActor of
-            gaAdmin:FormMatrixGame.GameActor := gaAdmin;
-            gaPlayer: FormMatrixGame.GameActor := gaPlayer;
-            gaWatcher: {FormMatrixGame.GameActor := gaWatcher};
+            gaAdmin:FormMatrixGame.SetGameActor(gaAdmin);
+            gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
+            gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
           end;
         end
       else Exit;
       Form1.Free;
     end;
+
   Application.Run;
 end.
 

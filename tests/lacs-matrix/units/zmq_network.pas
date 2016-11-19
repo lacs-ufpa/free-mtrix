@@ -14,7 +14,6 @@ unit zmq_network;
 interface
 
 uses Classes, SysUtils, Process
-
   , zmqapi
   //, zmq_client
   ;
@@ -32,7 +31,6 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure SendMessage(AMultipartMessage : array of UTF8string);
-    property ID : UTF8string read FID;
   end;
 
   { TZMQPubThread }
@@ -73,8 +71,6 @@ type
 
 
 implementation
-
-uses zhelpers;
 
 { TZMQSubscriber }
 
@@ -140,7 +136,6 @@ end;
 
 constructor TZMQPusher.Create;
 begin
-  FID := s_random(20);
   FContext := TZMQContext.create;
   FPusher := FContext.Socket( stPush );
   FPusher.connect('tcp://localhost:5057');

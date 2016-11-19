@@ -5,7 +5,7 @@ unit string_methods;
 interface
 
 uses
-  Classes, SysUtils, LazFileUtils
+  Classes, SysUtils, Graphics, LazFileUtils
   , game_actors
   , game_resources
   ;
@@ -21,6 +21,7 @@ function GetConsequenceStyleFromString(s:string):TGameConsequenceStyle;
 function GetConsequenceStyleString(AStyle: TGameConsequenceStyle): string;
 function GetResponseString(ACriteria : TCriteria) : string;
 function GetResponseFromString(S: string) : TCriteria;
+function GetRowColorString(C: TColor):string;
 
 implementation
 
@@ -205,6 +206,17 @@ begin
     if s1 <> '' then
       Result.Colors += [GetColorFromString(UpperCase(GetAndDelFirstValue(s1)))]
     else Break;
+end;
+
+function GetRowColorString(C: TColor): string;
+begin
+  case C of
+    ccYellow: Result := 'Y';
+    ccBlue : Result := 'B';
+    ccGreen: Result := 'G';
+    ccRed: Result := 'R';
+    ccMagenta: Result := 'M';
+  end;
 end;
 
 //function ValidateString(S: String): string;

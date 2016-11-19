@@ -14,7 +14,8 @@ type
 
   { TExperiment }
 
-  TPlayersPlaying = array of integer;
+  TPlayers = array of TPlayer;
+  TConditions = array of TCondition;
 
   TExperiment = class(TComponent)
   private
@@ -22,23 +23,27 @@ type
     FExperimentName,
     FFilename,
     FResearcher : string;
+    FMatrixType: TGameMatrixType;
     FRegData : TRegData;
     FGenPlayersAsNeeded : Boolean;
-    FPlayersPlaying : TPlayersPlaying;
-    FPlayers : array of TPlayer;
+    FPlayersPlaying : TList;
+    FPlayers : TPlayers;
     FCurrentCondition : integer;
-    FConditions : array of TCondition;
+    FConditions : TConditions;
+    FResearcherCanChat: Boolean;
     FShowChat: Boolean;
     function GetCondition(I : Integer): TCondition;
     function GetConditionsCount: integer;
     function GetContingency(ACondition, I : integer): TContingency;
     function GetPlayer(I : integer): TPlayer;
     function GetPlayersCount: integer;
-    function GetPlayersPlaying: TPlayersPlaying;
+    function GetPlayersPlaying: TList;
     procedure SetCondition(I : Integer; AValue: TCondition);
     procedure SetContingency(ACondition, I : integer; AValue: TContingency);
+    procedure SetMatrixType(AValue: TGameMatrixType);
     procedure SetPlayer(I : integer; AValue: TPlayer);
-    procedure SetPlayersPlaying(AValue: TPlayersPlaying);
+    procedure SetPlayersPlaying(AValue: TList);
+    procedure SetResearcherCanChat(AValue: Boolean);
   public
     constructor Create(AOwner:TComponent);override;
     constructor Create(AFilename: string; AOwner:TComponent); overload;
@@ -50,9 +55,10 @@ type
     function AppendContingency(ACondition : integer) : integer;overload;
     function AppendContingency(ACondition : integer;AContingency : TContingency) : integer;overload;
     function AppendPlayer : integer;overload;
-    function AppendPlayer(APlayer : TPlayer) : integer;overload;
+    function AppendPlayer(APlayer : TPlayer) : integer; overload;
     procedure SaveToFile(AFilename: string); overload;
     procedure SaveToFile; overload;
+    property ResearcherCanChat : Boolean read FResearcherCanChat write SetResearcherCanChat ;
     property Researcher : string read FResearcher write FResearcher;
     property Condition[I : Integer]: TCondition read GetCondition write SetCondition;
     property ConditionsCount : integer read GetConditionsCount;
@@ -62,9 +68,10 @@ type
     property ExperimentName : string read FExperimentName write FExperimentName;
     property GenPlayersAsNeeded : Boolean read FGenPlayersAsNeeded write FGenPlayersAsNeeded;
     property Player[I : integer] : TPlayer read GetPlayer write SetPlayer;
-    property PlayersCount : integer read GetPlayersCount;
-    property PlayersPlaying : TPlayersPlaying read GetPlayersPlaying write SetPlayersPlaying;
+    property PlayersCount : integer read GetPlayersCount; // how many players per turn?
+    property PlayersPlaying : TList read GetPlayersPlaying write SetPlayersPlaying; // how many players are playing?
     property ShowChat : Boolean read FShowChat write FShowChat;
+    property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
   end;
 
 resourcestring
@@ -72,7 +79,7 @@ resourcestring
 
 implementation
 
-uses game_file_methods, game_actors_point;
+uses game_file_methods, game_actors_point,Dialogs;
 
 { TExperiment }
 
@@ -98,19 +105,28 @@ end;
 
 function TExperiment.GetPlayersCount: integer;
 begin
-  Result := High(FPlayers);
+  if Length(FPlayers) = 0 then
+    Result := High(FPlayers)
+  else
+    Result := -1;
 end;
 
-function TExperiment.GetPlayersPlaying: TPlayersPlaying;
-var i:integer;
+function TExperiment.GetPlayersPlaying: TList;
+var
+  i:integer;
+  P:PPlayer;
 begin
-  if Length(FPlayersPlaying) = 0 then
-    for i := Low(FPlayers) to High(FPlayers) do
-      if Player[i].Status = gpsPlaying then
-        begin
-          SetLength(FPlayersPlaying, Length(FPlayersPlaying)+1);
-          FPlayersPlaying[High(FPlayersPlaying)] := i;
-        end;
+  if FPlayersPlaying.Count > 0 then
+    FPlayersPlaying.Clear;
+
+  for i := Low(FPlayers) to High(FPlayers) do
+    if Player[i].Status = gpsPlaying then
+      begin
+        P := nil;
+        P^ := Player[i];
+        FPlayersPlaying.Add(P);
+      end;
+
   Result := FPlayersPlaying;
 end;
 
@@ -127,32 +143,35 @@ begin
         FConditions[ACondition].Contingencies[I] := AValue;
 end;
 
+procedure TExperiment.SetMatrixType(AValue: TGameMatrixType);
+begin
+  if FMatrixType=AValue then Exit;
+  FMatrixType:=AValue;
+end;
+
+
 procedure TExperiment.SetPlayer(I : integer; AValue: TPlayer);
 begin
   if (I >= Low(FPlayers)) and (I <= High(FPlayers)) then
     FPlayers[I] := AValue;
 end;
 
-procedure TExperiment.SetPlayersPlaying(AValue: TPlayersPlaying);
-var i : integer; LAllEqualDontSet : Boolean;
+procedure TExperiment.SetPlayersPlaying(AValue: TList);
 begin
-  LAllEqualDontSet := True;
-  if Length(FPlayersPlaying) = Length(AValue) then
-    for i := Low(AValue) to High(AValue) do
-        if not FPlayersPlaying[i] <> AValue[i] then
-          begin
-            LAllEqualDontSet := False;
-            Break;
-          end;
-  if LAllEqualDontSet then Exit;
-  SetLength(FPlayersPlaying,Length(AValue));
-  for i := Low(AValue) to High(AValue) do
-      FPlayersPlaying[i] := AValue[i];
+  if FPlayersPlaying = AValue then Exit;
+  FPlayersPlaying := AValue;
+end;
+
+procedure TExperiment.SetResearcherCanChat(AValue: Boolean);
+begin
+  if FResearcherCanChat=AValue then Exit;
+  FResearcherCanChat:=AValue;
 end;
 
 constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FPlayersPlaying := TList.Create;
   LoadExperimentFromResource(Self);
 end;
 
@@ -164,6 +183,7 @@ end;
 
 destructor TExperiment.Destroy;
 begin
+  FPlayersPlaying.Free;
   inherited Destroy;
 end;
 
@@ -189,35 +209,36 @@ end;
 
 function TExperiment.AppendCondition(ACondition: TCondition): integer;
 begin
-  FConditions[AppendCondition] := ACondition;
+  SetLength(FConditions, Length(FConditions)+1);
   Result := High(FConditions);
+  FConditions[Result] := ACondition;
 end;
 
 function TExperiment.AppendContingency(ACondition: integer): integer;
 begin
   SetLength(FConditions[ACondition].Contingencies, Length(FConditions[ACondition].Contingencies)+1);
-  //FConditions[ACondition].Contingencies[High(FConditions[ACondition].Contingencies)].Consequence := TConsequence.Create(Self);
-  //FConditions[ACondition].Contingencies[High(FConditions[ACondition].Contingencies)].Consequence.Points.A := TGamePoint.Create(Self);
   Result := High(FConditions[ACondition].Contingencies);
 end;
 
 function TExperiment.AppendContingency(ACondition: integer;
   AContingency: TContingency): integer;
 begin
-  FConditions[ACondition].Contingencies[AppendContingency(ACondition)] := AContingency;
+  SetLength(FConditions[ACondition].Contingencies, Length(FConditions[ACondition].Contingencies)+1);
   Result := High(FConditions[ACondition].Contingencies);
+  FConditions[ACondition].Contingencies[Result] := AContingency;
 end;
 
 function TExperiment.AppendPlayer: integer;
 begin
   SetLength(FPlayers, Length(FPlayers)+1);
-  Result := High(FPlayers);
+  Result := Length(FPlayers)-1;
 end;
 
 function TExperiment.AppendPlayer(APlayer: TPlayer): integer;
 begin
-  FPlayers[AppendPlayer] := APlayer;
+  SetLength(FPlayers, Length(FPlayers)+1);
   Result := High(FPlayers);
+  FPlayers[Result] := APlayer;
 end;
 
 procedure TExperiment.SaveToFile(AFilename: string);

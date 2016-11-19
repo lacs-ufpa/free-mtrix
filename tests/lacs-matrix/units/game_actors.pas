@@ -10,8 +10,12 @@ uses
   ;
 type
 
+
   TGameActor = ( gaNone, gaAdmin, gaPlayer, gaWatcher );
   TGamePlayerStatus = (gpsWaiting, gpsPlaying, gpsPlayed);
+
+  TGameMatrix = (gmRows,gmColumns, gmDots,gmClearDots);
+  TGameMatrixType = set of TGameMatrix;
 
   TGameRow = (grNone,
               grOne,grTwo,grThree,grFour,grFive,grSix,grSeven,grEight,grNine,grTen,  // 10 rows
@@ -107,6 +111,7 @@ type
   end;
 
   TCondition = record
+    ConditionName : string;
     Contingencies : TContingencies; // for producing points during the condition
 
     Points : record
@@ -137,6 +142,8 @@ type
     Row : TGameRow;
     Color : TGameColor;
   end;
+
+  PPlayer = ^TPlayer;
 
   TPlayer = record
     ID,

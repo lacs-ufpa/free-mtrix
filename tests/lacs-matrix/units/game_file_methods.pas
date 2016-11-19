@@ -39,11 +39,21 @@ begin
   with AExperiment do
     begin
       Researcher := VAL_RESEARCHER;
+      ResearcherCanChat:=True;
       ExperimentName:='Test Experiment';
       ExperimentAim:='This is a test experiment.';
       GenPlayersAsNeeded:=True;
       CurrentCondition := 0;
+      AppendPlayer(C_PLAYER_TEMPLATE);
+      AppendPlayer(C_PLAYER_TEMPLATE);
       i := AppendCondition(C_CONDITION_TEMPLATE);
+      with Condition[i] do
+        begin
+          ConditionName := SEC_CONDITION+IntToStr(i+1);
+          Turn.Count:=0;
+          Turn.Value:=0;
+          Turn.Random:=False;
+        end;
       //j := AppendContingency(i,C_METACONTINGENCY_A1);
     end;
 end;
@@ -240,6 +250,7 @@ var
                 s1 := DEF_END;
               end;
             EndCriterium := GetEndCriteria(s1);
+            ConditionName := ReadString(LS,KEY_COND_NAME,LS);
             Points.Count := GetPoints(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
             Points.OnStart := GetPoints(ReadString(LS, KEY_POINTS_ONSTART,DEF_POINTS));
             Turn.Count:= ReadInteger(LS, KEY_TURN_COUNT,1);
