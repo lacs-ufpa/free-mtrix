@@ -3,7 +3,7 @@ object FormChooseActor: TFormChooseActor
   Height = 240
   Top = 194
   Width = 320
-  BorderStyle = bsNone
+  BorderStyle = bsDialog
   Caption = 'FormChooseActor'
   ClientHeight = 240
   ClientWidth = 320

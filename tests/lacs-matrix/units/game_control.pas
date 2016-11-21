@@ -43,7 +43,7 @@ type
     procedure SetRowBase(AValue: integer);
     procedure SendSystemMessage(AMessage: array of UTF8String);
   public
-    constructor Create(AZMQActor : TZMQActor;AID : string);overload;
+    constructor Create(AOwner : TComponent);override;
     destructor Destroy; override;
     procedure SetMatrix;
     procedure SendRequest(ARequest : UTF8string);
@@ -129,6 +129,8 @@ end;
 
 function TGameControl.MessageHas(const A_CONST: string; AMessage: TStringList): Boolean;
 begin
+  Result:= False;
+  if not Assigned(AMessage) then Exit;
   Result := Pos(A_CONST,AMessage[0])>0;
 end;
 
@@ -210,13 +212,14 @@ end;
 
 procedure TGameControl.SendSystemMessage(AMessage: array of UTF8String);
 begin
-  TZMQAdmin(FZMQActor).SendMessage(AMessage);
+  //TZMQAdmin(FZMQActor).SendMessage(AMessage);
 end;
 
-constructor TGameControl.Create(AZMQActor: TZMQActor; AID: string);
+constructor TGameControl.Create(AOwner: TComponent);
 begin
-  inherited Create(AZMQActor.Owner);
-  FZMQActor := AZMQActor;
+  FZMQActor := TZMQActor(AOwner);
+  inherited Create(FZMQActor.Owner);
+  FID := FZMQActor.ID;
   FZMQActor.OnMessageReceived:=@ReceiveMessage;
   FZMQActor.OnRequestReceived:=@ReceiveRequest;
   FZMQActor.OnReplyReceived:=@ReceiveReply;
@@ -233,10 +236,7 @@ begin
   MustDrawDots:=False;
   MustDrawDotsClear:=False;
 
-  FZMQActor.SetID(AID);
-  FID := AID;
-
-  FExperiment := TExperiment.Create(AZMQActor.Owner);
+  FExperiment := TExperiment.Create(FZMQActor.Owner);
   SendRequest(K_LOGIN);
 end;
 
@@ -251,33 +251,55 @@ begin
 end;
 
 procedure TGameControl.SendRequest(ARequest: UTF8string);
-begin
-
-end;
-
-
-procedure TGameControl.SendMessage(AMessage: UTF8string);
 var
-{$IFDEF DEBUG}
-  i : integer;
-{$ENDIF}
-  M : array of UTF8string;
+  M : array of UTF8String;
 
-  procedure SetM(A: array of UTF8String);
+  procedure SetM(A : array of UTF8String);
   var i : integer;
   begin
     SetLength(M,Length(A));
     for i := 0 to Length(A) -1 do
       M[i] := A[i];
   end;
+begin
+  case ARequest of
+    K_LOGIN : SetM([
+      FZMQActor.ID
+      , ' '
+      , ARequest
+    ]);
+  end;
 
+  case FActor of
+    gaAdmin: begin
+      M[2] := GA_ADMIN+M[2];
+    end;
+    gaPlayer:begin
+      M[2] := GA_PLAYER+M[2];
+    end;
+    //gaWatcher:begin // for now cannot SendMessages
+    //  M[0] := GA_WATCHER+M[0];
+  end;
+  FZMQActor.Request(M);
+end;
+
+
+procedure TGameControl.SendMessage(AMessage: UTF8string);
+var
+  M : array of UTF8String;
+
+  procedure SetM(A : array of UTF8String);
+  var i : integer;
+  begin
+    SetLength(M,Length(A));
+    for i := 0 to Length(A) -1 do
+      M[i] := A[i];
+  end;
 begin
   case AMessage of
     K_ARRIVED : SetM([
       AMessage
       , FZMQActor.ID
-      //, FZMQActor.ClassType.ClassName;
-      //,
     ]);
 
     K_CHOICE  : SetM([
@@ -318,15 +340,13 @@ begin
     //  M[0] := GA_WATCHER+M[0];
   end;
   FZMQActor.SendMessage(M);
-
-{$IFDEF DEBUG}
-  for i := 0 to Length(M)-1 do
-    WriteLn(M[i]);
-{$ENDIF}
 end;
 
 procedure TGameControl.ReceiveMessage(AMessage: TStringList);
-
+{$IFDEF DEBUG}
+var
+  i : integer;
+{$ENDIF}
   function MHas(const C : string) : Boolean;
   begin
     Result := MessageHas(C,AMessage);
@@ -508,17 +528,51 @@ begin
   if MHas(K_LEFT)    then SayGoodBye;
   if MHas(K_RESUME)  then ResumeActor;
   if MHas(K_STATUS) then ReceiveStatus;
+
+  {$IFDEF DEBUG}
+  AMessage.Append('MessageReceived');
+  for i:= 0 to AMessage.Count-1 do
+    WriteLn(AMessage[i]);
+  {$ENDIF}
 end;
 
 procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
-begin
+{$IFDEF DEBUG}
+var
+  i : integer;
+{$ENDIF}
+  function MHas(const C : string) : Boolean;
+  begin
+    Result := MessageHas(C,ARequest);
+  end;
 
+  procedure ReplyLogin;
+  begin
+
+  end;
+begin
+  if MHas(K_LOGIN) then ReplyLogin;
+
+  {$IFDEF DEBUG}
+  ARequest.Append('RequestReceived');
+  for i:= 0 to ARequest.Count-1 do
+    WriteLn(ARequest[i]);
+  {$ENDIF}
 end;
 
+
+// player
 procedure TGameControl.ReceiveReply(AReply: TStringList);
+var i: integer;
 begin
-
+  {$IFDEF DEBUG}
+  AReply.Append('ReplyReceived');
+  for i:= 0 to AReply.Count-1 do
+    WriteLn(AReply[i]);
+  {$ENDIF}
 end;
+
+
 
 end.
 

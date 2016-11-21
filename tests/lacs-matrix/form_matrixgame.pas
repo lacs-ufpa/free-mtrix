@@ -212,21 +212,20 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
 
   procedure SetZMQAdmin;
   begin
-
-    FGameControl := TGameControl.Create(TZMQAdmin.Create(Self),FID);
+    FGameControl := TGameControl.Create(TZMQAdmin.Create(Self,FID));
     GBAdmin.Visible:= True;
   end;
 
   procedure SetZMQPlayer;
   begin
-    FGameControl := TGameControl.Create(TZMQPlayer.Create(Self),FID);
+    FGameControl := TGameControl.Create(TZMQPlayer.Create(Self,FID));
     btnConfirmRow.Visible := True;
     StringGridMatrix.Enabled := True;
   end;
 
   procedure SetZMQWatcher;
   begin
-    FGameControl := TGameControl.Create(TZMQWatcher.Create(Self),FID);
+    //FGameControl := TGameControl.Create(TZMQWatcher.Create(Self,FID));
   end;
 
 begin

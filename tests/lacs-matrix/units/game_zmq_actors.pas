@@ -16,18 +16,17 @@ type
 
   TZMQActor = class(TComponent)
   private
-    FID: UTF8string;
     FOnMessageReceived : TMessRecvProc;
     FOnReplyReceived: TMessRecvProc;
     FOnRequestReceived: TReqRecvProc;
   protected
+    FID: UTF8string;
     procedure MessageReceived(AMultipartMessage : TStringList);
-    procedure ReplyReceived(AMultipartMessage : TStringList); virtual;
-    procedure RequestReceived(var AMultipartMessage : TStringList); virtual;
+    procedure ReplyReceived(AMultipartMessage : TStringList);
+    procedure RequestReceived(var AMultipartMessage : TStringList);
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create(AOwner : TComponent; AID : UTF8String); virtual; overload;
     procedure Start; virtual;
-    procedure SetID(S:string); virtual;
     procedure SendMessage(AMessage : array of UTF8string);virtual;abstract;
     procedure Request(ARequest : array of UTF8string);virtual;abstract;
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
@@ -41,10 +40,8 @@ type
   TZMQPlayer = class(TZMQActor)
   private
     FZMQClient : TZMQClientThread;
-  protected
-    procedure ReplyReceived(AMultipartMessage: TStringList); override;
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create(AOwner : TComponent; AID : UTF8String); override;
     destructor Destroy; override;
     procedure Start; override;
     procedure SendMessage(AMessage : array of UTF8string); override;
@@ -56,10 +53,8 @@ type
   TZMQAdmin = class(TZMQActor)
   private
     FZMQServer : TZMQServerThread;
-  protected
-    procedure RequestReceived(var AMultipartMessage: TStringList); override;
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create(AOwner : TComponent; AID : UTF8String); override;
     destructor Destroy; override;
     procedure Start; override;
     procedure SendMessage(AMessage: array of UTF8string); override;
@@ -85,12 +80,14 @@ end;
 
 { TZMQAdmin }
 
-constructor TZMQAdmin.Create(AOwner: TComponent);
+constructor TZMQAdmin.Create(AOwner: TComponent; AID: UTF8String);
 begin
   inherited Create(AOwner);
-  FZMQServer := TZMQServerThread.Create;
+  FID:=AID;
+  FZMQServer := TZMQServerThread.Create(AID);
   FZMQServer.OnMessageReceived:=@MessageReceived;
   FZMQServer.OnRequestReceived:=@RequestReceived;
+
 end;
 
 destructor TZMQAdmin.Destroy;
@@ -109,13 +106,9 @@ begin
   // do nothing, you are the server
 end;
 
-procedure TZMQAdmin.RequestReceived(var AMultipartMessage: TStringList);
-begin
-  if Assigned(FOnRequestReceived) then FOnRequestReceived(AMultipartMessage);
-end;
-
 procedure TZMQAdmin.Start;
 begin
+  inherited Start;
   FZMQServer.Start;
   WriteLn('TZMQAdmin.Start');
 end;
@@ -132,15 +125,11 @@ begin
   FZMQClient.Request(ARequest);
 end;
 
-procedure TZMQPlayer.ReplyReceived(AMultipartMessage: TStringList);
-begin
-  if Assigned(FOnReplyReceived) then FOnReplyReceived(AMultipartMessage);
-end;
-
-constructor TZMQPlayer.Create(AOwner: TComponent);
+constructor TZMQPlayer.Create(AOwner: TComponent; AID: UTF8String);
 begin
   inherited Create(AOwner);
-  FZMQClient := TZMQClientThread.Create;
+  FID:=AID;
+  FZMQClient := TZMQClientThread.Create(AID);
   FZMQClient.OnMessageReceived:=@MessageReceived;
   FZMQClient.OnReplyReceived:=@ReplyReceived;
 end;
@@ -160,11 +149,6 @@ end;
 
 { TZMQActor }
 
-procedure TZMQActor.SetID(S: string);
-begin
-  FID := S;
-end;
-
 procedure TZMQActor.MessageReceived(AMultipartMessage: TStringList);
 begin
   if Assigned(FOnMessageReceived) then FOnMessageReceived(AMultipartMessage);
@@ -172,15 +156,15 @@ end;
 
 procedure TZMQActor.ReplyReceived(AMultipartMessage: TStringList);
 begin
-  AbstractError;
+  if Assigned(FOnReplyReceived) then FOnReplyReceived(AMultipartMessage);
 end;
 
 procedure TZMQActor.RequestReceived(var AMultipartMessage: TStringList);
 begin
-  AbstractError;
+  if Assigned(FOnRequestReceived) then FOnRequestReceived(AMultipartMessage);
 end;
 
-constructor TZMQActor.Create(AOwner: TComponent);
+constructor TZMQActor.Create(AOwner: TComponent; AID: UTF8String);
 begin
   inherited Create(AOwner);
 end;
