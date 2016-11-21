@@ -58,7 +58,6 @@ type
     FOnRequestReceived: TReqRecvProc;
     FContext : TZMQContext;
     FPublisher,
-    FSubscriber,
     FPuller,
     FPusher,
     FRouter,
@@ -248,13 +247,13 @@ begin
   FreeOnTerminate := True;
   FContext := TZMQContext.create;
 
-  // publishes for subscribers, server subscribe to itself
-  FPublisher := FContext.Socket( stPub );
-  FSubscriber := FContext.Socket( stSub );
-  FSubscriber.connect(CLocalHost+CPortPublisher);FSubscriber.Subscribe('');
+  // publisher for subscribers
+  FPublisher := FContext.Socket( stPub ); // server don't need to subscribe to itself
+
+  // pull from inside and outside
+  FPuller  := FContext.Socket( stPull );
 
   // pushes from inside to outside
-  FPuller  := FContext.Socket( stPull );
   FPusher := FContext.Socket( stPush );
   FPusher.connect(CLocalHost+CPortPuller);
 
@@ -281,7 +280,6 @@ begin
   FRouter.Free;
   FPusher.Free;
   FPuller.Free;
-  FSubscriber.Free;
   FPublisher.Free;
   FContext.Free;
   inherited Destroy;
