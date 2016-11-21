@@ -1,14 +1,14 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 190
+  Left = 0
   Height = 657
-  Top = 94
-  Width = 1518
-  HorzScrollBar.Page = 1492
+  Top = 62
+  Width = 1278
+  HorzScrollBar.Page = 1278
   VertScrollBar.Page = 542
   AutoScroll = True
   Caption = 'FormMatrixGame'
-  ClientHeight = 657
-  ClientWidth = 1518
+  ClientHeight = 647
+  ClientWidth = 1278
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   LCLVersion = '1.6.0.4'
@@ -151,178 +151,18 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 124
-    Top = 533
-    Width = 1518
+    Height = 17
+    Top = 630
+    Width = 1492
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
     Caption = 'Escolhas na última jogada'
     ChildSizing.LeftRightSpacing = 10
     ChildSizing.TopBottomSpacing = 5
     ChildSizing.HorizontalSpacing = 10
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 6
-    ClientHeight = 107
-    ClientWidth = 1514
     TabOrder = 3
-    object GBLastChoiceP0: TGroupBox
-      Left = 10
-      Height = 97
-      Top = 5
-      Width = 138
-      AutoSize = True
-      Caption = 'Você'
-      ChildSizing.LeftRightSpacing = 20
-      ChildSizing.TopBottomSpacing = 20
-      ChildSizing.HorizontalSpacing = 30
-      ChildSizing.VerticalSpacing = 10
-      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 2
-      ClientHeight = 80
-      ClientWidth = 134
-      TabOrder = 0
-      object LabelCurrentColor1: TLabel
-        Left = 20
-        Height = 15
-        Top = 20
-        Width = 48
-        AutoSize = False
-        Caption = 'Cor:'
-        ParentColor = False
-      end
-      object PanelCurrentColor1: TPanel
-        Left = 98
-        Height = 15
-        Top = 20
-        Width = 16
-        Color = clBlack
-        ParentColor = False
-        TabOrder = 0
-      end
-      object LabelCurrentLine1: TLabel
-        Left = 20
-        Height = 15
-        Top = 45
-        Width = 48
-        AutoSize = False
-        Caption = 'Linha:'
-        ParentColor = False
-      end
-      object LabelCurrentLineNumber1: TLabel
-        Left = 98
-        Height = 15
-        Top = 45
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-    end
-    object GBLastChoiceP1: TGroupBox
-      Left = 170
-      Height = 97
-      Top = 5
-      Width = 138
-      AutoSize = True
-      Caption = 'João'
-      ChildSizing.LeftRightSpacing = 20
-      ChildSizing.TopBottomSpacing = 20
-      ChildSizing.HorizontalSpacing = 30
-      ChildSizing.VerticalSpacing = 10
-      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 2
-      ClientHeight = 80
-      ClientWidth = 134
-      TabOrder = 1
-      object LabelYouLastChoiceColor3: TLabel
-        Left = 20
-        Height = 15
-        Top = 20
-        Width = 48
-        AutoSize = False
-        Caption = 'Cor:'
-        ParentColor = False
-      end
-      object Panel4: TPanel
-        Left = 98
-        Height = 15
-        Top = 20
-        Width = 16
-        Color = clBlack
-        ParentColor = False
-        TabOrder = 0
-      end
-      object Label10: TLabel
-        Left = 20
-        Height = 15
-        Top = 45
-        Width = 48
-        AutoSize = False
-        Caption = 'Linha:'
-        ParentColor = False
-      end
-      object Label11: TLabel
-        Left = 98
-        Height = 15
-        Top = 45
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-    end
-    object GBLastChoiceP2: TGroupBox
-      Left = 322
-      Height = 97
-      Top = 5
-      Width = 138
-      AutoSize = True
-      Caption = 'Maria'
-      ChildSizing.LeftRightSpacing = 20
-      ChildSizing.TopBottomSpacing = 20
-      ChildSizing.HorizontalSpacing = 30
-      ChildSizing.VerticalSpacing = 10
-      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 2
-      ClientHeight = 80
-      ClientWidth = 134
-      TabOrder = 2
-      object LabelYouLastChoiceColor4: TLabel
-        Left = 20
-        Height = 15
-        Top = 20
-        Width = 48
-        AutoSize = False
-        Caption = 'Cor:'
-        ParentColor = False
-      end
-      object Panel5: TPanel
-        Left = 98
-        Height = 15
-        Top = 20
-        Width = 16
-        Color = clBlack
-        ParentColor = False
-        TabOrder = 0
-      end
-      object Label12: TLabel
-        Left = 20
-        Height = 15
-        Top = 45
-        Width = 48
-        AutoSize = False
-        Caption = 'Linha:'
-        ParentColor = False
-      end
-      object Label13: TLabel
-        Left = 98
-        Height = 15
-        Top = 45
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-    end
   end
   object GBAdmin: TGroupBox
     AnchorSideLeft.Control = GBGrupo
@@ -542,5 +382,32 @@ object FormMatrixGame: TFormMatrixGame
       ParentColor = False
       Transparent = False
     end
+  end
+  object Button1: TButton
+    Left = 216
+    Height = 25
+    Top = 432
+    Width = 75
+    Caption = 'Button1'
+    OnClick = Button1Click
+    TabOrder = 8
+  end
+  object Button2: TButton
+    Left = 312
+    Height = 25
+    Top = 432
+    Width = 75
+    Caption = 'Button2'
+    OnClick = Button2Click
+    TabOrder = 9
+  end
+  object Button3: TButton
+    Left = 504
+    Height = 91
+    Top = 440
+    Width = 141
+    Caption = 'Button3'
+    OnClick = Button3Click
+    TabOrder = 10
   end
 end

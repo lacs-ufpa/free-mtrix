@@ -1,13 +1,15 @@
-object Form1: TForm1
+object FormChooseActor: TFormChooseActor
   Left = 416
   Height = 240
   Top = 194
   Width = 320
   BorderStyle = bsNone
-  Caption = 'Form1'
+  Caption = 'FormChooseActor'
   ClientHeight = 240
   ClientWidth = 320
   FormStyle = fsStayOnTop
+  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '1.6.0.4'
   object btnAdmin: TButton
@@ -27,5 +29,16 @@ object Form1: TForm1
     Caption = 'Jogador'
     OnClick = btnPlayerClick
     TabOrder = 1
+  end
+  object btnPlayerResume: TButton
+    Left = 50
+    Height = 140
+    Top = 50
+    Width = 220
+    Align = alClient
+    BorderSpacing.Around = 50
+    Caption = 'ENTRAR'
+    OnClick = btnPlayerResumeClick
+    TabOrder = 2
   end
 end

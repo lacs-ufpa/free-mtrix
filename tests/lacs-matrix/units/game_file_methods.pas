@@ -39,19 +39,21 @@ begin
   with AExperiment do
     begin
       Researcher := VAL_RESEARCHER;
+      ResearcherCanPlay:=False;
       ResearcherCanChat:=True;
       ExperimentName:='Test Experiment';
       ExperimentAim:='This is a test experiment.';
       GenPlayersAsNeeded:=True;
       CurrentCondition := 0;
-      AppendPlayer(C_PLAYER_TEMPLATE);
-      AppendPlayer(C_PLAYER_TEMPLATE);
+      MatrixType:=[gmRows];
+      //AppendPlayer(C_PLAYER_TEMPLATE);
+      //AppendPlayer(C_PLAYER_TEMPLATE);
       i := AppendCondition(C_CONDITION_TEMPLATE);
       with Condition[i] do
         begin
           ConditionName := SEC_CONDITION+IntToStr(i+1);
           Turn.Count:=0;
-          Turn.Value:=0;
+          Turn.Value:=2;
           Turn.Random:=False;
         end;
       //j := AppendContingency(i,C_METACONTINGENCY_A1);

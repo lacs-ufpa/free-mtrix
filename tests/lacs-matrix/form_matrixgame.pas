@@ -29,19 +29,15 @@ type
 
   TFormMatrixGame = class(TForm)
     btnConfirmRow: TButton;
+    Button1: TButton;
+    Button2: TButton;
+    Button3: TButton;
     GBIndividual: TGroupBox;
     GBLastChoice: TGroupBox;
     GBIndividualAB: TGroupBox;
     GBGrupo: TGroupBox;
     GBAdmin: TGroupBox;
-    GBLastChoiceP0: TGroupBox;
-    GBLastChoiceP1: TGroupBox;
-    GBLastChoiceP2: TGroupBox;
     GBExperiment: TGroupBox;
-    Label10: TLabel;
-    Label11: TLabel;
-    Label12: TLabel;
-    Label13: TLabel;
     LabelExpCondCount: TLabel;
     LabelExpGen: TLabel;
     LabelExpGenCount: TLabel;
@@ -54,24 +50,19 @@ type
     LabelIndCount: TLabel;
     LabelIndACount: TLabel;
     LabelIndBCount: TLabel;
-    LabelCurrentColor1: TLabel;
-    LabelCurrentLine1: TLabel;
     LabelIndA: TLabel;
     LabelGroupCount: TLabel;
     LabelIndB: TLabel;
-    LabelCurrentLineNumber1: TLabel;
-    LabelYouLastChoiceColor3: TLabel;
-    LabelYouLastChoiceColor4: TLabel;
     LabelExpCond: TLabel;
     ChatMemoRecv: TMemo;
     ChatMemoSend: TMemo;
     ChatPanel: TPanel;
-    Panel4: TPanel;
-    Panel5: TPanel;
-    PanelCurrentColor1: TPanel;
     ChatSplitter: TSplitter;
     StringGridMatrix: TStringGrid;
     procedure btnConfirmRowClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
     procedure ChatMemoSendKeyPress(Sender: TObject; var Key: char);
     procedure CheckBoxDrawDotsChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -81,9 +72,6 @@ type
   private
     FGameControl : TGameControl;
     FID: string;
-    FMustDrawDots: Boolean;
-    FMustDrawDotsClear: Boolean;
-    FRowBase: integer;
   public
     procedure SetID(S : string);
     procedure SetGameActor(AValue: TGameActor);
@@ -95,7 +83,7 @@ var
 
 implementation
 
-uses LCLType, game_resources;
+uses form_chooseactor, LCLType, game_resources;
 
 // uses datamodule;
 var
@@ -176,7 +164,6 @@ begin
   try
     //if (aRow >= RowBase) and (aCol = 10) then
     //  DrawLines(clWhite);
-
     if (aCol <> 0) and (aRow > (RowBase-1)) then
       begin
         DrawLines(GetRowColor(aRow,RowBase));
@@ -225,22 +212,21 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
 
   procedure SetZMQAdmin;
   begin
-    FGameControl := TGameControl.Create(TZMQAdmin.Create(Self));
+
+    FGameControl := TGameControl.Create(TZMQAdmin.Create(Self),FID);
     GBAdmin.Visible:= True;
   end;
 
   procedure SetZMQPlayer;
   begin
-    FGameControl := TGameControl.Create(TZMQPlayer.Create(Self));
+    FGameControl := TGameControl.Create(TZMQPlayer.Create(Self),FID);
     btnConfirmRow.Visible := True;
     StringGridMatrix.Enabled := True;
-
-    FGameControl.SendMessage(K_ARRIVED);
   end;
 
   procedure SetZMQWatcher;
   begin
-    FGameControl := TGameControl.Create(TZMQWatcher.Create(Self));
+    FGameControl := TGameControl.Create(TZMQWatcher.Create(Self),FID);
   end;
 
 begin
@@ -249,7 +235,6 @@ begin
     gaPlayer: SetZMQPlayer;
     gaWatcher: SetZMQWatcher;
   end;
-  FGameControl.SetID(FID);
 end;
 
 procedure TFormMatrixGame.SetID(S: string);
@@ -266,6 +251,7 @@ procedure TFormMatrixGame.FormActivate(Sender: TObject);
 begin
   StringGridMatrix.ClearSelections;
   StringGridMatrix.FocusRectVisible := False;
+  FGameControl.SetMatrix;
 end;
 
 procedure TFormMatrixGame.StringGridMatrixBeforeSelection(Sender: TObject; aCol, aRow: integer);
@@ -297,6 +283,31 @@ begin
   StringGridMatrix.Enabled:= False;
   btnConfirmRow.Visible:=False;
   FGameControl.SendMessage(K_CHOICE);
+end;
+
+procedure TFormMatrixGame.Button1Click(Sender: TObject);
+begin
+
+end;
+
+procedure TFormMatrixGame.Button2Click(Sender: TObject);
+begin
+
+end;
+
+procedure TFormMatrixGame.Button3Click(Sender: TObject);
+begin
+  FGameControl.SendMessage(K_LEFT);
+  FormMatrixGame.Visible := False;
+  FormChooseActor := TFormChooseActor.Create(nil);
+  FormChooseActor.Style := K_LEFT;
+  if FormChooseActor.ShowModal = 1 then
+    begin
+      FGameControl.SendMessage(K_RESUME);
+      FormMatrixGame.Visible := True;
+    end
+  else Close;
+  FormChooseActor.Free;
 end;
 
 end.

@@ -70,19 +70,22 @@ begin
     end
   else
     begin
-      Form1 := TForm1.Create(nil);
-      if Form1.ShowModal = 1 then
-        begin
-          case Form1.GameActor of
-            gaAdmin:FormMatrixGame.SetGameActor(gaAdmin);
-            gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
-            gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
-          end;
-        end
-      else Exit;
-      Form1.Free;
+      FormChooseActor := TFormChooseActor.Create(nil);
+      FormChooseActor.Style := '.Arrived';
+      try
+        if FormChooseActor.ShowModal = 1 then
+          begin
+            case FormChooseActor.GameActor of
+              gaAdmin:FormMatrixGame.SetGameActor(gaAdmin);
+              gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
+              gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
+            end;
+          end
+        else Exit;
+      finally
+        FormChooseActor.Free;
+      end;
     end;
-
   Application.Run;
 end.
 

@@ -38,7 +38,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="15">
+    <Units Count="19">
       <Unit0>
         <Filename Value="cultural_matrix.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -76,7 +76,7 @@
       <Unit7>
         <Filename Value="form_chooseactor.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="Form1"/>
+        <ComponentName Value="FormChooseActor"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit7>
@@ -108,6 +108,22 @@
         <Filename Value="units/game_actors_point.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
+      <Unit15>
+        <Filename Value="units/game_visual_elements.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="units/zmq_network.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="units/zmq_network3.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="units/game_zmq_actors.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit18>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
