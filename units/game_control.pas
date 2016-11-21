@@ -11,6 +11,7 @@ uses
   , game_zmq_actors
   , game_experiment
   , game_actors
+  , game_visual_elements
   ;
 
 type
@@ -26,20 +27,26 @@ type
     FActor : TGameActor;
     FZMQActor : TZMQActor;
     FExperiment : TExperiment;
-    function GetActorNicname(AID:string; Brackets : Boolean = False) : string;
+    function CanStartCycle : Boolean;
+    function GetPlayerBox(AID:string) : TPlayerBox;
+    function GetActorNicname(AID:string) : string;
+    function GetSelectedColorF(AStringGrid : TStringGrid) : UTF8string;
+    function GetSelectedRowF(AStringGrid : TStringGrid) : UTF8string;
     function MessageHas(const A_CONST : string; AMessage : TStringList): Boolean;
     procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType;
       var ARowBase:integer; var ADrawDots, ADrawClear : Boolean);
     procedure ReceiveMessage(AMessage : TStringList);
-    function GetSelectedColorF(AStringGrid : TStringGrid) : UTF8string;
-    function GetSelectedRowF(AStringGrid : TStringGrid) : UTF8string;
+    procedure ReceiveRequest(var ARequest : TStringList);
+    procedure ReceiveReply(AReply : TStringList);
     procedure SetMustDrawDots(AValue: Boolean);
     procedure SetMustDrawDotsClear(AValue: Boolean);
     procedure SetRowBase(AValue: integer);
+    procedure SendSystemMessage(AMessage: array of UTF8String);
   public
-    constructor Create(AZMQActor : TZMQActor); reintroduce;
+    constructor Create(AZMQActor : TZMQActor;AID : string);overload;
     destructor Destroy; override;
-    procedure SetID(S:string);
+    procedure SetMatrix;
+    procedure SendRequest(ARequest : UTF8string);
     procedure SendMessage(AMessage : UTF8string);
     property ID : string read FID;
     property RowBase : integer read FRowBase write SetRowBase;
@@ -53,6 +60,15 @@ const
   K_ARRIVED = '.Arrived';
   K_CHAT_M = '.ChatM';
   K_CHOICE = '.Choice';
+  K_LEFT = '.Left';
+  K_RESUME = '.Resume';
+  K_DATA_A = '.Data';
+  K_LOGIN = '.login';
+
+  //
+  K_STATUS = '.Status';
+  K_CYCLES = '.OnCycleStart';
+
   //K_RESPONSE =
 
 implementation
@@ -82,26 +98,33 @@ end;
 
 { TGameControl }
 
-function TGameControl.GetActorNicname(AID: string; Brackets: Boolean): string;
+function TGameControl.CanStartCycle: Boolean;
+begin
+  Result := FExperiment.PlayersPlaying.Count = FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value;
+end;
+
+function TGameControl.GetPlayerBox(AID: string): TPlayerBox;
 var i : integer;
 begin
-  if FExperiment.PlayersCount > -1 then
-    begin
-      for i:= 0 to FExperiment.PlayersCount do
-        if FExperiment.Player[i].ID = AID then
-          begin
-            if Brackets then
-              Result := '['+FExperiment.Player[i].Nicname+']'
-            else
-              Result := FExperiment.Player[i].Nicname;
-            Break;
-          end
-     end
-  else
-    begin
-      WriteLn('TGameControl.GetActorNicname:Using Harcoded Nicame');
-      Result := '[UNKNOWN]';
+  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount-1 do
+    if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
+      begin
+        Result := TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]);
+        Break;
+      end;
+end;
+
+function TGameControl.GetActorNicname(AID: string): string;
+begin
+  case FActor of
+    gaPlayer: begin
+      Result := 'UNKNOWN';
+      if FExperiment.Player[AID].ID <> '' then
+        Result := FExperiment.Player[AID].Nicname;
     end;
+
+    gaAdmin: Result := FExperiment.Researcher;
+  end;
 end;
 
 function TGameControl.MessageHas(const A_CONST: string; AMessage: TStringList): Boolean;
@@ -185,12 +208,18 @@ begin
   FRowBase:=AValue;
 end;
 
-constructor TGameControl.Create(AZMQActor: TZMQActor);
+procedure TGameControl.SendSystemMessage(AMessage: array of UTF8String);
+begin
+  TZMQAdmin(FZMQActor).SendMessage(AMessage);
+end;
+
+constructor TGameControl.Create(AZMQActor: TZMQActor; AID: string);
 begin
   inherited Create(AZMQActor.Owner);
   FZMQActor := AZMQActor;
-  FZMQActor.SetID(ID);
   FZMQActor.OnMessageReceived:=@ReceiveMessage;
+  FZMQActor.OnRequestReceived:=@ReceiveRequest;
+  FZMQActor.OnReplyReceived:=@ReceiveReply;
   FZMQActor.Start;
 
   if FZMQActor.ClassType = TZMQAdmin then
@@ -204,16 +233,11 @@ begin
   MustDrawDots:=False;
   MustDrawDotsClear:=False;
 
-  {$IFDEF DEBUG}
-  case FActor of
-    gaAdmin:begin
-      FExperiment := TExperiment.Create(AZMQActor.Owner);
-    end;
-    gaPlayer:begin
+  FZMQActor.SetID(AID);
+  FID := AID;
 
-    end;
-  end;
-  {$ENDIF}
+  FExperiment := TExperiment.Create(AZMQActor.Owner);
+  SendRequest(K_LOGIN);
 end;
 
 destructor TGameControl.Destroy;
@@ -221,10 +245,16 @@ begin
   inherited Destroy;
 end;
 
-procedure TGameControl.SetID(S: string);
+procedure TGameControl.SetMatrix;
 begin
-  FID := S;
+  SetMatrixType(FormMatrixGame.StringGridMatrix, FExperiment.MatrixType,FRowBase,FMustDrawDots,FMustDrawDotsClear);
 end;
+
+procedure TGameControl.SendRequest(ARequest: UTF8string);
+begin
+
+end;
+
 
 procedure TGameControl.SendMessage(AMessage: UTF8string);
 var
@@ -246,6 +276,8 @@ begin
     K_ARRIVED : SetM([
       AMessage
       , FZMQActor.ID
+      //, FZMQActor.ClassType.ClassName;
+      //,
     ]);
 
     K_CHOICE  : SetM([
@@ -255,28 +287,37 @@ begin
       , GetSelectedColorF(FormMatrixGame.StringGridMatrix)
     ]);
 
-    K_CHAT_M  : SetM([
+    K_CHAT_M  : begin
+      //if (FActor = gaAdmin) and (not FExperiment.ResearcherCanChat) then Exit;
+      SetM([
+        AMessage
+        , GetActorNicname(FZMQActor.ID)
+        , FormMatrixGame.ChatMemoSend.Lines.Text
+      ]);
+    end;
+
+    K_LEFT  : SetM([
       AMessage
-      , GetActorNicname(FZMQActor.ID, True)
-      , FormMatrixGame.ChatMemoSend.Lines.Text
+      , FZMQActor.ID
     ]);
 
+    K_RESUME  : SetM([
+      AMessage
+      , FZMQActor.ID
+    ]);
   end;
 
   case FActor of
     gaAdmin: begin
-      if not FExperiment.ResearcherCanChat then Exit;
       M[0] := GA_ADMIN+M[0];
-      TZMQAdmin(FZMQActor).SendMessage(M);
     end;
     gaPlayer:begin
       M[0] := GA_PLAYER+M[0];
-      TZMQPlayer(FZMQActor).SendMessage(M);
     end;
-    //gaWatcher:begin // Cannot SendMessages
+    //gaWatcher:begin // for now cannot SendMessages
     //  M[0] := GA_WATCHER+M[0];
-    //  TZMQWatcher(FZMQActor).SendMessage(M);
   end;
+  FZMQActor.SendMessage(M);
 
 {$IFDEF DEBUG}
   for i := 0 to Length(M)-1 do
@@ -292,20 +333,115 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   end;
 
   procedure ReceiveActor;
-  var Data: TStringList;
+  var i : integer;
+      P : TPlayer;
   begin
-    Data := TStringList.Create;
-    try
-    WriteLn('arrived');
+    //if FExperiment.PlayerIsPlaying[AMessage[1]] then Exit;
+    //if FExperiment.PlayersPlaying.Count < FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value then
+    //  begin
+    //    if FExperiment.GenPlayersAsNeeded then
+    //      if FExperiment.PlayerFromID[AMessage[1]].ID = '' then
+    //        begin
+    //          TPlayerBox.Create(FormMatrixGame.GBLastChoice,AMessage[1]).Parent := FormMatrixGame.GBLastChoice;
+    //          i := FExperiment.AppendPlayer;
+    //        end;
+    //
+    //    case FActor of
+    //      gaPlayer:begin
+    //        // nothing special
+    //      end;
+    //
+    //      gaAdmin:begin
+    //        P.ID := AMessage[1];
+    //        P.Nicname := GenResourceName(i);
+    //        P.Turn := FExperiment.NextTurn;
+    //        FExperiment.Player[i] := P;
+    //
+    //        with GetPlayerBox(P.ID) do
+    //          begin
+    //            ID := P.ID;
+    //            if FExperiment.PlayerFromID[ID].ID <> '' then
+    //            begin
+    //              Caption := FExperiment.PlayerFromID[ID].Nicname;
+    //              Parent := FormMatrixGame.GBLastChoice;
+    //              SendSystemMessage([ // here we need to use admin as a repeater/switch, because it is acting as a resource generator
+    //                GA_ADMIN+K_STATUS
+    //                , ID
+    //                , Caption
+    //                , IntToStr(P.Turn)
+    //                , IntToStr(i)
+    //              ]);
+    //            end;
+    //          end;
+    //      end;
+    //    end;
+    //  end
+    //else
+    //  WriteLn('Room is full, Player must wait someone''s leaving.');
+end;
 
-    finally
-      Data.Free;
-    end;
+
+  procedure ReceiveStatus;
+  var P : PPlayer;
+      i : integer;
+  begin
+    //P := New(PPlayer);
+    //case FActor of
+    //  gaPlayer:begin
+    //    with P^ do
+    //      begin // local asignment of the admin's generated data
+    //        ID := AMessage[1];
+    //        Nicname:=AMessage[2];
+    //        Turn:= StrToInt(AMessage[3]);
+    //      end;
+    //    i := StrToInt(AMessage[4]);
+    //    FExperiment.Player[i] := P^;
+    //    with GetPlayerBox(P^.ID) do
+    //      begin
+    //        if Self.ID = ID then
+    //          begin
+    //            Caption := P^.Nicname + ' (Você)';
+    //            WriteLn(P^.Nicname +' Said: I am ready.');
+    //          end
+    //        else
+    //          begin
+    //            Caption := P^.Nicname;
+    //            WriteLn(Self.ID +' said '+ P^.Nicname +' is ready.');
+    //          end;
+    //        Enabled := True;
+    //      end;
+    //
+    //  end;
+    //
+    //  gaAdmin:begin
+    //    P^ := FExperiment.PlayerFromID[AMessage[1]];
+    //    // turns by entrance order
+    //    //P^.Turn := FExperiment.PlayersPlaying.Count;
+    //    FExperiment.PlayersPlaying.Add(P);
+    //    with GetPlayerBox(AMessage[1]) do
+    //      Enabled := True;
+    //
+    //    WriteLn(AMessage[2]+' is ready.');
+    //    if CanStartCycle then
+    //      SendSystemMessage([
+    //        GA_ADMIN+K_CYCLES
+    //        , FExperiment.NextTurnPlayerID
+    //      ]);
+    //  end;
+    //end;
+    //Dispose(P);
   end;
 
   procedure ReceiveChoice;
   begin
+    case FActor of
+      gaPlayer:begin
 
+      end;
+      gaAdmin:begin
+
+      end;
+    end;
   end;
 
   procedure ReceiveChat;
@@ -313,20 +449,75 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     FormMatrixGame.ChatMemoRecv.Lines.Append(('['+AMessage[1]+']: ')+AMessage[2]);
   end;
 
+  procedure SayGoodBye;
+  begin
+    case FActor of
+      gaPlayer:begin
+
+      end;
+      gaAdmin:begin
+
+      end;
+    end;
+    WriteLn('Good Bye');
+  end;
+
+  procedure ResumeActor;
+  begin
+    case FActor of
+      gaPlayer:begin
+
+      end;
+      gaAdmin:begin
+
+      end;
+    end;
+    WriteLn('Resumed.');
+  end;
+
   procedure ReceiveLogin;
   begin
+    case FActor of
+      gaPlayer:begin
+
+      end;
+      gaAdmin:begin
+
+      end;
+    end;
     WriteLn('login');
   end;
 
   procedure ReceiveLogout;
   begin
+    case FActor of
+      gaPlayer:begin
+
+      end;
+      gaAdmin:begin
+
+      end;
+    end;
     WriteLn('logout');
   end;
 
 begin
   if MHas(K_ARRIVED) then ReceiveActor;
-  if MHas(K_CHAT_M) then ReceiveChat;
-  if MHas(K_CHOICE) then ReceiveChoice;
+  if MHas(K_CHAT_M)  then ReceiveChat;
+  if MHas(K_CHOICE)  then ReceiveChoice;
+  if MHas(K_LEFT)    then SayGoodBye;
+  if MHas(K_RESUME)  then ResumeActor;
+  if MHas(K_STATUS) then ReceiveStatus;
+end;
+
+procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
+begin
+
+end;
+
+procedure TGameControl.ReceiveReply(AReply: TStringList);
+begin
+
 end;
 
 end.

@@ -12,23 +12,27 @@ uses
 
 type
 
-  // Everything sent is received by everybody connected.
-
   { TZMQActor }
 
   TZMQActor = class(TComponent)
   private
     FID: UTF8string;
-    FSubscriber: TZMQPollThread;
     FOnMessageReceived : TMessRecvProc;
+    FOnReplyReceived: TMessRecvProc;
+    FOnRequestReceived: TReqRecvProc;
   protected
     procedure MessageReceived(AMultipartMessage : TStringList);
+    procedure ReplyReceived(AMultipartMessage : TStringList); virtual;
+    procedure RequestReceived(var AMultipartMessage : TStringList); virtual;
   public
     constructor Create(AOwner : TComponent); override;
-    destructor Destroy; override;
     procedure Start; virtual;
-    procedure SetID(S:string);
+    procedure SetID(S:string); virtual;
+    procedure SendMessage(AMessage : array of UTF8string);virtual;abstract;
+    procedure Request(ARequest : array of UTF8string);virtual;abstract;
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
+    property OnRequestReceived : TReqRecvProc read FOnRequestReceived write FOnRequestReceived;
+    property OnReplyReceived : TMessRecvProc read FOnReplyReceived write FOnReplyReceived;
     property ID : UTF8string read FID;
   end;
 
@@ -36,23 +40,30 @@ type
 
   TZMQPlayer = class(TZMQActor)
   private
-    FPusher : TZMQPusher;
+    FZMQClient : TZMQClientThread;
+  protected
+    procedure ReplyReceived(AMultipartMessage: TStringList); override;
   public
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
     procedure Start; override;
-    procedure SendMessage(AMessage : array of UTF8string);
+    procedure SendMessage(AMessage : array of UTF8string); override;
+    procedure Request(ARequest : array of UTF8string);override;
   end;
 
   { TZMQAdmin }
 
-  TZMQAdmin = class(TZMQPlayer)
+  TZMQAdmin = class(TZMQActor)
   private
-    FPublisher : TZMQPubThread;
+    FZMQServer : TZMQServerThread;
+  protected
+    procedure RequestReceived(var AMultipartMessage: TStringList); override;
   public
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
     procedure Start; override;
+    procedure SendMessage(AMessage: array of UTF8string); override;
+    procedure Request(ARequest: array of UTF8string); override;
   end;
 
   { TZMQWatcher }
@@ -68,7 +79,6 @@ implementation
 
 procedure TZMQWatcher.Start;
 begin
-  AbstractError;
   inherited Start;
   WriteLn('TZMQWatcher.Start');
 end;
@@ -77,20 +87,36 @@ end;
 
 constructor TZMQAdmin.Create(AOwner: TComponent);
 begin
-  FPublisher := TZMQPubThread.Create;
   inherited Create(AOwner);
+  FZMQServer := TZMQServerThread.Create;
+  FZMQServer.OnMessageReceived:=@MessageReceived;
+  FZMQServer.OnRequestReceived:=@RequestReceived;
 end;
 
 destructor TZMQAdmin.Destroy;
 begin
-  FPublisher.Terminate;
+  FZMQServer.Terminate;
   inherited Destroy;
+end;
+
+procedure TZMQAdmin.SendMessage(AMessage: array of UTF8string);
+begin
+  FZMQServer.Push(AMessage);
+end;
+
+procedure TZMQAdmin.Request(ARequest: array of UTF8string);
+begin
+  // do nothing, you are the server
+end;
+
+procedure TZMQAdmin.RequestReceived(var AMultipartMessage: TStringList);
+begin
+  if Assigned(FOnRequestReceived) then FOnRequestReceived(AMultipartMessage);
 end;
 
 procedure TZMQAdmin.Start;
 begin
-  FPublisher.Start;
-  inherited Start;
+  FZMQServer.Start;
   WriteLn('TZMQAdmin.Start');
 end;
 
@@ -98,24 +124,37 @@ end;
 
 procedure TZMQPlayer.SendMessage(AMessage: array of UTF8string);
 begin
-  FPusher.SendMessage(AMessage);
+  FZMQClient.Push(AMessage);
+end;
+
+procedure TZMQPlayer.Request(ARequest: array of UTF8string);
+begin
+  FZMQClient.Request(ARequest);
+end;
+
+procedure TZMQPlayer.ReplyReceived(AMultipartMessage: TStringList);
+begin
+  if Assigned(FOnReplyReceived) then FOnReplyReceived(AMultipartMessage);
 end;
 
 constructor TZMQPlayer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FPusher := TZMQPusher.Create;
+  FZMQClient := TZMQClientThread.Create;
+  FZMQClient.OnMessageReceived:=@MessageReceived;
+  FZMQClient.OnReplyReceived:=@ReplyReceived;
 end;
 
 destructor TZMQPlayer.Destroy;
 begin
-  FPusher.Free;
+  FZMQClient.Terminate;
   inherited Destroy;
 end;
 
 procedure TZMQPlayer.Start;
 begin
   inherited Start;
+  FZMQClient.Start;
   WriteLn('TZMQPlayer.Start');
 end;
 
@@ -131,23 +170,23 @@ begin
   if Assigned(FOnMessageReceived) then FOnMessageReceived(AMultipartMessage);
 end;
 
+procedure TZMQActor.ReplyReceived(AMultipartMessage: TStringList);
+begin
+  AbstractError;
+end;
+
+procedure TZMQActor.RequestReceived(var AMultipartMessage: TStringList);
+begin
+  AbstractError;
+end;
+
 constructor TZMQActor.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FSubscriber := TZMQPollThread.Create;
-  FSubscriber.OnMessageReceived:=@MessageReceived;
-end;
-
-destructor TZMQActor.Destroy;
-begin
-  OnMessageReceived := nil;
-  FSubscriber.Terminate;
-  inherited Destroy;
 end;
 
 procedure TZMQActor.Start;
 begin
-  FSubscriber.Start;
   WriteLn('TZMQActor.Start');
 end;
 

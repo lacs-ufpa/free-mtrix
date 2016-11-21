@@ -74,10 +74,10 @@ resourcestring
 const
 
   CPlayerNamesMale : array [0..49] of UTF8String =
-     ('João','Rodrigo','Francisco','Martim','Santiago',
+     ('Junho','Rodrigo','Francisco','Martim','Santiago',
      'Tomás','Afonso','Duarte','Miguel','Guilherme','Tiago',
      'Gonçalo','Diogo','Gabriel','Pedro','Rafael','Salvador',
-     'Dinis','Lucas','Simão','Gustavo','David',
+     'Dinis','Lucas','Simael','Gustavo','David',
      'José','Vicente','Lourenço','Diego','Daniel',
      'António','André','Vasco','Manuel','Henrique',
      'Leonardo','Bernardo','Mateus','Luís','Eduardo',
