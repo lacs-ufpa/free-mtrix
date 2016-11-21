@@ -71,7 +71,7 @@ end;
 
 procedure TFormChooseActor.FormCreate(Sender: TObject);
 begin
-  FCanClose := False
+  FCanClose := True;
 end;
 
 procedure TFormChooseActor.SetStyle(AValue: string);

@@ -38,7 +38,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="19">
+    <Units Count="17">
       <Unit0>
         <Filename Value="cultural_matrix.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -113,17 +113,9 @@
         <IsPartOfProject Value="True"/>
       </Unit15>
       <Unit16>
-        <Filename Value="units/zmq_network.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit16>
-      <Unit17>
         <Filename Value="units/zmq_network3.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit17>
-      <Unit18>
-        <Filename Value="units/game_zmq_actors.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit18>
+      </Unit16>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

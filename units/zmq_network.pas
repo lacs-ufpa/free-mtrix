@@ -31,8 +31,10 @@ type
   TZMQClientThread = class(TThread)
   private
     FContext : TZMQContext;
+    FID: shortstring;
     FSubscriber,
-    FPusher,
+    FPusher_PUB,
+    FPusher_REQ,
     FRequester : TZMQSocket;
     FPoller : TZMQPoller;
     FMessage : TStringList;
@@ -42,25 +44,28 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspended: Boolean = True);
+    constructor Create(AID : UTF8String; CreateSuspended: Boolean = True); overload;
     destructor Destroy; override;
     procedure Request(AMultipartMessage : array of UTF8String);
     procedure Push(AMultipartMessage : array of UTF8String);
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
     property OnReplyReceived : TMessRecvProc read FOnReplyReceived write FOnReplyReceived;
+    property ID :shortstring read FID;
   end;
 
   { TZMQServerThread }
 
   TZMQServerThread = class(TThread)
   private
+    FID: shortstring;
     FOnMessageReceived: TMessRecvProc;
     FOnRequestReceived: TReqRecvProc;
     FContext : TZMQContext;
     FPublisher,
-    FPuller,
-    FPusher,
-    FRouter,
+    FPuller_PUB,
+    FPusher_PUB,
+    FPuller_REP,
+    //FRouter,
     FReplier : TZMQSocket;
     FPoller : TZMQPoller;
     FMessage : TStringList;
@@ -70,11 +75,12 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(CreateSuspended: Boolean = True);
+    constructor Create(AID : UTF8String; CreateSuspended: Boolean = True); overload;
     destructor Destroy; override;
     procedure Push(AMultipartMessage: array of UTF8string);
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
     property OnRequestReceived : TReqRecvProc read FOnRequestReceived write FOnRequestReceived;
+    property ID :shortstring read FID;
   end;
 
 implementation
@@ -83,8 +89,10 @@ const
   CHost = 'tcp://*:';
   CLocalHost = 'tcp://localhost:';
   CPortPublisher = '5056';
-  CPortPuller = '5057';
-  CPortRouter = '5058';
+  CPortPuller_PUB = '5057';
+  CPortPuller_REP = '6057';
+  //CPortRouter = '5058';
+  CPortReplier = '5059';
 
 
 { TZMQClientThread }
@@ -108,20 +116,22 @@ begin
       LPollEvent := FPoller.poll(50000);
       if LPollEvent > 0 then
         begin
-          WriteLn('Server4:FPoller:',FPoller.PollNumber);
           LMessagesCount := FSubscriber.recv(LMultipartMessage);
           if LMessagesCount > 0 then
             begin
               FMessage := LMultipartMessage;
               Synchronize(@MessageReceived);
             end;
+          {$IFDEF DEBUG}
+          WriteLn('Server4:FPoller:',FPoller.PollNumber);
+          {$ENDIF}
         end;
     end;
   LMultipartMessage.Free;
 end;
 
 
-constructor TZMQClientThread.Create(CreateSuspended: Boolean);
+constructor TZMQClientThread.Create(AID: UTF8String; CreateSuspended: Boolean);
 begin
   FreeOnTerminate := True;
   FContext := TZMQContext.create;
@@ -130,12 +140,17 @@ begin
   FSubscriber := FContext.Socket( stSub );
   FSubscriber.connect(CLocalHost+CPortPublisher);FSubscriber.Subscribe('');
   // pushes to server
-  FPusher := FContext.Socket( stPush );
-  FPusher.connect(CLocalHost+CPortPuller);
+  FPusher_PUB := FContext.Socket( stPush );
+  FPusher_PUB.connect(CLocalHost+CPortPuller_PUB);
+
+  FPusher_REQ := FContext.Socket( stPush );
+  FPusher_REQ.connect(CLocalHost+CPortPuller_REP);
 
   // request from server
   FRequester := FContext.Socket( stReq );
-  FRequester.connect(CLocalHost+CPortRouter);
+  //FRequester.Identity := AID;
+  //FRequester.connect(CLocalHost+CPortRouter);
+  FRequester.connect(CLocalHost+CPortReplier);
 
   // handle income messages
   FPoller := TZMQPoller.Create(True, FContext);
@@ -148,7 +163,8 @@ destructor TZMQClientThread.Destroy;
 begin
   FPoller.Terminate;
   FPoller.Free;
-  FPusher.Free;
+  FPusher_REQ.Free;
+  FPusher_PUB.Free;
   FSubscriber.Free;
   FContext.Free;
   inherited Destroy;
@@ -158,15 +174,18 @@ procedure TZMQClientThread.Request(AMultipartMessage: array of UTF8String);
 var AReply : TStringList;
 begin
   AReply:=TStringList.Create;
-  FRequester.send( AMultipartMessage );
-  FRequester.recv( AReply );
+
+  FPusher_REQ.send( AMultipartMessage ); // avoid infinite loops inside server pool
+  FRequester.send( '' ); // block client until server recv
+  FRequester.recv( AReply ); // release client
+
   if Assigned(FOnReplyReceived) then FOnReplyReceived(AReply);
   AReply.Free;
 end;
 
 procedure TZMQClientThread.Push(AMultipartMessage: array of UTF8String);
 begin
-  FPusher.send(AMultipartMessage);
+  FPusher_PUB.send(AMultipartMessage);
 end;
 
 
@@ -189,12 +208,12 @@ end;
 
 procedure TZMQServerThread.RequestReceived;
 begin
-  if Assigned(FOnMessageReceived) then FOnMessageReceived(FMessage);
+  if Assigned(FOnRequestReceived) then FOnRequestReceived(FMessage);
 end;
 
 procedure TZMQServerThread.Execute;
 var
-  LMultipartMessage : TStringList;
+  LMultipartMessage, S : TStringList;
   LPollCount,
   LMessagesCount : integer;
 begin
@@ -204,71 +223,74 @@ begin
   LMultipartMessage := TStringList.Create;
   while not Terminated do
     begin
-      LMultipartMessage.Clear;
-      LPollCount := FPoller.poll(50000);
-      if LPollCount > 0 then
+      LPollCount := FPoller.poll;
+      if LPollCount = 0 then Continue;
+      if pePollIn in FPoller.PollItem[0].revents then
         begin
-          case FPoller.PollNumber of
-            2 : begin// puller
-                  {$IFDEF DEBUG}
-                    WriteLn('Server2:');
-                  {$ENDIF}
-      	          LMessagesCount := FPuller.recv(LMultipartMessage);
-                  if LMessagesCount > 0 then
-                    begin
-                      FMessage := LMultipartMessage;
-                      Synchronize(@MessageReceived);
-                      FPublisher.send(LMultiPartMessage);
-                    end;
-                end;
+          LMultipartMessage.Clear;
+          {$IFDEF DEBUG}
+            WriteLn('pull':LPollCount);
+          {$ENDIF}
+      	  LMessagesCount := FPuller_PUB.recv(LMultipartMessage);
+          if LMessagesCount > 0 then
+            begin
+              FMessage := LMultipartMessage;
+              Synchronize(@MessageReceived);
+              FPublisher.send(LMultiPartMessage);
+            end;
+        end;
 
-            1 : begin//router
-                  {$IFDEF DEBUG}
-                    WriteLn('Server1:');
-                  {$ENDIF}
-                  // Exit;
-                  if LMessagesCount > 2 then
-                    begin
-                      FRouter.recv(LMultipartMessage);
-                      FMessage := LMultipartMessage;
-                      Synchronize(@RequestReceived);
-                      LMultipartMessage := FMessage;
-                      FRouter.send(LMultipartMessage);
-                    end;
-                end;
-          end;
-
+      if pePollIn in FPoller.PollItem[1].revents then
+        begin
+          LMultipartMessage.Clear;
+          {$IFDEF DEBUG}
+            WriteLn('rep:',LPollCount);
+          {$ENDIF}
+          LMessagesCount := FPuller_REP.recv(LMultipartMessage);
+          if LMessagesCount > 2 then
+            begin
+              FMessage := LMultipartMessage;
+              Synchronize(@RequestReceived); LMultipartMessage := FMessage; S := TStringList.Create;
+              FReplier.recv(S); S.Free;
+              FReplier.send(LMultipartMessage);
+            end;
         end;
     end;
 end;
 
-constructor TZMQServerThread.Create(CreateSuspended: Boolean);
+constructor TZMQServerThread.Create(AID: UTF8String; CreateSuspended: Boolean);
 begin
   FreeOnTerminate := True;
   FContext := TZMQContext.create;
 
   // publisher for subscribers
   FPublisher := FContext.Socket( stPub ); // server don't need to subscribe to itself
+  FPublisher.bind(CHost+CPortPublisher);
 
   // pull from inside and outside
-  FPuller  := FContext.Socket( stPull );
+  FPuller_PUB  := FContext.Socket( stPull );
+  FPuller_PUB.bind(CHost+CPortPuller_PUB);
 
   // pushes from inside to outside
-  FPusher := FContext.Socket( stPush );
-  FPusher.connect(CLocalHost+CPortPuller);
+  FPusher_PUB := FContext.Socket( stPush );
+  FPusher_PUB.connect(CLocalHost+CPortPuller_PUB);
 
   // reply requests from outside
-  FRouter := FContext.Socket( stRouter );
+  FPuller_REP  := FContext.Socket( stPull );
+  FPuller_REP.bind(CHost+CPortPuller_REP);
+  //FRouter := FContext.Socket( stRouter );
+  //FRouter.Identity:=AID;
+  //FRouter.bind(CHost+CPortRouter);
 
-  // local setup
-  FPublisher.bind(CHost+CPortPublisher);
-  FPuller.bind(CHost+CPortPuller);
-  FRouter.bind(CHost+CPortRouter);
+  // blocking server thread for now
+  FReplier := FContext.Socket( stRep );
+  FReplier.bind(CHost+CPortReplier);
 
   // handle sockets
   FPoller := TZMQPoller.Create(True, FContext);
-  FPoller.Register(FPuller,[pePollIn],True);
-  FPoller.Register(FRouter, [pePollIn], True);
+  FPoller.Register(FPuller_PUB,[pePollIn],True);
+  FPoller.Register(FPuller_REP,[pePollIn],True);
+  //FPoller.Register(FRouter, [pePollIn], True);
 
   inherited Create(CreateSuspended);
 end;
@@ -277,9 +299,10 @@ destructor TZMQServerThread.Destroy;
 begin
   FPoller.Terminate;
   FPoller.Free;
-  FRouter.Free;
-  FPusher.Free;
-  FPuller.Free;
+  //FRouter.Free;
+  FPuller_REP.Free;
+  FPusher_PUB.Free;
+  FPuller_PUB.Free;
   FPublisher.Free;
   FContext.Free;
   inherited Destroy;
@@ -287,7 +310,7 @@ end;
 
 procedure TZMQServerThread.Push(AMultipartMessage: array of UTF8string);
 begin
-  FPusher.send(AMultipartMessage);
+  FPusher_PUB.send(AMultipartMessage);
 end;
 
 

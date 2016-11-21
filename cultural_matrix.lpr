@@ -40,7 +40,7 @@ begin
   if FileExists(F) then
     try
       ID.LoadFromFile(F);
-      F := ID.Text;
+      F := Copy(ID.Text,0,Length(ID.Text)-2);
     finally
       ID.Free;
     end
@@ -48,7 +48,7 @@ begin
     try
       ID.Text := s_random(32);
       ID.SaveToFile(F);
-      F := ID.Text;
+      F := Copy(ID.Text,0,Length(ID.Text)-2);
     except
       on E: Exception do
         begin
