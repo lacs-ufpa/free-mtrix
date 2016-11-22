@@ -320,7 +320,9 @@ begin
   if FFilename <> '' then
     SaveExperimentToFile(Self,FFilename)
   else
+    {$IFDEF DEBUG}
     WriteLn(WARN_CANNOT_SAVE)
+    {$ENDIF};
 end;
 
 end.

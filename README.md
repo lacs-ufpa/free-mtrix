@@ -20,3 +20,4 @@ mysql -V # client version
 # on windows, check if libMySQL.dll is necessary...
 
 
+# must compile with Lazarus 32 bits ultil delphi-zmq (pool) 64 bit support is available. 

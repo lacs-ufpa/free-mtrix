@@ -2,8 +2,6 @@ unit game_control;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE DEBUG}
-
 interface
 
 uses
@@ -479,7 +477,10 @@ end;
 
       end;
     end;
+    {$IFDEF DEBUG}
     WriteLn('Good Bye');
+    {$ENDIF}
+
   end;
 
   procedure ResumeActor;
@@ -492,7 +493,9 @@ end;
 
       end;
     end;
+    {$IFDEF DEBUG}
     WriteLn('Resumed.');
+    {$ENDIF}
   end;
 
   procedure ReceiveLogin;
@@ -505,7 +508,9 @@ end;
 
       end;
     end;
+    {$IFDEF DEBUG}
     WriteLn('login');
+    {$ENDIF}
   end;
 
   procedure ReceiveLogout;
@@ -518,7 +523,9 @@ end;
 
       end;
     end;
+    {$IFDEF DEBUG}
     WriteLn('logout');
+    {$ENDIF}
   end;
 
 begin
