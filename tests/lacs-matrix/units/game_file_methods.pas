@@ -248,7 +248,9 @@ var
             s1 := ReadString(LS, KEY_ENDCRITERIA,'');
             if s1 = '' then
               begin
+                {$IFDEF DEBUG}
                 WriteLn(WARN_CONDITION_WITH_NO_END+LS+'. '+KEY_ENDCRITERIA+KV_SEP+DEF_END+WARN_END);
+                {$ENDIF}
                 s1 := DEF_END;
               end;
             EndCriterium := GetEndCriteria(s1);

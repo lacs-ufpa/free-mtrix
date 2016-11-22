@@ -75,7 +75,10 @@ implementation
 procedure TZMQWatcher.Start;
 begin
   inherited Start;
+  {$IFDEF DEBUG}
   WriteLn('TZMQWatcher.Start');
+  {$ENDIF}
+
 end;
 
 { TZMQAdmin }
@@ -110,13 +113,18 @@ procedure TZMQAdmin.Start;
 begin
   inherited Start;
   FZMQServer.Start;
+  {$IFDEF DEBUG}
   WriteLn('TZMQAdmin.Start');
+  {$ENDIF}
 end;
 
 { TZMQPlayer }
 
 procedure TZMQPlayer.SendMessage(AMessage: array of UTF8string);
 begin
+  {$IFDEF DEBUG}
+
+  {$ENDIF}
   FZMQClient.Push(AMessage);
 end;
 
@@ -144,7 +152,9 @@ procedure TZMQPlayer.Start;
 begin
   inherited Start;
   FZMQClient.Start;
-  WriteLn('TZMQPlayer.Start');
+  {$IFDEF DEBUG}
+    WriteLn('TZMQPlayer.Start');
+  {$ENDIF}
 end;
 
 { TZMQActor }
@@ -171,7 +181,9 @@ end;
 
 procedure TZMQActor.Start;
 begin
+  {$IFDEF DEBUG}
   WriteLn('TZMQActor.Start');
+  {$ENDIF}
 end;
 
 end.
