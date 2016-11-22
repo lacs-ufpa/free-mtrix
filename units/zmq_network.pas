@@ -40,6 +40,7 @@ type
     FMessage : TStringList;
     FOnReplyReceived: TMessRecvProc;
     FOnMessageReceived: TMessRecvProc;
+    procedure ThreadStarted;
     procedure MessageReceived;
   protected
     procedure Execute; override;
@@ -69,7 +70,7 @@ type
     FReplier : TZMQSocket;
     FPoller : TZMQPoller;
     FMessage : TStringList;
-    procedure Connect;
+    procedure ThreadStart;
     procedure MessageReceived;
     procedure RequestReceived;
   protected
@@ -97,6 +98,12 @@ const
 
 { TZMQClientThread }
 
+procedure TZMQClientThread.ThreadStarted;
+begin
+  {$IFDEF DEBUG}
+  WriteLn(ClassType.ClassName+':'+'Started');
+  {$ENDIF}
+end;
 
 procedure TZMQClientThread.MessageReceived;
 begin
@@ -170,6 +177,7 @@ begin
   inherited Destroy;
 end;
 
+// Send a blocking Request(identity, ' ', s1, .. sn)
 procedure TZMQClientThread.Request(AMultipartMessage: array of UTF8String);
 var AReply : TStringList;
 begin
@@ -194,10 +202,10 @@ end;
 
 
 
-procedure TZMQServerThread.Connect;
+procedure TZMQServerThread.ThreadStart;
 begin
   {$IFDEF DEBUG}
-    WriteLn('TZMQServerThread.Started');
+  WriteLn(ClassType.ClassName+':'+'Started');
   {$ENDIF}
 end;
 
@@ -217,7 +225,7 @@ var
   LPollCount,
   LMessagesCount : integer;
 begin
-  Synchronize(@Connect);
+  Synchronize(@ThreadStart);
   LPollCount := 0;
   LMessagesCount := 0;
   LMultipartMessage := TStringList.Create;
