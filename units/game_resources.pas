@@ -5,11 +5,12 @@ unit game_resources;
 interface
 
 uses
-  Classes, SysUtils
+  Classes, SysUtils, Graphics
   , game_actors
   ;
 
 function GenResourceName(i : integer) : UTF8string;
+function GetColorFromCode(ACode : TGameColor) : TColor;
 
 resourcestring
   KV_SEP = '=';
@@ -71,6 +72,15 @@ resourcestring
   DEF_METARESPONSE = 'IMPAR,E,DIFERENTES,';
   DEF_RESPONSE = 'PAR,E,INDIFERENTE,';
   DEF_PROMPTMESSAGE = 'Vocês perderam <$G> item escolar. Desejam recuperá-lo gastando pontos do Tipo A?';
+
+const
+  // grid colors
+  ccYellow = $00FFFF;
+  ccRed = $FF0018;
+  ccGreen = $006400;
+  ccBlue = $0000FF;
+  ccMagenta = $8B008B;
+
 const
 
   CPlayerNamesMale : array [0..49] of UTF8String =
@@ -300,6 +310,18 @@ begin
         Result := CPlayerNamesFemale[i];
     end
   else s_random(10);
+end;
+
+function GetColorFromCode(ACode: TGameColor): TColor;
+begin
+  case ACode of
+    gcNone :Result  :=  clInactiveCaption;
+    gcYellow :Result  :=  ccYellow;
+    gcRed :Result  :=  ccRed;
+    gcMagenta :Result  :=  ccMagenta;
+    gcBlue :Result  :=  ccBlue;
+    gcGreen :Result  :=  ccGreen;
+  end;
 end;
 
 end.

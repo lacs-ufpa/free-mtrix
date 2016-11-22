@@ -24,7 +24,7 @@ type
   end;
 
 resourcestring
-  CAP_ROW = 'Linhas:';
+  CAP_ROW = 'Linha:';
   CAP_COLOR = 'Cor:';
   CAP_NA = 'NA';
   CAP_WAINTING_FOR_PLAYER = 'Esperando Jogador...';
@@ -54,7 +54,7 @@ begin
   LabelLastColor.Parent := Self;
 
   PanelLastColor := TPanel.Create(Self);
-  PanelLastColor.Caption:='';
+  PanelLastColor.Caption:=CAP_NA;
   //PanelLastColor.Color:= $0;
   PanelLastColor.Parent:= Self;
 
@@ -62,9 +62,9 @@ begin
   LabelLastRow.Caption:=CAP_ROW;
   LabelLastRow.Parent := Self;
 
-  LabelLastRow:= TLabel.Create(Self);
-  LabelLastRow.Caption:=CAP_NA;
-  LabelLastRow.Parent := Self;
+  LabelLastRowCount:= TLabel.Create(Self);
+  LabelLastRowCount.Caption:=CAP_NA;
+  LabelLastRowCount.Parent := Self;
   Enabled:= False;
   //LabelLastRow.AutoSize := False;
 end;
