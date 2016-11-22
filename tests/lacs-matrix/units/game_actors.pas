@@ -40,13 +40,6 @@ type
   TGamePromptStyle = (gsYes, gsNo, gsAll, gsMetacontingency, gsContingency, gsBasA, gsRevertPoints);
   TPromptStyle = set of TGamePromptStyle;
 
-const
-  // colors
-  ccYellow = $00FFFF;
-  ccRed = $FF0018;
-  ccGreen = $006400;
-  ccBlue = $0000FF;
-  ccMagenta = $8B008B;
 
 type
 

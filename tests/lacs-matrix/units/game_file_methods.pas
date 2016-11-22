@@ -41,11 +41,13 @@ begin
       Researcher := VAL_RESEARCHER;
       ResearcherCanPlay:=False;
       ResearcherCanChat:=True;
+      SendChatHistoryForNewPlayers:=True;
       ExperimentName:='Test Experiment';
       ExperimentAim:='This is a test experiment.';
       GenPlayersAsNeeded:=True;
       CurrentCondition := 0;
       MatrixType:=[gmRows];
+      PlayersPlaying := TList.Create;
       //AppendPlayer(C_PLAYER_TEMPLATE);
       //AppendPlayer(C_PLAYER_TEMPLATE);
       i := AppendCondition(C_CONDITION_TEMPLATE);

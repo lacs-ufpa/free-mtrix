@@ -160,25 +160,34 @@ end;
 { TZMQActor }
 
 procedure TZMQActor.MessageReceived(AMultipartMessage: TStringList);
+var i : integer;
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'ReceivedAMessage');
+  for i:= 0 to AMultipartMessage.Count-1 do
+    WriteLn(i,':',AMultipartMessage[i]);
   {$ENDIF}
   if Assigned(FOnMessageReceived) then FOnMessageReceived(AMultipartMessage);
 end;
 
 procedure TZMQActor.ReplyReceived(AMultipartMessage: TStringList);
+var i : integer;
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'ReceivedAReply');
+  for i:= 0 to AMultipartMessage.Count-1 do
+    WriteLn(i,':',AMultipartMessage[i]);
   {$ENDIF}
   if Assigned(FOnReplyReceived) then FOnReplyReceived(AMultipartMessage);
 end;
 
 procedure TZMQActor.RequestReceived(var AMultipartMessage: TStringList);
+var i : integer;
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'ReceivedARequest');
+  for i:= 0 to AMultipartMessage.Count-1 do
+    WriteLn(i,':',AMultipartMessage[i]);
   {$ENDIF}
   if Assigned(FOnRequestReceived) then FOnRequestReceived(AMultipartMessage);
 end;
@@ -196,16 +205,22 @@ begin
 end;
 
 procedure TZMQActor.SendMessage(AMessage: array of UTF8string);
+var i : integer;
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'SendingMessage:'+AMessage[1]);
+  for i:= 0 to Length(AMessage)-1 do
+    WriteLn(i,':',AMessage[i]);
   {$ENDIF}
 end;
 
 procedure TZMQActor.Request(ARequest: array of UTF8string);
+var i : integer;
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'SendingRequest:'+ARequest[2]);
+  for i:= 0 to Length(ARequest)-1 do
+    WriteLn(i,':',ARequest[i]);
   {$ENDIF}
 end;
 
