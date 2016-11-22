@@ -2,6 +2,8 @@ unit game_control;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE DEBUG}
+
 interface
 
 uses
@@ -537,9 +539,8 @@ begin
   if MHas(K_STATUS) then ReceiveStatus;
 
   {$IFDEF DEBUG}
-  AMessage.Append('MessageReceived');
   for i:= 0 to AMessage.Count-1 do
-    WriteLn(AMessage[i]);
+    WriteLn(i,':',AMessage[i]);
   {$ENDIF}
 end;
 
@@ -561,9 +562,7 @@ begin
   if MHas(K_LOGIN) then ReplyLogin;
 
   {$IFDEF DEBUG}
-  ARequest.Append('RequestReceived');
-  for i:= 0 to ARequest.Count-1 do
-    WriteLn(ARequest[i]);
+  ARequest.Append(FZMQActor.ClassType.ClassName+':'+'AppendToRequest');
   {$ENDIF}
 end;
 
@@ -573,9 +572,8 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
 var i: integer;
 begin
   {$IFDEF DEBUG}
-  AReply.Append('ReplyReceived');
   for i:= 0 to AReply.Count-1 do
-    WriteLn(AReply[i]);
+    WriteLn(i,':',AReply[i]);
   {$ENDIF}
 end;
 

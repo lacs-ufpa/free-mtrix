@@ -11,18 +11,29 @@ program cultural_matrix;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE DEBUG}
+
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces  // this includes the LCL widgetset
-  , StrUtils, Forms, Classes, sysutils, Dialogs
+  {$IFDEF DEBUG}
+  , Dialogs, FileUtil, LazFileUtils
+    {$IFDEF LINUX}
+    , BaseUnix
+    {$ENDIF}
+  {$ENDIF}
+  , StrUtils, Forms, Classes, sysutils
   , form_matrixgame, form_chooseactor, game_actors
   , zhelpers
   ;
 
 
 var
+  {$IFDEF DEBUG}
+  I : integer;
+  {$ENDIF}
   ID : TStringList;
   F : string;
 const
@@ -33,7 +44,23 @@ const
 {$R *.res}
 
 begin
-  //RequireDerivedFormResource := True;
+  {$IFDEF DEBUG}
+  for i:= 0 to 2 do
+    begin
+      if Pos((PathDelim+'P'+IntToStr(i+1)+PathDelim), Application.ExeName) > 0 then
+        Break;
+      F := ExtractFilePath(Application.ExeName)+'P'+IntToStr(i+1);
+      WriteLn(F);
+      if ForceDirectoriesUTF8(F) then // ensure we have always the newer version for tests
+        begin
+          CopyFile(Application.ExeName,F+PathDelim+ApplicationName,[cffOverwriteFile]);
+          {$IFDEF LINUX}
+            FpChmod(F+PathDelim+ApplicationName,S_IRWXU);
+          {$ENDIF}
+        end
+      else Exit;
+    end;
+  {$ENDIF}
   Application.Initialize;
   F := ExtractFilePath(Application.ExeName)+PathDelim+'id';
   ID := TStringList.Create;
@@ -53,7 +80,9 @@ begin
       on E: Exception do
         begin
           ID.Free;
+          {$IFDEF DEBUG}
           ShowMessage(E.Message);
+          {$ENDIF}
           Exit;
         end;
     end;

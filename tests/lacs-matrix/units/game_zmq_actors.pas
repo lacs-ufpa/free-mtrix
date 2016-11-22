@@ -10,6 +10,8 @@ uses
   //, zmq_client
   ;
 
+  {$DEFINE DEBUG}
+
 type
 
   { TZMQActor }
@@ -27,8 +29,8 @@ type
   public
     constructor Create(AOwner : TComponent; AID : UTF8String); virtual; overload;
     procedure Start; virtual;
-    procedure SendMessage(AMessage : array of UTF8string);virtual;abstract;
-    procedure Request(ARequest : array of UTF8string);virtual;abstract;
+    procedure SendMessage(AMessage : array of UTF8string);virtual;
+    procedure Request(ARequest : array of UTF8string);virtual;
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
     property OnRequestReceived : TReqRecvProc read FOnRequestReceived write FOnRequestReceived;
     property OnReplyReceived : TMessRecvProc read FOnReplyReceived write FOnReplyReceived;
@@ -90,7 +92,6 @@ begin
   FZMQServer := TZMQServerThread.Create(AID);
   FZMQServer.OnMessageReceived:=@MessageReceived;
   FZMQServer.OnRequestReceived:=@RequestReceived;
-
 end;
 
 destructor TZMQAdmin.Destroy;
@@ -106,16 +107,15 @@ end;
 
 procedure TZMQAdmin.Request(ARequest: array of UTF8string);
 begin
-  // do nothing, you are the server
+  {$IFDEF DEBUG}
+  WriteLn('WARNING:'+ClassType.ClassName+':'+'CannotSendRequests:'+ARequest[2]);
+  {$ENDIF}
 end;
 
 procedure TZMQAdmin.Start;
 begin
   inherited Start;
   FZMQServer.Start;
-  {$IFDEF DEBUG}
-  WriteLn('TZMQAdmin.Start');
-  {$ENDIF}
 end;
 
 { TZMQPlayer }
@@ -123,13 +123,16 @@ end;
 procedure TZMQPlayer.SendMessage(AMessage: array of UTF8string);
 begin
   {$IFDEF DEBUG}
-
+  inherited SendMessage(AMessage);
   {$ENDIF}
   FZMQClient.Push(AMessage);
 end;
 
 procedure TZMQPlayer.Request(ARequest: array of UTF8string);
 begin
+  {$IFDEF DEBUG}
+  inherited Request(ARequest);
+  {$ENDIF}
   FZMQClient.Request(ARequest);
 end;
 
@@ -152,25 +155,31 @@ procedure TZMQPlayer.Start;
 begin
   inherited Start;
   FZMQClient.Start;
-  {$IFDEF DEBUG}
-    WriteLn('TZMQPlayer.Start');
-  {$ENDIF}
 end;
 
 { TZMQActor }
 
 procedure TZMQActor.MessageReceived(AMultipartMessage: TStringList);
 begin
+  {$IFDEF DEBUG}
+  WriteLn(ClassType.ClassName+':'+'ReceivedAMessage');
+  {$ENDIF}
   if Assigned(FOnMessageReceived) then FOnMessageReceived(AMultipartMessage);
 end;
 
 procedure TZMQActor.ReplyReceived(AMultipartMessage: TStringList);
 begin
+  {$IFDEF DEBUG}
+  WriteLn(ClassType.ClassName+':'+'ReceivedAReply');
+  {$ENDIF}
   if Assigned(FOnReplyReceived) then FOnReplyReceived(AMultipartMessage);
 end;
 
 procedure TZMQActor.RequestReceived(var AMultipartMessage: TStringList);
 begin
+  {$IFDEF DEBUG}
+  WriteLn(ClassType.ClassName+':'+'ReceivedARequest');
+  {$ENDIF}
   if Assigned(FOnRequestReceived) then FOnRequestReceived(AMultipartMessage);
 end;
 
@@ -182,7 +191,21 @@ end;
 procedure TZMQActor.Start;
 begin
   {$IFDEF DEBUG}
-  WriteLn('TZMQActor.Start');
+  WriteLn(ClassType.ClassName+':'+'Starting');
+  {$ENDIF}
+end;
+
+procedure TZMQActor.SendMessage(AMessage: array of UTF8string);
+begin
+  {$IFDEF DEBUG}
+  WriteLn(ClassType.ClassName+':'+'SendingMessage:'+AMessage[1]);
+  {$ENDIF}
+end;
+
+procedure TZMQActor.Request(ARequest: array of UTF8string);
+begin
+  {$IFDEF DEBUG}
+  WriteLn(ClassType.ClassName+':'+'SendingRequest:'+ARequest[2]);
   {$ENDIF}
 end;
 
