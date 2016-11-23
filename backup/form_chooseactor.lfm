@@ -1,0 +1,42 @@
+object FormChooseActor: TFormChooseActor
+  Left = 416
+  Height = 240
+  Top = 194
+  Width = 320
+  BorderStyle = bsNone
+  Caption = 'FormChooseActor'
+  ClientHeight = 240
+  ClientWidth = 320
+  OnCloseQuery = FormCloseQuery
+  Position = poScreenCenter
+  LCLVersion = '1.6.2.0'
+  object btnAdmin: TButton
+    Left = 64
+    Height = 25
+    Top = 70
+    Width = 184
+    Caption = 'Administrador'
+    OnClick = btnAdminClick
+    TabOrder = 0
+  end
+  object btnPlayer: TButton
+    Left = 64
+    Height = 25
+    Top = 125
+    Width = 179
+    Caption = 'Jogador'
+    OnClick = btnPlayerClick
+    TabOrder = 1
+  end
+  object btnPlayerResume: TButton
+    Left = 50
+    Height = 140
+    Top = 50
+    Width = 220
+    Align = alClient
+    BorderSpacing.Around = 50
+    Caption = 'ENTRAR'
+    OnClick = btnPlayerResumeClick
+    TabOrder = 2
+  end
+end

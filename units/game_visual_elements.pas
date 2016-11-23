@@ -57,7 +57,6 @@ begin
   PanelLastColor.Caption:=CAP_NA;
   //PanelLastColor.Color:= $0;
   PanelLastColor.Parent:= Self;
-
   LabelLastRow:= TLabel.Create(Self);
   LabelLastRow.Caption:=CAP_ROW;
   LabelLastRow.Parent := Self;
