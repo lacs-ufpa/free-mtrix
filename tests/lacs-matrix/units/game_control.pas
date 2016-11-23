@@ -45,16 +45,21 @@ type
   private
     function CanStartExperiment : Boolean;
     procedure KickPlayer(AID:string);
-    procedure StartCycle;
-    procedure StartCondition;
-    procedure StartExperiment;
-    procedure StartTurn;
+    procedure NextTurn(Sender: TObject);
+    procedure NextCycle(Sender: TObject);
+    procedure NextLineage(Sender: TObject);
+    procedure NextCondition(Sender: TObject);
+    procedure EndExperiment(Sender: TObject);
   public
     constructor Create(AOwner : TComponent);override;
     destructor Destroy; override;
     procedure SetMatrix;
     procedure SendRequest(ARequest : UTF8string);
     procedure SendMessage(AMessage : UTF8string);
+    procedure Cancel;
+    procedure Start;
+    procedure Pause;
+    procedure Resume;
     property Experiment : TExperiment read FExperiment write FExperiment;
     property ID : string read FID;
     property RowBase : integer read FRowBase write SetRowBase;
@@ -76,6 +81,7 @@ const
   K_DATA_A   = '.Data';
   K_LOGIN    = '.Login';
   K_KICK     = '.Kick';
+  K_QUESTION = '.Question';
   //
   K_STATUS   = '.Status';
   K_CYCLES   = '.OnCycleStart';
@@ -117,6 +123,52 @@ end;
 procedure TGameControl.KickPlayer(AID: string);
 begin
   FZMQActor.SendMessage([K_KICK, AID]);
+end;
+
+procedure TGameControl.NextTurn(Sender: TObject);
+begin
+  // inform players
+end;
+
+procedure TGameControl.NextCycle(Sender: TObject);
+begin
+  // prompt question to all players
+end;
+
+procedure TGameControl.NextLineage(Sender: TObject);
+begin
+
+end;
+
+procedure TGameControl.NextCondition(Sender: TObject);
+begin
+  // append OnStart data
+  //FExperiment.Condition[FExperiment.CurrentCondition].Points.OnStart.A;
+  //FExperiment.Condition[FExperiment.CurrentCondition].Points.OnStart.B;
+  //FExperiment.Condition[FExperiment.CurrentCondition].Points.OnStart.G;
+
+  // append which player
+end;
+
+procedure TGameControl.EndExperiment(Sender: TObject);
+begin
+
+end;
+
+procedure TGameControl.Start;
+begin
+  // basic data/csv setup
+  // wait for players
+end;
+
+procedure TGameControl.Pause;
+begin
+
+end;
+
+procedure TGameControl.Resume;
+begin
+
 end;
 
 function TGameControl.GetPlayerBox(AID: string): TPlayerBox;
@@ -251,26 +303,6 @@ begin
   FRowBase:=AValue;
 end;
 
-procedure TGameControl.StartCycle;
-begin
-
-end;
-
-procedure TGameControl.StartCondition;
-begin
-  // append OnStart data
-  //FExperiment.Condition[FExperiment.CurrentCondition].Points.OnStart.A;
-  //FExperiment.Condition[FExperiment.CurrentCondition].Points.OnStart.B;
-  //FExperiment.Condition[FExperiment.CurrentCondition].Points.OnStart.G;
-
-  // append which player
-end;
-
-procedure TGameControl.StartExperiment;
-begin
-
-end;
-
 procedure TGameControl.StartTurn;
 begin
   FormMatrixGame.btnConfirmRow.Enabled:=True;
@@ -301,6 +333,12 @@ begin
   MustDrawDotsClear:=False;
 
   FExperiment := TExperiment.Create(FZMQActor.Owner);
+  FExperiment.OnEndTurn := @NextTurn;
+  FExperiment.OnEndCycle := @NextCycle;
+  FExperiment.OnEndGeneration:=@NextLineage;
+  FExperiment.OnEndCondition:= @NextCondition;
+  FExperiment.OnEndExperiment:= @EndExperiment;
+
   SendRequest(K_LOGIN);
 end;
 
@@ -391,6 +429,11 @@ begin
   FZMQActor.SendMessage(M);
 end;
 
+procedure TGameControl.Cancel;
+begin
+
+end;
+
 // Here FActor is garanted to be a TZMQPlayer
 procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   function MHas(const C : string) : Boolean;
@@ -439,8 +482,6 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       gaAdmin:begin
         // if last choice in cycle then end cycle
         FExperiment.NextTurn;
-        Inc(FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count);
-
       end;
     end;
   end;
