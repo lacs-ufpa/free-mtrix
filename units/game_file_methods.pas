@@ -34,6 +34,7 @@ uses LCLIntf, game_actors_point, game_resources, string_methods, regdata, zhelpe
 
 function LoadExperimentFromResource(var AExperiment: TExperiment): Boolean;
 var i,j : integer;
+  C : TCondition;
 begin
   Result := False;
   with AExperiment do
@@ -47,18 +48,17 @@ begin
       GenPlayersAsNeeded:=True;
       CurrentCondition := 0;
       MatrixType:=[gmRows];
-      PlayersPlaying := TList.Create;
       //AppendPlayer(C_PLAYER_TEMPLATE);
       //AppendPlayer(C_PLAYER_TEMPLATE);
-      i := AppendCondition(C_CONDITION_TEMPLATE);
-      with Condition[i] do
+      C := C_CONDITION_TEMPLATE;
+      with C  do
         begin
-          ConditionName := SEC_CONDITION+IntToStr(i+1);
+          ConditionName := SEC_CONDITION+IntToStr(1);
           Turn.Count:=0;
           Turn.Value:=2;
           Turn.Random:=False;
         end;
-      //j := AppendContingency(i,C_METACONTINGENCY_A1);
+      i := AppendCondition(C);
     end;
 end;
 

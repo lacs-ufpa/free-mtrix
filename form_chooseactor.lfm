@@ -1,44 +1,66 @@
 object FormChooseActor: TFormChooseActor
-  Left = 416
+  Left = 396
   Height = 240
-  Top = 194
+  Top = 185
   Width = 320
+  BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'FormChooseActor'
   ClientHeight = 240
   ClientWidth = 320
   FormStyle = fsStayOnTop
-  OnCloseQuery = FormCloseQuery
-  OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '1.6.0.4'
-  object btnAdmin: TButton
-    Left = 64
-    Height = 25
-    Top = 70
-    Width = 184
-    Caption = 'Administrador'
-    OnClick = btnAdminClick
-    TabOrder = 0
-  end
-  object btnPlayer: TButton
-    Left = 64
-    Height = 25
-    Top = 125
-    Width = 179
-    Caption = 'Jogador'
-    OnClick = btnPlayerClick
-    TabOrder = 1
-  end
+  ShowInTaskBar = stNever
+  LCLVersion = '1.6.2.0'
   object btnPlayerResume: TButton
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
     Left = 50
     Height = 140
     Top = 50
     Width = 220
-    Align = alClient
+    Align = alCustom
+    Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Around = 50
-    Caption = 'ENTRAR'
+    Caption = 'Entrar'
+    Font.Height = -53
+    Font.Name = 'Impact'
     OnClick = btnPlayerResumeClick
+    ParentFont = False
     TabOrder = 2
+    Visible = False
+  end
+  object btnAdmin: TButton
+    Left = 0
+    Height = 43
+    Top = 50
+    Width = 320
+    Align = alTop
+    AutoSize = True
+    BorderSpacing.Top = 50
+    Caption = 'Pesquisador'
+    Font.Height = -27
+    Font.Name = 'Impact'
+    OnClick = btnAdminClick
+    ParentFont = False
+    TabOrder = 0
+  end
+  object btnPlayer: TButton
+    Left = 0
+    Height = 43
+    Top = 143
+    Width = 320
+    Align = alTop
+    BorderSpacing.Top = 50
+    Caption = 'Jogador'
+    Font.Height = -27
+    Font.Name = 'Impact'
+    OnClick = btnPlayerClick
+    ParentFont = False
+    TabOrder = 1
   end
 end

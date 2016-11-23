@@ -25,8 +25,8 @@ uses
     {$ENDIF}
   {$ENDIF}
   , StrUtils, Forms, Classes, sysutils
-  , form_matrixgame, form_chooseactor, game_actors
-  , zhelpers
+  , form_matrixgame, game_actors
+  , zhelpers, form_chooseactor
   ;
 
 
@@ -86,7 +86,8 @@ begin
           Exit;
         end;
     end;
-  Application.CreateForm(TFormMatrixGame, FormMatrixGame);
+    Application.CreateForm(TFormMatrixGame, FormMatrixGame);
+
   FormMatrixGame.SetID(F);
   if Paramcount > 0 then
     begin
@@ -96,24 +97,6 @@ begin
         FormMatrixGame.SetGameActor(gaPlayer);
       if AnsiMatchStr(lowercase(ParamStr(0)), PWatcher) then
         FormMatrixGame.SetGameActor(gaWatcher);
-    end
-  else
-    begin
-      FormChooseActor := TFormChooseActor.Create(nil);
-      FormChooseActor.Style := '.Arrived';
-      try
-        if FormChooseActor.ShowModal = 1 then
-          begin
-            case FormChooseActor.GameActor of
-              gaAdmin:FormMatrixGame.SetGameActor(gaAdmin);
-              gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
-              gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
-            end;
-          end
-        else Exit;
-      finally
-        FormChooseActor.Free;
-      end;
     end;
   Application.Run;
 end.

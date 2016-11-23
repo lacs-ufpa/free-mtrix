@@ -84,7 +84,7 @@ const
 const
 
   CPlayerNamesMale : array [0..49] of UTF8String =
-     ('Junho','Rodrigo','Francisco','Martim','Santiago',
+     ('João','Rodrigo','Francisco','Martim','Santiago',
      'Tomás','Afonso','Duarte','Miguel','Guilherme','Tiago',
      'Gonçalo','Diogo','Gabriel','Pedro','Rafael','Salvador',
      'Dinis','Lucas','Simael','Gustavo','David',
