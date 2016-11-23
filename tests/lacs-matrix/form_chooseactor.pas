@@ -5,8 +5,7 @@ unit form_chooseactor;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls,
-  Graphics, Dialogs, StdCtrls,ExtCtrls, LCLType
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls
   , game_actors
   ;
 
@@ -18,6 +17,9 @@ type
     btnAdmin: TButton;
     btnPlayer: TButton;
     btnPlayerResume: TButton;
+    //btnAdmin: TButton;
+    //btnPlayer: TButton;
+    //btnPlayerResume: TButton;
     procedure btnAdminClick(Sender: TObject);
     procedure btnPlayerClick(Sender: TObject);
     procedure btnPlayerResumeClick(Sender: TObject);
@@ -63,8 +65,7 @@ begin
   ModalResult:=1;
 end;
 
-procedure TFormChooseActor.FormCloseQuery(Sender: TObject; var CanClose: boolean
-  );
+procedure TFormChooseActor.FormCloseQuery(Sender: TObject; var CanClose: boolean  );
 begin
   CanClose := FCanClose;
 end;
@@ -81,10 +82,10 @@ begin
     '.Arrived': btnPlayerResume.Visible:=False;
     '.Left': btnPlayerResume.Visible:=True;
   end;
+  btnAdmin.Visible:= not btnPlayerResume.Visible;
+  btnPlayer.Visible:= not btnPlayerResume.Visible;
   FStyle:=AValue;
 end;
-
-
 
 end.
 

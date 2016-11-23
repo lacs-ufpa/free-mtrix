@@ -29,24 +29,28 @@ type
 
   TFormMatrixGame = class(TForm)
     btnConfirmRow: TButton;
-    Button1: TButton;
-    Button2: TButton;
+    ButtonExpStart: TButton;
+    ButtonExpPause: TButton;
     Button3: TButton;
+    ButtonExpCancel: TButton;
     GBIndividual: TGroupBox;
     GBLastChoice: TGroupBox;
     GBIndividualAB: TGroupBox;
     GBGrupo: TGroupBox;
     GBAdmin: TGroupBox;
     GBExperiment: TGroupBox;
-    LabelExpCondCount: TLabel;
+    LabelUnseen1: TLabel;
+    LabelUnseen2: TLabel;
+    LabelUnseen3: TLabel;
+    LabelExpCountCondition: TLabel;
     LabelExpGen: TLabel;
-    LabelExpGenCount: TLabel;
+    LabelExpCountGeneration: TLabel;
     LabelExpCycle: TLabel;
-    LabelExpCycleCount: TLabel;
+    LabelExpCountCycle: TLabel;
     LabelExpNxtPlayer: TLabel;
-    LabelExpNxtPlayerCount: TLabel;
+    LabelExpCountNxtPlayer: TLabel;
     LabelExpInterlocks: TLabel;
-    LabelExpInterlocksCount: TLabel;
+    LabelExpCountInterlocks: TLabel;
     LabelIndCount: TLabel;
     LabelIndACount: TLabel;
     LabelIndBCount: TLabel;
@@ -58,15 +62,16 @@ type
     ChatMemoSend: TMemo;
     ChatPanel: TPanel;
     ChatSplitter: TSplitter;
+    OpenDialog: TOpenDialog;
     StringGridMatrix: TStringGrid;
     procedure btnConfirmRowClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure ButtonExpCancelClick(Sender: TObject);
+    procedure ButtonExpPauseClick(Sender: TObject);
+    procedure ButtonExpStartClick(Sender: TObject);
     procedure ChatMemoSendKeyPress(Sender: TObject; var Key: char);
-    procedure CheckBoxDrawDotsChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
-    procedure StringGridMatrixBeforeSelection(Sender: TObject; aCol, aRow: integer);
+    procedure StringGridMatrixClick(Sender: TObject);
     procedure StringGridMatrixDrawCell(Sender: TObject; aCol, aRow: integer;
       aRect: TRect; aState: TGridDrawState);
   private
@@ -80,14 +85,14 @@ type
 
 var
   FormMatrixGame: TFormMatrixGame;
+resourcestring
+  RS_RESEARCHERS = 'Pesquisadores';
 
 implementation
 
-uses form_chooseactor, LCLType, game_resources;
+uses form_chooseactor, game_resources;
 
 // uses datamodule;
-var
-  MustDrawSelection : Boolean; // work around until a bug fix for ClearSelection is released
 
 {$R *.lfm}
 
@@ -168,7 +173,7 @@ begin
       begin
         DrawLines(GetRowColor(aRow,RowBase));
 
-        if (gdSelected in aState) and MustDrawSelection then
+        if (gdSelected in aState) and (goRowSelect in TStringGrid(Sender).Options)then
           begin
             TStringGrid(Sender).Canvas.Pen.Width := 10;
             TStringGrid(Sender).Canvas.Pen.Color := clWhite;
@@ -195,11 +200,11 @@ begin
     TStringGrid(Sender).Canvas.Font.Color := clBlack;
     TStringGrid(Sender).Canvas.Brush.Style := bsClear;
 
-    if (aCol = 10) and (gdSelected in aState) and MustDrawSelection then
+    if (aCol = 10) and (gdSelected in aState) and (goRowSelect in TStringGrid(Sender).Options) then
       if (aRow = TStringGrid(Sender).Selection.Top) and (aCol = TStringGrid(Sender).Selection.Right) then
         begin
-          btnConfirmRow.Top := aRect.Top+5;
-          btnConfirmRow.Left := aRect.Right+5;
+          btnConfirmRow.Top := aRect.Top+4;
+          btnConfirmRow.Left := aRect.Right+8;
         end;
 
   finally
@@ -219,7 +224,6 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
   procedure SetZMQPlayer;
   begin
     FGameControl := TGameControl.Create(TZMQPlayer.Create(Self,FID));
-    btnConfirmRow.Visible := True;
     StringGridMatrix.Enabled := True;
   end;
 
@@ -241,27 +245,39 @@ begin
   FID := S;
 end;
 
-procedure TFormMatrixGame.CheckBoxDrawDotsChange(Sender: TObject);
-begin
-  StringGridMatrix.Invalidate;
-end;
 
 procedure TFormMatrixGame.FormActivate(Sender: TObject);
 begin
-  StringGridMatrix.ClearSelections;
-  StringGridMatrix.FocusRectVisible := False;
-  FGameControl.SetMatrix;
+  FormChooseActor := TFormChooseActor.Create(Self);
+  FormChooseActor.Style := '.Arrived';
+  try
+    if FormChooseActor.ShowModal = 1 then
+      begin
+        case FormChooseActor.GameActor of
+          gaAdmin:FormMatrixGame.SetGameActor(gaAdmin);
+          gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
+          gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
+        end;
+        StringGridMatrix.ClearSelections;
+        StringGridMatrix.FocusRectVisible := False;
+        FGameControl.SetMatrix;
+      end
+    else Close;
+  finally
+    FormChooseActor.Free;
+  end;
 end;
 
-procedure TFormMatrixGame.StringGridMatrixBeforeSelection(Sender: TObject; aCol, aRow: integer);
+procedure TFormMatrixGame.StringGridMatrixClick(Sender: TObject);
 begin
-  if MustDrawSelection then Exit;
-  MustDrawSelection := True;
+  if goRowSelect in StringGridMatrix.Options then Exit;
+  StringGridMatrix.Options := StringGridMatrix.Options+[goRowSelect];
+  btnConfirmRow.Visible := True;
 end;
 
 procedure TFormMatrixGame.ChatMemoSendKeyPress(Sender: TObject; var Key: char);
 begin
-  if Key = Char(VK_RETURN) then
+  if Key = Char(13) then
     begin
       FGameControl.SendMessage(K_CHAT_M);
       with ChatMemoSend do
@@ -271,42 +287,61 @@ begin
           SelLength:=0;
           SetFocus;
         end;
-      Key := Char(VK_UNKNOWN);
+      Key := Char(0);
     end;
 end;
 
 procedure TFormMatrixGame.btnConfirmRowClick(Sender: TObject);
 begin
-  //StringGridMatrix.ClearSelections;
-  //MustDrawSelection := False;
   StringGridMatrix.Enabled:= False;
-  btnConfirmRow.Visible:=False;
+  btnConfirmRow.Enabled:=False;
   FGameControl.SendMessage(K_CHOICE);
-end;
-
-procedure TFormMatrixGame.Button1Click(Sender: TObject);
-begin
-
-end;
-
-procedure TFormMatrixGame.Button2Click(Sender: TObject);
-begin
-
 end;
 
 procedure TFormMatrixGame.Button3Click(Sender: TObject);
 begin
-  FGameControl.SendMessage(K_LEFT);
-  FormMatrixGame.Visible := False;
-  FormChooseActor := TFormChooseActor.Create(nil);
-  FormChooseActor.Style := K_LEFT;
-  if FormChooseActor.ShowModal = 1 then
-    begin
-      FGameControl.SendMessage(K_RESUME);
-      FormMatrixGame.Visible := True;
-    end
-  else Close;
-  FormChooseActor.Free;
+  FGameControl.Experiment.SaveToFile(OpenDialog.FileName+'.ini');
+end;
+
+procedure TFormMatrixGame.ButtonExpCancelClick(Sender: TObject);
+begin
+  ButtonExpStart.Enabled := True;
+  ButtonExpStart.Caption := 'Começar';
+  ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
+  ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
+  //FGameControl.Experiment.SaveToFile(SaveDialog.FileName'.canceled');
+  //FGameControl.Experiment.Clean;
+end;
+
+procedure TFormMatrixGame.ButtonExpPauseClick(Sender: TObject);
+begin
+  ButtonExpStart.Enabled := True;
+  ButtonExpStart.Caption := 'Recomeçar';
+  ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
+  //FGameControl.Experiment.Pause;
+end;
+
+procedure TFormMatrixGame.ButtonExpStartClick(Sender: TObject);
+begin
+  OpenDialog.InitialDir:=ExtractFilePath(Application.ExeName)+RS_RESEARCHERS;
+  if ButtonExpStart.Caption = 'Começar' then
+    if OpenDialog.Execute then
+      begin
+        ButtonExpStart.Enabled := False;
+        ButtonExpStart.Caption := 'Rodando';
+        ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
+        ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
+        //FGameControl.Experiment.LoadFromFile(OpenDialog.FileName);
+      end;
+
+  if ButtonExpStart.Caption = 'Recomeçar' then
+      begin
+        ButtonExpStart.Enabled := False;
+        ButtonExpStart.Caption := 'Rodando';
+        ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
+        ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
+        //FGameControl.Experiment.Resume;
+      end;
 end;
 
 end.

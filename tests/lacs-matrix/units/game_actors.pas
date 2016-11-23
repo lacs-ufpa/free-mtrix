@@ -10,7 +10,6 @@ uses
   ;
 type
 
-
   TGameActor = ( gaNone, gaAdmin, gaPlayer, gaWatcher );
   TGamePlayerStatus = (gpsWaiting, gpsPlaying, gpsPlayed);
 
@@ -38,6 +37,7 @@ type
   TConsequenceStyle = set of TGameConsequenceStyle;
 
   TGamePromptStyle = (gsYes, gsNo, gsAll, gsMetacontingency, gsContingency, gsBasA, gsRevertPoints);
+
   TPromptStyle = set of TGamePromptStyle;
 
 

@@ -14,6 +14,7 @@ type
 
   { TExperiment }
 
+  TExperimentState = (xsWaiting,xsRunning,xsPaused,xsCanceled);
   TPlayers = array of TPlayer;
   TConditions = array of TCondition;
 
@@ -22,11 +23,10 @@ type
     FExperimentAim,
     FExperimentName,
     FFilename,
-    FResearcher : string;
+    FResearcher : UTF8string;
     FMatrixType: TGameMatrixType;
     FRegData : TRegData;
     FGenPlayersAsNeeded : Boolean;
-    FPlayersPlaying : TList;
     FPlayers : TPlayers;
     FCurrentCondition : integer;
     FConditions : TConditions;
@@ -34,29 +34,28 @@ type
     FResearcherCanPlay: Boolean;
     FSendChatHistoryForNewPlayers: Boolean;
     FShowChat: Boolean;
+    FState: TExperimentState;
     function GetCondition(I : Integer): TCondition;
     function GetConditionsCount: integer;
     function GetContingency(ACondition, I : integer): TContingency;
     function GetNextTurn: integer;
     function GetNextTurnPlayerID: UTF8string;
     function GetPlayer(I : integer): TPlayer; overload;
-    function GetPlayer(AID : string): TPlayer; overload;
+    function GetPlayer(AID : UTF8string): TPlayer; overload;
     function GetPlayerAsString(P: TPlayer): UTF8string;
-    function GetPlayerFromString(s : string): TPlayer;
-    function GetPlayerIndexFromID(AID : string): integer;
-    function GetPlayerIsPlaying(AID : string): Boolean;
-    function GetPlayerPointer(i: integer): PPlayer;
+    function GetPlayerFromString(s : UTF8string): TPlayer;
+    function GetPlayerIndexFromID(AID : UTF8string): integer;
+    function GetPlayerIsPlaying(AID : UTF8string): Boolean;
     function GetPlayersCount: integer;
-    //function GetPlayersPlaying: TList;
     procedure SetCondition(I : Integer; AValue: TCondition);
     procedure SetContingency(ACondition, I : integer; AValue: TContingency);
     procedure SetMatrixType(AValue: TGameMatrixType);
     procedure SetPlayer(I : integer; AValue: TPlayer); overload;
-    procedure SetPlayer(S : string ; AValue: TPlayer); overload;
-    procedure SetPlayersPlaying(AValue: TList);
+    procedure SetPlayer(S : UTF8string ; AValue: TPlayer); overload;
     procedure SetResearcherCanChat(AValue: Boolean);
     procedure SetResearcherCanPlay(AValue: Boolean);
     procedure SetSendChatHistoryForNewPlayers(AValue: Boolean);
+    procedure SetState(AValue: TExperimentState);
   public
     constructor Create(AOwner:TComponent);override;
     constructor Create(AFilename: string; AOwner:TComponent); overload;
@@ -71,30 +70,30 @@ type
     function AppendPlayer(APlayer : TPlayer) : integer; overload;
     procedure SaveToFile(AFilename: string); overload;
     procedure SaveToFile; overload;
+    procedure Clean;
     property ResearcherCanPlay : Boolean read FResearcherCanPlay write SetResearcherCanPlay;
     property ResearcherCanChat : Boolean read FResearcherCanChat write SetResearcherCanChat;
-    property Researcher : string read FResearcher write FResearcher;
+    property Researcher : UTF8string read FResearcher write FResearcher;
     property Condition[I : Integer]: TCondition read GetCondition write SetCondition;
     property ConditionsCount : integer read GetConditionsCount;
     property CurrentCondition : integer read FCurrentCondition write FCurrentCondition;
     property Contingency[C, I : integer] : TContingency read GetContingency write SetContingency;
-    property ExperimentAim : string read FExperimentAim write FExperimentAim;
-    property ExperimentName : string read FExperimentName write FExperimentName;
+    property ExperimentAim : UTF8string read FExperimentAim write FExperimentAim;
+    property ExperimentName : UTF8string read FExperimentName write FExperimentName;
     property GenPlayersAsNeeded : Boolean read FGenPlayersAsNeeded write FGenPlayersAsNeeded;
     property Player[I : integer] : TPlayer read GetPlayer write SetPlayer;
-    property PlayerFromID[S : string ] : TPlayer read GetPlayer write SetPlayer;
-    property PlayersCount : integer read GetPlayersCount; // how many players per turn?
-    property PlayersPlaying : TList read FPlayersPlaying write SetPlayersPlaying; // how many players are playing?
-    property PlayerIsPlaying[s : string] : Boolean read GetPlayerIsPlaying;
-    property PlayerIndexFromID[s : string]: integer read GetPlayerIndexFromID;
+    property PlayerFromID[S : UTF8string ] : TPlayer read GetPlayer write SetPlayer;
+    property PlayersCount : integer read GetPlayersCount;
+    property PlayerIsPlaying[s : UTF8string] : Boolean read GetPlayerIsPlaying;
+    property PlayerIndexFromID[s : UTF8string]: integer read GetPlayerIndexFromID;
     property PlayerAsString[P:TPlayer]: UTF8string read GetPlayerAsString;
-    property PlayerFromString[s : string]: TPlayer read GetPlayerFromString;
-    property PlayerPointer[i:integer]: PPlayer read GetPlayerPointer;
+    property PlayerFromString[s : UTF8string]: TPlayer read GetPlayerFromString;
     property ShowChat : Boolean read FShowChat write FShowChat;
     property SendChatHistoryForNewPlayers : Boolean read FSendChatHistoryForNewPlayers write SetSendChatHistoryForNewPlayers;
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
     property NextTurnPlayerID : UTF8string read GetNextTurnPlayerID;
     property NextTurn : integer read GetNextTurn;
+    property State : TExperimentState read FState write SetState;
   end;
 
 resourcestring
@@ -113,7 +112,7 @@ end;
 
 function TExperiment.GetConditionsCount: integer;
 begin
-  Result := High(FConditions);
+  Result := Length(FConditions);
 end;
 
 function TExperiment.GetContingency(ACondition, I : integer): TContingency;
@@ -130,15 +129,9 @@ begin
 end;
 
 function TExperiment.GetNextTurnPlayerID: UTF8string; // used during cycles
-var
-  P : PPlayer;
 begin
-  Result := '';
-  P := New(PPlayer);
-  P := PlayersPlaying[FConditions[CurrentCondition].Turn.Count];
-  Result := P^.ID;
+  Result := Player[FConditions[CurrentCondition].Turn.Count].ID;
   GetNextTurn;
-  Dispose(P);
 end;
 
 function TExperiment.GetPlayer(I : integer): TPlayer;
@@ -146,7 +139,7 @@ begin
   Result := FPlayers[i];
 end;
 
-function TExperiment.GetPlayer(AID: string): TPlayer;
+function TExperiment.GetPlayer(AID: UTF8string): TPlayer;
 var
   i : integer;
 begin
@@ -236,7 +229,7 @@ begin
     Result += M[i] + '|';
 end;
 
-function TExperiment.GetPlayerFromString(s : string): TPlayer;
+function TExperiment.GetPlayerFromString(s: UTF8string): TPlayer;
 
   function GetRowFromString(S: string): TGameRow;
   begin
@@ -304,7 +297,7 @@ begin
   Result.Choice.Last := GetChoiceFromString(ExtractDelimited(6,s,['|']));
 end;
 
-function TExperiment.GetPlayerIndexFromID(AID: string): integer;
+function TExperiment.GetPlayerIndexFromID(AID: UTF8string): integer;
 var i : integer;
 begin
   Result := -1;
@@ -316,45 +309,22 @@ begin
       end;
 end;
 
-function TExperiment.GetPlayerIsPlaying(AID: string): Boolean;
+function TExperiment.GetPlayerIsPlaying(AID: UTF8string): Boolean;
 var i : integer;
 begin
-  Result := PlayersPlaying.Count > 0;
+  Result := PlayersCount > 0;
   if Result then
-    for i := 0 to PlayersPlaying.Count -1 do
-      if PPlayer(PlayersPlaying[i])^.ID = AID then
+    for i := 0 to PlayersCount -1 do
+      if Player[i].ID = AID then
         Exit;
   Result:= False;
 end;
 
-function TExperiment.GetPlayerPointer(i: integer): PPlayer;
-begin
-  Result := @FPlayers[i];
-end;
 
 function TExperiment.GetPlayersCount: integer;
 begin
   Result := Length(FPlayers);
 end;
-
-//function TExperiment.GetPlayersPlaying: TList;
-//var
-//  //i:integer;
-//  //P:PPlayer;
-//begin
-//  //P := New(PPlayer);
-//  //if FPlayersPlaying.Count > 0 then
-//  //  FPlayersPlaying.Clear;
-//  //
-//  //for i := Low(FPlayers) to High(FPlayers) do
-//  //  if FPlayers[i].Status = gpsPlaying then
-//  //    begin
-//  //      P := @FPlayers[i];
-//  //      FPlayersPlaying.Add(P);
-//  //    end;
-//  //Dispose(P);
-//  Result := FPlayersPlaying;
-//end;
 
 procedure TExperiment.SetCondition(I : Integer; AValue: TCondition);
 begin
@@ -378,7 +348,7 @@ begin
   FPlayers[I] := AValue;
 end;
 
-procedure TExperiment.SetPlayer(S : string ; AValue: TPlayer);
+procedure TExperiment.SetPlayer(S: UTF8string; AValue: TPlayer);
 var i : integer;
 begin
   if PlayersCount > 0 then
@@ -389,12 +359,6 @@ begin
           Exit;
         end;
   raise Exception.Create('TExperiment.SetPlayer: Could not set player.');
-end;
-
-procedure TExperiment.SetPlayersPlaying(AValue: TList);
-begin
-  if FPlayersPlaying = AValue then Exit;
-  FPlayersPlaying := AValue;
 end;
 
 procedure TExperiment.SetResearcherCanChat(AValue: Boolean);
@@ -415,10 +379,15 @@ begin
   FSendChatHistoryForNewPlayers:=AValue;
 end;
 
+procedure TExperiment.SetState(AValue: TExperimentState);
+begin
+  if FState=AValue then Exit;
+  FState:=AValue;
+end;
+
 constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FPlayersPlaying := TList.Create;
   LoadExperimentFromResource(Self);
 end;
 
@@ -430,7 +399,6 @@ end;
 
 destructor TExperiment.Destroy;
 begin
-  FPlayersPlaying.Free;
   inherited Destroy;
 end;
 
@@ -501,6 +469,11 @@ begin
     {$IFDEF DEBUG}
     WriteLn(WARN_CANNOT_SAVE)
     {$ENDIF};
+end;
+
+procedure TExperiment.Clean;
+begin
+
 end;
 
 end.

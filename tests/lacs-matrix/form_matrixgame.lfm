@@ -1,17 +1,49 @@
 object FormMatrixGame: TFormMatrixGame
   Left = 0
-  Height = 657
-  Top = 62
+  Height = 560
+  Top = 70
   Width = 1278
   HorzScrollBar.Page = 1278
   VertScrollBar.Page = 542
   AutoScroll = True
   Caption = 'FormMatrixGame'
-  ClientHeight = 647
+  ClientHeight = 550
   ClientWidth = 1278
   Font.Name = 'Monospace'
   OnActivate = FormActivate
-  LCLVersion = '1.6.0.4'
+  LCLVersion = '1.6.2.0'
+  object GBIndividual: TGroupBox
+    AnchorSideLeft.Control = GBIndividualAB
+    AnchorSideTop.Control = GBIndividualAB
+    Left = 800
+    Height = 122
+    Top = 8
+    Width = 170
+    AutoSize = True
+    Caption = 'Pontuação Individual'
+    ChildSizing.LeftRightSpacing = 35
+    ChildSizing.TopBottomSpacing = 45
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 1
+    ClientHeight = 105
+    ClientWidth = 166
+    TabOrder = 7
+    Visible = False
+    object LabelIndCount: TLabel
+      Left = 35
+      Height = 15
+      Top = 45
+      Width = 96
+      Align = alClient
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Color = clDefault
+      Layout = tlCenter
+      ParentColor = False
+      Transparent = False
+    end
+  end
   object StringGridMatrix: TStringGrid
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
@@ -30,17 +62,17 @@ object FormMatrixGame: TFormMatrixGame
     DefaultRowHeight = 30
     Enabled = False
     FixedRows = 0
-    Options = [goFixedHorzLine, goHorzLine, goDrawFocusSelected, goRowSelect, goSmoothScroll]
+    Options = []
     RowCount = 10
     TabOrder = 0
     TitleFont.Name = 'Monospace'
-    OnBeforeSelection = StringGridMatrixBeforeSelection
+    OnClick = StringGridMatrixClick
     OnDrawCell = StringGridMatrixDrawCell
   end
   object GBIndividualAB: TGroupBox
-    Left = 796
+    Left = 800
     Height = 122
-    Top = 0
+    Top = 8
     Width = 170
     AutoSize = True
     Caption = 'Pontuação Individual'
@@ -115,9 +147,9 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideLeft.Control = GBIndividualAB
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = GBIndividualAB
-    Left = 976
+    Left = 980
     Height = 122
-    Top = 0
+    Top = 8
     Width = 170
     AutoSize = True
     BorderSpacing.Left = 10
@@ -152,8 +184,8 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 0
     Height = 17
-    Top = 630
-    Width = 1492
+    Top = 533
+    Width = 1632
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
     Caption = 'Escolhas na última jogada'
@@ -168,61 +200,59 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideLeft.Control = GBGrupo
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = GBGrupo
-    Left = 1156
-    Height = 208
-    Top = 0
-    Width = 336
+    Left = 1160
+    Height = 486
+    Top = 8
+    Width = 472
     BorderSpacing.Left = 10
-    Caption = 'Administrador'
-    ClientHeight = 191
-    ClientWidth = 332
+    Caption = 'Pesquisador'
+    ClientHeight = 469
+    ClientWidth = 468
     TabOrder = 4
     Visible = False
     object GBExperiment: TGroupBox
       Left = 8
-      Height = 172
-      Top = 8
-      Width = 218
+      Height = 277
+      Top = 60
+      Width = 188
       AutoSize = True
       Caption = 'Experimento'
-      ChildSizing.LeftRightSpacing = 20
+      ChildSizing.LeftRightSpacing = 10
       ChildSizing.TopBottomSpacing = 20
-      ChildSizing.HorizontalSpacing = 30
+      ChildSizing.HorizontalSpacing = 20
       ChildSizing.VerticalSpacing = 10
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 2
-      ClientHeight = 155
-      ClientWidth = 214
+      ClientHeight = 260
+      ClientWidth = 184
       TabOrder = 0
       object LabelExpCond: TLabel
-        Left = 20
+        Left = 10
         Height = 15
         Top = 20
         Width = 128
-        AutoSize = False
         Caption = 'Condição:'
         ParentColor = False
       end
-      object LabelExpCondCount: TLabel
-        Left = 178
+      object LabelExpCountCondition: TLabel
+        Left = 158
         Height = 15
         Top = 20
         Width = 16
-        AutoSize = False
         Caption = 'NA'
         ParentColor = False
       end
       object LabelExpGen: TLabel
-        Left = 20
+        Left = 10
         Height = 15
         Top = 45
         Width = 128
-        Caption = 'Generation:'
+        Caption = 'Generação:'
         ParentColor = False
       end
-      object LabelExpGenCount: TLabel
-        Left = 178
+      object LabelExpCountGeneration: TLabel
+        Left = 158
         Height = 15
         Top = 45
         Width = 16
@@ -230,15 +260,15 @@ object FormMatrixGame: TFormMatrixGame
         ParentColor = False
       end
       object LabelExpCycle: TLabel
-        Left = 20
+        Left = 10
         Height = 15
         Top = 70
         Width = 128
-        Caption = 'Cycle:'
+        Caption = 'Ciclo:'
         ParentColor = False
       end
-      object LabelExpCycleCount: TLabel
-        Left = 178
+      object LabelExpCountCycle: TLabel
+        Left = 158
         Height = 15
         Top = 70
         Width = 16
@@ -246,15 +276,15 @@ object FormMatrixGame: TFormMatrixGame
         ParentColor = False
       end
       object LabelExpNxtPlayer: TLabel
-        Left = 20
+        Left = 10
         Height = 15
         Top = 95
         Width = 128
         Caption = 'Prox. Jog.:'
         ParentColor = False
       end
-      object LabelExpNxtPlayerCount: TLabel
-        Left = 178
+      object LabelExpCountNxtPlayer: TLabel
+        Left = 158
         Height = 15
         Top = 95
         Width = 16
@@ -262,28 +292,78 @@ object FormMatrixGame: TFormMatrixGame
         ParentColor = False
       end
       object LabelExpInterlocks: TLabel
-        Left = 20
+        Left = 10
         Height = 15
         Top = 120
         Width = 128
         Caption = 'Entrelaçamentos:'
         ParentColor = False
       end
-      object LabelExpInterlocksCount: TLabel
-        Left = 178
+      object LabelExpCountInterlocks: TLabel
+        Left = 158
         Height = 15
         Top = 120
         Width = 16
         Caption = 'NA'
         ParentColor = False
       end
+      object ButtonExpStart: TButton
+        Left = 10
+        Height = 25
+        Top = 145
+        Width = 128
+        Caption = 'Começar'
+        OnClick = ButtonExpStartClick
+        TabOrder = 0
+      end
+      object LabelUnseen1: TLabel
+        Left = 158
+        Height = 25
+        Top = 145
+        Width = 16
+        ParentColor = False
+      end
+      object ButtonExpPause: TButton
+        Left = 10
+        Height = 25
+        Top = 180
+        Width = 128
+        Caption = 'Pausar'
+        Enabled = False
+        OnClick = ButtonExpPauseClick
+        TabOrder = 1
+      end
+      object LabelUnseen2: TLabel
+        Left = 158
+        Height = 25
+        Top = 180
+        Width = 16
+        ParentColor = False
+      end
+      object ButtonExpCancel: TButton
+        Left = 10
+        Height = 25
+        Top = 215
+        Width = 128
+        Caption = 'Cancelar'
+        Enabled = False
+        OnClick = ButtonExpCancelClick
+        TabOrder = 2
+      end
+      object LabelUnseen3: TLabel
+        Left = 158
+        Height = 25
+        Top = 215
+        Width = 16
+        ParentColor = False
+      end
     end
   end
   object btnConfirmRow: TButton
     Left = 712
-    Height = 25
-    Top = 320
-    Width = 83
+    Height = 26
+    Top = 319
+    Width = 86
     Caption = 'Confirmar'
     OnClick = btnConfirmRowClick
     TabOrder = 5
@@ -295,9 +375,9 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = GBGrupo
     AnchorSideRight.Side = asrBottom
-    Left = 796
+    Left = 800
     Height = 354
-    Top = 132
+    Top = 140
     Width = 350
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Top = 10
@@ -351,63 +431,24 @@ object FormMatrixGame: TFormMatrixGame
       WantTabs = True
     end
   end
-  object GBIndividual: TGroupBox
-    AnchorSideLeft.Control = GBIndividualAB
-    AnchorSideTop.Control = GBIndividualAB
-    Left = 796
-    Height = 122
-    Top = 0
-    Width = 170
-    AutoSize = True
-    Caption = 'Pontuação Individual'
-    ChildSizing.LeftRightSpacing = 35
-    ChildSizing.TopBottomSpacing = 45
-    ChildSizing.Layout = cclLeftToRightThenTopToBottom
-    ChildSizing.ControlsPerLine = 1
-    ClientHeight = 105
-    ClientWidth = 166
-    TabOrder = 7
-    Visible = False
-    object LabelIndCount: TLabel
-      Left = 35
-      Height = 15
-      Top = 45
-      Width = 96
-      Align = alClient
-      Alignment = taCenter
-      AutoSize = False
-      Caption = '0'
-      Color = clDefault
-      Layout = tlCenter
-      ParentColor = False
-      Transparent = False
-    end
-  end
-  object Button1: TButton
-    Left = 216
-    Height = 25
-    Top = 432
-    Width = 75
-    Caption = 'Button1'
-    OnClick = Button1Click
-    TabOrder = 8
-  end
-  object Button2: TButton
-    Left = 312
-    Height = 25
-    Top = 432
-    Width = 75
-    Caption = 'Button2'
-    OnClick = Button2Click
-    TabOrder = 9
-  end
   object Button3: TButton
-    Left = 504
+    Left = 568
     Height = 91
-    Top = 440
+    Top = 352
     Width = 141
     Caption = 'Button3'
     OnClick = Button3Click
-    TabOrder = 10
+    TabOrder = 8
+  end
+  object OpenDialog: TOpenDialog
+    Width = 862
+    Height = 434
+    Title = 'Abrir Experimento'
+    DefaultExt = '.txt'
+    Filter = 'txt|*.txt|ini|*.ini'
+    InitialDir = 'Pesquisadores'
+    Options = [ofNoChangeDir, ofFileMustExist, ofNoNetworkButton, ofEnableSizing, ofDontAddToRecent]
+    left = 24
+    top = 360
   end
 end
