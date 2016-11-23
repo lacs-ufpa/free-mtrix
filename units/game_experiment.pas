@@ -24,6 +24,7 @@ type
     FExperimentName,
     FFilename,
     FResearcher : UTF8string;
+    FOnEndTurn: TNotifyEvent;
     FOnEndCondition: TNotifyEvent;
     FOnEndCycle: TNotifyEvent;
     FOnEndExperiment: TNotifyEvent;
@@ -53,6 +54,7 @@ type
     function GetPlayerIndexFromID(AID : UTF8string): integer;
     function GetPlayerIsPlaying(AID : UTF8string): Boolean;
     function GetPlayersCount: integer;
+    function GetInterlockingsIn(ALastCycles : integer):integer;
     procedure SetCondition(I : Integer; AValue: TCondition);
     procedure SetContingency(ACondition, I : integer; AValue: TContingency);
     procedure SetMatrixType(AValue: TGameMatrixType);
@@ -60,6 +62,7 @@ type
     procedure SetOnEndCycle(AValue: TNotifyEvent);
     procedure SetOnEndExperiment(AValue: TNotifyEvent);
     procedure SetOnEndGeneration(AValue: TNotifyEvent);
+    procedure SetOnEndTurn(AValue: TNotifyEvent);
     procedure SetPlayer(I : integer; AValue: TPlayer); overload;
     procedure SetPlayer(S : UTF8string ; AValue: TPlayer); overload;
     procedure SetResearcherCanChat(AValue: Boolean);
@@ -92,6 +95,7 @@ type
     property ExperimentAim : UTF8string read FExperimentAim write FExperimentAim;
     property ExperimentName : UTF8string read FExperimentName write FExperimentName;
     property GenPlayersAsNeeded : Boolean read FGenPlayersAsNeeded write FGenPlayersAsNeeded;
+    property InterlockingsIn[i:integer]:integer read GetInterlockingsIn;
     property Player[I : integer] : TPlayer read GetPlayer write SetPlayer;
     property PlayerFromID[S : UTF8string ] : TPlayer read GetPlayer write SetPlayer;
     property PlayersCount : integer read GetPlayersCount;
@@ -106,8 +110,10 @@ type
     property NextTurn : integer read GetNextTurn;
     property NextCycle : integer read GetNextCycle;
     property NextCondition : integer read GetNextCondition;
+
     property State : TExperimentState read FState write SetState;
   public
+    property OnEndTurn : TNotifyEvent read FOnEndTurn write SetOnEndTurn;
     property OnEndCycle : TNotifyEvent read FOnEndCycle write SetOnEndCycle;
     property OnEndGeneration : TNotifyEvent read FOnEndGeneration write SetOnEndGeneration;
     property OnEndCondition : TNotifyEvent read FOnEndCondition write SetOnEndCondition;
@@ -142,7 +148,10 @@ function TExperiment.GetNextTurn: integer; // used during player arriving
 begin
   Result := FConditions[CurrentCondition].Turn.Count;
   if FConditions[CurrentCondition].Turn.Count < FConditions[CurrentCondition].Turn.Value then
-    Inc(FConditions[CurrentCondition].Turn.Count)
+    begin
+      Inc(FConditions[CurrentCondition].Turn.Count);
+      if Assigned(FOnEndTurn) then FOnEndTurn(Self);
+    end
   else
     begin
       FConditions[CurrentCondition].Turn.Count := 0;
@@ -171,35 +180,42 @@ begin
 end;
 
 function TExperiment.GetNextCondition: integer;
-var LCycles : integer;
+var
+  LAbsCycles : integer;
+  LInterlocks : integer;
+
+  procedure EndCondition;
+  begin
+    Inc(CurrentCondition);
+    if Assigned(FOnEndCondition) then FOnEndCondition(Self);
+  end;
+
 begin
   Inc(FConditions[CurrentCondition].Cycles.Generation);
   Result := CurrentCondition;
-  LCycles := (FConditions[CurrentCondition].Cycles.Value *
+  LAbsCycles := (FConditions[CurrentCondition].Cycles.Value *
              FConditions[CurrentCondition].Cycles.Generation) + FConditions[CurrentCondition].Cycles.Count;
 
-  if FConditions[CurrentCondition].EndCriterium.Value = gecAbsoluteCycles then
-    begin
-      if LCycles < FConditions[CurrentCondition].EndCriterium.AbsoluteCycles then
-        // do nothing
-      else
-        begin
-          Inc(CurrentCondition);
-          FConditions[CurrentCondition].Turn.Count := 0;
-          Inc(FConditions[CurrentCondition].Cycles.Count);
-          if Assigned(FOnEndCondition) then FOnEndCondition(Self);
-        end;
-    end;
+  // interlockings in last x cycles
+  LInterlocks := InterlockingsIn(FConditions[CurrentCondition].EndCriterium.LastCycles);
+  case FConditions[CurrentCondition].EndCriterium.Value of
+    gecWhichComeFirst:
+      begin
+        if (LAbsCycles = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles) or
+           (LInterlocks = FConditions[CurrentCondition].EndCriterium.InterlockingPorcentage) then
+          EndCondition;
 
-//
-//  if FConditions[CurrentCondition].Turn.Count < FConditions[CurrentCondition].Turn.Value then
-//    Inc(FConditions[CurrentCondition].Turn.Count
-//  else
-//    begin
-//      FConditions[CurrentCondition].Turn.Count := 0;
-//      Inc(FConditions[CurrentCondition].Cycles.Count);
-//      if Assigned(FOnEndCycle) then FOnEndCycle(Self);
-//    end;
+      end;
+    gecAbsoluteCycles:
+        if LAbsCycles = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles then
+          EndCondition;
+
+    gecInterlockingPorcentage:
+        if LInterlocks = FConditions[CurrentCondition].EndCriterium.InterlockingPorcentage then
+          EndCondition
+
+  end;
+
 end;
 
 function TExperiment.GetPlayer(I : integer): TPlayer;
@@ -394,6 +410,11 @@ begin
   Result := Length(FPlayers);
 end;
 
+function TExperiment.GetInterlockingsIn(ALastCycles: integer): integer;
+begin
+
+end;
+
 procedure TExperiment.SetCondition(I : Integer; AValue: TCondition);
 begin
   FConditions[I] := AValue;
@@ -432,6 +453,12 @@ procedure TExperiment.SetOnEndGeneration(AValue: TNotifyEvent);
 begin
   if FOnEndGeneration=AValue then Exit;
   FOnEndGeneration:=AValue;
+end;
+
+procedure TExperiment.SetOnEndTurn(AValue: TNotifyEvent);
+begin
+  if FOnEndTurn=AValue then Exit;
+  FOnEndTurn:=AValue;
 end;
 
 
