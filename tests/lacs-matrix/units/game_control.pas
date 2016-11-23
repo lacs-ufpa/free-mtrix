@@ -75,7 +75,7 @@ const
   K_RESUME   = '.Resume';
   K_DATA_A   = '.Data';
   K_LOGIN    = '.Login';
-  K_KICK     = '.Kick'
+  K_KICK     = '.Kick';
   //
   K_STATUS   = '.Status';
   K_CYCLES   = '.OnCycleStart';
@@ -221,8 +221,12 @@ begin
 end;
 
 function TGameControl.GetSelectedRowF(AStringGrid: TStringGrid): UTF8string;
+var i : integer;
 begin
-  Result := IntToStr(AStringGrid.Selection.Top);
+  i := AStringGrid.Selection.Top;
+  if RowBase = 0 then
+    Inc(i);
+  Result := Format('%-*.*d', [1,2,i]);
 end;
 
 procedure TGameControl.SetMustDrawDots(AValue: Boolean);
@@ -269,8 +273,9 @@ end;
 
 procedure TGameControl.StartTurn;
 begin
-  FormMatrixGame.StringGridMatrix.Options := FormMatrixGame.StringGridMatrix.Options-[goRowSelect];
   FormMatrixGame.btnConfirmRow.Enabled:=True;
+  FormMatrixGame.StringGridMatrix.Options := FormMatrixGame.StringGridMatrix.Options-[goRowSelect];
+  FormMatrixGame.btnConfirmRow.Caption:='Confirmar';
   FormMatrixGame.btnConfirmRow.Visible := False;
 end;
 
@@ -419,11 +424,22 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
   procedure ReceiveChoice;
   begin
+    with GetPlayerBox(AMessage[1]) do
+      begin
+        LabelLastRowCount.Caption := Format('%-*.*d', [1,2,StrToInt(AMessage[2])]);
+        PanelLastColor.Color := GetRowColorFromString(AMessage[3]);
+        FormMatrixGame.Caption:='';
+      end;
+
     case FActor of
       gaPlayer:begin
 
       end;
+
       gaAdmin:begin
+        // if last choice in cycle then end cycle
+        FExperiment.NextTurn;
+        Inc(FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count);
 
       end;
     end;
@@ -494,7 +510,6 @@ begin
   if MHas(K_CHAT_M)  then ReceiveChat;
   if MHas(K_CHOICE)  then ReceiveChoice;
   if MHas(K_KICK)    then SayGoodBye;
-  if MHas(K_STATUS) then ReceiveStatus;
 end;
 
 // Here FActor is garanted to be a TZMQAdmin
@@ -628,6 +643,11 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         WriteLn(Self.ID +' sent but' + AReply[0]  +' received. This must not occur.');
       {$ENDIF}
       end;
+  end;
+
+  procedure ResumePlayer;
+  begin
+
   end;
 
 begin

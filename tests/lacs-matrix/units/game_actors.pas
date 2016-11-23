@@ -96,7 +96,7 @@ type
     Value : TGameEndCondition;
     InterlockingPorcentage,
     LastCycles,
-    AbsoluteCyles: integer;
+    AbsoluteCycles: integer;
   end;
 
   TPoints = record
@@ -114,13 +114,13 @@ type
 
     Turn : record // for changing cycles
       Count,  // current turn
-      Value : integer; // PlayersPerTurn, CycleIncrement
+      Value : integer; // PlayersPerCycle, TurnsPerCycle
       Random: Boolean; // if we should change Players[i].Turn OnCycle
     end;
 
     Cycles : record // for changing generations
       Count, // current cycle
-      Value, // CyclesPerLineage, GenegarationIncrement
+      Value, // CyclesPerLineage, CyclesPerGeneration
       Generation : integer;
     end;
     Prompt : TPrompt; // onEndCycle

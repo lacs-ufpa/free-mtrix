@@ -13,6 +13,7 @@ uses
 function GetAndDelFirstValue(var S: string;Sep:Char=','):string;
 function GetRowString(ARow : TGameRow) : string;
 function GetRowFromString(S : string):TGameRow;
+function GetRowColorFromString(S:string): TColor;
 function GetColorString(AColor : TGameColor) : string;
 function GetColorFromString(S : string) : TGameColor;
 function GetPromptStyleFromString(S : string) : TPromptStyle;
@@ -99,6 +100,7 @@ begin
     '=','IGUAIS', 'EQUAL' : Result := gcEqual;
   end;
 end;
+
 
 function GetPromptStyleFromString(S: string): TPromptStyle;
 begin
@@ -216,6 +218,17 @@ begin
     ccGreen: Result := 'G';
     ccRed: Result := 'R';
     ccMagenta: Result := 'M';
+  end;
+end;
+
+function GetRowColorFromString(S:string): TColor;
+begin
+  case S of
+    'Y' : Result := ccYellow;
+    'B' : Result := ccBlue;
+    'G' : Result := ccGreen;
+    'R' : Result := ccRed;
+    'M' : Result := ccMagenta;
   end;
 end;
 

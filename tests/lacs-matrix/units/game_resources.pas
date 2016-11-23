@@ -291,7 +291,7 @@ const
         Value : gecWhichComeFirst;
         InterlockingPorcentage : 10;
         LastCycles : 6;
-        AbsoluteCyles: 8;
+        AbsoluteCycles: 8;
       );
     );
 

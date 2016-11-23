@@ -85,7 +85,7 @@ var
       1: Result.Value := gecInterlockingPorcentage;
       2: Result.Value := gecWhichComeFirst;
     end;
-    Result.AbsoluteCyles := StrToIntDef(GetAndDelFirstValue(LS), 20);
+    Result.AbsoluteCycles := StrToIntDef(GetAndDelFirstValue(LS), 20);
     Result.InterlockingPorcentage := StrToIntDef(GetAndDelFirstValue(LS),10);
     Result.LastCycles := StrToIntDef(GetAndDelFirstValue(LS), 10);
   end;
@@ -329,7 +329,7 @@ var
       gecWhichComeFirst: Result := '2';
     end;
     Result := Result + VV_SEP;
-    Result := Result + IntToStr(AEndCriterium.AbsoluteCyles) + VV_SEP;
+    Result := Result + IntToStr(AEndCriterium.AbsoluteCycles) + VV_SEP;
     Result := Result + IntToStr(AEndCriterium.InterlockingPorcentage) + VV_SEP;
     Result := Result + IntToStr(AEndCriterium.LastCycles) + VV_SEP;
   end;

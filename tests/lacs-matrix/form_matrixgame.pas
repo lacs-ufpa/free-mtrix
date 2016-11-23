@@ -17,7 +17,6 @@ uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
   StdCtrls, DBGrids, ExtCtrls
 
-  //, zmq_pub_sub
   , game_zmq_actors
   , game_actors
   , game_control
@@ -295,6 +294,7 @@ procedure TFormMatrixGame.btnConfirmRowClick(Sender: TObject);
 begin
   StringGridMatrix.Enabled:= False;
   btnConfirmRow.Enabled:=False;
+  btnConfirmRow.Caption:='OK';
   FGameControl.SendMessage(K_CHOICE);
 end;
 

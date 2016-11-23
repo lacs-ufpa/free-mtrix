@@ -24,6 +24,10 @@ type
     FExperimentName,
     FFilename,
     FResearcher : UTF8string;
+    FOnEndCondition: TNotifyEvent;
+    FOnEndCycle: TNotifyEvent;
+    FOnEndExperiment: TNotifyEvent;
+    FOnEndGeneration: TNotifyEvent;
     FMatrixType: TGameMatrixType;
     FRegData : TRegData;
     FGenPlayersAsNeeded : Boolean;
@@ -40,6 +44,8 @@ type
     function GetContingency(ACondition, I : integer): TContingency;
     function GetNextTurn: integer;
     function GetNextTurnPlayerID: UTF8string;
+    function GetNextCycle:integer;
+    function GetNextCondition:integer;
     function GetPlayer(I : integer): TPlayer; overload;
     function GetPlayer(AID : UTF8string): TPlayer; overload;
     function GetPlayerAsString(P: TPlayer): UTF8string;
@@ -50,6 +56,10 @@ type
     procedure SetCondition(I : Integer; AValue: TCondition);
     procedure SetContingency(ACondition, I : integer; AValue: TContingency);
     procedure SetMatrixType(AValue: TGameMatrixType);
+    procedure SetOnEndCondition(AValue: TNotifyEvent);
+    procedure SetOnEndCycle(AValue: TNotifyEvent);
+    procedure SetOnEndExperiment(AValue: TNotifyEvent);
+    procedure SetOnEndGeneration(AValue: TNotifyEvent);
     procedure SetPlayer(I : integer; AValue: TPlayer); overload;
     procedure SetPlayer(S : UTF8string ; AValue: TPlayer); overload;
     procedure SetResearcherCanChat(AValue: Boolean);
@@ -71,6 +81,7 @@ type
     procedure SaveToFile(AFilename: string); overload;
     procedure SaveToFile; overload;
     procedure Clean;
+    procedure Play;
     property ResearcherCanPlay : Boolean read FResearcherCanPlay write SetResearcherCanPlay;
     property ResearcherCanChat : Boolean read FResearcherCanChat write SetResearcherCanChat;
     property Researcher : UTF8string read FResearcher write FResearcher;
@@ -93,7 +104,14 @@ type
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
     property NextTurnPlayerID : UTF8string read GetNextTurnPlayerID;
     property NextTurn : integer read GetNextTurn;
+    property NextCycle : integer read GetNextCycle;
+    property NextCondition : integer read GetNextCondition;
     property State : TExperimentState read FState write SetState;
+  public
+    property OnEndCycle : TNotifyEvent read FOnEndCycle write SetOnEndCycle;
+    property OnEndGeneration : TNotifyEvent read FOnEndGeneration write SetOnEndGeneration;
+    property OnEndCondition : TNotifyEvent read FOnEndCondition write SetOnEndCondition;
+    property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
   end;
 
 resourcestring
@@ -123,15 +141,65 @@ end;
 function TExperiment.GetNextTurn: integer; // used during player arriving
 begin
   Result := FConditions[CurrentCondition].Turn.Count;
-  if FConditions[CurrentCondition].Turn.Count = FConditions[CurrentCondition].Turn.Value then
-    FConditions[CurrentCondition].Turn.Count := 0
-  else Inc(FConditions[CurrentCondition].Turn.Count);
+  if FConditions[CurrentCondition].Turn.Count < FConditions[CurrentCondition].Turn.Value then
+    Inc(FConditions[CurrentCondition].Turn.Count)
+  else
+    begin
+      FConditions[CurrentCondition].Turn.Count := 0;
+      if Assigned(FOnEndCycle) then FOnEndCycle(Self);
+      NextCycle;
+    end;
 end;
 
 function TExperiment.GetNextTurnPlayerID: UTF8string; // used during cycles
 begin
   Result := Player[FConditions[CurrentCondition].Turn.Count].ID;
   GetNextTurn;
+end;
+
+function TExperiment.GetNextCycle: integer;
+begin
+  Result := FConditions[CurrentCondition].Cycles.Count;
+  if FConditions[CurrentCondition].Cycles.Count < FConditions[CurrentCondition].Cycles.Value then
+    Inc(FConditions[CurrentCondition].Cycles.Count)
+  else
+    begin
+      FConditions[CurrentCondition].Cycles.Count := 0;
+      if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
+      NextCondition;
+    end;
+end;
+
+function TExperiment.GetNextCondition: integer;
+var LCycles : integer;
+begin
+  Inc(FConditions[CurrentCondition].Cycles.Generation);
+  Result := CurrentCondition;
+  LCycles := (FConditions[CurrentCondition].Cycles.Value *
+             FConditions[CurrentCondition].Cycles.Generation) + FConditions[CurrentCondition].Cycles.Count;
+
+  if FConditions[CurrentCondition].EndCriterium.Value = gecAbsoluteCycles then
+    begin
+      if LCycles < FConditions[CurrentCondition].EndCriterium.AbsoluteCycles then
+        // do nothing
+      else
+        begin
+          Inc(CurrentCondition);
+          FConditions[CurrentCondition].Turn.Count := 0;
+          Inc(FConditions[CurrentCondition].Cycles.Count);
+          if Assigned(FOnEndCondition) then FOnEndCondition(Self);
+        end;
+    end;
+
+//
+//  if FConditions[CurrentCondition].Turn.Count < FConditions[CurrentCondition].Turn.Value then
+//    Inc(FConditions[CurrentCondition].Turn.Count
+//  else
+//    begin
+//      FConditions[CurrentCondition].Turn.Count := 0;
+//      Inc(FConditions[CurrentCondition].Cycles.Count);
+//      if Assigned(FOnEndCycle) then FOnEndCycle(Self);
+//    end;
 end;
 
 function TExperiment.GetPlayer(I : integer): TPlayer;
@@ -342,6 +410,30 @@ begin
   FMatrixType:=AValue;
 end;
 
+procedure TExperiment.SetOnEndCondition(AValue: TNotifyEvent);
+begin
+  if FOnEndCondition=AValue then Exit;
+  FOnEndCondition:=AValue;
+end;
+
+procedure TExperiment.SetOnEndCycle(AValue: TNotifyEvent);
+begin
+  if FOnEndCycle=AValue then Exit;
+  FOnEndCycle:=AValue;
+end;
+
+procedure TExperiment.SetOnEndExperiment(AValue: TNotifyEvent);
+begin
+  if FOnEndExperiment=AValue then Exit;
+  FOnEndExperiment:=AValue;
+end;
+
+procedure TExperiment.SetOnEndGeneration(AValue: TNotifyEvent);
+begin
+  if FOnEndGeneration=AValue then Exit;
+  FOnEndGeneration:=AValue;
+end;
+
 
 procedure TExperiment.SetPlayer(I : integer; AValue: TPlayer);
 begin
@@ -472,6 +564,11 @@ begin
 end;
 
 procedure TExperiment.Clean;
+begin
+
+end;
+
+procedure TExperiment.Play;
 begin
 
 end;
