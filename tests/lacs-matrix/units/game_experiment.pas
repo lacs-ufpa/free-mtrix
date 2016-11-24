@@ -40,6 +40,7 @@ type
     FSendChatHistoryForNewPlayers: Boolean;
     FShowChat: Boolean;
     FState: TExperimentState;
+    FTurnsRandom : TStringList;
     function GetCondition(I : Integer): TCondition;
     function GetConditionsCount: integer;
     function GetContingency(ACondition, I : integer): TContingency;
@@ -146,12 +147,14 @@ end;
 
 function TExperiment.GetNextTurn: integer; // used during player arriving
 begin
-  Result := FConditions[CurrentCondition].Turn.Count;
+  if FConditions[CurrentCondition].Turn.Random then
+    Result := StrToInt(FTurnsRandom.Names[FConditions[CurrentCondition].Turn.Count])
+  else
+    Result := FConditions[CurrentCondition].Turn.Count;
+  if Assigned(FOnEndTurn) then FOnEndTurn(Self);
+
   if FConditions[CurrentCondition].Turn.Count < FConditions[CurrentCondition].Turn.Value then
-    begin
-      Inc(FConditions[CurrentCondition].Turn.Count);
-      if Assigned(FOnEndTurn) then FOnEndTurn(Self);
-    end
+    Inc(FConditions[CurrentCondition].Turn.Count)
   else
     begin
       FConditions[CurrentCondition].Turn.Count := 0;
@@ -174,8 +177,11 @@ begin
   else
     begin
       FConditions[CurrentCondition].Cycles.Count := 0;
-      if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
-      NextCondition;
+      if State = xsRunning then
+        begin
+          if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
+          NextCondition;
+        end;
     end;
 end;
 
@@ -186,7 +192,7 @@ var
 
   procedure EndCondition;
   begin
-    Inc(CurrentCondition);
+    Inc(FCurrentCondition);
     if Assigned(FOnEndCondition) then FOnEndCondition(Self);
   end;
 
@@ -197,7 +203,7 @@ begin
              FConditions[CurrentCondition].Cycles.Generation) + FConditions[CurrentCondition].Cycles.Count;
 
   // interlockings in last x cycles
-  LInterlocks := InterlockingsIn(FConditions[CurrentCondition].EndCriterium.LastCycles);
+  LInterlocks := InterlockingsIn[FConditions[CurrentCondition].EndCriterium.LastCycles];
   case FConditions[CurrentCondition].EndCriterium.Value of
     gecWhichComeFirst:
       begin
@@ -260,8 +266,8 @@ var
   begin
     case AStatus of
       gpsWaiting: Result := '0';
-      gpsPlayed: Result := '1';
-      gpsPlaying: Result := '2';
+      gpsPlaying: Result := '1';
+      gpsPlayed: Result := '2';
     end;
   end;
 
@@ -308,6 +314,7 @@ begin
     , GetStatusString(P.Status)
     , GetChoiceString(P.Choice.Current)
     , GetChoiceString(P.Choice.Last)
+    , IntToStr(P.Turn)
   ]);
   for i := 0 to Length(M)-1 do
     Result += M[i] + '|';
@@ -360,8 +367,8 @@ function TExperiment.GetPlayerFromString(s: UTF8string): TPlayer;
   begin
     case S of
       '0': Result := gpsWaiting;
-      '1': Result := gpsPlayed;
-      '2': Result := gpsPlaying;
+      '1': Result := gpsPlaying;
+      '2': Result := gpsPlayed;
     end;
   end;
 begin
@@ -379,6 +386,7 @@ begin
   Result.Status := GetStatusFromString(ExtractDelimited(4,s,['|']));
   Result.Choice.Current := GetChoiceFromString(ExtractDelimited(5,s,['|']));
   Result.Choice.Last := GetChoiceFromString(ExtractDelimited(6,s,['|']));
+  Result.Turn:=StrToInt(ExtractDelimited(7,s,['|']));
 end;
 
 function TExperiment.GetPlayerIndexFromID(AID: UTF8string): integer;
@@ -511,13 +519,31 @@ begin
 end;
 
 constructor TExperiment.Create(AFilename: string;AOwner:TComponent);
+var c ,
+    i,
+    r : integer;
 begin
   inherited Create(AOwner);
+  FTurnsRandom := TStringList.Create;
   LoadExperimentFromFile(Self,AFilename);
+  if Condition[CurrentCondition].Turn.Random then
+    begin
+      for i:= 0 to Condition[CurrentCondition].Turn.Value-1 do
+        FTurnsRandom.Add(IntToStr(i));
+
+      c := FTurnsRandom.Count - 1;
+      for i := 0 to c do
+        begin
+          r := Random(c);
+          while r = i do r := Random(c);
+          FTurnsRandom.Exchange(r,i);
+        end;
+    end;
 end;
 
 destructor TExperiment.Destroy;
 begin
+  FTurnsRandom.Free;
   inherited Destroy;
 end;
 
