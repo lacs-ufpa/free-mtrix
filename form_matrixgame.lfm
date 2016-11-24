@@ -1,14 +1,14 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 0
-  Height = 560
-  Top = 70
-  Width = 1278
-  HorzScrollBar.Page = 1278
+  Left = -621
+  Height = 565
+  Top = 124
+  Width = 1393
+  HorzScrollBar.Page = 1393
   VertScrollBar.Page = 542
   AutoScroll = True
   Caption = 'FormMatrixGame'
-  ClientHeight = 550
-  ClientWidth = 1278
+  ClientHeight = 555
+  ClientWidth = 1393
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   LCLVersion = '1.6.2.0'
@@ -184,7 +184,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 0
     Height = 17
-    Top = 533
+    Top = 538
     Width = 1632
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
@@ -275,15 +275,15 @@ object FormMatrixGame: TFormMatrixGame
         Caption = 'NA'
         ParentColor = False
       end
-      object LabelExpNxtPlayer: TLabel
+      object LabelExpTurn: TLabel
         Left = 10
         Height = 15
         Top = 95
         Width = 128
-        Caption = 'Prox. Jog.:'
+        Caption = 'Turno:'
         ParentColor = False
       end
-      object LabelExpCountNxtPlayer: TLabel
+      object LabelExpCountTurn: TLabel
         Left = 158
         Height = 15
         Top = 95
@@ -449,6 +449,24 @@ object FormMatrixGame: TFormMatrixGame
     InitialDir = 'Pesquisadores'
     Options = [ofNoChangeDir, ofFileMustExist, ofNoNetworkButton, ofEnableSizing, ofDontAddToRecent]
     left = 24
+    top = 360
+  end
+  object PopupNotifier: TPopupNotifier
+    Color = clTeal
+    Icon.Data = {
+      07544269746D617000000000
+    }
+    Text = 'Text'
+    Visible = False
+    OnClose = PopupNotifierClose
+    left = 112
+    top = 360
+  end
+  object Timer: TTimer
+    Enabled = False
+    Interval = 8000
+    OnTimer = TimerTimer
+    left = 200
     top = 360
   end
 end

@@ -43,13 +43,14 @@ type
     procedure SetMustDrawDotsClear(AValue: Boolean);
     procedure SetRowBase(AValue: integer);
   private
-    function CanStartExperiment : Boolean;
+    function ShouldStartExperiment : Boolean;
     procedure KickPlayer(AID:string);
     procedure NextTurn(Sender: TObject);
     procedure NextCycle(Sender: TObject);
     procedure NextLineage(Sender: TObject);
     procedure NextCondition(Sender: TObject);
     procedure EndExperiment(Sender: TObject);
+    procedure StartExperiment;
   public
     constructor Create(AOwner : TComponent);override;
     destructor Destroy; override;
@@ -76,6 +77,7 @@ const
   K_REFUSED  = '.Refused';
   K_CHAT_M   = '.ChatM';
   K_CHOICE   = '.Choice';
+  K_START    = '.Start';
   K_LEFT     = '.Left';
   K_RESUME   = '.Resume';
   K_DATA_A   = '.Data';
@@ -115,7 +117,7 @@ end;
 
 { TGameControl }
 
-function TGameControl.CanStartExperiment: Boolean;
+function TGameControl.ShouldStartExperiment: Boolean;
 begin
   Result := FExperiment.PlayersCount = FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value;
 end;
@@ -127,21 +129,29 @@ end;
 
 procedure TGameControl.NextTurn(Sender: TObject);
 begin
+  // update admin view
+  FormMatrixGame.LabelExpCountTurn.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count);
+
   // inform players
+
 end;
 
 procedure TGameControl.NextCycle(Sender: TObject);
 begin
   // prompt question to all players
+  FormMatrixGame.LabelExpCountCycle.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Count);
 end;
 
 procedure TGameControl.NextLineage(Sender: TObject);
 begin
-
+  // pause, kick older player, wait for new player, resume
+  FormMatrixGame.LabelExpCountGeneration.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Generation);
 end;
 
 procedure TGameControl.NextCondition(Sender: TObject);
 begin
+  FormMatrixGame.LabelExpCountCondition.Caption:= FExperiment.Condition[FExperiment.CurrentCondition].ConditionName;
+
   // append OnStart data
   //FExperiment.Condition[FExperiment.CurrentCondition].Points.OnStart.A;
   //FExperiment.Condition[FExperiment.CurrentCondition].Points.OnStart.B;
@@ -155,10 +165,23 @@ begin
 
 end;
 
+procedure TGameControl.StartExperiment;
+begin
+  // all players arrived, lets begin
+  FExperiment.State:=xsRunning;
+
+  // wait some time, we just sent a message earlier
+  Sleep(5);
+
+  // enable matrix grid for the first player
+  FZMQActor.SendMessage([K_START]);
+end;
+
 procedure TGameControl.Start;
 begin
   // basic data/csv setup
   // wait for players
+
 end;
 
 procedure TGameControl.Pause;
@@ -303,14 +326,6 @@ begin
   FRowBase:=AValue;
 end;
 
-procedure TGameControl.StartTurn;
-begin
-  FormMatrixGame.btnConfirmRow.Enabled:=True;
-  FormMatrixGame.StringGridMatrix.Options := FormMatrixGame.StringGridMatrix.Options-[goRowSelect];
-  FormMatrixGame.btnConfirmRow.Caption:='Confirmar';
-  FormMatrixGame.btnConfirmRow.Visible := False;
-end;
-
 constructor TGameControl.Create(AOwner: TComponent);
 begin
   FZMQActor := TZMQActor(AOwner);
@@ -333,11 +348,17 @@ begin
   MustDrawDotsClear:=False;
 
   FExperiment := TExperiment.Create(FZMQActor.Owner);
+  FExperiment.State:=xsWaiting;
   FExperiment.OnEndTurn := @NextTurn;
   FExperiment.OnEndCycle := @NextCycle;
   FExperiment.OnEndGeneration:=@NextLineage;
   FExperiment.OnEndCondition:= @NextCondition;
   FExperiment.OnEndExperiment:= @EndExperiment;
+
+  NextTurn(Self);
+  NextCycle(Self);
+  NextLineage(Self);
+  NextCondition(Self);
 
   SendRequest(K_LOGIN);
 end;
@@ -453,10 +474,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       gaPlayer:
         begin
           P := FExperiment.PlayerFromString[AMessage[1]];
+          FExperiment.AppendPlayer(P);
           if Self.ID = P.ID then
             begin
-              FExperiment.AppendPlayer(P);
-              CreatePlayerBox(P, True);
+              CreatePlayerBox(P, True)
             end
           else
             CreatePlayerBox(P,False);
@@ -465,24 +486,73 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
   end;
 
-  procedure ReceiveChoice;
+  procedure EnableMatrix(ATurn:integer);
   begin
-    with GetPlayerBox(AMessage[1]) do
+    if FExperiment.PlayerFromID[Self.ID].Turn = ATurn then
       begin
-        LabelLastRowCount.Caption := Format('%-*.*d', [1,2,StrToInt(AMessage[2])]);
+        FormMatrixGame.StringGridMatrix.Enabled:=True;
+        FormMatrixGame.StringGridMatrix.Options := FormMatrixGame.StringGridMatrix.Options-[goRowSelect];
+        FormMatrixGame.btnConfirmRow.Enabled:=True;
+        FormMatrixGame.btnConfirmRow.Caption:='Confirmar';
+        FormMatrixGame.btnConfirmRow.Visible := False;
+      end;
+  end;
+
+  procedure ReceiveChoice;
+  var P : TPlayer;
+  begin
+    P := FExperiment.PlayerFromID[AMessage[1]];
+
+    // add last responses to player box
+    with GetPlayerBox(P.ID) do
+      begin
+        LabelLastRowCount.Caption := AMessage[2];
         PanelLastColor.Color := GetRowColorFromString(AMessage[3]);
-        FormMatrixGame.Caption:='';
+        PanelLastColor.Caption:='';
       end;
 
     case FActor of
       gaPlayer:begin
-
+        if Self.ID = P.ID then
+          begin
+            FormMatrixGame.StringGridMatrix.Enabled:= False;
+            FormMatrixGame.btnConfirmRow.Enabled:=False;
+            FormMatrixGame.btnConfirmRow.Caption:='OK';
+          end
+        else
+          EnableMatrix(P.Turn+1);
       end;
 
       gaAdmin:begin
-        // if last choice in cycle then end cycle
         FExperiment.NextTurn;
       end;
+    end;
+  end;
+
+  procedure NotifyPlayers;
+  var PopUpPos : TPoint;
+  begin
+    case FActor of
+      gaPlayer:
+        begin
+          PopUpPos.X := FormMatrixGame.StringGridMatrix.Left+FormMatrixGame.StringGridMatrix.Width;
+          PopUpPos.Y := FormMatrixGame.StringGridMatrix.Top;
+          PopUpPos := FormMatrixGame.StringGridMatrix.ClientToScreen(PopUpPos);
+          if FExperiment.PlayerFromID[Self.ID].Turn = 0 then
+            begin
+              PopUpPos.X := FormMatrixGame.StringGridMatrix.Left+FormMatrixGame.StringGridMatrix.Width;
+              PopUpPos.Y := FormMatrixGame.StringGridMatrix.Top;
+              EnableMatrix(0);
+              FormMatrixGame.PopupNotifier.Text:='É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.';
+              FormMatrixGame.PopupNotifier.ShowAtPos(PopUpPos.X,PopUpPos.Y);
+            end
+          else
+            begin
+              FormMatrixGame.PopupNotifier.Text:='Começou! Aguarde sua vez.';
+              FormMatrixGame.PopupNotifier.ShowAtPos(PopUpPos.X,PopUpPos.Y);
+            end;
+          FormMatrixGame.Timer.Enabled:=True;
+        end;
     end;
   end;
 
@@ -551,6 +621,7 @@ begin
   if MHas(K_CHAT_M)  then ReceiveChat;
   if MHas(K_CHOICE)  then ReceiveChoice;
   if MHas(K_KICK)    then SayGoodBye;
+  if MHas(K_START) then NotifyPlayers;
 end;
 
 // Here FActor is garanted to be a TZMQAdmin
@@ -585,10 +656,9 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
               end
             else
               begin
-                // if not generate and save p data
+                // if not then generate and save p data
                 i := FExperiment.AppendPlayer;
                 P.Nicname := GenResourceName(i);
-                P.Turn := FExperiment.NextTurn;
                 P.Points.A:=0;
                 P.Points.B:=0;
                 P.Status:=gpsPlaying;
@@ -596,8 +666,8 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
                 P.Choice.Current.Row:=grNone;
                 P.Choice.Last.Color:=gcNone;
                 P.Choice.Last.Row:=grNone;
-                // turns by entrance order
-                P.Turn := FExperiment.PlayersCount;
+                // turns by entrance order or by random order
+                P.Turn := FExperiment.NextTurn;
                 FExperiment.Player[i] := P;
               end;
 
@@ -631,7 +701,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
             FZMQActor.SendMessage([K_ARRIVED,PS]);
 
             // start Experiment if allowed
-            if CanStartExperiment then
+            if ShouldStartExperiment then
               StartExperiment;
 
           end
@@ -671,6 +741,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         for i:= 3 to AReply.Count -2 do
           begin
             P := FExperiment.PlayerFromString[AReply[i]];
+            FExperiment.AppendPlayer(P);
             CreatePlayerBox(P, False);
           end;
 

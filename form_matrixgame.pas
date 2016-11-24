@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
-  StdCtrls, DBGrids, ExtCtrls
+  StdCtrls, DBGrids, ExtCtrls, PopupNotifier
 
   , game_zmq_actors
   , game_actors
@@ -46,8 +46,8 @@ type
     LabelExpCountGeneration: TLabel;
     LabelExpCycle: TLabel;
     LabelExpCountCycle: TLabel;
-    LabelExpNxtPlayer: TLabel;
-    LabelExpCountNxtPlayer: TLabel;
+    LabelExpTurn: TLabel;
+    LabelExpCountTurn: TLabel;
     LabelExpInterlocks: TLabel;
     LabelExpCountInterlocks: TLabel;
     LabelIndCount: TLabel;
@@ -62,7 +62,9 @@ type
     ChatPanel: TPanel;
     ChatSplitter: TSplitter;
     OpenDialog: TOpenDialog;
+    PopupNotifier: TPopupNotifier;
     StringGridMatrix: TStringGrid;
+    Timer: TTimer;
     procedure btnConfirmRowClick(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure ButtonExpCancelClick(Sender: TObject);
@@ -70,9 +72,12 @@ type
     procedure ButtonExpStartClick(Sender: TObject);
     procedure ChatMemoSendKeyPress(Sender: TObject; var Key: char);
     procedure FormActivate(Sender: TObject);
+    procedure PopupNotifierClose(Sender: TObject; var CloseAction: TCloseAction
+      );
     procedure StringGridMatrixClick(Sender: TObject);
     procedure StringGridMatrixDrawCell(Sender: TObject; aCol, aRow: integer;
       aRect: TRect; aState: TGridDrawState);
+    procedure TimerTimer(Sender: TObject);
   private
     FGameControl : TGameControl;
     FID: string;
@@ -212,6 +217,12 @@ begin
   end;
 end;
 
+procedure TFormMatrixGame.TimerTimer(Sender: TObject);
+begin
+  PopupNotifier.Visible:=False;
+  Timer.Enabled := False;
+end;
+
 procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
 
   procedure SetZMQAdmin;
@@ -223,7 +234,7 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
   procedure SetZMQPlayer;
   begin
     FGameControl := TGameControl.Create(TZMQPlayer.Create(Self,FID));
-    StringGridMatrix.Enabled := True;
+    //StringGridMatrix.Enabled := True;
   end;
 
   procedure SetZMQWatcher;
@@ -267,6 +278,12 @@ begin
   end;
 end;
 
+procedure TFormMatrixGame.PopupNotifierClose(Sender: TObject;
+  var CloseAction: TCloseAction);
+begin
+  // do nothing for now
+end;
+
 procedure TFormMatrixGame.StringGridMatrixClick(Sender: TObject);
 begin
   if goRowSelect in StringGridMatrix.Options then Exit;
@@ -292,9 +309,6 @@ end;
 
 procedure TFormMatrixGame.btnConfirmRowClick(Sender: TObject);
 begin
-  StringGridMatrix.Enabled:= False;
-  btnConfirmRow.Enabled:=False;
-  btnConfirmRow.Caption:='OK';
   FGameControl.SendMessage(K_CHOICE);
 end;
 
