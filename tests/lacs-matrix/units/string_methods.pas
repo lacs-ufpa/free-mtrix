@@ -57,16 +57,16 @@ end;
 function GetRowFromString(S: string): TGameRow;
 begin
   case UpperCase(S) of
-    '0', 'NONE'           : Result := grNone;
-    '1', 'UM', 'ONE'      : Result := grOne;
-    '2', 'DOIS', 'TWO'    : Result := grTwo;
-    '3', 'TRÊS', 'THREE'  : Result := grThree;
-    '4', 'QUATRO', 'FOUR' : Result := grFour;
-    '5', 'CINCO', 'FIVE'  : Result := grFive;
-    '6', 'SEIS', 'SIX'    : Result := grSix;
-    '7', 'SETE', 'SEVEN'  : Result := grSeven;
-    '8', 'OITO', 'EIGHT'  : Result := grEight;
-    '9', 'NOVE', 'NINE'   : Result := grNine;
+    'NA', '.' , '0', 'NONE'           : Result := grNone;
+    '01', '1', 'UM', 'ONE'      : Result := grOne;
+    '02', '2', 'DOIS', 'TWO'    : Result := grTwo;
+    '03', '3', 'TRÊS', 'THREE'  : Result := grThree;
+    '04', '4', 'QUATRO', 'FOUR' : Result := grFour;
+    '05', '5', 'CINCO', 'FIVE'  : Result := grFive;
+    '06', '6', 'SEIS', 'SIX'    : Result := grSix;
+    '07', '7', 'SETE', 'SEVEN'  : Result := grSeven;
+    '08', '8', 'OITO', 'EIGHT'  : Result := grEight;
+    '09', '9', 'NOVE', 'NINE'   : Result := grNine;
     '10', 'DEZ', 'TEN'    : Result := grTen;
     'PAR', 'EVEN'         : Result := grEven;
     'IMPAR', 'ODD'        : Result := grOdd;
@@ -90,12 +90,12 @@ end;
 function GetColorFromString(S: string): TGameColor;
 begin
   case UpperCase(S) of
-    'INDIFERENTE', 'NONE' : Result := gcNone;
-    'AMARELO', 'YELLOW' : Result := gcYellow;
-    'VERMELHO', 'RED'   : Result := gcRed;
-    'ROXO','MAGENTA', 'VIOLETA' : Result := gcMagenta;
-    'AZUL', 'BLUE' : Result := gcBlue;
-    'VERDE', 'GREEN' : Result := gcGreen;
+    '.', 'INDIFERENTE', 'NONE' : Result := gcNone;
+    'Y', 'AMARELO', 'YELLOW' : Result := gcYellow;
+    'B', 'AZUL', 'BLUE' : Result := gcBlue;
+    'G', 'VERDE', 'GREEN' : Result := gcGreen;
+    'R', 'VERMELHO', 'RED'   : Result := gcRed;
+    'M', 'ROXO','MAGENTA', 'VIOLETA' : Result := gcMagenta;
     '!=','<>','DIFERENTES', 'DIFFERENT' : Result := gcDiff;
     '=','IGUAIS', 'EQUAL' : Result := gcEqual;
   end;
