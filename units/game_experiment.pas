@@ -2,6 +2,8 @@ unit game_experiment;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE DEBUG}
+
 interface
 
 uses
@@ -15,7 +17,6 @@ type
   { TExperiment }
 
   TExperimentState = (xsWaiting,xsRunning,xsPaused,xsCanceled);
-  TPlayers = array of TPlayer;
   TConditions = array of TCondition;
 
   TExperiment = class(TComponent)
@@ -43,6 +44,7 @@ type
     FTurnsRandom : TStringList;
     function GetCondition(I : Integer): TCondition;
     function GetConditionsCount: integer;
+    function GetContingenciesCount(C: integer): integer;
     function GetContingency(ACondition, I : integer): TContingency;
     function GetNextTurn: integer;
     function GetNextTurnPlayerID: UTF8string;
@@ -56,6 +58,7 @@ type
     function GetPlayerIsPlaying(AID : UTF8string): Boolean;
     function GetPlayersCount: integer;
     function GetInterlockingsIn(ALastCycles : integer):integer;
+    function GetConsequenceStringFromChoice(P:TPlayer): Utf8string;
     procedure SetCondition(I : Integer; AValue: TCondition);
     procedure SetContingency(ACondition, I : integer; AValue: TContingency);
     procedure SetMatrixType(AValue: TGameMatrixType);
@@ -93,6 +96,7 @@ type
     property ConditionsCount : integer read GetConditionsCount;
     property CurrentCondition : integer read FCurrentCondition write FCurrentCondition;
     property Contingency[C, I : integer] : TContingency read GetContingency write SetContingency;
+    property ContingenciesCount[C:integer]:integer read GetContingenciesCount;
     property ExperimentAim : UTF8string read FExperimentAim write FExperimentAim;
     property ExperimentName : UTF8string read FExperimentName write FExperimentName;
     property GenPlayersAsNeeded : Boolean read FGenPlayersAsNeeded write FGenPlayersAsNeeded;
@@ -104,6 +108,7 @@ type
     property PlayerIndexFromID[s : UTF8string]: integer read GetPlayerIndexFromID;
     property PlayerAsString[P:TPlayer]: UTF8string read GetPlayerAsString;
     property PlayerFromString[s : UTF8string]: TPlayer read GetPlayerFromString;
+    property ConsequenceStringFromChoice[P:Tplayer]:UTF8String read GetConsequenceStringFromChoice;
     property ShowChat : Boolean read FShowChat write FShowChat;
     property SendChatHistoryForNewPlayers : Boolean read FSendChatHistoryForNewPlayers write SetSendChatHistoryForNewPlayers;
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
@@ -111,7 +116,6 @@ type
     property NextTurn : integer read GetNextTurn;
     property NextCycle : integer read GetNextCycle;
     property NextCondition : integer read GetNextCondition;
-
     property State : TExperimentState read FState write SetState;
   public
     property OnEndTurn : TNotifyEvent read FOnEndTurn write SetOnEndTurn;
@@ -140,6 +144,11 @@ begin
   Result := Length(FConditions);
 end;
 
+function TExperiment.GetContingenciesCount(C: integer): integer;
+begin
+  Result := Length(FConditions[C].Contingencies);
+end;
+
 function TExperiment.GetContingency(ACondition, I : integer): TContingency;
 begin
   Result := FConditions[ACondition].Contingencies[I];
@@ -161,6 +170,9 @@ begin
       if Assigned(FOnEndCycle) then FOnEndCycle(Self);
       NextCycle;
     end;
+{$IFDEF DEBUG}
+  WriteLn('TExperiment.GetNextTurn:',Result);
+{$ENDIF}
 end;
 
 function TExperiment.GetNextTurnPlayerID: UTF8string; // used during cycles
@@ -183,6 +195,9 @@ begin
           NextCondition;
         end;
     end;
+  {$IFDEF DEBUG}
+    WriteLn('TExperiment.GetNextCycle:',Result);
+  {$ENDIF}
 end;
 
 function TExperiment.GetNextCondition: integer;
@@ -221,7 +236,9 @@ begin
           EndCondition
 
   end;
-
+  {$IFDEF DEBUG}
+    WriteLn('TExperiment.GetNextCondition:',Result);
+  {$ENDIF}
 end;
 
 function TExperiment.GetPlayer(I : integer): TPlayer;
@@ -312,8 +329,7 @@ begin
     , P.Nicname
     , GetPPointsString(P.Points)
     , GetStatusString(P.Status)
-    , GetChoiceString(P.Choice.Current)
-    , GetChoiceString(P.Choice.Last)
+    , GetChoiceString(P.Choice)
     , IntToStr(P.Turn)
   ]);
   for i := 0 to Length(M)-1 do
@@ -384,9 +400,8 @@ begin
   Result.Nicname := ExtractDelimited(2,s,['|']);
   Result.Points := GetPPointsFromString(ExtractDelimited(3,s,['|']));
   Result.Status := GetStatusFromString(ExtractDelimited(4,s,['|']));
-  Result.Choice.Current := GetChoiceFromString(ExtractDelimited(5,s,['|']));
-  Result.Choice.Last := GetChoiceFromString(ExtractDelimited(6,s,['|']));
-  Result.Turn:=StrToInt(ExtractDelimited(7,s,['|']));
+  Result.Choice := GetChoiceFromString(ExtractDelimited(5,s,['|']));
+  Result.Turn:=StrToInt(ExtractDelimited(6,s,['|']));
 end;
 
 function TExperiment.GetPlayerIndexFromID(AID: UTF8string): integer;
@@ -421,6 +436,20 @@ end;
 function TExperiment.GetInterlockingsIn(ALastCycles: integer): integer;
 begin
 
+end;
+
+function TExperiment.GetConsequenceStringFromChoice(P: TPlayer): Utf8string;
+var
+  i : integer;
+  c : integer;
+begin
+  c := CurrentCondition;
+  PlayerFromID[P.ID] := P;
+  Result:= '';
+  for i :=0 to ContingenciesCount[c] -1 do
+    if not Contingency[c,i].Meta then
+      if Contingency[c,i].ResponseMeetsCriteriaI(P.Choice.Row,P.Choice.Color) then
+        Result += Contingency[c,i].Consequence.AsString + '+';
 end;
 
 procedure TExperiment.SetCondition(I : Integer; AValue: TCondition);
@@ -611,9 +640,9 @@ begin
   if FFilename <> '' then
     SaveExperimentToFile(Self,FFilename)
   else
-    {$IFDEF DEBUG}
-    WriteLn(WARN_CANNOT_SAVE)
-    {$ENDIF};
+{$IFDEF DEBUG}
+  WriteLn(WARN_CANNOT_SAVE)
+{$ENDIF};
 end;
 
 procedure TExperiment.Clean;

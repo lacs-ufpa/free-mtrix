@@ -30,11 +30,24 @@ resourcestring
 
 implementation
 
-uses LCLIntf, game_actors_point, game_resources, string_methods, regdata, zhelpers;
+uses LCLIntf, game_actors_point, game_resources, string_methods, regdata, zhelpers, strutils;
 
 function LoadExperimentFromResource(var AExperiment: TExperiment): Boolean;
-var i,j : integer;
+var
   C : TCondition;
+  LConcequence : TConsequence;
+  LCriteria1 : TCriteria = (
+    Style:(gtRowsOnly);
+    Rows:[grEven];
+    Colors:[];
+  );
+
+  LCriteria2 : TCriteria = (
+    Style:(gtRowsOnly);
+    Rows:[grOdd];
+    Colors:[];
+  );
+
 begin
   Result := False;
   with AExperiment do
@@ -53,19 +66,27 @@ begin
       C := C_CONDITION_TEMPLATE;
       with C  do
         begin
+          SetLength(Contingencies, 2);
+          LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscB, gscMessage,gscBroadcastMessage],['NICNAME','queijo','queijos']);
+          Contingencies[0] := TContingency.Create(AExperiment,LConcequence,LCriteria1,False);
+          LConcequence := TConsequence.Create(AExperiment,3,[gscPoints, gscA, gscMessage,gscBroadcastMessage],['NICNAME','queijo','queijos']);
+          Contingencies[1] := TContingency.Create(AExperiment,LConcequence,LCriteria2,False);
+
           ConditionName := SEC_CONDITION+IntToStr(1);
           Turn.Count:=0;
           Turn.Value:=2;
           Turn.Random:=False;
+          Cycles.Count:=0;
+          Cycles.Value:=4;
+          Cycles.Generation:=0;
         end;
-      i := AppendCondition(C);
+      AppendCondition(C);
     end;
 end;
 
 function LoadExperimentFromFile(var AExperiment: TExperiment; AFilename: string):Boolean;
 var
   LIniFile : TCIniFile;
-  LExperiment : TExperiment;
 
   //procedure HandleRootPath(var APath : string);
   //begin
@@ -101,27 +122,6 @@ var
     Result.G := StrToIntDef(GetAndDelFirstValue(LS),0);
   end;
 
-  function GetConsequence(S: string) : TConsequence;
-  var
-    CS : TGameConsequenceStyle;
-    LS : string;
-  begin
-    // 0,0,0,0,0,0,NON
-    LS := UpperCase(S + VV_SEP);
-    Result.Points.A.Value := StrToIntDef(GetAndDelFirstValue(LS),0);
-    Result.Points.A.Variation:=StrToIntDef(GetAndDelFirstValue(LS),0);
-
-    Result.Points.B.Value := StrToIntDef(GetAndDelFirstValue(LS),0);
-    Result.Points.B.Variation:=StrToIntDef(GetAndDelFirstValue(LS),0);
-
-    Result.Points.G.Value := StrToIntDef(GetAndDelFirstValue(LS),0);
-    Result.Points.G.Variation:=StrToIntDef(GetAndDelFirstValue(LS),0);
-
-    Result.Style := [];
-    for CS in TGameConsequenceStyle do
-      Result.Style += [GetConsequenceStyleFromString(GetAndDelFirstValue(LS))]
-
-  end;
 
   function GetChoiceFromString(S:string) : TPlayerChoice;
   var
@@ -172,11 +172,11 @@ var
     // Experiment;
     with LIniFile do
       begin
-        LExperiment.Researcher := ReadString(SEC_EXPERIMENT, KEY_RESEARCHER,VAL_RESEARCHER);
-        LExperiment.ExperimentName:=ReadString(SEC_EXPERIMENT, KEY_NAME,'');
-        LExperiment.ExperimentAim:=ReadString(SEC_EXPERIMENT, KEY_AIM,'');
-        LExperiment.GenPlayersAsNeeded:=ReadBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED,True);
-        LExperiment.CurrentCondition := ReadInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION,0)-1; //zero based
+        AExperiment.Researcher := ReadString(SEC_EXPERIMENT, KEY_RESEARCHER,VAL_RESEARCHER);
+        AExperiment.ExperimentName:=ReadString(SEC_EXPERIMENT, KEY_NAME,'');
+        AExperiment.ExperimentAim:=ReadString(SEC_EXPERIMENT, KEY_AIM,'');
+        AExperiment.GenPlayersAsNeeded:=ReadBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED,True);
+        AExperiment.CurrentCondition := ReadInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION,0)-1; //zero based
       end;
   end;
 
@@ -184,30 +184,68 @@ var
   var
     LS : string;
     i : integer;
+    P : TPlayer;
   begin
     i := 0;
     LS := SEC_PLAYER+IntToStr(i+1);
     with LIniFile do
       while SectionExists(LS) do
-        with LExperiment.Player[LExperiment.AppendPlayer] do
-          begin
-            Turn := ReadInteger(LS,KEY_PLAYER_TURN,i);
-            Choice.Current := GetChoiceFromString(ReadString(LS,KEY_PLAYER_CHOICE_CURRENT,'0,NONE,'));
-            Choice.Last := GetChoiceFromString(ReadString(LS,KEY_PLAYER_CHOICE_LAST,'0,NONE,'));
-            ID := ReadString(LS,KEY_PLAYER_ID,s_random(20));
-            Nicname := ReadString(LS,KEY_PLAYER_NICNAME,GenResourceName(i));
-            Login := ReadString(LS,KEY_PLAYER_LOGIN,'jogador'+IntToStr(i+1));
-            Password := ReadString(LS,KEY_PLAYER_PASSWORD,'1234');
-            Points := GetPPointsFromString(ReadString(LS,KEY_PLAYER_POINTS,'0,0,'));
-            Status := GetStatusFromString(ReadString(LS,KEY_PLAYER_STATUS,'esperando'));
-            Data.Values[KEY_PLAYER_TEMP] := ReadString(LS,KEY_PLAYER_TEMP,'');
-          end;
+        begin
+          if i = 0 then
+            i := AExperiment.AppendPlayer;
+          with P do
+            begin
+              Turn := ReadInteger(LS,KEY_PLAYER_TURN,i);
+              Choice := GetChoiceFromString(ReadString(LS,KEY_PLAYER_CHOICE_LAST,'0,NONE,'));
+              ID := ReadString(LS,KEY_PLAYER_ID,s_random(20));
+              Nicname := ReadString(LS,KEY_PLAYER_NICNAME,GenResourceName(i));
+              Login := ReadString(LS,KEY_PLAYER_LOGIN,'jogador'+IntToStr(i+1));
+              Password := ReadString(LS,KEY_PLAYER_PASSWORD,'1234');
+              Points := GetPPointsFromString(ReadString(LS,KEY_PLAYER_POINTS,'0,0,'));
+              Status := GetStatusFromString(ReadString(LS,KEY_PLAYER_STATUS,'esperando'));
+              Data.Values[KEY_PLAYER_TEMP] := ReadString(LS,KEY_PLAYER_TEMP,'');
+            end;
+          AExperiment.Player[i] := P;
+          i := AExperiment.AppendPlayer;
+          LS := SEC_PLAYER+IntToStr(i+1);
+        end;
   end;
 
   procedure ReadContingencies(ACondition:integer;IsMeta : Boolean);
-  var i : integer;
-      LS,LCK : string;
-    procedure SetLCK;
+  var
+    i : integer;
+    LS,LCK : string;
+    LConsequence : TConsequence;
+    LCriteria:TCriteria;
+
+    function GetCriteriaFromString(S:string):TCriteria;
+    var
+      LS : string;
+      i,
+      LCount: integer;
+    begin
+      LS := ExtractDelimited(1,S,['|']);
+      LCount := WordCount(LS,[#0,',']);
+      Result.Rows := [];
+      for i := 1 to LCount do
+        Result.Rows += [GetRowFromString(ExtractDelimited(i,LS,[',']))];
+
+       case ExtractDelimited(2,S,['|'])of
+        'NONE':Result.Style:=gtNone;
+        'CORES':Result.Style:=gtColorsOnly;
+        'E':Result.Style:=gtRowsAndColors;
+        'LINHAS':Result.Style:=gtRowsOnly;
+        'OU':Result.Style:=gtRowsOrColors;
+      end;
+
+      LS := ExtractDelimited(3,S,['|']);
+      LCount := WordCount(LS,[#0,',']);
+      Result.Colors := [];
+      for i := 1 to LCount do
+        Result.Colors += [GetColorFromString(ExtractDelimited(i,LS,[',']))];
+    end;
+
+    procedure SetLCK(i:integer);
     begin
       if IsMeta then
         LCK := KEY_METACONTINGENCY+IntToStr(i+1)
@@ -216,72 +254,68 @@ var
     end;
   begin
     LS := SEC_CONDITION+IntToStr(ACondition+1);
-    i := 0;
-    SetLCK;
+    i := AExperiment.AppendContingency(ACondition);
+    SetLCK(i);
     with LIniFile do
-      while ValueExists(LS, LCK+KEY_CONSEQUE) do
-        with LExperiment.Condition[ACondition].Contingencies[LExperiment.AppendContingency(ACondition)] do
-          begin
-            Meta:=IsMeta;
-            Consequence := GetConsequence(ReadString(LS,LCK+KEY_CONSEQUE,DEF_CONSEQUENCE));
-            if IsMeta then
-              Consequence.Message.Text := ReadString(LS,LCK+KEY_CONSEQUE_MESSAGE,DEF_CONSEQUENCE_MESSAGE)
-            else
-              Consequence.Message.Text := ReadString(LS,LCK+KEY_CONSEQUE_MESSAGE,DEF_CONSEQUENCE_MESSAGE);
-
-            Criteria := GetResponseFromString(ReadString(LS,LCK+KEY_RESPONSE,DEF_RESPONSE));
-
-            Inc(i);
-            SetLCK;
-          end;
+      while ValueExists(LS, LCK+KEY_CONSEQUE) and ValueExists(LS, LCK+KEY_CRITERIA)do
+        begin
+          LConsequence := TConsequence.Create(AExperiment,ReadString(LS,LCK+KEY_CONSEQUE,DEF_CONSEQUENCE));
+          LCriteria := GetCriteriaFromString(ReadString(LS,LCK+KEY_CRITERIA,DEF_CRITERIA));
+          AExperiment.Condition[ACondition].Contingencies[i] := TContingency.Create(AExperiment,LConsequence,LCriteria,IsMeta);
+          i := AExperiment.AppendContingency(ACondition);
+          SetLCK(i);
+        end;
   end;
 
   procedure ReadConditions;
   var
     s1, LS : string;
-    LCondition : integer;
+    i : integer;
+    C :TCondition;
   begin
-    LCondition := 0;
-    LS := SEC_CONDITION+IntToStr(LCondition+1);
+    i := 0;
+    LS := SEC_CONDITION+IntToStr(i+1);
     with LIniFile do
       while SectionExists(LS) do
-        with LExperiment.Condition[LExperiment.AppendCondition] do
-          begin
-            s1 := ReadString(LS, KEY_ENDCRITERIA,'');
-            if s1 = '' then
-              begin
-                {$IFDEF DEBUG}
-                WriteLn(WARN_CONDITION_WITH_NO_END+LS+'. '+KEY_ENDCRITERIA+KV_SEP+DEF_END+WARN_END);
-                {$ENDIF}
-                s1 := DEF_END;
-              end;
-            EndCriterium := GetEndCriteria(s1);
-            ConditionName := ReadString(LS,KEY_COND_NAME,LS);
-            Points.Count := GetPoints(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
-            Points.OnStart := GetPoints(ReadString(LS, KEY_POINTS_ONSTART,DEF_POINTS));
-            Turn.Count:= ReadInteger(LS, KEY_TURN_COUNT,1);
-            Turn.Value:= ReadInteger(LS, KEY_TURN_VALUE,2);
-            Turn.Random:= ReadBool(LS, KEY_TURN_RANDOM,False);
-            Cycles.Count:= ReadInteger(LS, KEY_CYCLES_COUNT,1);
-            Cycles.Value:= ReadInteger(LS, KEY_CYCLES_VALUE,10);
-            Cycles.Generation:= ReadInteger(LS, KEY_CYCLES_GEN,1);
+        begin
+          if i = 0 then
+            i := AExperiment.AppendCondition;
 
-            // todo: create and initialize prompt based on its values
-            ///////////////////////////////////
-            // need to create classes first ///
-            ///////////////////////////////////
+          with C do
+            begin
+              s1 := ReadString(LS, KEY_ENDCRITERIA,'');
+              if s1 = '' then
+                begin
+                  {$IFDEF DEBUG}
+                  WriteLn(WARN_CONDITION_WITH_NO_END+LS+'. '+KEY_ENDCRITERIA+KV_SEP+DEF_END+WARN_END);
+                  {$ENDIF}
+                  s1 := DEF_END;
+                end;
+              EndCriterium := GetEndCriteria(s1);
+              ConditionName := ReadString(LS,KEY_COND_NAME,LS);
+              Points.Count := GetPoints(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
+              Points.OnStart := GetPoints(ReadString(LS, KEY_POINTS_ONSTART,DEF_POINTS));
+              Turn.Count:= ReadInteger(LS, KEY_TURN_COUNT,1);
+              Turn.Value:= ReadInteger(LS, KEY_TURN_VALUE,2);
+              Turn.Random:= ReadBool(LS, KEY_TURN_RANDOM,False);
+              Cycles.Count:= ReadInteger(LS, KEY_CYCLES_COUNT,1);
+              Cycles.Value:= ReadInteger(LS, KEY_CYCLES_VALUE,10);
+              Cycles.Generation:= ReadInteger(LS, KEY_CYCLES_GEN,1);
 
-            Prompt.PromptStyle:= GetPromptStyle(ReadString(LS,KEY_PROMPT_STYLE,'todos,sim,metacontingência,recuperar pontos,'));
-            Prompt.PromptMessage := ReadString(LS,KEY_PROMPT_MESSAGE,DEF_PROMPTMESSAGE);
+              ReadContingencies(i,True);
+              ReadContingencies(i,False);
 
-            ReadContingencies(LCondition,True);
-            ReadContingencies(LCondition,False);
+              // if no contingencies, return false...
 
-            Prompt.PromptTargets:=@Contingencies;
+              Prompt := TPrompt.Create(AExperiment,ReadString(LS,KEY_PROMPT_STYLE,'todos,sim,metacontingência,recuperar pontos,'));
+              Prompt.PromptStyle:= GetPromptStyle(ReadString(LS,KEY_PROMPT_STYLE,'todos,sim,metacontingência,recuperar pontos,'));
+              Prompt.PromptMessage := ReadString(LS,KEY_PROMPT_MESSAGE,DEF_PROMPTMESSAGE);
 
-            Inc(LCondition);
-            LS := SEC_CONDITION+IntToStr(LCondition+1);
-          end;
+            end;
+            AExperiment.Condition[i]:= C;
+            i := AExperiment.AppendCondition;
+            LS := SEC_CONDITION+IntToStr(i+1);
+        end;
   end;
 
 begin
@@ -292,7 +326,7 @@ begin
       with LIniFile do
         if SectionExists(SEC_EXPERIMENT) then
           begin
-            LExperiment.Create(AExperiment.Owner);
+            AExperiment := TExperiment.Create(AExperiment.Owner);
             ReadExperiment;
             ReadPlayers;
             ReadConditions;
@@ -303,10 +337,6 @@ begin
             LIniFile.Free;
             Exit;
           end;
-      Result := True;
-      LIniFile.Free;
-      AExperiment := LExperiment;
-      LExperiment.Free;
     end
   else
     ShowMessage(ERROR_FILE_NOT_FOUND);
@@ -340,23 +370,6 @@ var
     Result := Result + IntToStr(APoints.B) + VV_SEP;
     Result := Result + IntToStr(APoints.G) + VV_SEP;
   end;
-
-  function GetConsequenceString(AConsequence : TConsequence) : string;
-  var CS : TGameConsequenceStyle;
-  begin
-    Result := IntToStr(AConsequence.Points.A.Value);
-    Result := Result + IntToStr(AConsequence.Points.A.Variation) + VV_SEP;
-
-    Result := Result + IntToStr(AConsequence.Points.B.Value) + VV_SEP;
-    Result := Result + IntToStr(AConsequence.Points.B.Variation) + VV_SEP;
-
-    Result := Result + IntToStr(AConsequence.Points.G.Value) + VV_SEP;
-    Result := Result + IntToStr(AConsequence.Points.G.Variation) + VV_SEP;
-
-    for CS in AConsequence.Style do
-      Result := Result + GetConsequenceStyleString(CS) + VV_SEP;
-  end;
-
 
   function GetChoiceString(AChoice : TPlayerChoice) : string;
   begin
@@ -413,8 +426,8 @@ begin
 
                 with Contingencies[j] do
                   begin
-                    WriteString(LC,LCK+KEY_CONSEQUE,GetConsequenceString(Consequence));
-                    WriteString(LC,LCK+KEY_RESPONSE,GetResponseString(Criteria));
+                    WriteString(LC,LCK+KEY_CONSEQUE,Consequence.AsString);
+                    WriteString(LC,LCK+KEY_CRITERIA,CriteriaString);
                   end;
               end;
           end;
@@ -426,8 +439,7 @@ begin
         begin
           LC := SEC_PLAYER+IntToStr(i+1);
           WriteInteger(LC,KEY_PLAYER_TURN,AExperiment.Player[i].Turn);
-          WriteString(LC,KEY_PLAYER_CHOICE_CURRENT,GetChoiceString(AExperiment.Player[i].Choice.Current));
-          WriteString(LC,KEY_PLAYER_CHOICE_LAST,GetChoiceString(AExperiment.Player[i].Choice.Last));
+          WriteString(LC,KEY_PLAYER_CHOICE_LAST,GetChoiceString(AExperiment.Player[i].Choice));
           WriteString(LC,KEY_PLAYER_ID,AExperiment.Player[i].ID);
           WriteString(LC,KEY_PLAYER_NICNAME,AExperiment.Player[i].Nicname);
           WriteString(LC,KEY_PLAYER_LOGIN,AExperiment.Player[i].Login);

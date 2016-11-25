@@ -26,8 +26,7 @@ resourcestring
   SEC_PLAYER = 'Jogador.';
   KEY_PLAYER_TEMP = 'Data.X';
   KEY_PLAYER_TURN = 'Jogada';
-  KEY_PLAYER_CHOICE_CURRENT = 'Escolha.Atual';
-  KEY_PLAYER_CHOICE_LAST = 'Escolha.Passada';
+  KEY_PLAYER_CHOICE_LAST = 'Escolha';
   KEY_PLAYER_ID = 'ID';
   KEY_PLAYER_NICNAME = 'Apelido';
   KEY_PLAYER_LOGIN = 'Usuário';
@@ -52,25 +51,26 @@ resourcestring
   //KEY_PROMPT_VALUE = 'Questão.Apresentar'; // BOOL,CSQPROMPTCODE
   KEY_PROMPT_STYLE = 'Questão.Estilo'; // string
   KEY_PROMPT_MESSAGE = 'Questão.Mensagem'; // string
-
   KEY_ENDCRITERIA = 'Critério.DeFinalizaçãoDaCondição'; //2,50,10,30,
 
   KEY_CONTINGENCY = 'Contingência.';
   KEY_METACONTINGENCY = 'Metacontingência.';
 
-  KEY_RESPONSE = '.RespostaEsperada'; // ROW,COLOR,OPCODE
+  // ROW,COLOR,OPCODE
+  KEY_CRITERIA = '.EsquemaDeReforço';
   KEY_CONSEQUE = '.Consequência'; // A,B,G,CSQCODE
-  KEY_CONSEQUE_MESSAGE = '.Consequência.Mensagem';
+  KEY_CONSEQUE_MESSAGE_PREPEND = '.Consequência.Mensagem.Prefixo';
+  KEY_CONSEQUE_MESSAGE_APPENDS = '.Consequência.Mensagem.Sufixo.Singular';
+  KEY_CONSEQUE_MESSAGE_APPENDP = '.Consequência.Mensagem.Sufixo.Plural';
+
 
   VAL_RESEARCHER = 'Pesquisador';
 
   DEF_END = '2,20,10,10,';  // which come first, 20 cycles | 10% entrelaçamentos in the last 10 cycles
   DEF_POINTS = '0,0,0,';
-  DEF_CONSEQUENCE = '0,0,0,NON,50,50,';
-  DEF_METACONSEQUENCE_MESSAGE = 'Vocês produziram <$G> <$SG>.';
-  DEF_CONSEQUENCE_MESSAGE = '<$JOGADOR> ganhou <$A> <$SA> e <$B> <$SB>.';
+  DEF_CONSEQUENCE = '1,0|M,C,P,A,|$NICNAME|ponto|pontos|';
   DEF_METARESPONSE = 'IMPAR,E,DIFERENTES,';
-  DEF_RESPONSE = 'PAR,E,INDIFERENTE,';
+  DEF_CRITERIA = 'PAR,E,INDIFERENTE,';
   DEF_PROMPTMESSAGE = 'Vocês perderam <$G> item escolar. Desejam recuperá-lo gastando pontos do Tipo A?';
 
 const
@@ -113,10 +113,7 @@ const
     Password : '';
     Status : gpsWaiting;
     Data : nil;
-    Choice : (
-      Current : (Row:grNone; Color:gcNone;);
-      Last : (Row:grNone; Color:gcNone;);
-    );
+    Choice : (Row:grNone; Color:gcNone;);
     Points : (A:0; B:0);
     Turn : -1;
   );
@@ -124,20 +121,13 @@ const
   //C_OPERANT_1 : TContingency =
   //  (
   //    Consequence : (
-  //      Style : [gscShowMessage,gscPoints];
-  //      Points :(A : 0;    B : 1;    G : 0;);
+  //      Style : [gscShowMessage,gscPoints, gscB];
   //      Message : '<$JOGADOR> produziu 1 ponto do tipo B.';
-  //      Cycles : 0;                 // absolute,
-  //      VariationMin: 0;            // porcentage,
-  //      VariationMax : 0;     // porcentage
-  //      Prompt : (
-  //        Message : '';
-  //        Style : [];
-  //      );
-  //    );                  // prompt needs its own class
+  //      Value: 1;
+  //      Variation:1;
   //
-  //    Response : (
-  //      Operator_ : goNONE;
+  //    Criteria : (
+  //      Style : goNONE;
   //      Rows : [grEven];
   //      Colors : [gcNone];
   //    );
@@ -148,23 +138,15 @@ const
   //C_OPERANT_2 : TContingency =
   //  (
   //    Consequence : (
-  //      Style : [gscShowMessage,gscPoints];
-  //      Points :(A : 3;    B : 0;    G : 0;);
+  //      Style : [gscShowMessage,gscPoints, gscA];
   //      Message : '<$JOGADOR> produziu 3 pontos do tipo A.';
-  //      Cycles : 0;                 // absolute,
-  //      VariationMin: 0;            // porcentage,
-  //      VariationMax : 0;     // porcentage
-  //      Prompt : (
-  //        Message : '';
-  //        Style : [];
-  //      );
-  //    );
   //
-  //    Response : (
+  //    Criteria : (
   //      Operator_ : goNONE;
-  //      Rows : [grOdd];
+  //      Rows : [grEven];
   //      Colors : [gcNone];
   //    );
+  //
   //    Meta : False;
   //  );
 

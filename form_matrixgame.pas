@@ -220,7 +220,6 @@ end;
 procedure TFormMatrixGame.TimerTimer(Sender: TObject);
 begin
   PopupNotifier.Visible:=False;
-  Timer.Enabled := False;
 end;
 
 procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
@@ -281,7 +280,7 @@ end;
 procedure TFormMatrixGame.PopupNotifierClose(Sender: TObject;
   var CloseAction: TCloseAction);
 begin
-  // do nothing for now
+  Timer.Enabled := False;
 end;
 
 procedure TFormMatrixGame.StringGridMatrixClick(Sender: TObject);
@@ -309,7 +308,7 @@ end;
 
 procedure TFormMatrixGame.btnConfirmRowClick(Sender: TObject);
 begin
-  FGameControl.SendMessage(K_CHOICE);
+  FGameControl.SendRequest(K_CHOICE);
 end;
 
 procedure TFormMatrixGame.Button3Click(Sender: TObject);

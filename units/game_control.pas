@@ -86,13 +86,13 @@ const
   K_QUESTION = '.Question';
   //
   K_STATUS   = '.Status';
-  K_CYCLES   = '.OnCycleStart';
+  K_CYCLES   = '.OnEndCycle';
 
   //K_RESPONSE =
 
 implementation
 
-uses LazUTF8, form_matrixgame, form_chooseactor, game_resources, string_methods, zhelpers;
+uses LazUTF8, form_matrixgame, form_chooseactor, game_resources, strutils, string_methods, zhelpers;
 
 const
   GA_ADMIN = 'Admin';
@@ -134,12 +134,18 @@ begin
 
   // inform players
 
+{$IFDEF DEBUG}
+  WriteLn('TGameControl.NextTurn');
+{$ENDIF}
 end;
 
 procedure TGameControl.NextCycle(Sender: TObject);
 begin
   // prompt question to all players
   FormMatrixGame.LabelExpCountCycle.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Count);
+  {$IFDEF DEBUG}
+    WriteLn('TGameControl.NextTurn');
+  {$ENDIF}
 end;
 
 procedure TGameControl.NextLineage(Sender: TObject);
@@ -235,12 +241,12 @@ begin
         Caption := P.Nicname+SysToUtf8(' (Você)' )
       else
         Caption := P.Nicname;
-      i1 := Integer(P.Choice.Last.Row);
+      i1 := Integer(P.Choice.Row);
       if i1 > 0 then
         LabelLastRowCount.Caption := Format('%-*.*d', [1,2,i1])
       else
         LabelLastRowCount.Caption := 'NA';
-      PanelLastColor.Color := GetColorFromCode(P.Choice.Last.Color);
+      PanelLastColor.Color := GetColorFromCode(P.Choice.Color);
       Enabled := True;
       Parent := FormMatrixGame.GBLastChoice;
     end;
@@ -385,12 +391,22 @@ var
       M[i] := A[i];
   end;
 begin
-  SetM([
-    FZMQActor.ID
-    , ' '
-    , ARequest
-  ]);
+  case ARequest of
+    K_LOGIN :SetM([
+        FZMQActor.ID
+        , ' '
+        , ARequest
+      ]);
 
+    K_CHOICE  : SetM([
+        FZMQActor.ID
+        , ' '
+        , ARequest
+        , GetSelectedRowF(FormMatrixGame.StringGridMatrix)
+        , GetSelectedColorF(FormMatrixGame.StringGridMatrix)
+      ]);
+
+  end;
   case FActor of
     gaAdmin: begin
       //M[2] := GA_ADMIN+M[2];// for now cannot Requests
@@ -419,13 +435,6 @@ var
 begin
   case AMessage of
 
-    K_CHOICE  : SetM([
-      AMessage
-      , FZMQActor.ID
-      , GetSelectedRowF(FormMatrixGame.StringGridMatrix)
-      , GetSelectedColorF(FormMatrixGame.StringGridMatrix)
-    ]);
-
     K_CHAT_M  : begin
       //if (FActor = gaAdmin) and (not FExperiment.ResearcherCanChat) then Exit;
       SetM([
@@ -434,7 +443,12 @@ begin
         , FormMatrixGame.ChatMemoSend.Lines.Text
       ]);
     end;
-
+    K_CHOICE  : SetM([
+        AMessage
+        , FZMQActor.ID
+        , GetSelectedRowF(FormMatrixGame.StringGridMatrix)
+        , GetSelectedColorF(FormMatrixGame.StringGridMatrix)
+      ]);
   end;
 
   case FActor of
@@ -486,11 +500,11 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
   end;
 
-  procedure EnableMatrix(ATurn:integer);
+  procedure SetPMatrix(ATurn:integer; AEnabled:Boolean);
   begin
     if FExperiment.PlayerFromID[Self.ID].Turn = ATurn then
       begin
-        FormMatrixGame.StringGridMatrix.Enabled:=True;
+        FormMatrixGame.StringGridMatrix.Enabled:=AEnabled;
         FormMatrixGame.StringGridMatrix.Options := FormMatrixGame.StringGridMatrix.Options-[goRowSelect];
         FormMatrixGame.btnConfirmRow.Enabled:=True;
         FormMatrixGame.btnConfirmRow.Caption:='Confirmar';
@@ -520,7 +534,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             FormMatrixGame.btnConfirmRow.Caption:='OK';
           end
         else
-          EnableMatrix(P.Turn+1);
+          SetPMatrix(P.Turn+1, True);
       end;
 
       gaAdmin:begin
@@ -542,7 +556,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             begin
               PopUpPos.X := FormMatrixGame.StringGridMatrix.Left+FormMatrixGame.StringGridMatrix.Width;
               PopUpPos.Y := FormMatrixGame.StringGridMatrix.Top;
-              EnableMatrix(0);
+              SetPMatrix(0, True);
               FormMatrixGame.PopupNotifier.Text:='É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.';
               FormMatrixGame.PopupNotifier.ShowAtPos(PopUpPos.X,PopUpPos.Y);
             end
@@ -552,6 +566,31 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormMatrixGame.PopupNotifier.ShowAtPos(PopUpPos.X,PopUpPos.Y);
             end;
           FormMatrixGame.Timer.Enabled:=True;
+        end;
+    end;
+  end;
+
+  procedure OnEndCycle;
+  begin
+    // Updata turn
+
+    //
+    case FActor of
+      gaPlayer:
+        begin
+          if FExperiment.PlayerFromID[Self.ID].Turn = 0 then
+            begin
+              SetPMatrix(0,True);
+            end
+          else
+            begin
+              //CleanMatrix;
+              FormMatrixGame.StringGridMatrix.Enabled:=False;
+              FormMatrixGame.StringGridMatrix.Options := FormMatrixGame.StringGridMatrix.Options-[goRowSelect];
+              FormMatrixGame.btnConfirmRow.Enabled:=True;
+              FormMatrixGame.btnConfirmRow.Caption:='Confirmar';
+              FormMatrixGame.btnConfirmRow.Visible := False;
+            end;
         end;
     end;
   end;
@@ -622,6 +661,7 @@ begin
   if MHas(K_CHOICE)  then ReceiveChoice;
   if MHas(K_KICK)    then SayGoodBye;
   if MHas(K_START) then NotifyPlayers;
+  if MHas(K_CYCLES) then OnEndCycle;
 end;
 
 // Here FActor is garanted to be a TZMQAdmin
@@ -662,10 +702,8 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
                 P.Points.A:=0;
                 P.Points.B:=0;
                 P.Status:=gpsPlaying;
-                P.Choice.Current.Color:=gcNone;
-                P.Choice.Current.Row:=grNone;
-                P.Choice.Last.Color:=gcNone;
-                P.Choice.Last.Row:=grNone;
+                P.Choice.Color:=gcNone;
+                P.Choice.Row:=grNone;
                 // turns by entrance order or by random order
                 P.Turn := FExperiment.NextTurn;
                 FExperiment.Player[i] := P;
@@ -716,11 +754,25 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
       end;
   end;
 
+  procedure ValidateChoice;
+  var P : TPlayer;
+  begin
+    P := FExperiment.PlayerFromID[ARequest[0]];
+    P.Choice.Row:= GetRowFromString(ARequest[3]); // row
+    P.Choice.Color:= GetColorFromString(ARequest[4]); // color
+    ARequest[2] := K_CHOICE+K_ARRIVED;
+    ARequest.Append(FExperiment.ConsequenceStringFromChoice[P]); //individual consequences
+    FZMQActor.SendMessage([K_CHOICE,P.ID,ARequest[3],ARequest[4]]);
+  end;
+
 begin
   if MHas(K_LOGIN) then ReplyLoginRequest;
+  if MHas(K_CHOICE) then ValidateChoice;
 end;
 
-// Here FActor is garanted to be a TZMQPlayer, should be used to send all wanted history for new income players
+// Here FActor is garanted to be a TZMQPlayer, reply
+// - sending private data to player player
+// - sending data from early history to income players
 procedure TGameControl.ReceiveReply(AReply: TStringList);
   function MHas(const C : string) : Boolean;
   begin
@@ -752,8 +804,36 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
     else
       begin
       {$IFDEF DEBUG}
-        WriteLn(Self.ID +' sent but' + AReply[0]  +' received. This must not occur.');
+        WriteLn(Self.ID +' sent but' + AReply[0]  +' received. <<<<<<<<<<<<<<<<<<<<<<< This must not occur >>>>>>>>>>>>>>>>>>>>>>>>>>');
       {$ENDIF}
+      end;
+  end;
+
+  procedure ChoiceValidated;
+  var
+    LConsequence : TConsequence;
+    LCount,
+    i : integer;
+    P : TPlayer;
+  begin
+    if Self.ID = AReply[0] then
+      begin
+        P := FExperiment.PlayerFromID[Self.ID];
+        LCount := WordCount(AReply[5],['+']);
+        {$IFDEF DEBUG}
+        WriteLn('LCount:',LCount);
+        {$ENDIF}
+        if LCount > 0 then
+          for i := 1 to LCount do
+            begin
+              LConsequence := TConsequence.Create(FormMatrixGame,ExtractDelimited(i,AReply[5],['+']));
+              //LConsequence.PlayerNicname := P.Nicname;
+              LConsequence.Present(Self, False);
+              {$IFDEF DEBUG}
+              WriteLn('A consequence should have shown.');
+              {$ENDIF}
+            end;
+
       end;
   end;
 
@@ -765,6 +845,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
 begin
   if MHas(K_RESUME+K_ARRIVED) then ResumePlayer;
   if MHas(K_LOGIN+K_ARRIVED) then LoginAccepted;
+  if MHas(K_CHOICE+K_ARRIVED) then ChoiceValidated;
 end;
 
 

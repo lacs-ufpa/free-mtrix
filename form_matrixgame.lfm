@@ -1,14 +1,14 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = -621
+  Left = 0
   Height = 565
   Top = 124
-  Width = 1393
-  HorzScrollBar.Page = 1393
+  Width = 1278
+  HorzScrollBar.Page = 1278
   VertScrollBar.Page = 542
   AutoScroll = True
   Caption = 'FormMatrixGame'
   ClientHeight = 555
-  ClientWidth = 1393
+  ClientWidth = 1278
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   LCLVersion = '1.6.2.0'
@@ -457,6 +457,7 @@ object FormMatrixGame: TFormMatrixGame
       07544269746D617000000000
     }
     Text = 'Text'
+    Title = 'Caption'
     Visible = False
     OnClose = PopupNotifierClose
     left = 112
