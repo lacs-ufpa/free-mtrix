@@ -174,66 +174,19 @@ const
   //    Meta : True;
   //  );
 
-  //C_METACONTINGENCY_A2 : TContingency =
-  //  (
-  //    Consequence : (
-  //      Style : [gscShowMessage,gscPoints,gscBroadcastMessage];
-  //      Points :( A : 0;    B : 0;    G : -1;);
-  //      Message : 'Vocês perderam 1 item escolar.';    // show first in case of last participant
-  //      Cycles : 0;                 // absolute,
-  //      VariationMin: 0;            // porcentage,
-  //      VariationMax : 0;     // porcentage
-  //      Prompt : (
-  //        Message : '';
-  //        Style : [];
-  //      );
-  //    );
-  //
-  //    Response : (
-  //      Operator_ : goNONE;
-  //      Rows : [grOdd,grSome];
-  //      Colors : [gcNone];
-  //    );
-  //
-  //    Meta : True;
-  //  );
-
-    //C_METACONTINGENCY_B1: TContingency =
-    //  (
-    //    Consequence : (
-    //      Style : [gscShowMessage,gscPoints,gscBroadcastMessage];
-    //      Points :(A :-1;    B : 0;    G : -1;);
-    //      Message : 'Vocês perderam 1 item escolar e uma quantidade de pontos do Tipo A.';
-    //      Cycles : 0;                 // absolute,
-    //      VariationMin: 0;            // porcentage,
-    //      VariationMax : 0;     // porcentage
-    //      Prompt : (
-    //        Message : '';
-    //        Style : [];
-    //      );
-    //    );
-    //
-    //    Response : (
-    //      Operator_ : goNONE;
-    //      Rows : [grOdd, grSome];
-    //      Colors : [gcNone];
-    //    );
-    //
-    //    Meta : True;
-    //  );
 
     //C_METACONTINGENCY_B2: TContingency =
     //  (
     //    Consequence : (
     //      Style : [gscShowMessage,gscPoints,gscBroadcastMessage,gscPromptQuestion];
-    //      Points :(A :-3;    B : 0;    G : -1;);
-    //      Message : 'Vocês perderam 1 item escolar.';
+    //      Points :(A :0;    B : 0;    G : -1;);
+    //      Message : 'Vocês produziram a perda de 1 item escolar.';
     //      Cycles : 0;                 // absolute,
     //      VariationMin: 0;            // porcentage,
     //      VariationMax : 0;     // porcentage
     //      Prompt : (
-    //        Message : 'Vocês perderam 1 item escolar, desejam recuperá-lo gastando pontos do Tipo A?';
-    //        Style : [gsAll,gsYes,gsMetacontingency,gsRecoverLostPoints];
+    //        Message : 'Um item escolar foi perdido, desejam recuperá-lo gastando pontos do Tipo A?';
+    //        Style : [gsAll,gsYes,gsMetacontingency,gsRecoverLostPoints, gsContingency, gsBasA];
     //      );
     //    );
     //
@@ -250,30 +203,34 @@ const
     (
       ConditionName : '';
       Contingencies : nil;
+      Interlocks : (
+        Count : 0;
+        History : nil;
+      );
 
       Points : (
-        Count : ( A:1; B:2; G:3; );
-        OnStart : ( A:3; B:1; G:0; );
+        Count : ( A:0; B:0; G:0; );
+        OnStart : ( A:0; B:0; G:0; );
       );
 
       Turn : (
         Count: 0;
-        Value : 3;
+        Value : 0;
         Random: False;
       );
 
       Cycles : (
         Count : 0;
-        Value : 3;
+        Value : 0;
         Generation : 0;
       );
 
       Prompt : nil;
       EndCriterium : (
         Value : gecWhichComeFirst;
-        InterlockingPorcentage : 10;
-        LastCycles : 6;
-        AbsoluteCycles: 8;
+        InterlockingPorcentage : 50;
+        LastCycles : 4;
+        AbsoluteCycles: 6;
       );
     );
 

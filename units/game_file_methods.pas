@@ -48,6 +48,17 @@ var
     Colors:[];
   );
 
+  LCriteria3 : TCriteria = (
+    Style:(gtRowsAndColors);
+    Rows:[grEven];
+    Colors:[gcDiff];
+  );
+
+  LCriteria4 : TCriteria = (
+    Style:(gtRowsOrColors);
+    Rows:[grNot,grEven];
+    Colors:[gcNot,gcDiff];
+  );
 begin
   Result := False;
   with AExperiment do
@@ -61,26 +72,40 @@ begin
       GenPlayersAsNeeded:=True;
       CurrentCondition := 0;
       MatrixType:=[gmRows];
+
       //AppendPlayer(C_PLAYER_TEMPLATE);
       //AppendPlayer(C_PLAYER_TEMPLATE);
+
       C := C_CONDITION_TEMPLATE;
       with C  do
         begin
-          SetLength(Contingencies, 2);
-          LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscB, gscMessage,gscBroadcastMessage],['NICNAME','queijo','queijos']);
-          Contingencies[0] := TContingency.Create(AExperiment,LConcequence,LCriteria1,False);
-          LConcequence := TConsequence.Create(AExperiment,3,[gscPoints, gscA, gscMessage,gscBroadcastMessage],['NICNAME','queijo','queijos']);
-          Contingencies[1] := TContingency.Create(AExperiment,LConcequence,LCriteria2,False);
-
-          ConditionName := SEC_CONDITION+IntToStr(1);
+          ConditionName := SEC_CONDITION+'1';
           Turn.Count:=0;
           Turn.Value:=2;
           Turn.Random:=False;
           Cycles.Count:=0;
           Cycles.Value:=4;
           Cycles.Generation:=0;
+          SetLength(Contingencies, 4);
+          LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscB, gscMessage,gscBroadcastMessage],['$NICNAME','queijo','queijos']);
+          Contingencies[0] := TContingency.Create(AExperiment,LConcequence,LCriteria1,False);
+          LConcequence := TConsequence.Create(AExperiment,3,[gscPoints, gscA, gscMessage,gscBroadcastMessage],['$NICNAME','pão','pães']);
+          Contingencies[1] := TContingency.Create(AExperiment,LConcequence,LCriteria2,False);
+          LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscG, gscMessage,gscBroadcastMessage],['','item escolar','itens escolares']);
+          Contingencies[2] := TContingency.Create(AExperiment,LConcequence,LCriteria3,True);
+          LConcequence := TConsequence.Create(AExperiment,-1,[gscPoints, gscG, gscMessage,gscBroadcastMessage],['','item escolar','itens escolares']);
+          Contingencies[3] := TContingency.Create(AExperiment,LConcequence,LCriteria4,True);
+
+          Prompt := TPrompt.Create(
+            AExperiment
+            , [gsAll,gsYes,gsMetacontingency,gsContingency,gsRevertPoints,gsBasA]
+            , Contingencies
+            , 'Um item escolar foi perdido, desejam recuperá-lo gastando pontos do Tipo A?'
+          );
+          // (gsYes, gsNo, gsAll, gsMetacontingency, gsContingency, gsBasA, gsRevertPoints);
         end;
-      AppendCondition(C);
+
+      Condition[AppendCondition] := C;
     end;
 end;
 
@@ -96,59 +121,40 @@ var
   //end;
 
   function GetEndCriteria(S:string) : TEndConditionCriterium;
-  var
-    LS : string;
   begin
-    // 2,20,10,10,
-    LS := S + VV_SEP;
-    case StrToIntDef(GetAndDelFirstValue(LS),2) of
+    case StrToIntDef(ExtractDelimited(1,S,[',']),2) of
       0: Result.Value := gecAbsoluteCycles;
       1: Result.Value := gecInterlockingPorcentage;
       2: Result.Value := gecWhichComeFirst;
     end;
-    Result.AbsoluteCycles := StrToIntDef(GetAndDelFirstValue(LS), 20);
-    Result.InterlockingPorcentage := StrToIntDef(GetAndDelFirstValue(LS),10);
-    Result.LastCycles := StrToIntDef(GetAndDelFirstValue(LS), 10);
+    Result.AbsoluteCycles := StrToIntDef(ExtractDelimited(2,S,[',']), 20);
+    Result.InterlockingPorcentage := StrToIntDef(ExtractDelimited(3,S,[',']),10);
+    Result.LastCycles := StrToIntDef(ExtractDelimited(4,S,[',']), 10);
   end;
 
   function GetPoints(S: string) : TPoints;
-  var
-    LS : string;
   begin
-    // A,B,G,
-    LS := S + VV_SEP;
-    Result.A := StrToIntDef(GetAndDelFirstValue(LS),0);
-    Result.B := StrToIntDef(GetAndDelFirstValue(LS),0);
-    Result.G := StrToIntDef(GetAndDelFirstValue(LS),0);
+    Result.A := StrToIntDef(ExtractDelimited(1,S,[',']),0);
+    Result.B := StrToIntDef(ExtractDelimited(2,S,[',']),0);
+    Result.G := StrToIntDef(ExtractDelimited(3,S,[',']),0);
   end;
 
 
   function GetChoiceFromString(S:string) : TPlayerChoice;
-  var
-    LS : string;
   begin
-    // 0,NONE,
-    LS := S + VV_SEP;
-    Result.Row := GetRowFromString(GetAndDelFirstValue(LS));
-    Result.Color := GetColorFromString(GetAndDelFirstValue(LS));
+    Result.Row := GetRowFromString(ExtractDelimited(1,S,[',']));
+    Result.Color := GetGameColorFromString(ExtractDelimited(2,S,[',']));
   end;
 
   function GetPPointsFromString(S:string) : TPlayerPoints;
-  var
-    LS : string;
   begin
-    // 0,0,
-    LS := S + VV_SEP;
-    Result.A := StrToIntDef(GetAndDelFirstValue(LS),0);
-    Result.B := StrToIntDef(GetAndDelFirstValue(LS),0);
+    Result.A := StrToIntDef(ExtractDelimited(1,S,[',']),0);
+    Result.B := StrToIntDef(ExtractDelimited(2,S,[',']),0);
   end;
 
   function GetStatusFromString(S : string): TGamePlayerStatus;
-  var
-    LS : string;
   begin
-    LS := S + VV_SEP;
-    case GetAndDelFirstValue(LS) of
+    case ExtractDelimited(1,S,[',']) of
       'esperando': Result := gpsWaiting;
       'jogou': Result := gpsPlayed;
       'jogando': Result := gpsPlaying;
@@ -157,14 +163,12 @@ var
 
   function GetPromptStyle(S:string):TPromptStyle;
   var
-    LS : string;
     i : integer;
   begin
     // Yes,All,Metacontingency,RecoverLostPoints,
     Result := [];
-    LS := S + VV_SEP;
-    for i := 0 to 3 do
-        Result := Result + GetPromptStyleFromString(GetAndDelFirstValue(LS));
+    for i := 1 to 4 do
+        Result := Result + GetPromptStyleFromString(ExtractDelimited(i,S,[',']));
   end;
 
   procedure ReadExperiment;
@@ -242,7 +246,7 @@ var
       LCount := WordCount(LS,[#0,',']);
       Result.Colors := [];
       for i := 1 to LCount do
-        Result.Colors += [GetColorFromString(ExtractDelimited(i,LS,[',']))];
+        Result.Colors += [GetGameColorFromString(ExtractDelimited(i,LS,[',']))];
     end;
 
     procedure SetLCK(i:integer);
@@ -307,9 +311,12 @@ var
 
               // if no contingencies, return false...
 
-              Prompt := TPrompt.Create(AExperiment,ReadString(LS,KEY_PROMPT_STYLE,'todos,sim,metacontingência,recuperar pontos,'));
-              Prompt.PromptStyle:= GetPromptStyle(ReadString(LS,KEY_PROMPT_STYLE,'todos,sim,metacontingência,recuperar pontos,'));
-              Prompt.PromptMessage := ReadString(LS,KEY_PROMPT_MESSAGE,DEF_PROMPTMESSAGE);
+              Prompt := TPrompt.Create(
+                AExperiment
+                , GetPromptStyle(ReadString(LS,KEY_PROMPT_STYLE,'todos,sim,metacontingência,recuperar pontos,'))
+                , Contingencies
+                , ReadString(LS,KEY_PROMPT_MESSAGE,DEF_PROMPTMESSAGE)
+              );
 
             end;
             AExperiment.Condition[i]:= C;
@@ -350,47 +357,6 @@ var
   LC,
   LCK : string;
 
-  function GetEndCriteriaString(AEndCriterium:TEndConditionCriterium) : string;
-  begin
-    // 2,20,10,10,
-    case AEndCriterium.Value of
-      gecAbsoluteCycles: Result := '0';
-      gecInterlockingPorcentage: Result := '1';
-      gecWhichComeFirst: Result := '2';
-    end;
-    Result := Result + VV_SEP;
-    Result := Result + IntToStr(AEndCriterium.AbsoluteCycles) + VV_SEP;
-    Result := Result + IntToStr(AEndCriterium.InterlockingPorcentage) + VV_SEP;
-    Result := Result + IntToStr(AEndCriterium.LastCycles) + VV_SEP;
-  end;
-
-  function GetPointsString(APoints : TPoints) : string;
-  begin
-    Result := IntToStr(APoints.A) + VV_SEP;
-    Result := Result + IntToStr(APoints.B) + VV_SEP;
-    Result := Result + IntToStr(APoints.G) + VV_SEP;
-  end;
-
-  function GetChoiceString(AChoice : TPlayerChoice) : string;
-  begin
-    Result := GetRowString(AChoice.Row) + VV_SEP;
-    Result := Result+ GetColorString(AChoice.Color) + VV_SEP;
-  end;
-
-  function GetPPointsString(APPoints : TPlayerPoints) : string;
-  begin
-    Result := IntToStr(APPoints.A)+VV_SEP+IntToStr(APPoints.B);
-  end;
-
-  function GetStatusString(AStatus : TGamePlayerStatus): string;
-  begin
-    case AStatus of
-      gpsWaiting: Result := 'esperando';
-      gpsPlayed: Result := 'jogou';
-      gpsPlaying: Result := 'jogando';
-    end;
-  end;
-
 begin
   LWriter := TRegData.Create(nil,AFilename);
   LIniFile:= TCIniFile.Create(LWriter.FileName);
@@ -414,8 +380,8 @@ begin
             WriteInteger(LC, KEY_CYCLES_VALUE,Cycles.Value);
             WriteInteger(LC, KEY_CYCLES_GEN,Cycles.Generation);
             //WriteBool(LC, KEY_PROMPT_VALUE,Prompt.Value);
-            WriteString(LC, KEY_PROMPT_MESSAGE, Prompt.PromptMessage);
-            WriteString(LC, KEY_PROMPT_STYLE, GetPromptStyleString(Prompt.PromptStyle));
+            //WriteString(LC, KEY_PROMPT_MESSAGE, Prompt.PromptMessage);   TODO: write prompt as string
+            //WriteString(LC, KEY_PROMPT_STYLE, GetPromptStyleString(Prompt.PromptStyle));
 
             for j := 0 to High(Contingencies) do
               begin
@@ -426,7 +392,7 @@ begin
 
                 with Contingencies[j] do
                   begin
-                    WriteString(LC,LCK+KEY_CONSEQUE,Consequence.AsString);
+                    WriteString(LC,LCK+KEY_CONSEQUE,Consequence.AsString(''));   // TODO review this
                     WriteString(LC,LCK+KEY_CRITERIA,CriteriaString);
                   end;
               end;

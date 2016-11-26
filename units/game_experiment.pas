@@ -25,6 +25,8 @@ type
     FExperimentName,
     FFilename,
     FResearcher : UTF8string;
+    FOnConsequence: TNotifyEvent;
+    FOnInterlocking: TNotifyEvent;
     FOnEndTurn: TNotifyEvent;
     FOnEndCondition: TNotifyEvent;
     FOnEndCycle: TNotifyEvent;
@@ -52,27 +54,33 @@ type
     function GetNextCondition:integer;
     function GetPlayer(I : integer): TPlayer; overload;
     function GetPlayer(AID : UTF8string): TPlayer; overload;
-    function GetPlayerAsString(P: TPlayer): UTF8string;
-    function GetPlayerFromString(s : UTF8string): TPlayer;
+    function AliasPlayerAsString(P: TPlayer): UTF8string;
+    function AliasPlayerFromString(s : UTF8string): TPlayer;
     function GetPlayerIndexFromID(AID : UTF8string): integer;
     function GetPlayerIsPlaying(AID : UTF8string): Boolean;
     function GetPlayersCount: integer;
     function GetInterlockingsIn(ALastCycles : integer):integer;
     function GetConsequenceStringFromChoice(P:TPlayer): Utf8string;
+    function GetConsequenceStringFromChoices:UTF8String;
     procedure SetCondition(I : Integer; AValue: TCondition);
     procedure SetContingency(ACondition, I : integer; AValue: TContingency);
     procedure SetMatrixType(AValue: TGameMatrixType);
+    procedure SetOnConsequence(AValue: TNotifyEvent);
     procedure SetOnEndCondition(AValue: TNotifyEvent);
     procedure SetOnEndCycle(AValue: TNotifyEvent);
     procedure SetOnEndExperiment(AValue: TNotifyEvent);
     procedure SetOnEndGeneration(AValue: TNotifyEvent);
     procedure SetOnEndTurn(AValue: TNotifyEvent);
+    procedure SetOnInterlocking(AValue: TNotifyEvent);
     procedure SetPlayer(I : integer; AValue: TPlayer); overload;
     procedure SetPlayer(S : UTF8string ; AValue: TPlayer); overload;
     procedure SetResearcherCanChat(AValue: Boolean);
     procedure SetResearcherCanPlay(AValue: Boolean);
     procedure SetSendChatHistoryForNewPlayers(AValue: Boolean);
     procedure SetState(AValue: TExperimentState);
+  private
+    procedure Consequence(Sender : TObject);
+    procedure Interlocking(Sender : TObject);
   public
     constructor Create(AOwner:TComponent);override;
     constructor Create(AFilename: string; AOwner:TComponent); overload;
@@ -106,9 +114,10 @@ type
     property PlayersCount : integer read GetPlayersCount;
     property PlayerIsPlaying[s : UTF8string] : Boolean read GetPlayerIsPlaying;
     property PlayerIndexFromID[s : UTF8string]: integer read GetPlayerIndexFromID;
-    property PlayerAsString[P:TPlayer]: UTF8string read GetPlayerAsString;
-    property PlayerFromString[s : UTF8string]: TPlayer read GetPlayerFromString;
+    property PlayerAsString[P:TPlayer]: UTF8string read AliasPlayerAsString;
+    property PlayerFromString[s : UTF8string]: TPlayer read AliasPlayerFromString;
     property ConsequenceStringFromChoice[P:Tplayer]:UTF8String read GetConsequenceStringFromChoice;
+    property ConsequenceStringFromChoices: UTF8String read GetConsequenceStringFromChoices;
     property ShowChat : Boolean read FShowChat write FShowChat;
     property SendChatHistoryForNewPlayers : Boolean read FSendChatHistoryForNewPlayers write SetSendChatHistoryForNewPlayers;
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
@@ -123,6 +132,9 @@ type
     property OnEndGeneration : TNotifyEvent read FOnEndGeneration write SetOnEndGeneration;
     property OnEndCondition : TNotifyEvent read FOnEndCondition write SetOnEndCondition;
     property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
+  public
+    property OnConsequence : TNotifyEvent read FOnConsequence write SetOnConsequence;
+    property OnInterlocking : TNotifyEvent read FOnInterlocking write SetOnInterlocking;
   end;
 
 resourcestring
@@ -130,7 +142,7 @@ resourcestring
 
 implementation
 
-uses game_file_methods, game_actors_point, game_resources, strutils;
+uses game_file_methods, game_actors_point, game_resources, string_methods;
 
 { TExperiment }
 
@@ -161,13 +173,11 @@ begin
   else
     Result := FConditions[CurrentCondition].Turn.Count;
   if Assigned(FOnEndTurn) then FOnEndTurn(Self);
-
   if FConditions[CurrentCondition].Turn.Count < FConditions[CurrentCondition].Turn.Value then
     Inc(FConditions[CurrentCondition].Turn.Count)
   else
     begin
       FConditions[CurrentCondition].Turn.Count := 0;
-      if Assigned(FOnEndCycle) then FOnEndCycle(Self);
       NextCycle;
     end;
 {$IFDEF DEBUG}
@@ -184,16 +194,15 @@ end;
 function TExperiment.GetNextCycle: integer;
 begin
   Result := FConditions[CurrentCondition].Cycles.Count;
+  if Assigned(FOnEndCycle) then FOnEndCycle(Self);
   if FConditions[CurrentCondition].Cycles.Count < FConditions[CurrentCondition].Cycles.Value then
     Inc(FConditions[CurrentCondition].Cycles.Count)
   else
     begin
       FConditions[CurrentCondition].Cycles.Count := 0;
-      if State = xsRunning then
-        begin
-          if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
-          NextCondition;
-        end;
+      Inc(FConditions[CurrentCondition].Cycles.Generation);
+      if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
+      NextCondition;
     end;
   {$IFDEF DEBUG}
     WriteLn('TExperiment.GetNextCycle:',Result);
@@ -212,7 +221,6 @@ var
   end;
 
 begin
-  Inc(FConditions[CurrentCondition].Cycles.Generation);
   Result := CurrentCondition;
   LAbsCycles := (FConditions[CurrentCondition].Cycles.Value *
              FConditions[CurrentCondition].Cycles.Generation) + FConditions[CurrentCondition].Cycles.Count;
@@ -261,147 +269,14 @@ begin
 end;
 
 // fewer as possible data
-function TExperiment.GetPlayerAsString(P: TPlayer): UTF8string;
-var
-  i : integer;
-  M : array of UTF8String;
-
-  procedure SetM(A : array of UTF8String);
-  var i : integer;
-  begin
-    SetLength(M,Length(A));
-    for i := 0 to Length(A) -1 do
-      M[i] := A[i];
-  end;
-
-  function GetPPointsString(APPoints : TPlayerPoints) : string;
-  begin
-    Result := IntToStr(APPoints.A)+VV_SEP+IntToStr(APPoints.B);
-  end;
-
-  function GetStatusString(AStatus : TGamePlayerStatus): string;
-  begin
-    case AStatus of
-      gpsWaiting: Result := '0';
-      gpsPlaying: Result := '1';
-      gpsPlayed: Result := '2';
-    end;
-  end;
-
-  function GetRowString(ARow: TGameRow): string;
-  begin
-    case ARow of
-      grNone : Result := '.';
-      grOne : Result := '1';
-      grTwo : Result := '2';
-      grThree : Result :='3';
-      grFour : Result := '4';
-      grFive : Result := '5';
-      grSix : Result := '6';
-      grSeven : Result := '7';
-      grEight : Result := '8';
-      grNine : Result := '9';
-      grTen : Result := '0';
-    end;
-  end;
-
-  function GetColorString(AColor: TGameColor): string;
-  begin
-    case AColor of
-      gcNone :Result  :=  '0';
-      gcYellow :Result  :=  '1';
-      gcRed :Result  :=  '2';
-      gcMagenta :Result  :=  '3';
-      gcBlue :Result  :=  '4';
-      gcGreen :Result  :=  '5';
-    end;
-  end;
-
-  function GetChoiceString(AChoice : TPlayerChoice) : string;
-  begin
-    Result := GetRowString(AChoice.Row) + VV_SEP;
-    Result := Result+ GetColorString(AChoice.Color);
-  end;
-
+function TExperiment.AliasPlayerAsString(P: TPlayer): UTF8string;
 begin
-  Result := '';
-  SetM([P.ID
-    , P.Nicname
-    , GetPPointsString(P.Points)
-    , GetStatusString(P.Status)
-    , GetChoiceString(P.Choice)
-    , IntToStr(P.Turn)
-  ]);
-  for i := 0 to Length(M)-1 do
-    Result += M[i] + '|';
+  Result:= GetPlayerAsString(P);
 end;
 
-function TExperiment.GetPlayerFromString(s: UTF8string): TPlayer;
-
-  function GetRowFromString(S: string): TGameRow;
-  begin
-    case S of
-      '.'  : Result := grNone;
-      '1' : Result := grOne;
-      '2' : Result := grTwo;
-      '3' : Result := grThree;
-      '4' : Result := grFour;
-      '5' : Result := grFive;
-      '6' : Result := grSix;
-      '7' : Result := grSeven;
-      '8' : Result := grEight;
-      '9' : Result := grNine;
-      '0' : Result := grTen;
-    end;
-  end;
-
-  function GetColorFromString(S: string): TGameColor;
-  begin
-    case S of
-      '0'  : Result := gcNone;
-      '1' : Result := gcYellow;
-      '2' : Result := gcRed;
-      '3' : Result := gcMagenta;
-      '4' : Result := gcBlue;
-      '5' : Result := gcGreen;
-    end;
-  end;
-
-  function GetChoiceFromString(S:string) : TPlayerChoice;
-  begin
-    Result.Row := GetRowFromString(ExtractDelimited(1,S,[',']));
-    Result.Color := GetColorFromString(ExtractDelimited(2,S,[',']));
-  end;
-
-  function GetPPointsFromString(S:string) : TPlayerPoints;
-  begin
-    Result.A := StrToInt(ExtractDelimited(1,S,[',']));
-    Result.B := StrToInt(ExtractDelimited(2,S,[',']));
-  end;
-
-  function GetStatusFromString(S : string): TGamePlayerStatus;
-  begin
-    case S of
-      '0': Result := gpsWaiting;
-      '1': Result := gpsPlaying;
-      '2': Result := gpsPlayed;
-    end;
-  end;
+function TExperiment.AliasPlayerFromString(s: UTF8string): TPlayer;
 begin
-  {$IFDEF DEBUG}
-    WriteLn(ExtractDelimited(1,s,['|']));
-    WriteLn(ExtractDelimited(2,s,['|']));
-    WriteLn(ExtractDelimited(3,s,['|']));
-    WriteLn(ExtractDelimited(4,s,['|']));
-    WriteLn(ExtractDelimited(5,s,['|']));
-    WriteLn(ExtractDelimited(6,s,['|']));
-  {$ENDIF}
-  Result.ID := ExtractDelimited(1,s,['|']);
-  Result.Nicname := ExtractDelimited(2,s,['|']);
-  Result.Points := GetPPointsFromString(ExtractDelimited(3,s,['|']));
-  Result.Status := GetStatusFromString(ExtractDelimited(4,s,['|']));
-  Result.Choice := GetChoiceFromString(ExtractDelimited(5,s,['|']));
-  Result.Turn:=StrToInt(ExtractDelimited(6,s,['|']));
+  Result := GetPlayerFromString(S);
 end;
 
 function TExperiment.GetPlayerIndexFromID(AID: UTF8string): integer;
@@ -449,7 +324,20 @@ begin
   for i :=0 to ContingenciesCount[c] -1 do
     if not Contingency[c,i].Meta then
       if Contingency[c,i].ResponseMeetsCriteriaI(P.Choice.Row,P.Choice.Color) then
-        Result += Contingency[c,i].Consequence.AsString + '+';
+        Result += Contingency[c,i].Consequence.AsString(P.ID) + '+';
+end;
+
+function TExperiment.GetConsequenceStringFromChoices: UTF8String;
+var
+  i : integer;
+  c : integer;
+begin
+  c := CurrentCondition;
+  Result:= '';
+  for i :=0 to ContingenciesCount[c] -1 do
+    if Contingency[c,i].Meta then
+      if Contingency[c,i].ResponseMeetsCriteriaG(FPlayers) then
+        Result += Contingency[c,i].Consequence.AsString(IntToStr(i)) + '+';
 end;
 
 procedure TExperiment.SetCondition(I : Integer; AValue: TCondition);
@@ -460,12 +348,22 @@ end;
 procedure TExperiment.SetContingency(ACondition, I : integer; AValue: TContingency);
 begin
   FConditions[ACondition].Contingencies[I] := AValue;
+  if FConditions[ACondition].Contingencies[I].Meta then
+    FConditions[ACondition].Contingencies[I].OnCriteria:=@Interlocking
+  else
+    FConditions[ACondition].Contingencies[I].OnCriteria:=@Consequence;
 end;
 
 procedure TExperiment.SetMatrixType(AValue: TGameMatrixType);
 begin
   if FMatrixType=AValue then Exit;
   FMatrixType:=AValue;
+end;
+
+procedure TExperiment.SetOnConsequence(AValue: TNotifyEvent);
+begin
+  if FOnConsequence=AValue then Exit;
+  FOnConsequence:=AValue;
 end;
 
 procedure TExperiment.SetOnEndCondition(AValue: TNotifyEvent);
@@ -496,6 +394,12 @@ procedure TExperiment.SetOnEndTurn(AValue: TNotifyEvent);
 begin
   if FOnEndTurn=AValue then Exit;
   FOnEndTurn:=AValue;
+end;
+
+procedure TExperiment.SetOnInterlocking(AValue: TNotifyEvent);
+begin
+  if FOnInterlocking=AValue then Exit;
+  FOnInterlocking:=AValue;
 end;
 
 
@@ -539,6 +443,16 @@ procedure TExperiment.SetState(AValue: TExperimentState);
 begin
   if FState=AValue then Exit;
   FState:=AValue;
+end;
+
+procedure TExperiment.Consequence(Sender: TObject);
+begin
+  if Assigned(FOnConsequence) then FOnConsequence(Sender);
+end;
+
+procedure TExperiment.Interlocking(Sender: TObject);
+begin
+  if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
 end;
 
 constructor TExperiment.Create(AOwner: TComponent);

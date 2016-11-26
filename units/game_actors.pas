@@ -80,23 +80,30 @@ type
    private
      FAppendicePlural: UTF8String;
      FAppendiceSingular: UTF8String;
+     FLastPresentedMessage: UTF8string;
      FNicname: UTF8String;
-   protected
      FStyle : TConsequenceStyle;
      FP : TGamePoint;
      FMessage : TPopupNotifier;
+     function GetShouldPublishMessage: Boolean;
+   protected
+     FConsequenceByPlayerID : TStringList;
      procedure StopTimer(Sender:TObject;var ACloseAction:TCloseAction);
      procedure TimerTimer(Sender:TOBject);virtual;
    public
      constructor Create(AOwner:TComponent; AP:TGamePoint; AStyle:TConsequenceStyle; AAppendiceSingular,AAppendicePlural:UTF8String);overload;
      constructor Create(AOwner:TComponent; AP:integer; AStyle: TConsequenceStyle; AMessage:array of UTF8string);overload;
-     constructor Create(AOwner:TComponent; AConsequenceString: UTF8String);overload;
+     constructor Create(AOwner:TComponent; AConsequenceString: UTF8String);virtual;overload;
      destructor Destroy;override;
-     function AsString: utf8string;
-     procedure Present(Sender:TObject;ForGroup:Boolean);virtual;
+     function AsString(AID :UTF8String): UTF8String;
+     function PointMessage(ForGroup: Boolean):UTF8String;
+     procedure Present(ForGroup: Boolean);
+     property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
+     property LastPresentedMessage : UTF8string read FLastPresentedMessage;
      property PlayerNicname : UTF8String read FNicname write FNicname;
      property AppendiceSingular : UTF8String read FAppendiceSingular;
      property AppendicePlural : UTF8String read FAppendicePlural;
+     property ConsequenseByPlayerID : TStringList read FConsequenceByPlayerID;
    end;
 
   { TContingency }
@@ -130,13 +137,20 @@ type
 
   TPrompt = class(TConsequence)
   private
+    FResponses : array of UTF8String;
+    FResult : UTF8String;
     FPromptTargets : TContingencies; // need to test this
+    FPromptStyle : TPromptStyle;
+    FPromptMessage : UTF8String;
+    procedure ClearResponses;
   public
-    PromptStyle : TPromptStyle;
-    PromptMessage : string;
-  public
-    procedure Present(Sender:TObject;ForGroup:Boolean);override;
-    property APromptTargets: TContingencies read FPromptTargets;
+    constructor Create(AOwner:TComponent; APStyle:TPromptStyle; APTarget : TContingencies; AMessage:UTF8string);reintroduce;
+    function ResponsesCount : integer;
+    procedure AppendResponse(AID,R:UTF8String);
+    function AsString: TStringList; overload;
+    property Question: UTF8String read FPromptMessage;
+    property PromptResult:UTF8String read FResult;
+
   end;
 
   TEndConditionCriterium = record
@@ -153,6 +167,10 @@ type
   TCondition = record
     ConditionName : string;
     Contingencies : TContingencies; // for producing points during the condition
+    Interlocks : record
+      Count : integer; // culturant,
+      History: array of Boolean; // to calculate interlock porcentage in the last cycles. sync with OnCycles
+    end;
 
     Points : record
       Count : TPoints; // sum of points produced during the condition
@@ -165,7 +183,7 @@ type
       Random: Boolean; // if we should change Players[i].Turn OnCycle
     end;
 
-    Cycles : record // for changing generations
+    Cycles : record // for changing generations //absolute value is (Value * Generation)+Count
       Count, // current cycle
       Value, // CyclesPerLineage, CyclesPerGeneration
       Generation : integer;
@@ -176,7 +194,7 @@ type
 
 implementation
 
-uses ButtonPanel,Controls,ExtCtrls,strutils, string_methods,
+uses Graphics, strutils, string_methods,
   form_matrixgame{,StdCtrls};
 
 { TContingency }
@@ -198,8 +216,8 @@ end;
 
 procedure TContingency.CriteriaEvent;
 begin
-  // FConsequence.Present(FMeta);
-  // do admin internals
+  FFired:=True;
+  if Assigned(FOnCriteria) then FOnCriteria(Self);
 end;
 
 constructor TContingency.Create(AOwner:TComponent;AConsequence:TConsequence;ACriteria:TCriteria;IsMeta:Boolean);
@@ -220,13 +238,7 @@ begin
     Result += GetRowString(R) + ',';
   Result += '|';
 
-  case FCriteria.Style of
-    gtNone : Result += 'INDIFERENTE';
-    gtRowsAndColors : Result  += 'E';
-    gtRowsOrColors : Result  += 'OU';
-    gtRowsOnly: Result += 'LINHAS';
-    gtColorsOnly:Result += 'CORES';
-  end;
+  Result += GetCriteriaStyleString(FCriteria.Style);
   Result += ',';
   Result += '|';
 
@@ -255,7 +267,7 @@ begin
     gtRowsOrColors: Result := LRow or LColor;
   end;
   if Result then
-    if Assigned(FOnCriteria) then FOnCriteria(Self);
+    CriteriaEvent;
 end;
 
 function TContingency.ResponseMeetsCriteriaG(Players: TPlayers): Boolean;
@@ -269,48 +281,50 @@ var i : integer;
     function AllColorsEqual:Boolean;
     var i : integer;
     begin
-      Result := True;
+      Result := not (gcNot in Criteria.Colors);
       for i := 0 to Len-2 do
         if Cs[i] <> Cs[i+1] then
           begin
-           Result := False;
-           Break;
+            Result := not Result;
+            Break;
           end;
     end;
 
     function AllColorsDiff:Boolean;
     var i : integer;
     begin
-      Result := True;
+      Result := not (gcNot in Criteria.Colors);
       for i := 0 to Len-2 do
         if Cs[i] = Cs[i+1] then
           begin
-           Result := False;
-           Break;
+            Result := not Result;
+            Break;
           end;
     end;
 
     function AllRowsOdd: Boolean;
     begin
+      Result := not (grNot in Criteria.Rows);
       for R in Rs do
         if RowMod(R) = grEven then
           begin
-            Result := False;
-            Exit;
+            Result := not Result;
+            Break;
           end;
     end;
 
     function AllRowsEven: Boolean;
     begin
+      Result := not (grNot in Criteria.Rows);
       for R in Rs do
         if RowMod(R) = grOdd then
           begin
-            Result := False;
-            Exit;
+            Result := not Result;
+            Break;
           end;
     end;
 
-begin // grDiff,grEqual,grAll
+begin // All -> (Diff,Equal,Even, Odd) or not all
   Result := False;
   Len := Length(Players);
   SetLength(Cs,Len);
@@ -348,13 +362,13 @@ begin // grDiff,grEqual,grAll
           Result := AllColorsDiff and AllRowsOdd;
 
         if (gcDiff in Criteria.Colors) and (grEven in Criteria.Rows) then
-           Result := AllColorsDiff and AllRowsEven;
+          Result := AllColorsDiff and AllRowsEven;
 
         if (gcEqual in Criteria.Colors) and (grOdd in Criteria.Rows) then
-           Result := AllColorsEqual and AllRowsOdd;
+          Result := AllColorsEqual and AllRowsOdd;
 
         if (gcEqual in Criteria.Colors) and (grEven in Criteria.Rows) then
-           Result := AllColorsEqual and AllRowsEven;
+          Result := AllColorsEqual and AllRowsEven;
       end;
     gtRowsOrColors:
       begin
@@ -362,61 +376,118 @@ begin // grDiff,grEqual,grAll
           Result := AllColorsDiff or AllRowsOdd;
 
         if (gcDiff in Criteria.Colors) and (grEven in Criteria.Rows) then
-           Result := AllColorsDiff or AllRowsEven;
+          Result := AllColorsDiff or AllRowsEven;
 
         if (gcEqual in Criteria.Colors) and (grOdd in Criteria.Rows) then
-           Result := AllColorsEqual or AllRowsOdd;
+          Result := AllColorsEqual or AllRowsOdd;
 
         if (gcEqual in Criteria.Colors) and (grEven in Criteria.Rows) then
-           Result := AllColorsEqual or AllRowsEven;
+          Result := AllColorsEqual or AllRowsEven;
       end;
   end;
   if Result then
-    if Assigned(FOnCriteria) then FOnCriteria(Self);
+    CriteriaEvent;
 end;
 
 
 { TPrompt }
 
-procedure TPrompt.Present(Sender: TObject; ForGroup: Boolean);
+procedure TPrompt.ClearResponses;
+begin
+  FResponses := nil;
+end;
 
-  function AskQuestion: boolean;
-  var
-    dlg: TForm;
-    buttonPanel: TButtonPanel;
-    mainPanel: TPanel;
-    mr: TModalResult;
+constructor TPrompt.Create(AOwner: TComponent; APStyle: TPromptStyle;
+  APTarget: TContingencies; AMessage: UTF8string);
+begin
+  inherited Create(AOwner);
+  FPromptStyle := APStyle;
+  FPromptTargets := APTarget;
+  FPromptMessage := AMessage;
+end;
+
+function TPrompt.ResponsesCount: integer;
+begin
+  Result := Length(FResponses);
+end;
+
+procedure TPrompt.AppendResponse(AID, R: UTF8String);
+begin
+  SetLength(FResponses,Length(FResponses)+1);
+  FResponses[High(FResponses)] := AID+'|'+R+'|';
+end;
+
+function TPrompt.AsString: TStringList;
+var
+  j,i : integer;
+  LID,LConsequence : UTF8string;
+  LCsqStyle : TConsequenceStyle;
+  Pts : integer;
+
+  function AllPlayersClickedYes: Boolean;
+  var i : integer;
   begin
-    dlg:=TForm.CreateNew(nil);
-    try
-      with dlg do begin
-        BorderStyle:=bsNone;
-        WindowState:=wsFullScreen;
-        //Position:=poScreenCenter;
-        Caption:='Task ' + IntToStr(0 {Succ(0)});
-        buttonPanel:=TButtonPanel.Create(dlg);
-        with buttonPanel do begin
-          ShowButtons:=[pbCancel, pbOK];
-          ShowBevel:=False;
-          Parent:=dlg;
+    Result := True;
+    for i := 0 to Length(FResponses)-1 do
+      if ExtractDelimited(2,FResponses[i],['|']) = 'N' then
+        begin
+          Result := False;
         end;
-        mainPanel:=TPanel.Create(dlg);
-        with mainPanel do begin
-          Align:=alClient;
-          Caption:=Format('Task %d - GUI buttons/edits etc. go here',[0]);
-          Parent:=dlg;
-        end;
+  end;
 
-        mr:=ShowModal;
-        Result:=(mr = mrOK);
+  procedure ApplyPointsConditions(IsMeta:Boolean);
+  var
+    S : UTF8string;
+  begin
+    Pts := StrToInt(ExtractDelimited(1,LConsequence, ['|']));
+    if gsRevertPoints in FPromptStyle then
+      Pts := Pts*-1;
+
+    if (gscB in LCsqStyle) and (gsBasA in FPromptStyle) then
+      begin
+        LCsqStyle += [gscB];
+        LCsqStyle -= [gscA];
       end;
-    finally
-      dlg.Free;
-    end;
+
+    if IsMeta then
+      S := 'M'
+    else
+      S := LID;
+
+    LConsequence := S + '+' +
+      IntToStr(Pts) +'|'+
+      GetConsequenceStylesString(LCsqStyle) +'|'+
+      ExtractDelimited(3,LConsequence, ['|']) +'|'+
+      ExtractDelimited(4,LConsequence, ['|']) +'|'+
+      ExtractDelimited(5,LConsequence, ['|']);
   end;
 begin
-  inherited Present(Sender, ForGroup);
-  //SendMessage(AskQuestion);
+  // to do, sanitize FPromptStyle first
+  Pts:= 0;
+  if (gsAll in FPromptStyle) and (gsYes in FPromptStyle) then
+    if AllPlayersClickedYes then
+      for i := 0 to Length(FPromptTargets)-1 do
+        for j := 0 to FPromptTargets[i].Consequence.ConsequenseByPlayerID.Count do
+          begin
+            LID := FPromptTargets[i].Consequence.ConsequenseByPlayerID.Names[j];
+            LConsequence := FPromptTargets[i].Consequence.ConsequenseByPlayerID.Values[LID];
+            LCsqStyle := GetConsequenceStylesFromString(ExtractDelimited(2,LConsequence, ['|']));
+
+            if gsContingency in FPromptStyle then
+              if (FPromptTargets[i].Fired) and (not FPromptTargets[i].Meta) then
+                if (gscA in LCsqStyle) or (gscB in LCsqStyle) then
+                  ApplyPointsConditions(False);
+
+
+            if gsMetacontingency in FPromptStyle then
+              if (FPromptTargets[i].Fired) and FPromptTargets[i].Meta then
+                if gscG in LCsqStyle then
+                  ApplyPointsConditions(True);
+
+            Result := TStringList.Create;
+            Result.Add(LConsequence);
+          end;
+
 end;
 
 { TConsequence }
@@ -431,6 +502,7 @@ begin
   FAppendicePlural:=AAppendicePlural;
   FP := AP;
   FMessage := TPopupNotifier.Create(AOwner);
+  FConsequenceByPlayerID := TStringList.Create;
 end;
 
 constructor TConsequence.Create(AOwner: TComponent; AP: integer;
@@ -443,83 +515,65 @@ begin
   FAppendicePlural:=AMessage[2];
   FP := TGamePoint.Create(AOwner,AP);
   FMessage := TPopupNotifier.Create(AOwner);
+  FConsequenceByPlayerID := TStringList.Create;
 end;
 
 constructor TConsequence.Create(AOwner: TComponent;
   AConsequenceString: UTF8String);
-
-  function GetConsequenceStyleFromString(S:UTF8String):TConsequenceStyle;
-  var
-    LCount,
-    i : integer;
-  begin
-    Result := [];
-    LCount := WordCount(S,[#0,',']);
-    for i:= 1 to LCount do
-      case ExtractDelimited(i,S,[',']) of
-        '0':Result+=[gscNone];
-        'M':Result+=[gscMessage];
-        'C':Result+=[gscBroadcastMessage];
-        'P':Result+=[gscPoints];
-        'V':Result+=[gscVariablePoints];
-        'A':Result+=[gscA];
-        'B':Result+=[gscB];
-      end;
-  end;
-
 begin
   inherited Create(AOwner);
   FP := TGamePoint.Create(AOwner,ExtractDelimited(1,AConsequenceString,['|']));
-  FStyle:=GetConsequenceStyleFromString(ExtractDelimited(2,AConsequenceString,['|']));
+  FStyle:=GetConsequenceStylesFromString(ExtractDelimited(2,AConsequenceString,['|']));
   FNicname:=ExtractDelimited(3,AConsequenceString,['|']);
   FAppendiceSingular:=ExtractDelimited(4,AConsequenceString,['|']);
   FAppendicePlural:=ExtractDelimited(5,AConsequenceString,['|']);
   FMessage := TPopupNotifier.Create(AOwner);
+  FConsequenceByPlayerID := TStringList.Create;
 end;
 
 destructor TConsequence.Destroy;
 begin
+  FConsequenceByPlayerID.Free;
   inherited Destroy;
 end;
 
-function TConsequence.AsString: utf8string;
-  function GetConsequenceStyleString(CS:TConsequenceStyle): UTF8String;
-  var ConsequenceStyle : TGameConsequenceStyle;
-  begin
-    Result := '';
-    for ConsequenceStyle in CS do
-      begin
-        case ConsequenceStyle of
-          gscNone: Result += '0';
-          gscMessage:Result += 'M';
-          gscBroadcastMessage:Result += 'C';
-          gscPoints:Result += 'P';
-          gscVariablePoints:Result += 'V';
-          gscA:Result += 'A';
-          gscB:Result += 'B';
-        end;
-        Result += ',';
-      end;
-  end;
-
+function TConsequence.AsString(AID: UTF8String): UTF8String;
 begin
-  Result := IntToStr(FP.Value)+','+IntToStr(FP.Variation) + '|';
-  Result += GetConsequenceStyleString(FStyle)+'|';
+  Result := IntToStr(FP.ValueWithVariation) + '|';
+  Result += GetConsequenceStylesString(FStyle)+'|';
   Result += FNicname +'|';
   Result += FAppendiceSingular + '|';
   Result += FAppendicePlural + '|';
+  FConsequenceByPlayerID.Values[AID]:=Result;
+end;
+
+function TConsequence.PointMessage(ForGroup: Boolean): UTF8String;
+begin
+  Result := FP.PointMessage(FNicname,FAppendicePlural, FAppendiceSingular,ForGroup);
+
+  if gscA in FStyle then
+    FormMatrixGame.LabelIndACount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption) + FP.ResultAsInteger);
+
+  if gscB in FStyle then
+    FormMatrixGame.LabelIndBCount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndBCount.Caption) + FP.ResultAsInteger);
+
+  if gscG in FStyle then
+    FormMatrixGame.LabelGroupCount.Caption:= IntToStr(StrToInt(FormMatrixGame.LabelGroupCount.Caption) + FP.ResultAsInteger);
 end;
 
 
-procedure TConsequence.Present(Sender: TObject; ForGroup: Boolean);
+procedure TConsequence.Present(ForGroup: Boolean);
 var
   PopUpPos : TPoint;
 begin
-  PopUpPos.X := FormMatrixGame.StringGridMatrix.Left+FormMatrixGame.StringGridMatrix.Width;
-  PopUpPos.Y := FormMatrixGame.StringGridMatrix.Top;
-  PopUpPos := FormMatrixGame.StringGridMatrix.ClientToScreen(PopUpPos);
+  PopUpPos.X := FormMatrixGame.GBIndividualAB.Left;
+  PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height-10;
+  PopUpPos := FormMatrixGame.ClientToScreen(PopUpPos);
 
+  FMessage.Color:=clTeal;
+  FMessage.Title:='';
   FMessage.Text := FP.PointMessage(FNicname,FAppendicePlural, FAppendiceSingular,ForGroup);
+  FLastPresentedMessage := FMessage.Text;
   FMessage.OnClose:=@StopTimer;
   FormMatrixGame.Timer.OnTimer := @TimerTimer;
 
@@ -532,15 +586,20 @@ begin
   if gscG in FStyle then
     FormMatrixGame.LabelGroupCount.Caption:= IntToStr(StrToInt(FormMatrixGame.LabelGroupCount.Caption) + FP.ResultAsInteger);
 
+  if gscBroadcastMessage in FStyle then Exit;
   FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
   FormMatrixGame.Timer.Enabled:=True;
+end;
+
+function TConsequence.GetShouldPublishMessage: Boolean;
+begin
+  Result := gscBroadcastMessage in FStyle;
 end;
 
 procedure TConsequence.StopTimer(Sender: TObject; var ACloseAction: TCloseAction
   );
 begin
   FormMatrixGame.Timer.Enabled:=False;
-  Free;
 end;
 
 procedure TConsequence.TimerTimer(Sender: TOBject);

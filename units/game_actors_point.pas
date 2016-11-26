@@ -19,15 +19,15 @@ type
     function GetResult: integer;
     function GetResultAsString: string;
     function GetValue: integer;
-    procedure SetValue(AValue: integer);
   public
     //Cycles : integer; // specify when present points regarding condition cycles
     constructor Create(AOwner:TComponent;AValue : integer);overload;
     constructor Create(AOwner:TComponent;AValue : array of integer); overload;
-    constructor Create(AOwner:TComponent;AValue : utf8string); overload;
+    constructor Create(AOwner:TComponent;AResult : UTF8String); overload;
     function PointMessage(APrepend, AAppendicePlural, AAppendiceSingular: string; IsGroupPoint: Boolean) : string;
-    property Value : integer read GetValue write SetValue;
+    property ValueWithVariation : integer read GetValue write FValue;
     property Variation : integer read FVariation write FVariation;
+
     property AsString : string read GetResultAsString;
     property ResultAsInteger : integer read GetResult;
   end;
@@ -67,11 +67,6 @@ begin
   Result := IntToStr(FResult);
 end;
 
-procedure TGamePoint.SetValue(AValue: integer);
-begin
-  FValue := AValue;
-end;
-
 constructor TGamePoint.Create(AOwner: TComponent; AValue: integer);
 begin
   inherited Create(AOwner);
@@ -86,15 +81,15 @@ begin
   FVariation := AValue[1];
 end;
 
-constructor TGamePoint.Create(AOwner: TComponent; AValue: utf8string);
+constructor TGamePoint.Create(AOwner: TComponent; AResult: utf8string);
 begin
-  FValue := StrToInt(ExtractDelimited(1,AValue,[',']));
-  FVariation := StrToInt(ExtractDelimited(2,AValue,[',']));
+  FValue := 0;//does not matter here, this creation method is called by a player, admin sent a result
+  FVariation := 0;
+  FResult := StrToInt(AResult);
 end;
 
 function TGamePoint.PointMessage(APrepend, AAppendicePlural, AAppendiceSingular: string; IsGroupPoint: Boolean): string;
 begin
-  Self.Value;
   if IsGroupPoint then
     begin
       if APrepend = '' then
@@ -108,8 +103,8 @@ begin
             -MaxInt..-2: Result += ' produziram a perda de '+Self.AsString+ ' pontos para o grupo';
            -1 : Result += ' produziram a perda de  1 ponto para o grupo';
             0 : Result += ' pontos do grupo não foram produzidos nem perdidos';
-            1 : Result += 'produziram 1 ponto para o grupo';
-            2..MaxInt: Result += 'produziu '+Self.AsString+' pontos para o grupo'
+            1 : Result += ' produziram 1 ponto para o grupo';
+            2..MaxInt: Result += ' produziram '+Self.AsString+' pontos para o grupo'
           end;
         end
       else
@@ -118,8 +113,8 @@ begin
             -MaxInt..-2: Result += ' produziram a perda de '+Self.AsString+ ' ' + AAppendicePlural;
            -1 : Result += ' produziram a perda de  1'+ ' ' + AAppendiceSingular;
             0 : Result += ' não produziram ' + AAppendicePlural;
-            1 : Result += ' produziram 1 ponto ' + AAppendiceSingular;
-            2..MaxInt: Result += 'produziu '+Self.AsString+ ' ' + AAppendicePlural;
+            1 : Result += ' produziram 1 ' + AAppendiceSingular;
+            2..MaxInt: Result += ' produziram '+Self.AsString+ ' ' + AAppendicePlural;
           end;
         end;
     end
@@ -137,17 +132,17 @@ begin
            -1 : Result += ' perdeu 1 ponto';
             0 : Result += ' não perdeu nem ganhou pontos';
             1 : Result += ' ganhou 1 ponto';
-            2..MaxInt: Result += 'ganhou '+Self.AsString+' pontos'
+            2..MaxInt: Result += ' ganhou '+Self.AsString+' pontos'
           end;
         end
       else
         begin
           case FValue of
             -MaxInt..-2: Result += ' perdeu '+Self.AsString+ ' ' + AAppendicePlural;
-           -1 : Result += ' ponto  1'+ ' ' + AAppendiceSingular;
+           -1 : Result += ' ponto  1 ' + AAppendiceSingular;
             0 : Result += ' não perdeu nem ganhou ' + AAppendicePlural;
-            1 : Result += ' ganhou 1 ponto ' + AAppendiceSingular;
-            2..MaxInt: Result += 'ganhou '+Self.AsString+ ' ' + AAppendicePlural;
+            1 : Result += ' ganhou 1 ' + AAppendiceSingular;
+            2..MaxInt: Result += ' ganhou '+Self.AsString+ ' ' + AAppendicePlural;
           end;
         end;
     end;
