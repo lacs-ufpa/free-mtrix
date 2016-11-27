@@ -56,7 +56,7 @@ type
     ID,
     Nicname,
     Login,
-    Password : UTF8string;
+    Password : string;
     Status : TGamePlayerStatus;
     Data : TStringList;
     Choice : TPlayerChoice;
@@ -78,10 +78,10 @@ type
 
    TConsequence = class(TComponent)
    private
-     FAppendicePlural: UTF8String;
-     FAppendiceSingular: UTF8String;
-     FLastPresentedMessage: UTF8string;
-     FNicname: UTF8String;
+     FAppendicePlural: string;
+     FAppendiceSingular: string;
+     FLastPresentedMessage: string;
+     FNicname: string;
      FStyle : TConsequenceStyle;
      FP : TGamePoint;
      FMessage : TPopupNotifier;
@@ -91,18 +91,18 @@ type
      procedure StopTimer(Sender:TObject;var ACloseAction:TCloseAction);
      procedure TimerTimer(Sender:TOBject);virtual;
    public
-     constructor Create(AOwner:TComponent; AP:TGamePoint; AStyle:TConsequenceStyle; AAppendiceSingular,AAppendicePlural:UTF8String);overload;
-     constructor Create(AOwner:TComponent; AP:integer; AStyle: TConsequenceStyle; AMessage:array of UTF8string);overload;
-     constructor Create(AOwner:TComponent; AConsequenceString: UTF8String);virtual;overload;
+     constructor Create(AOwner:TComponent; AP:TGamePoint; AStyle:TConsequenceStyle; AAppendiceSingular,AAppendicePlural:string);overload;
+     constructor Create(AOwner:TComponent; AP:integer; AStyle: TConsequenceStyle; AMessage:array of string);overload;
+     constructor Create(AOwner:TComponent; AConsequenceString: string);virtual;overload;
      destructor Destroy;override;
-     function AsString(AID :UTF8String): UTF8String;
-     function PointMessage(ForGroup: Boolean):UTF8String;
+     function AsString(AID :string): string;
+     function PointMessage(ForGroup: Boolean):string;
      procedure Present(ForGroup: Boolean);
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
-     property LastPresentedMessage : UTF8string read FLastPresentedMessage;
-     property PlayerNicname : UTF8String read FNicname write FNicname;
-     property AppendiceSingular : UTF8String read FAppendiceSingular;
-     property AppendicePlural : UTF8String read FAppendicePlural;
+     property LastPresentedMessage : string read FLastPresentedMessage;
+     property PlayerNicname : string read FNicname write FNicname;
+     property AppendiceSingular : string read FAppendiceSingular;
+     property AppendicePlural : string read FAppendicePlural;
      property ConsequenseByPlayerID : TStringList read FConsequenceByPlayerID;
    end;
 
@@ -119,7 +119,7 @@ type
     procedure CriteriaEvent;
   public
     constructor Create(AOwner:TComponent;AConsequence:TConsequence;ACriteria:TCriteria;IsMeta:Boolean);overload;
-    function CriteriaString : UTF8String;
+    function CriteriaString : string;
     function ResponseMeetsCriteriaI(R : TGameRow; C : TGameColor):Boolean; // Does response meets operant criteria?
     function ResponseMeetsCriteriaG(Players : TPlayers):Boolean;
     property OnCriteria : TNotifyEvent read FOnCriteria write FOncriteria;
@@ -137,19 +137,19 @@ type
 
   TPrompt = class(TConsequence)
   private
-    FResponses : array of UTF8String;
-    FResult : UTF8String;
+    FResponses : array of string;
+    FResult : string;
     FPromptTargets : TContingencies; // need to test this
     FPromptStyle : TPromptStyle;
-    FPromptMessage : UTF8String;
+    FPromptMessage : string;
     procedure ClearResponses;
   public
-    constructor Create(AOwner:TComponent; APStyle:TPromptStyle; APTarget : TContingencies; AMessage:UTF8string);reintroduce;
+    constructor Create(AOwner:TComponent; APStyle:TPromptStyle; APTarget : TContingencies; AMessage:string);reintroduce;
     function ResponsesCount : integer;
-    procedure AppendResponse(AID,R:UTF8String);
+    procedure AppendResponse(AID,R:string);
     function AsString: TStringList; overload;
-    property Question: UTF8String read FPromptMessage;
-    property PromptResult:UTF8String read FResult;
+    property Question: string read FPromptMessage;
+    property PromptResult:string read FResult;
 
   end;
 
@@ -229,7 +229,7 @@ begin
   FFired := False;
 end;
 
-function TContingency.CriteriaString: UTF8String;
+function TContingency.CriteriaString: string;
 var R : TGameRow;
     C : TGameColor;
 begin
@@ -398,7 +398,7 @@ begin
 end;
 
 constructor TPrompt.Create(AOwner: TComponent; APStyle: TPromptStyle;
-  APTarget: TContingencies; AMessage: UTF8string);
+  APTarget: TContingencies; AMessage: string);
 begin
   inherited Create(AOwner);
   FPromptStyle := APStyle;
@@ -411,7 +411,7 @@ begin
   Result := Length(FResponses);
 end;
 
-procedure TPrompt.AppendResponse(AID, R: UTF8String);
+procedure TPrompt.AppendResponse(AID, R: string);
 begin
   SetLength(FResponses,Length(FResponses)+1);
   FResponses[High(FResponses)] := AID+'|'+R+'|';
@@ -420,7 +420,7 @@ end;
 function TPrompt.AsString: TStringList;
 var
   j,i : integer;
-  LID,LConsequence : UTF8string;
+  LID,LConsequence : string;
   LCsqStyle : TConsequenceStyle;
   Pts : integer;
 
@@ -437,7 +437,7 @@ var
 
   procedure ApplyPointsConditions(IsMeta:Boolean);
   var
-    S : UTF8string;
+    S : string;
   begin
     Pts := StrToInt(ExtractDelimited(1,LConsequence, ['|']));
     if gsRevertPoints in FPromptStyle then
@@ -493,7 +493,7 @@ end;
 { TConsequence }
 
 constructor TConsequence.Create(AOwner: TComponent; AP: TGamePoint;
-  AStyle: TConsequenceStyle; AAppendiceSingular, AAppendicePlural: UTF8String);
+  AStyle: TConsequenceStyle; AAppendiceSingular, AAppendicePlural: string);
 begin
   inherited Create(AOwner);
   FStyle:=AStyle;
@@ -506,7 +506,7 @@ begin
 end;
 
 constructor TConsequence.Create(AOwner: TComponent; AP: integer;
-  AStyle:TConsequenceStyle; AMessage: array of UTF8string);
+  AStyle:TConsequenceStyle; AMessage: array of string);
 begin
   inherited Create(AOwner);
   FStyle:=AStyle;
@@ -519,7 +519,7 @@ begin
 end;
 
 constructor TConsequence.Create(AOwner: TComponent;
-  AConsequenceString: UTF8String);
+  AConsequenceString: string);
 begin
   inherited Create(AOwner);
   FP := TGamePoint.Create(AOwner,ExtractDelimited(1,AConsequenceString,['|']));
@@ -537,7 +537,7 @@ begin
   inherited Destroy;
 end;
 
-function TConsequence.AsString(AID: UTF8String): UTF8String;
+function TConsequence.AsString(AID: string): string;
 begin
   Result := IntToStr(FP.ValueWithVariation) + '|';
   Result += GetConsequenceStylesString(FStyle)+'|';
@@ -547,7 +547,7 @@ begin
   FConsequenceByPlayerID.Values[AID]:=Result;
 end;
 
-function TConsequence.PointMessage(ForGroup: Boolean): UTF8String;
+function TConsequence.PointMessage(ForGroup: Boolean): string;
 begin
   Result := FP.PointMessage(FNicname,FAppendicePlural, FAppendiceSingular,ForGroup);
 

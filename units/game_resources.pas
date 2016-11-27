@@ -9,7 +9,7 @@ uses
   , game_actors
   ;
 
-function GenResourceName(i : integer) : UTF8string;
+function GenResourceName(i : integer) : string;
 function GetColorFromCode(ACode : TGameColor) : TColor;
 
 resourcestring
@@ -83,7 +83,7 @@ const
 
 const
 
-  CPlayerNamesMale : array [0..49] of UTF8String =
+  CPlayerNamesMale : array [0..49] of string =
      ('João','Rodrigo','Francisco','Martim','Santiago',
      'Tomás','Afonso','Duarte','Miguel','Guilherme','Tiago',
      'Gonçalo','Diogo','Gabriel','Pedro','Rafael','Salvador',
@@ -94,7 +94,7 @@ const
      'Alexandre','Leandro','Filipe','Enzo','Ricardo',
      'Matias','Rúben','Samuel','Bruno','Isaac','Xavier','Nuno','Carlos');
 
-  CPlayerNamesFemale : array [0..49] of UTF8String =
+  CPlayerNamesFemale : array [0..49] of string =
     ('Maria','Matilde','Thais','Beatriz','Mariana',
     'Carolina','Ana','Inês','Sofia','Margarida',
     'Lara','Joana','Laura','Francisca','Diana',
@@ -238,7 +238,7 @@ implementation
 
 uses zhelpers;
 
-function GenResourceName(i: integer): UTF8string;
+function GenResourceName(i: integer): string;
 begin
   Randomize;
   if (i <= 49) and (i>=0) then

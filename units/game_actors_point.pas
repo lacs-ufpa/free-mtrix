@@ -23,7 +23,7 @@ type
     //Cycles : integer; // specify when present points regarding condition cycles
     constructor Create(AOwner:TComponent;AValue : integer);overload;
     constructor Create(AOwner:TComponent;AValue : array of integer); overload;
-    constructor Create(AOwner:TComponent;AResult : UTF8String); overload;
+    constructor Create(AOwner:TComponent;AResult : string); overload;
     function PointMessage(APrepend, AAppendicePlural, AAppendiceSingular: string; IsGroupPoint: Boolean) : string;
     property ValueWithVariation : integer read GetValue write FValue;
     property Variation : integer read FVariation write FVariation;
@@ -81,7 +81,7 @@ begin
   FVariation := AValue[1];
 end;
 
-constructor TGamePoint.Create(AOwner: TComponent; AResult: utf8string);
+constructor TGamePoint.Create(AOwner: TComponent; AResult: string);
 begin
   FValue := 0;//does not matter here, this creation method is called by a player, admin sent a result
   FVariation := 0;
@@ -99,7 +99,7 @@ begin
 
       if (AAppendiceSingular = '') or (AAppendicePlural = '') then
         begin
-          case FValue of
+          case FResult of
             -MaxInt..-2: Result += ' produziram a perda de '+Self.AsString+ ' pontos para o grupo';
            -1 : Result += ' produziram a perda de  1 ponto para o grupo';
             0 : Result += ' pontos do grupo não foram produzidos nem perdidos';
@@ -109,7 +109,7 @@ begin
         end
       else
         begin
-          case FValue of
+          case FResult of
             -MaxInt..-2: Result += ' produziram a perda de '+Self.AsString+ ' ' + AAppendicePlural;
            -1 : Result += ' produziram a perda de  1'+ ' ' + AAppendiceSingular;
             0 : Result += ' não produziram ' + AAppendicePlural;
@@ -127,7 +127,7 @@ begin
 
       if (AAppendiceSingular = '') or (AAppendicePlural = '') then
         begin
-          case FValue of
+          case FResult of
             -MaxInt..-2: Result += ' perdeu '+Self.AsString+ ' pontos';
            -1 : Result += ' perdeu 1 ponto';
             0 : Result += ' não perdeu nem ganhou pontos';
@@ -137,7 +137,7 @@ begin
         end
       else
         begin
-          case FValue of
+          case FResult of
             -MaxInt..-2: Result += ' perdeu '+Self.AsString+ ' ' + AAppendicePlural;
            -1 : Result += ' ponto  1 ' + AAppendiceSingular;
             0 : Result += ' não perdeu nem ganhou ' + AAppendicePlural;

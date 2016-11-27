@@ -12,34 +12,34 @@ uses
 
 function GetAndDelFirstValue(var S: string;Sep:Char=','):string; deprecated 'Use ExtracteDelimited from strutils instead';
 
-function GetRowString(ARow : TGameRow) : UTF8String;
-function GetRowFromString(S : UTF8String):TGameRow;
+function GetRowString(ARow : TGameRow) : string;
+function GetRowFromString(S : string):TGameRow;
 
-function GetColorString(C : TColor):UTF8String; overload;
-function GetColorFromString(S : UTF8String): TColor;
-function GetColorString(AColor : TGameColor) : UTF8String; overload;
-function GetGameColorFromString(S : UTF8String) : TGameColor;
+function GetColorString(C : TColor):string; overload;
+function GetColorFromString(S : string): TColor;
+function GetColorString(AColor : TGameColor) : string; overload;
+function GetGameColorFromString(S : string) : TGameColor;
 
-function GetPromptStyleFromString(S : UTF8String) : TPromptStyle;
-function GetPromptStyleString(AStyle : TPromptStyle) : UTF8String;
+function GetPromptStyleFromString(S : string) : TPromptStyle;
+function GetPromptStyleString(AStyle : TPromptStyle) : string;
 
-function GetConsequenceStyleFromString(s : UTF8String):TGameConsequenceStyle;
-function GetConsequenceStyleString(AStyle : TGameConsequenceStyle): UTF8String;
-function GetConsequenceStylesFromString(S : UTF8String):TConsequenceStyle;
-function GetConsequenceStylesString(CS : TConsequenceStyle): UTF8String;
+function GetConsequenceStyleFromString(s : string):TGameConsequenceStyle;
+function GetConsequenceStyleString(AStyle : TGameConsequenceStyle): string;
+function GetConsequenceStylesFromString(S : string):TConsequenceStyle;
+function GetConsequenceStylesString(CS : TConsequenceStyle): string;
 
-function GetCriteriaString(ACriteria : TCriteria) : UTF8String;
-function GetCriteriaFromString(S : UTF8String) : TCriteria;
-function GetCriteriaStyleString(AStyle: TGameStyle) : UTF8String;
+function GetCriteriaString(ACriteria : TCriteria) : string;
+function GetCriteriaFromString(S : string) : TCriteria;
+function GetCriteriaStyleString(AStyle: TGameStyle) : string;
 
-function GetStatusString(AStatus : TGamePlayerStatus): UTF8String;
-function GetPPointsString(APPoints : TPlayerPoints) : UTF8String;
-function GetChoiceString(AChoice : TPlayerChoice) : UTF8String;
-function GetPointsString(APoints : TPoints) : UTF8String;
-function GetEndCriteriaString(AEndCriterium:TEndConditionCriterium) : UTF8String;
+function GetStatusString(AStatus : TGamePlayerStatus): string;
+function GetPPointsString(APPoints : TPlayerPoints) : string;
+function GetChoiceString(AChoice : TPlayerChoice) : string;
+function GetPointsString(APoints : TPoints) : string;
+function GetEndCriteriaString(AEndCriterium:TEndConditionCriterium) : string;
 
-function GetPlayerFromString(s: UTF8string): TPlayer;
-function GetPlayerAsString(P: TPlayer): UTF8string;
+function GetPlayerFromString(s: string): TPlayer;
+function GetPlayerAsString(P: TPlayer): string;
 
 implementation
 
@@ -52,7 +52,7 @@ begin
   if Length(S) > 0 then while S[1] = Sep do Delete(S, 1, 1);
 end;
 
-function GetRowString(ARow: TGameRow): UTF8String;
+function GetRowString(ARow: TGameRow): string;
 begin
   case ARow of
     grNone : Result := '0';
@@ -71,7 +71,7 @@ begin
   end;
 end;
 
-function GetRowFromString(S: UTF8String): TGameRow;
+function GetRowFromString(S: string): TGameRow;
 begin
   case UpperCase(S) of
     'NA', '.' , '0', 'NONE'           : Result := grNone;
@@ -90,7 +90,7 @@ begin
   end;
 end;
 
-function GetColorString(AColor: TGameColor): UTF8String;
+function GetColorString(AColor: TGameColor): string;
 begin
   case AColor of
     gcNone :Result  :=  'INDIFERENTE';
@@ -104,7 +104,7 @@ begin
   end;
 end;
 
-function GetGameColorFromString(S: UTF8String): TGameColor;
+function GetGameColorFromString(S: string): TGameColor;
 begin
   case UpperCase(S) of
     '.', 'INDIFERENTE', 'NONE' : Result := gcNone;
@@ -119,7 +119,7 @@ begin
 end;
 
 
-function GetPromptStyleFromString(S: UTF8String): TPromptStyle;
+function GetPromptStyleFromString(S: string): TPromptStyle;
 begin
   // todos,sim,metacontingência,recuperar pontos,
   case UpperCase(S) of
@@ -134,7 +134,7 @@ begin
   end;
 end;
 
-function GetPromptStyleString(AStyle: TPromptStyle): UTF8String;
+function GetPromptStyleString(AStyle: TPromptStyle): string;
 var Style : TGamePromptStyle;
 begin
   Result:='';
@@ -151,7 +151,7 @@ begin
     end;
 end;
 
-function GetConsequenceStyleFromString(s: UTF8String): TGameConsequenceStyle;
+function GetConsequenceStyleFromString(s: string): TGameConsequenceStyle;
 begin
   case UpperCase(S) of
     'NADA': Result:= gscNone;
@@ -162,7 +162,7 @@ begin
   end;
 end;
 
-function GetConsequenceStyleString(AStyle: TGameConsequenceStyle): UTF8String;
+function GetConsequenceStyleString(AStyle: TGameConsequenceStyle): string;
 begin
   case AStyle of
     gscNone : Result:= 'NADA';
@@ -173,7 +173,7 @@ begin
   end;
 end;
 
-function GetCriteriaString(ACriteria: TCriteria): UTF8String;
+function GetCriteriaString(ACriteria: TCriteria): string;
 var R : TGameRow;
     C : TGameColor;
 begin
@@ -188,7 +188,7 @@ begin
   Result += '|';
 end;
 
-function GetCriteriaFromString(S: UTF8String): TCriteria;
+function GetCriteriaFromString(S: string): TCriteria;
 var
   s1 : string;
   i : integer;
@@ -217,7 +217,7 @@ begin
     else Break;
 end;
 
-function GetCriteriaStyleString(AStyle: TGameStyle): UTF8String;
+function GetCriteriaStyleString(AStyle: TGameStyle): string;
 begin
   case AStyle of
     gtNone : Result := 'INDIFERENTE';
@@ -228,7 +228,7 @@ begin
   end;
 end;
 
-function GetColorString(C: TColor): UTF8String;
+function GetColorString(C: TColor): string;
 begin
   case C of
     ccYellow: Result := 'Y';
@@ -239,7 +239,7 @@ begin
   end;
 end;
 
-function GetColorFromString(S: UTF8String): TColor;
+function GetColorFromString(S: string): TColor;
 begin
   case S of
     'Y' : Result := ccYellow;
@@ -250,7 +250,7 @@ begin
   end;
 end;
 
-function GetConsequenceStylesFromString(S:UTF8String):TConsequenceStyle;
+function GetConsequenceStylesFromString(S:string):TConsequenceStyle;
 var
   LCount,
   i : integer;
@@ -270,7 +270,7 @@ begin
     end;
 end;
 
-function GetConsequenceStylesString(CS: TConsequenceStyle): UTF8String;
+function GetConsequenceStylesString(CS: TConsequenceStyle): string;
 var ConsequenceStyle : TGameConsequenceStyle;
 begin
   Result := '';
@@ -291,7 +291,7 @@ begin
 end;
 
 function GetEndCriteriaString(AEndCriterium: TEndConditionCriterium
-  ): UTF8String;
+  ): string;
 begin
   // 2,20,10,10,
   case AEndCriterium.Value of
@@ -305,25 +305,25 @@ begin
   Result := Result + IntToStr(AEndCriterium.LastCycles) + VV_SEP;
 end;
 
-function GetPointsString(APoints: TPoints): UTF8String;
+function GetPointsString(APoints: TPoints): string;
 begin
   Result := IntToStr(APoints.A) + VV_SEP;
   Result := Result + IntToStr(APoints.B) + VV_SEP;
   Result := Result + IntToStr(APoints.G) + VV_SEP;
 end;
 
-function GetChoiceString(AChoice: TPlayerChoice): UTF8String;
+function GetChoiceString(AChoice: TPlayerChoice): string;
 begin
   Result := GetRowString(AChoice.Row) + VV_SEP;
   Result := Result+ GetColorString(AChoice.Color) + VV_SEP;
 end;
 
-function GetPPointsString(APPoints: TPlayerPoints): UTF8String;
+function GetPPointsString(APPoints: TPlayerPoints): string;
 begin
   Result := IntToStr(APPoints.A)+VV_SEP+IntToStr(APPoints.B);
 end;
 
-function GetStatusString(AStatus: TGamePlayerStatus): UTF8String;
+function GetStatusString(AStatus: TGamePlayerStatus): string;
 begin
   case AStatus of
    gpsWaiting: Result := 'esperando';
@@ -332,12 +332,12 @@ begin
   end;
 end;
 
-function GetPlayerAsString(P: TPlayer): UTF8string;
+function GetPlayerAsString(P: TPlayer): string;
 var
   i : integer;
-  M : array of UTF8String;
+  M : array of string;
 
-  procedure SetM(A : array of UTF8String);
+  procedure SetM(A : array of string);
   var i : integer;
   begin
     SetLength(M,Length(A));
@@ -407,7 +407,7 @@ begin
     Result += M[i] + '|';
 end;
 
-function GetPlayerFromString(s: UTF8string): TPlayer;
+function GetPlayerFromString(s: string): TPlayer;
 
   function RowFromString(S: string): TGameRow;
   begin
