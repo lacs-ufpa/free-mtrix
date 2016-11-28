@@ -2,7 +2,7 @@ unit game_experiment;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE DEBUG}
+//{$DEFINE DEBUG}
 
 interface
 
@@ -21,6 +21,7 @@ type
 
   TExperiment = class(TComponent)
   private
+    FExperimentStart : Boolean;
     FExperimentAim,
     FExperimentName,
     FFilename,
@@ -62,6 +63,7 @@ type
     function GetInterlockingsIn(ALastCycles : integer):integer;
     function GetConsequenceStringFromChoice(P:TPlayer): Utf8string;
     function GetConsequenceStringFromChoices:UTF8String;
+    procedure CheckNeedForRandomTurns;
     procedure SetCondition(I : Integer; AValue: TCondition);
     procedure SetContingency(ACondition, I : integer; AValue: TContingency);
     procedure SetMatrixType(AValue: TGameMatrixType);
@@ -142,7 +144,7 @@ resourcestring
 
 implementation
 
-uses game_file_methods, game_actors_point, game_resources, string_methods;
+uses game_file_methods, game_resources, string_methods;
 
 { TExperiment }
 
@@ -172,9 +174,11 @@ begin
     Result := StrToInt(FTurnsRandom.Names[FConditions[CurrentCondition].Turn.Count])
   else
     Result := FConditions[CurrentCondition].Turn.Count;
+
   if Assigned(FOnEndTurn) then FOnEndTurn(Self);
-  if FConditions[CurrentCondition].Turn.Count < FConditions[CurrentCondition].Turn.Value then
-    Inc(FConditions[CurrentCondition].Turn.Count)
+
+  if FConditions[CurrentCondition].Turn.Count < FConditions[CurrentCondition].Turn.Value-1 then
+      Inc(FConditions[CurrentCondition].Turn.Count)
   else
     begin
       FConditions[CurrentCondition].Turn.Count := 0;
@@ -188,20 +192,20 @@ end;
 function TExperiment.GetNextTurnPlayerID: UTF8string; // used during cycles
 begin
   Result := Player[FConditions[CurrentCondition].Turn.Count].ID;
-  GetNextTurn;
 end;
 
 function TExperiment.GetNextCycle: integer;
 begin
   Result := FConditions[CurrentCondition].Cycles.Count;
   if Assigned(FOnEndCycle) then FOnEndCycle(Self);
-  if FConditions[CurrentCondition].Cycles.Count < FConditions[CurrentCondition].Cycles.Value then
+
+  if FConditions[CurrentCondition].Cycles.Count < FConditions[CurrentCondition].Cycles.Value-1 then
     Inc(FConditions[CurrentCondition].Cycles.Count)
   else
     begin
       FConditions[CurrentCondition].Cycles.Count := 0;
-      Inc(FConditions[CurrentCondition].Cycles.Generation);
       if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
+      Inc(FConditions[CurrentCondition].Cycles.Generation);
       NextCondition;
     end;
   {$IFDEF DEBUG}
@@ -216,8 +220,8 @@ var
 
   procedure EndCondition;
   begin
-    Inc(FCurrentCondition);
     if Assigned(FOnEndCondition) then FOnEndCondition(Self);
+    Inc(FCurrentCondition);
   end;
 
 begin
@@ -241,7 +245,7 @@ begin
 
     gecInterlockingPorcentage:
         if LInterlocks = FConditions[CurrentCondition].EndCriterium.InterlockingPorcentage then
-          EndCondition
+          EndCondition;
 
   end;
   {$IFDEF DEBUG}
@@ -324,7 +328,7 @@ begin
   for i :=0 to ContingenciesCount[c] -1 do
     if not Contingency[c,i].Meta then
       if Contingency[c,i].ResponseMeetsCriteriaI(P.Choice.Row,P.Choice.Color) then
-        Result += Contingency[c,i].Consequence.AsString(P.ID) + '+';
+        Result += Contingency[c,i].Consequence.AsString(P.ID);
 end;
 
 function TExperiment.GetConsequenceStringFromChoices: UTF8String;
@@ -337,7 +341,28 @@ begin
   for i :=0 to ContingenciesCount[c] -1 do
     if Contingency[c,i].Meta then
       if Contingency[c,i].ResponseMeetsCriteriaG(FPlayers) then
-        Result += Contingency[c,i].Consequence.AsString(IntToStr(i)) + '+';
+        Result += Contingency[c,i].Consequence.AsString(IntToStr(i));
+end;
+
+procedure TExperiment.CheckNeedForRandomTurns;
+var c ,
+    i,
+    r : integer;
+begin
+  if Condition[CurrentCondition].Turn.Random then
+    begin
+      FTurnsRandom.Clear;
+      for i:= 0 to Condition[CurrentCondition].Turn.Value-1 do
+        FTurnsRandom.Add(IntToStr(i));
+
+      c := FTurnsRandom.Count - 1;
+      for i := 0 to c do
+        begin
+          r := Random(c);
+          while r = i do r := Random(c);
+          FTurnsRandom.Exchange(r,i);
+        end;
+    end;
 end;
 
 procedure TExperiment.SetCondition(I : Integer; AValue: TCondition);
@@ -458,30 +483,17 @@ end;
 constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FTurnsRandom := TStringList.Create;
   LoadExperimentFromResource(Self);
+  CheckNeedForRandomTurns;
 end;
 
 constructor TExperiment.Create(AFilename: string;AOwner:TComponent);
-var c ,
-    i,
-    r : integer;
 begin
   inherited Create(AOwner);
   FTurnsRandom := TStringList.Create;
   LoadExperimentFromFile(Self,AFilename);
-  if Condition[CurrentCondition].Turn.Random then
-    begin
-      for i:= 0 to Condition[CurrentCondition].Turn.Value-1 do
-        FTurnsRandom.Add(IntToStr(i));
-
-      c := FTurnsRandom.Count - 1;
-      for i := 0 to c do
-        begin
-          r := Random(c);
-          while r = i do r := Random(c);
-          FTurnsRandom.Exchange(r,i);
-        end;
-    end;
+  CheckNeedForRandomTurns;
 end;
 
 destructor TExperiment.Destroy;
@@ -495,6 +507,7 @@ begin
   Result := LoadExperimentFromFile(Self, AFilename);
   if Result then
     FFilename := AFilename;
+  CheckNeedForRandomTurns;
 end;
 
 function TExperiment.LoadFromGenerator: Boolean;
@@ -502,6 +515,7 @@ begin
   Result := LoadExperimentFromResource(Self);
   if Result then
     FFilename := GetCurrentDir + PathDelim + FResearcher + PathDelim;
+  CheckNeedForRandomTurns;
 end;
 
 function TExperiment.AppendCondition: integer;

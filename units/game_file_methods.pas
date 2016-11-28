@@ -30,7 +30,7 @@ resourcestring
 
 implementation
 
-uses LCLIntf, game_actors_point, game_resources, string_methods, regdata, zhelpers, strutils;
+uses LCLIntf, game_resources, string_methods, regdata, zhelpers, strutils;
 
 function LoadExperimentFromResource(var AExperiment: TExperiment): Boolean;
 var
@@ -91,9 +91,9 @@ begin
           Contingencies[0] := TContingency.Create(AExperiment,LConcequence,LCriteria1,False);
           LConcequence := TConsequence.Create(AExperiment,3,[gscPoints, gscA, gscMessage,gscBroadcastMessage],['$NICNAME','pão','pães']);
           Contingencies[1] := TContingency.Create(AExperiment,LConcequence,LCriteria2,False);
-          LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscG, gscMessage,gscBroadcastMessage],['','item escolar','itens escolares']);
+          LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscG, gscMessage],['','item escolar','itens escolares']);
           Contingencies[2] := TContingency.Create(AExperiment,LConcequence,LCriteria3,True);
-          LConcequence := TConsequence.Create(AExperiment,-1,[gscPoints, gscG, gscMessage,gscBroadcastMessage],['','item escolar','itens escolares']);
+          LConcequence := TConsequence.Create(AExperiment,-1,[gscPoints, gscG, gscMessage],['','item escolar','itens escolares']);
           Contingencies[3] := TContingency.Create(AExperiment,LConcequence,LCriteria4,True);
 
           Prompt := TPrompt.Create(

@@ -2,7 +2,7 @@ unit game_control;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE DEBUG}
+//{$DEFINE DEBUG}
 
 interface
 
@@ -49,7 +49,8 @@ type
     procedure CleanMatrix(AEnabled : Boolean);
     procedure EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
   private
-    function ShouldStartCycle : Boolean;
+    function ShouldStartExperiment: Boolean;
+    function ShouldEndCycle : Boolean;
     function ShouldAskQuestion : Boolean;
     procedure KickPlayer(AID:string);
     procedure NextTurn(Sender: TObject);
@@ -130,15 +131,20 @@ end;
 
 { TGameControl }
 
-function TGameControl.ShouldStartCycle: Boolean; // starts experiment too
+function TGameControl.ShouldStartExperiment: Boolean;
 begin
   Result := FExperiment.PlayersCount = FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value;
+end;
+
+function TGameControl.ShouldEndCycle: Boolean;
+begin
+  Result := FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count = FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value-1;
 end;
 
 function TGameControl.ShouldAskQuestion: Boolean; // end cycle, restart alias
 begin
   // TODO: prompt only when an odd row was selected
-  Result := ShouldStartCycle and FExperiment.Condition[FExperiment.CurrentCondition].Contingencies[3].Fired;
+  Result := ShouldEndCycle and FExperiment.Condition[FExperiment.CurrentCondition].Contingencies[3].Fired;
 end;
 
 procedure TGameControl.KickPlayer(AID: string);
@@ -149,27 +155,35 @@ end;
 procedure TGameControl.NextTurn(Sender: TObject);
 begin
   // update admin view
-  FormMatrixGame.LabelExpCountTurn.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count);
-
-  // inform players
-
+  FormMatrixGame.LabelExpCountTurn.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count+1);
 
 end;
 
 procedure TGameControl.NextCycle(Sender: TObject);
+var
+  i,
+  LCount : integer;
+  LConsequences : string;
 begin
   // prompt question to all players
-  FormMatrixGame.LabelExpCountCycle.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Count);
+  FormMatrixGame.LabelExpCountCycle.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Count+1);
   {$IFDEF DEBUG}
-  WriteLn('cycle:',FExperiment.ConsequenceStringFromChoices);
+  WriteLn('cycle:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
   {$ENDIF}
-  //FZMQActor.SendMessage([K_CYCLES])
+
+
+  //P := FExperiment.PlayerFromID[Self.ID];
+  LConsequences := FExperiment.ConsequenceStringFromChoices;
+  LCount := WordCount(LConsequences,['+']);
+  if LCount > 0 then
+    for i := 1 to LCount do
+      FZMQActor.SendMessage([K_CYCLES,ExtractDelimited(i,LConsequences,['+'])]);       // as string generates the pts result
 end;
 
 procedure TGameControl.NextLineage(Sender: TObject);
 begin
   // pause, kick older player, wait for new player, resume
-  FormMatrixGame.LabelExpCountGeneration.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Generation);
+  FormMatrixGame.LabelExpCountGeneration.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Generation+1);
 end;
 
 procedure TGameControl.NextCondition(Sender: TObject);
@@ -186,7 +200,7 @@ end;
 
 procedure TGameControl.Interlocking(Sender: TObject);
 begin
-  FormMatrixGame.LabelExpCountInterlocks.Caption:= IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Interlocks.Count);
+  FormMatrixGame.LabelExpCountInterlocks.Caption:= IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Interlocks.Count+1);
 
 end;
 
@@ -410,7 +424,7 @@ end;
 procedure TGameControl.ShowPopUp(AText: string);
 var PopUpPos : TPoint;
 begin
-  PopUpPos.X := FormMatrixGame.GBIndividualAB.Left;
+  PopUpPos.X := FormMatrixGame.GBIndividualAB.Left-110;
   PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height-10;
   PopUpPos := FormMatrixGame.ClientToScreen(PopUpPos);
   FormMatrixGame.PopupNotifier.Title:='';
@@ -473,12 +487,12 @@ begin
   FExperiment.OnInterlocking:=@Interlocking;
   FExperiment.OnConsequence:=@Consequence;
 
-  NextTurn(Self);
-  NextCycle(Self);
-  NextLineage(Self);
-  NextCondition(Self);
-  Interlocking(Self);
-  Consequence(Self);
+  //NextTurn(Self);
+  //NextCycle(Self);
+  //NextLineage(Self);
+  //NextCondition(Self);
+  //Interlocking(Self);
+  //Consequence(Self);
 
   SendRequest(K_LOGIN);
 end;
@@ -623,7 +637,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
     case FActor of
       gaPlayer:begin
-       if FExperiment.PlayersCount = P.Turn+1 then
+       if P.Turn = FExperiment.PlayersCount-1  then
         begin
           // update next turn
           if Self.ID = P.ID then
@@ -632,11 +646,11 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
              FExperiment.Player[Self.ID] := P;
            end;
 
-          // no wait turns
-          // EnablePlayerMatrix(Self.ID,0, True);
-
           //CleanMatrix;
           CleanMatrix(False);
+
+          // no wait turns
+          EnablePlayerMatrix(Self.ID,0, True);
 
           // wait for server
           Exit;
@@ -673,14 +687,16 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   end;
 
   procedure OnEndCycle;
+  var
+    LConsequence : TConsequence;
   begin
-    // Updata turn
-
-    //
     case FActor of
       gaPlayer:
         begin
-
+          LConsequence := TConsequence.Create(nil,AMessage[1]);
+          LConsequence.GenerateMessage(True);
+          LConsequence.PresentPoints;
+          LConsequence.PresentMessage;
         end;
     end;
   end;
@@ -781,7 +797,7 @@ begin
   if MHas(K_KICK)    then SayGoodBye;
   if MHas(K_START) then NotifyPlayers;
   if MHas(K_CYCLES) then OnEndCycle;
-  if MHas(K_QUESTION) then ShowQuestion;
+  //if MHas(K_QUESTION) then ShowQuestion;
   //if MHas(K_QMESSAGE) then  QuestionMessages;
 end;
 
@@ -800,9 +816,6 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   begin
     if not FExperiment.PlayerIsPlaying[ARequest[0]] then
       begin
-        {$IFDEF DEBUG}
-          WriteLn(FExperiment.PlayersCount,'<',FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value);
-        {$ENDIF}
         if FExperiment.PlayersCount < FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value then
           begin
             // ok, let player login
@@ -860,7 +873,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
             FZMQActor.SendMessage([K_ARRIVED,PS]);
 
             // start Experiment
-            if ShouldStartCycle then
+            if ShouldStartExperiment then
               StartExperiment;
 
           end
@@ -879,6 +892,9 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   var P : TPlayer;
       S : string;
   begin
+    {$IFDEF DEBUG}
+    WriteLn('Count:>>>>>>>>>>>>>>>>>>>>>>>>>>>',FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count, '<', FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value);
+    {$ENDIF}
     P := FExperiment.PlayerFromID[ARequest[0]];
     P.Choice.Row:= GetRowFromString(ARequest[3]); // row
     P.Choice.Color:= GetGameColorFromString(ARequest[4]); // color
@@ -901,16 +917,16 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     // broadcast choice
     FZMQActor.SendMessage([K_CHOICE,P.ID,ARequest[3],ARequest[4],IntToStr(P.Turn)]);
 
-    if ShouldStartCycle then
+    if ShouldEndCycle then
       begin
         while FormMatrixGame.PopupNotifier.Visible do
           Application.ProcessMessages;
 
-        if ShouldAskQuestion then  // TODO: prompt only when an odd row was selected
-          begin
-            P.Turn := 0;
-            FZMQActor.SendMessage([K_QUESTION,FExperiment.Condition[FExperiment.CurrentCondition].Prompt.Question]);
-          end;
+        //if ShouldAskQuestion then  // TODO: prompt only when an odd row was selected
+        //  begin
+        //    P.Turn := 0;
+        //    FZMQActor.SendMessage([K_QUESTION,FExperiment.Condition[FExperiment.CurrentCondition].Prompt.Question]);
+        //  end;
       end;
   end;
 
@@ -967,10 +983,6 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
     i: integer;
     P : TPlayer;
   begin
-    {$IFDEF DEBUG}
-      WriteLn(Self.ID +' self');
-      WriteLn(AReply[0] +' reply');
-    {$ENDIF}
     if Self.ID = AReply[0] then
       begin
         for i:= 3 to AReply.Count -2 do
@@ -997,6 +1009,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
     LConsequence : TConsequence;
     LCount,
     i : integer;
+    M : string;
     //P : TPlayer;
   begin
     if Self.ID = AReply[0] then
@@ -1009,11 +1022,13 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         if LCount > 0 then
           for i := 1 to LCount do
             begin
-              LConsequence := TConsequence.Create(FormMatrixGame,ExtractDelimited(i,AReply[5],['+']));
-              //LConsequence.PlayerNicname := P.Nicname;
-              LConsequence.Present(False);
+              LConsequence := TConsequence.Create(nil,ExtractDelimited(i,AReply[5],['+']));
+              M := LConsequence.GenerateMessage(False);
               if LConsequence.ShouldPublishMessage then
-                FZMQActor.SendMessage([K_MESSAGE,LConsequence.LastPresentedMessage]);
+                FZMQActor.SendMessage([K_MESSAGE,M])
+              else
+                LConsequence.PresentMessage;
+              LConsequence.PresentPoints;
               {$IFDEF DEBUG}
               WriteLn('A consequence should have shown.');
               {$ENDIF}

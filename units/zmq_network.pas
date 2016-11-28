@@ -11,7 +11,7 @@ unit zmq_network;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE DEBUG}
+//{$DEFINE DEBUG}
 
 interface
 
@@ -130,7 +130,7 @@ begin
               Synchronize(@MessageReceived);
             end;
           {$IFDEF DEBUG}
-          WriteLn('Server4:FPoller:',FPoller.PollNumber);
+          WriteLn('Client:Received:',LPollEvent,',',LMessagesCount);
           {$ENDIF}
         end;
     end;
@@ -236,24 +236,21 @@ begin
       if pePollIn in FPoller.PollItem[0].revents then
         begin
           LMultipartMessage.Clear;
-          {$IFDEF DEBUG}
-            WriteLn('pull':LPollCount);
-          {$ENDIF}
       	  LMessagesCount := FPuller_PUB.recv(LMultipartMessage);
           if LMessagesCount > 0 then
             begin
               FMessage := LMultipartMessage;
               Synchronize(@MessageReceived);
               FPublisher.send(LMultiPartMessage);
+              {$IFDEF DEBUG}
+                WriteLn('Server:Published:',LPollCount,',',LMessagesCount);
+              {$ENDIF}
             end;
         end;
 
       if pePollIn in FPoller.PollItem[1].revents then
         begin
           LMultipartMessage.Clear;
-          {$IFDEF DEBUG}
-            WriteLn('rep:',LPollCount);
-          {$ENDIF}
           LMessagesCount := FPuller_REP.recv(LMultipartMessage);
           if LMessagesCount > 2 then
             begin
@@ -261,6 +258,9 @@ begin
               Synchronize(@RequestReceived); LMultipartMessage := FMessage; S := TStringList.Create;
               FReplier.recv(S); S.Free;
               FReplier.send(LMultipartMessage);
+              {$IFDEF DEBUG}
+              WriteLn('Server:Replied:',LPollCount,',',LMessagesCount);
+              {$ENDIF}
             end;
         end;
     end;

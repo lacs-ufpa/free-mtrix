@@ -5,7 +5,7 @@ unit game_actors;
 interface
 
 uses
-  Classes, SysUtils, Forms,PopupNotifier
+  Classes, SysUtils, Forms,PopupNotifier, ExtCtrls
   , game_actors_point
   ;
 type
@@ -80,26 +80,26 @@ type
    private
      FAppendicePlural: string;
      FAppendiceSingular: string;
-     FLastPresentedMessage: string;
      FNicname: string;
      FStyle : TConsequenceStyle;
      FP : TGamePoint;
+     FTimer : TTimer;
      FMessage : TPopupNotifier;
      function GetShouldPublishMessage: Boolean;
    protected
      FConsequenceByPlayerID : TStringList;
      procedure StopTimer(Sender:TObject;var ACloseAction:TCloseAction);
-     procedure TimerTimer(Sender:TOBject);virtual;
+     procedure SelfDestroy(Sender:TOBject);virtual;
    public
      constructor Create(AOwner:TComponent; AP:TGamePoint; AStyle:TConsequenceStyle; AAppendiceSingular,AAppendicePlural:string);overload;
      constructor Create(AOwner:TComponent; AP:integer; AStyle: TConsequenceStyle; AMessage:array of string);overload;
      constructor Create(AOwner:TComponent; AConsequenceString: string);virtual;overload;
      destructor Destroy;override;
      function AsString(AID :string): string;
-     function PointMessage(ForGroup: Boolean):string;
-     procedure Present(ForGroup: Boolean);
+     function GenerateMessage(ForGroup: Boolean):string;
+     procedure PresentMessage;
+     procedure PresentPoints;
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
-     property LastPresentedMessage : string read FLastPresentedMessage;
      property PlayerNicname : string read FNicname write FNicname;
      property AppendiceSingular : string read FAppendiceSingular;
      property AppendicePlural : string read FAppendicePlural;
@@ -248,7 +248,7 @@ begin
   Result += '|';
 end;
 
-function TContingency.ResponseMeetsCriteriaI(R : TGameRow; C : TGameColor): Boolean;
+function TContingency.ResponseMeetsCriteriaI(R : TGameRow; C : TGameColor): Boolean;  // should be for admin only
 var
   LMod : TGameRow;
   LRow, LColor:Boolean;
@@ -270,7 +270,7 @@ begin
     CriteriaEvent;
 end;
 
-function TContingency.ResponseMeetsCriteriaG(Players: TPlayers): Boolean;
+function TContingency.ResponseMeetsCriteriaG(Players: TPlayers): Boolean; // must be for admin only
 var i : integer;
     Cs : array of TGameColor;
     Rs : array of TGameRow;
@@ -509,11 +509,12 @@ constructor TConsequence.Create(AOwner: TComponent; AP: integer;
   AStyle:TConsequenceStyle; AMessage: array of string);
 begin
   inherited Create(AOwner);
+  FP := TGamePoint.Create(AOwner,AP);
   FStyle:=AStyle;
   FNicname:=AMessage[0];
   FAppendiceSingular:=AMessage[1];
   FAppendicePlural:=AMessage[2];
-  FP := TGamePoint.Create(AOwner,AP);
+
   FMessage := TPopupNotifier.Create(AOwner);
   FConsequenceByPlayerID := TStringList.Create;
 end;
@@ -527,7 +528,12 @@ begin
   FNicname:=ExtractDelimited(3,AConsequenceString,['|']);
   FAppendiceSingular:=ExtractDelimited(4,AConsequenceString,['|']);
   FAppendicePlural:=ExtractDelimited(5,AConsequenceString,['|']);
-  FMessage := TPopupNotifier.Create(AOwner);
+
+  FMessage := TPopupNotifier.Create(Self);
+  FTimer := TTimer.Create(Self);
+  FTimer.Enabled:=False;
+  FTimer.Interval:=6000;
+  FTimer.OnTimer:=@SelfDestroy;
   FConsequenceByPlayerID := TStringList.Create;
 end;
 
@@ -543,40 +549,47 @@ begin
   Result += GetConsequenceStylesString(FStyle)+'|';
   Result += FNicname +'|';
   Result += FAppendiceSingular + '|';
-  Result += FAppendicePlural + '|';
+  Result += FAppendicePlural + '|+';
   FConsequenceByPlayerID.Values[AID]:=Result;
 end;
 
-function TConsequence.PointMessage(ForGroup: Boolean): string;
+function TConsequence.GenerateMessage(ForGroup: Boolean): string;
 begin
   Result := FP.PointMessage(FNicname,FAppendicePlural, FAppendiceSingular,ForGroup);
-
-  if gscA in FStyle then
-    FormMatrixGame.LabelIndACount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption) + FP.ResultAsInteger);
-
-  if gscB in FStyle then
-    FormMatrixGame.LabelIndBCount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndBCount.Caption) + FP.ResultAsInteger);
-
-  if gscG in FStyle then
-    FormMatrixGame.LabelGroupCount.Caption:= IntToStr(StrToInt(FormMatrixGame.LabelGroupCount.Caption) + FP.ResultAsInteger);
+  FMessage.Text := Result;
 end;
 
-
-procedure TConsequence.Present(ForGroup: Boolean);
+procedure TConsequence.PresentMessage;
 var
   PopUpPos : TPoint;
 begin
-  PopUpPos.X := FormMatrixGame.GBIndividualAB.Left;
-  PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height-10;
-  PopUpPos := FormMatrixGame.ClientToScreen(PopUpPos);
+  if gscA in FStyle then
+    begin
+      PopUpPos.X := FormMatrixGame.GBIndividualAB.Left-110;
+      PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height-10;
+    end;
 
+  if gscB in FStyle then
+    begin
+      PopUpPos.X := FormMatrixGame.GBIndividualAB.Left+110;
+      PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height-10;
+    end;
+
+  if gscG in FStyle then
+    begin
+      PopUpPos.X := FormMatrixGame.GBIndividualAB.Left-110;
+      PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height+100;
+    end;
+  PopUpPos := FormMatrixGame.ClientToScreen(PopUpPos);
   FMessage.Color:=clTeal;
   FMessage.Title:='';
-  FMessage.Text := FP.PointMessage(FNicname,FAppendicePlural, FAppendiceSingular,ForGroup);
-  FLastPresentedMessage := FMessage.Text;
-  FMessage.OnClose:=@StopTimer;
-  FormMatrixGame.Timer.OnTimer := @TimerTimer;
+  FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
+  FTimer.Enabled:=True;
+end;
 
+procedure TConsequence.PresentPoints;
+begin
+  //is gscPoints in FStyle then just in case...
   if gscA in FStyle then
     FormMatrixGame.LabelIndACount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption) + FP.ResultAsInteger);
 
@@ -585,13 +598,9 @@ begin
 
   if gscG in FStyle then
     FormMatrixGame.LabelGroupCount.Caption:= IntToStr(StrToInt(FormMatrixGame.LabelGroupCount.Caption) + FP.ResultAsInteger);
-
-  if gscBroadcastMessage in FStyle then Exit;
-  FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
-  FormMatrixGame.Timer.Enabled:=True;
 end;
 
-function TConsequence.GetShouldPublishMessage: Boolean;
+function TConsequence.GetShouldPublishMessage: Boolean; // for players only
 begin
   Result := gscBroadcastMessage in FStyle;
 end;
@@ -599,12 +608,13 @@ end;
 procedure TConsequence.StopTimer(Sender: TObject; var ACloseAction: TCloseAction
   );
 begin
-  FormMatrixGame.Timer.Enabled:=False;
+  //FormMatrixGame.Timer.Enabled:=False;
 end;
 
-procedure TConsequence.TimerTimer(Sender: TOBject);
+procedure TConsequence.SelfDestroy(Sender: TOBject);
 begin
   FMessage.Visible:=False;
+  Free;
 end;
 
 
