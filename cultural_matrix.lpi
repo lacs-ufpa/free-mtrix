@@ -55,7 +55,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="14">
+    <Units Count="15">
       <Unit0>
         <Filename Value="cultural_matrix.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -117,6 +117,10 @@
         <ComponentName Value="FormChooseActor"/>
         <ResourceBaseClass Value="Form"/>
       </Unit13>
+      <Unit14>
+        <Filename Value="units/csv_writer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit14>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

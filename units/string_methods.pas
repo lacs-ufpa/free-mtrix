@@ -19,8 +19,6 @@ uses
   , game_resources
   ;
 
-function GetAndDelFirstValue(var S: string;Sep:Char=','):string; deprecated 'Use ExtracteDelimited from strutils instead';
-
 function GetRowString(ARow : TGameRow) : string;
 function GetRowFromString(S : string):TGameRow;
 
@@ -31,6 +29,7 @@ function GetGameColorFromString(S : string) : TGameColor;
 
 function GetPromptStyleFromString(S : string) : TPromptStyle;
 function GetPromptStyleString(AStyle : TPromptStyle) : string;
+function GetGamePromptStyleFromString(S : string) : TGamePromptStyle;
 
 function GetConsequenceStyleFromString(s : string):TGameConsequenceStyle;
 function GetConsequenceStyleString(AStyle : TGameConsequenceStyle): string;
@@ -42,10 +41,19 @@ function GetCriteriaFromString(S : string) : TCriteria;
 function GetCriteriaStyleString(AStyle: TGameStyle) : string;
 
 function GetStatusString(AStatus : TGamePlayerStatus): string;
+function GetStatusFromString(S : string): TGamePlayerStatus;
+
+function GetPPointsFromString(S:string) : TPlayerPoints;
 function GetPPointsString(APPoints : TPlayerPoints) : string;
-function GetChoiceString(AChoice : TPlayerChoice) : string;
+function GetPointsFromString(S: string) : TPoints;
 function GetPointsString(APoints : TPoints) : string;
+
+function GetChoiceString(AChoice : TPlayerChoice) : string;
+function GetChoiceFromString(S:string) : TPlayerChoice;
+
 function GetEndCriteriaString(AEndCriterium:TEndConditionCriterium) : string;
+function GetEndCriteriaFromString(S:string) : TEndConditionCriterium;
+
 
 function GetPlayerFromString(s: string): TPlayer;
 function GetPlayerAsString(P: TPlayer): string;
@@ -53,6 +61,57 @@ function GetPlayerAsString(P: TPlayer): string;
 implementation
 
 uses strutils;
+
+function GetEndCriteriaFromString(S:string) : TEndConditionCriterium;
+begin
+  case StrToIntDef(ExtractDelimited(1,S,[',']),2) of
+    0: Result.Value := gecAbsoluteCycles;
+    1: Result.Value := gecInterlockingPorcentage;
+    2: Result.Value := gecWhichComeFirst;
+  end;
+  Result.AbsoluteCycles := StrToIntDef(ExtractDelimited(2,S,[',']), 20);
+  Result.InterlockingPorcentage := StrToIntDef(ExtractDelimited(3,S,[',']),10);
+  Result.LastCycles := StrToIntDef(ExtractDelimited(4,S,[',']), 10);
+end;
+
+function GetPointsFromString(S: string) : TPoints;
+begin
+  Result.A := StrToIntDef(ExtractDelimited(1,S,[',']),0);
+  Result.B := StrToIntDef(ExtractDelimited(2,S,[',']),0);
+  Result.G := StrToIntDef(ExtractDelimited(3,S,[',']),0);
+end;
+
+
+function GetChoiceFromString(S:string) : TPlayerChoice;
+begin
+  Result.Row := GetRowFromString(ExtractDelimited(1,S,[',']));
+  Result.Color := GetGameColorFromString(ExtractDelimited(2,S,[',']));
+end;
+
+function GetPPointsFromString(S:string) : TPlayerPoints;
+begin
+  Result.A := StrToIntDef(ExtractDelimited(1,S,[',']),0);
+  Result.B := StrToIntDef(ExtractDelimited(2,S,[',']),0);
+end;
+
+function GetStatusFromString(S : string): TGamePlayerStatus;
+begin
+  case ExtractDelimited(1,S,[',']) of
+    'esperando': Result := gpsWaiting;
+    'jogou': Result := gpsPlayed;
+    'jogando': Result := gpsPlaying;
+  end;
+end;
+
+function GetPromptStyleFromString(S:string):TPromptStyle;
+var
+  i : integer;
+begin
+  // Yes,All,Metacontingency,RecoverLostPoints,
+  Result := [];
+  for i := 1 to 4 do
+      Result := Result + [GetGamePromptStyleFromString(ExtractDelimited(i,S,[',']))];
+end;
 
 function GetAndDelFirstValue(var S: string;Sep:Char=','): string;
 begin
@@ -128,18 +187,18 @@ begin
 end;
 
 
-function GetPromptStyleFromString(S: string): TPromptStyle;
+function GetGamePromptStyleFromString(S: string): TGamePromptStyle;
 begin
   // todos,sim,metacontingência,recuperar pontos,
   case UpperCase(S) of
     //'NENHUM','NONE': Result:=[gsNone];
-    'TODOS', 'ALL' : Result:=[gsAll];
-    'SIM', 'YES','S','Y': Result:=[gsYes];
-    'NÃO','NAO','N' : Result:=[gsNo];
-    'CONTINGÊNCIA','CONTINGENCIA','CONTINGENCY','OPERANTE', 'OPERANT': Result:=[gsContingency];
-    'METACONTINGÊNCIA','METACONTINGENCIA','METACONTINGENCY','META': Result:=[gsMetacontingency];
-    'RECUPERA','RECUPERAR','RECUPERAR PONTOS','RECOVER','RESETAR', 'RESET': Result:=[gsRevertPoints];
-    'TIRAR DE A AO INVES DE B','TIRAR DE A AO INVÉS DE B', 'B as A' : Result:=[gsBasA];
+    'TODOS', 'ALL' : Result := gsAll;
+    'SIM', 'YES','S','Y': Result := gsYes;
+    'NÃO','NAO','N' : Result := gsNo;
+    'CONTINGÊNCIA','CONTINGENCIA','CONTINGENCY','OPERANTE', 'OPERANT': Result := gsContingency;
+    'METACONTINGÊNCIA','METACONTINGENCIA','METACONTINGENCY','META': Result := gsMetacontingency;
+    'RECUPERA','RECUPERAR','RECUPERAR PONTOS','RECOVER','RESETAR', 'RESET': Result := gsRevertPoints;
+    'TIRAR DE A AO INVES DE B','TIRAR DE A AO INVÉS DE B', 'B as A' : Result := gsBasA;
   end;
 end;
 
@@ -197,33 +256,31 @@ begin
   Result += '|';
 end;
 
-function GetCriteriaFromString(S: string): TCriteria;
+function GetCriteriaFromString(S:string):TCriteria;
 var
-  s1 : string;
-  i : integer;
+  LS : string;
+  i,
+  LCount: integer;
 begin
-  s1 := ExtractDelimited(1,S,['|']);
+  LS := ExtractDelimited(1,S,['|']);
+  LCount := WordCount(LS,[#0,',']);
   Result.Rows := [];
+  for i := 1 to LCount do
+    Result.Rows += [GetRowFromString(ExtractDelimited(i,LS,[',']))];
 
-  for i  := 1 to WordCount(s1,[#0,',']) do
-    if ExtractDelimited(i,s1,[',']) <> '' then
-      Result.Rows += [GetRowFromString(ExtractDelimited(i,s1,[',']))]
-    else Break;
-
-  s1 := ExtractDelimited(2,S,['|']);
-  case UpperCase(s1) of
-    '','INDIFERENTE', 'NONE' : Result.Style := gtNone;
-    'E', 'AND' : Result.Style := gtRowsAndColors;
-    'OU', 'OR' : Result.Style := gtRowsOrColors;
-
+   case ExtractDelimited(2,S,['|'])of
+    'NONE':Result.Style:=gtNone;
+    'CORES':Result.Style:=gtColorsOnly;
+    'E':Result.Style:=gtRowsAndColors;
+    'LINHAS':Result.Style:=gtRowsOnly;
+    'OU':Result.Style:=gtRowsOrColors;
   end;
 
-  s1 := ExtractDelimited(3,S,['|']);
+  LS := ExtractDelimited(3,S,['|']);
+  LCount := WordCount(LS,[#0,',']);
   Result.Colors := [];
-  for i  := 1 to WordCount(s1,[#0,',']) do
-    if ExtractDelimited(i,s1,[',']) <> '' then
-      Result.Colors += [GetGameColorFromString(ExtractDelimited(i,s1,[',']))]
-    else Break;
+  for i := 1 to LCount do
+    Result.Colors += [GetGameColorFromString(ExtractDelimited(i,LS,[',']))];
 end;
 
 function GetCriteriaStyleString(AStyle: TGameStyle): string;

@@ -30,28 +30,23 @@ type
 
   TExperiment = class(TComponent)
   private
-    FExperimentStart : Boolean;
     FExperimentAim,
     FExperimentName,
     FFilename,
-    FResearcher : UTF8string;
-    FOnConsequence: TNotifyEvent;
-    FOnInterlocking: TNotifyEvent;
-    FOnEndTurn: TNotifyEvent;
-    FOnEndCondition: TNotifyEvent;
-    FOnEndCycle: TNotifyEvent;
-    FOnEndExperiment: TNotifyEvent;
-    FOnEndGeneration: TNotifyEvent;
-    FMatrixType: TGameMatrixType;
-    FRegData : TRegData;
+    FResearcher : string;
+    FExperimentStart : Boolean;
     FGenPlayersAsNeeded : Boolean;
-    FPlayers : TPlayers;
-    FCurrentCondition : integer;
-    FConditions : TConditions;
     FResearcherCanChat: Boolean;
     FResearcherCanPlay: Boolean;
     FSendChatHistoryForNewPlayers: Boolean;
     FShowChat: Boolean;
+    FMatrixType: TGameMatrixType;
+  private
+    FLastReportColNames : string;
+    FRegData : TRegData;
+    FPlayers : TPlayers;
+    FCurrentCondition : integer;
+    FConditions : TConditions;
     FState: TExperimentState;
     FTurnsRandom : TStringList;
     function GetCondition(I : Integer): TCondition;
@@ -90,36 +85,50 @@ type
     procedure SetSendChatHistoryForNewPlayers(AValue: Boolean);
     procedure SetState(AValue: TExperimentState);
   private
+    FOnConsequence: TNotifyEvent;
+    FOnInterlocking: TNotifyEvent;
+    FOnEndTurn: TNotifyEvent;
+    FOnEndCondition: TNotifyEvent;
+    FOnEndCycle: TNotifyEvent;
+    FOnEndExperiment: TNotifyEvent;
+    FOnEndGeneration: TNotifyEvent;
     procedure Consequence(Sender : TObject);
     procedure Interlocking(Sender : TObject);
+    procedure WriteReportHeader;
+    procedure WriteReportRowNames;
+    procedure WriteReportRow;
   public
     constructor Create(AOwner:TComponent);override;
-    constructor Create(AFilename: string; AOwner:TComponent); overload;
+    constructor Create(AOwner:TComponent; AppPath:string);overload;
+    constructor Create(AOwner:TComponent; AFilename, AppPath:string); overload;
     destructor Destroy; override;
     function LoadFromFile(AFilename: string):Boolean;
     function LoadFromGenerator:Boolean;
+    procedure SaveToFile(AFilename: string); overload;
+    procedure SaveToFile; overload;
+    procedure Clean;
+    procedure Play;
+    property ExperimentAim : string read FExperimentAim write FExperimentAim;
+    property ExperimentName : string read FExperimentName write FExperimentName;
+    property GenPlayersAsNeeded : Boolean read FGenPlayersAsNeeded write FGenPlayersAsNeeded;
+    property ResearcherCanPlay : Boolean read FResearcherCanPlay write SetResearcherCanPlay;
+    property ResearcherCanChat : Boolean read FResearcherCanChat write SetResearcherCanChat;
+    property Researcher : string read FResearcher write FResearcher;
+    property ShowChat : Boolean read FShowChat write FShowChat;
+    property SendChatHistoryForNewPlayers : Boolean read FSendChatHistoryForNewPlayers write SetSendChatHistoryForNewPlayers;
+    property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
+  public
     function AppendCondition : integer; overload;
     function AppendCondition(ACondition : TCondition) : integer;overload;
     function AppendContingency(ACondition : integer) : integer;overload;
     function AppendContingency(ACondition : integer;AContingency : TContingency) : integer;overload;
     function AppendPlayer : integer;overload;
     function AppendPlayer(APlayer : TPlayer) : integer; overload;
-    procedure SaveToFile(AFilename: string); overload;
-    procedure SaveToFile; overload;
-    procedure Clean;
-    procedure Play;
-    property ResearcherCanPlay : Boolean read FResearcherCanPlay write SetResearcherCanPlay;
-    property ResearcherCanChat : Boolean read FResearcherCanChat write SetResearcherCanChat;
-    property Researcher : UTF8string read FResearcher write FResearcher;
     property Condition[I : Integer]: TCondition read GetCondition write SetCondition;
     property ConditionsCount : integer read GetConditionsCount;
     property CurrentCondition : integer read FCurrentCondition write FCurrentCondition;
     property Contingency[C, I : integer] : TContingency read GetContingency write SetContingency;
     property ContingenciesCount[C:integer]:integer read GetContingenciesCount;
-    property ExperimentAim : UTF8string read FExperimentAim write FExperimentAim;
-    property ExperimentName : UTF8string read FExperimentName write FExperimentName;
-    property GenPlayersAsNeeded : Boolean read FGenPlayersAsNeeded write FGenPlayersAsNeeded;
-    property InterlockingsIn[i:integer]:integer read GetInterlockingsIn;
     property Player[I : integer] : TPlayer read GetPlayer write SetPlayer;
     property PlayerFromID[S : UTF8string ] : TPlayer read GetPlayer write SetPlayer;
     property PlayersCount : integer read GetPlayersCount;
@@ -127,11 +136,10 @@ type
     property PlayerIndexFromID[s : UTF8string]: integer read GetPlayerIndexFromID;
     property PlayerAsString[P:TPlayer]: UTF8string read AliasPlayerAsString;
     property PlayerFromString[s : UTF8string]: TPlayer read AliasPlayerFromString;
+  public
+    property InterlockingsIn[i:integer]:integer read GetInterlockingsIn;
     property ConsequenceStringFromChoice[P:Tplayer]:UTF8String read GetConsequenceStringFromChoice;
     property ConsequenceStringFromChoices: UTF8String read GetConsequenceStringFromChoices;
-    property ShowChat : Boolean read FShowChat write FShowChat;
-    property SendChatHistoryForNewPlayers : Boolean read FSendChatHistoryForNewPlayers write SetSendChatHistoryForNewPlayers;
-    property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
     property NextTurnPlayerID : UTF8string read GetNextTurnPlayerID;
     property NextTurn : integer read GetNextTurn;
     property NextCycle : integer read GetNextCycle;
@@ -143,7 +151,6 @@ type
     property OnEndGeneration : TNotifyEvent read FOnEndGeneration write SetOnEndGeneration;
     property OnEndCondition : TNotifyEvent read FOnEndCondition write SetOnEndCondition;
     property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
-  public
     property OnConsequence : TNotifyEvent read FOnConsequence write SetOnConsequence;
     property OnInterlocking : TNotifyEvent read FOnInterlocking write SetOnInterlocking;
   end;
@@ -489,6 +496,96 @@ begin
   if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
 end;
 
+procedure TExperiment.WriteReportHeader;
+var
+  LHeader : string;
+begin
+  // header
+  LHeader := VAL_RESEARCHER+':'+#9+FResearcher + LineEnding +
+             VAL_EXPERIMENT+':' + #9 + FExperimentName + LineEnding +
+             VAL_BEGIN_TIME+':' + #9 + DateTimeToStr(Date) + #9 + TimeToStr(Time) + LineEnding + LineEnding;
+  FRegData.SaveData(LHeader);
+  WriteReportRowNames;
+end;
+
+procedure TExperiment.WriteReportRowNames;
+var
+  c,j,i: integer;
+  LHeader : string;
+begin
+  c:= CurrentCondition;
+  // column names, line 1
+  LHeader := 'Experimento'+#9+#9;
+  for i:=0 to Condition[c].Turn.Value-1 do // player's response
+    LHeader += 'P'+IntToStr(i+1)+#9+#9;
+
+  for i:=0 to ContingenciesCount[c]-1 do
+    if not Contingency[c,i].Meta then
+      begin
+        LHeader += Contingency[c,i].ContingencyName;
+        for j:=0 to Condition[c].Turn.Value-1 do
+          LHeader += #9;
+      end;
+
+  LHeader += VAL_INTERLOCKING+'s';
+  for i:=0 to ContingenciesCount[c]-1 do
+    if Contingency[c,i].Meta then
+     LHeader += #9;
+
+  LHeader += LineEnding;
+
+
+  // column names, line 2
+  LHeader += 'Condição'+#9+'Ciclo'+#9;
+  for i:=0 to Condition[c].Turn.Value-1 do
+    LHeader += 'Linha'+#9+'Cor'+#9;
+
+  for i:=0 to ContingenciesCount[c]-1 do
+    if not Contingency[c,i].Meta then
+      for j:=0 to Condition[c].Turn.Value-1 do
+        LHeader += 'P'+IntToStr(j+1)+#9;
+
+  for i:=0 to ContingenciesCount[c]-1 do
+    if Contingency[c,i].Meta then
+      LHeader += Contingency[c,i].ContingencyName+#9;
+  LHeader += LineEnding;
+
+  FLastReportColNames := LHeader;
+  FRegData.SaveData(LHeader);
+end;
+
+procedure TExperiment.WriteReportRow;
+var
+  c,j,i: integer;
+  LHeader : string;
+begin
+  c:= CurrentCondition;
+
+  LHeader := IntToStr(c+1)+#9+IntToStr(Condition[c].Cycles.Count+1)+#9;
+  for i:=0 to Condition[c].Turn.Value-1 do
+    LHeader += GetRowString(FPlayers[i].Choice.Row)+#9+GetColorString(FPlayers[i].Choice.Color)+#9;
+
+  for i:=0 to ContingenciesCount[c]-1 do
+    if not Contingency[c,i].Meta then
+      for j:=0 to Condition[c].Turn.Value-1 do
+        if Contingency[c,i].ConsequenceFromPlayerID(FPlayers[j].ID) <> '' then
+          LHeader += '1'+#9
+        else
+          LHeader += '0'+#9;
+
+  for i:=0 to ContingenciesCount[c]-1 do
+    if Contingency[c,i].Meta then
+      if Contingency[c,i].Fired then
+        LHeader += '1'+#9
+      else
+        LHeader += '0'+#9;
+  LHeader += LineEnding;
+
+  FLastReportColNames := LHeader;
+  FRegData.SaveData(LHeader);
+
+end;
+
 constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -497,7 +594,17 @@ begin
   CheckNeedForRandomTurns;
 end;
 
-constructor TExperiment.Create(AFilename: string;AOwner:TComponent);
+constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
+begin
+  inherited Create(AOwner);
+  FTurnsRandom := TStringList.Create;
+  LoadExperimentFromResource(Self);
+  CheckNeedForRandomTurns;
+  FRegData := TRegData.Create(Self, AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim+'000.dat');
+  WriteReportHeader;
+end;
+
+constructor TExperiment.Create(AOwner:TComponent;AFilename,AppPath:string);
 begin
   inherited Create(AOwner);
   FTurnsRandom := TStringList.Create;
@@ -583,13 +690,31 @@ begin
 end;
 
 procedure TExperiment.Clean;
+var c,i : integer;
 begin
+  WriteReportRow;
+  for i := 0 to PlayersCount -1 do
+    begin
+      FPlayers[i].Choice.Row:=grNone;
+      FPlayers[i].Choice.Color:=gcNone;
+    end;
+  c := CurrentCondition;
+  for i := 0 to ContingenciesCount[c]-1 do
+    Contingency[c,i].Clean;
 
+  Condition[c].Prompt.Clean;
+
+  FRegData.CloseAndOpen;
 end;
 
 procedure TExperiment.Play;
+var i : integer;
 begin
-
+  for i := 0 to Condition[CurrentCondition].Turn.Value-1 do
+    begin
+      //TRegData.Save Header;
+    end;
+  FState:=xsRunning;
 end;
 
 end.

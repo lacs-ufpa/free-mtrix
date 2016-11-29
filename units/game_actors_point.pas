@@ -73,7 +73,7 @@ end;
 
 function TGamePoint.GetResultAsString: string;
 begin
-  Result := IntToStr(FResult);
+  Result := IntToStr(abs(FResult));
 end;
 
 constructor TGamePoint.Create(AOwner: TComponent; AValue: integer);
@@ -111,7 +111,7 @@ begin
           case FResult of
             -MaxInt..-2: Result += ' produziram a perda de '+Self.AsString+ ' pontos para o grupo';
            -1 : Result += ' produziram a perda de  1 ponto para o grupo';
-            0 : Result += ' pontos do grupo não foram produzidos nem perdidos';
+            0 : Result += ' não produziram nem perderam pontos para o grupo';
             1 : Result += ' produziram 1 ponto para o grupo';
             2..MaxInt: Result += ' produziram '+Self.AsString+' pontos para o grupo'
           end;
@@ -119,11 +119,11 @@ begin
       else
         begin
           case FResult of
-            -MaxInt..-2: Result += ' produziram a perda de '+Self.AsString+ ' ' + AAppendicePlural;
-           -1 : Result += ' produziram a perda de  1'+ ' ' + AAppendiceSingular;
-            0 : Result += ' não produziram ' + AAppendicePlural;
+            -MaxInt..-2: Result += ' produziram a perda de ' + Self.AsString + ' ' + AAppendicePlural;
+           -1 : Result += ' produziram a perda de  1 ' + AAppendiceSingular;
+            0 : Result += ' não produziram nem perderam ' + AAppendicePlural;
             1 : Result += ' produziram 1 ' + AAppendiceSingular;
-            2..MaxInt: Result += ' produziram '+Self.AsString+ ' ' + AAppendicePlural;
+            2..MaxInt: Result += ' produziram ' + Self.AsString + ' ' + AAppendicePlural;
           end;
         end;
     end
@@ -148,7 +148,7 @@ begin
         begin
           case FResult of
             -MaxInt..-2: Result += ' perdeu '+Self.AsString+ ' ' + AAppendicePlural;
-           -1 : Result += ' ponto  1 ' + AAppendiceSingular;
+           -1 : Result += ' perdeu  1 ' + AAppendiceSingular;
             0 : Result += ' não perdeu nem ganhou ' + AAppendicePlural;
             1 : Result += ' ganhou 1 ' + AAppendiceSingular;
             2..MaxInt: Result += ' ganhou '+Self.AsString+ ' ' + AAppendicePlural;

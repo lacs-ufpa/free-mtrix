@@ -106,6 +106,7 @@ type
      destructor Destroy;override;
      function AsString(AID :string): string;
      function GenerateMessage(ForGroup: Boolean):string;
+     procedure Clean; virtual;
      procedure PresentMessage;
      procedure PresentPoints;
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
@@ -123,6 +124,7 @@ type
     FMeta : Boolean; //True: Consequence occurs OnEndTurn, False: Consequence occurs OnEndCycle
     FConsequence : TConsequence;
     FCriteria : TCriteria;
+    FName: string;
     FOnCriteria: TNotifyEvent;
     function RowMod(R:TGameRow):TGameRow;
     procedure CriteriaEvent;
@@ -131,11 +133,14 @@ type
     function CriteriaString : string;
     function ResponseMeetsCriteriaI(R : TGameRow; C : TGameColor):Boolean; // Does response meets operant criteria?
     function ResponseMeetsCriteriaG(Players : TPlayers):Boolean;
+    function ConsequenceFromPlayerID(AID:string):string;
+    procedure Clean;
     property OnCriteria : TNotifyEvent read FOnCriteria write FOncriteria;
     property Fired : Boolean read FFired;
     property Consequence : TConsequence read FConsequence;
     property Criteria : TCriteria read FCriteria;
     property Meta : Boolean read FMeta;
+    property ContingencyName : string read FName write FName;
   end;
 
   { TContingencies }
@@ -155,8 +160,9 @@ type
   public
     constructor Create(AOwner:TComponent; APStyle:TPromptStyle; APTarget : TContingencies; AMessage:string);reintroduce;
     function ResponsesCount : integer;
-    procedure AppendResponse(AID,R:string);
     function AsString: TStringList; overload;
+    procedure AppendResponse(AID,R:string);
+    procedure Clean;override;
     property Question: string read FPromptMessage;
     property PromptResult:string read FResult;
 
@@ -398,6 +404,17 @@ begin // All -> (Diff,Equal,Even, Odd) or not all
     CriteriaEvent;
 end;
 
+function TContingency.ConsequenceFromPlayerID(AID: string): string;
+begin
+  Result := Consequence.ConsequenseByPlayerID.Values[AID];
+end;
+
+procedure TContingency.Clean;
+begin
+  FFired := False;
+  Consequence.Clean;
+end;
+
 
 { TPrompt }
 
@@ -424,6 +441,12 @@ procedure TPrompt.AppendResponse(AID, R: string);
 begin
   SetLength(FResponses,Length(FResponses)+1);
   FResponses[High(FResponses)] := AID+'|'+R+'|';
+end;
+
+procedure TPrompt.Clean;
+begin
+  //inherited Clean;
+  FResponses := nil;
 end;
 
 function TPrompt.AsString: TStringList;
@@ -454,8 +477,8 @@ var
 
     if (gscB in LCsqStyle) and (gsBasA in FPromptStyle) then
       begin
-        LCsqStyle += [gscB];
-        LCsqStyle -= [gscA];
+        LCsqStyle += [gscA];
+        LCsqStyle -= [gscB];
       end;
 
     if IsMeta then
@@ -471,16 +494,21 @@ var
       ExtractDelimited(5,LConsequence, ['|']);
   end;
 begin
+  Result := TStringList.Create;
   // to do, sanitize FPromptStyle first
   Pts:= 0;
   if (gsAll in FPromptStyle) and (gsYes in FPromptStyle) then
     if AllPlayersClickedYes then
       for i := 0 to Length(FPromptTargets)-1 do
-        for j := 0 to FPromptTargets[i].Consequence.ConsequenseByPlayerID.Count do
+        for j := 0 to FPromptTargets[i].Consequence.ConsequenseByPlayerID.Count-1 do
           begin
             LID := FPromptTargets[i].Consequence.ConsequenseByPlayerID.Names[j];
             LConsequence := FPromptTargets[i].Consequence.ConsequenseByPlayerID.Values[LID];
             LCsqStyle := GetConsequenceStylesFromString(ExtractDelimited(2,LConsequence, ['|']));
+
+            // TODO: should BasA revert appendices? right now reverting points only
+            //LAppendiceSingular:=
+            //LAppendicePlural:=
 
             if gsContingency in FPromptStyle then
               if (FPromptTargets[i].Fired) and (not FPromptTargets[i].Meta) then
@@ -493,7 +521,7 @@ begin
                 if gscG in LCsqStyle then
                   ApplyPointsConditions(True);
 
-            Result := TStringList.Create;
+
             Result.Add(LConsequence);
           end;
 
@@ -541,7 +569,7 @@ begin
   FMessage := TPopupNotifier.Create(Self);
   FTimer := TTimer.Create(Self);
   FTimer.Enabled:=False;
-  FTimer.Interval:=6000;
+  FTimer.Interval:=10000;
   FTimer.OnTimer:=@SelfDestroy;
   FConsequenceByPlayerID := TStringList.Create;
 end;
@@ -568,27 +596,25 @@ begin
   FMessage.Text := Result;
 end;
 
+procedure TConsequence.Clean;
+begin
+  FConsequenceByPlayerID.Clear;
+end;
+
 procedure TConsequence.PresentMessage;
 var
   PopUpPos : TPoint;
 begin
+  PopUpPos.X := FormMatrixGame.GBIndividualAB.Left;
   if gscA in FStyle then
-    begin
-      PopUpPos.X := FormMatrixGame.GBIndividualAB.Left-110;
-      PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height-10;
-    end;
+    PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividualAB.Height-20;
 
   if gscB in FStyle then
-    begin
-      PopUpPos.X := FormMatrixGame.GBIndividualAB.Left+110;
-      PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height-10;
-    end;
+    PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividualAB.Height+150;
 
   if gscG in FStyle then
-    begin
-      PopUpPos.X := FormMatrixGame.GBIndividualAB.Left-110;
-      PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height+100;
-    end;
+    PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividualAB.Height+300;
+
   PopUpPos := FormMatrixGame.ClientToScreen(PopUpPos);
   FMessage.Color:=clTeal;
   FMessage.Title:='';

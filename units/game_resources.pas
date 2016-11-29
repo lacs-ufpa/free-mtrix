@@ -72,8 +72,12 @@ resourcestring
   KEY_CONSEQUE_MESSAGE_APPENDS = '.Consequência.Mensagem.Sufixo.Singular';
   KEY_CONSEQUE_MESSAGE_APPENDP = '.Consequência.Mensagem.Sufixo.Plural';
 
-
+  VAL_CONSEQUENCE = 'Cosequência';
   VAL_RESEARCHER = 'Pesquisador';
+  VAL_EXPERIMENT = 'Experimento';
+  VAL_INTERLOCKING = 'Entrelaçamento';
+
+  VAL_BEGIN_TIME = 'Começo';
 
   DEF_END = '2,20,10,10,';  // which come first, 20 cycles | 10% entrelaçamentos in the last 10 cycles
   DEF_POINTS = '0,0,0,';

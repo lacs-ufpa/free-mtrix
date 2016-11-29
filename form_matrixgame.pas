@@ -72,14 +72,14 @@ type
     procedure ButtonExpStartClick(Sender: TObject);
     procedure ChatMemoSendKeyPress(Sender: TObject; var Key: char);
     procedure FormActivate(Sender: TObject);
-    procedure PopupNotifierClose(Sender: TObject; var CloseAction: TCloseAction
-      );
+    procedure PopupNotifierClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure StringGridMatrixClick(Sender: TObject);
     procedure StringGridMatrixDrawCell(Sender: TObject; aCol, aRow: integer;
       aRect: TRect; aState: TGridDrawState);
     procedure TimerTimer(Sender: TObject);
   private
     FGameControl : TGameControl;
+    FAppPath,
     FID: string;
   public
     procedure SetID(S : string);
@@ -106,7 +106,6 @@ procedure TFormMatrixGame.StringGridMatrixDrawCell(Sender: TObject; aCol, aRow: 
   aRect: TRect; aState: TGridDrawState);
 var
   OldCanvas: TCanvas;
-  RowBase : integer;
 
   procedure SaveOldCanvas;
   begin
@@ -157,8 +156,8 @@ var
     TStringGrid(Sender).Canvas.Rectangle(aRect);
     if Assigned(FGameControl) then
       if FGameControl.MustDrawDots then
-        if (Odd(aRow + RowBase) and not Odd(aCol)) or
-          (not Odd(aRow + RowBase) and Odd(aCol)) then
+        if (Odd(aRow + FGameControl.RowBase) and not Odd(aCol)) or
+          (not Odd(aRow + FGameControl.RowBase) and Odd(aCol)) then
           DrawDots;
   end;
   //function GetTextX(S : String): Longint;
@@ -167,15 +166,14 @@ var
   //end;
 
 begin
-  if Assigned(FGameControl) then
-    RowBase:=FGameControl.RowBase;
+  if not Assigned(FGameControl) then Exit;
   SaveOldCanvas;
   try
     //if (aRow >= RowBase) and (aCol = 10) then
     //  DrawLines(clWhite);
-    if (aCol <> 0) and (aRow > (RowBase-1)) then
+    if (aCol <> 0) and (aRow > (FGameControl.RowBase-1)) then
       begin
-        DrawLines(GetRowColor(aRow,RowBase));
+        DrawLines(GetRowColor(aRow,FGameControl.RowBase));
 
         if (gdSelected in aState) and (goRowSelect in TStringGrid(Sender).Options)then
           begin
@@ -226,13 +224,13 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
 
   procedure SetZMQAdmin;
   begin
-    FGameControl := TGameControl.Create(TZMQAdmin.Create(Self,FID));
+    FGameControl := TGameControl.Create(TZMQAdmin.Create(Self,FID),ExtractFilePath(Application.ExeName));
     GBAdmin.Visible:= True;
   end;
 
   procedure SetZMQPlayer;
   begin
-    FGameControl := TGameControl.Create(TZMQPlayer.Create(Self,FID));
+    FGameControl := TGameControl.Create(TZMQPlayer.Create(Self,FID),ExtractFilePath(Application.ExeName));
     //StringGridMatrix.Enabled := True;
   end;
 
@@ -257,24 +255,27 @@ end;
 
 procedure TFormMatrixGame.FormActivate(Sender: TObject);
 begin
-  FormChooseActor := TFormChooseActor.Create(Self);
-  FormChooseActor.Style := '.Arrived';
-  try
-    if FormChooseActor.ShowModal = 1 then
-      begin
-        case FormChooseActor.GameActor of
-          gaAdmin:FormMatrixGame.SetGameActor(gaAdmin);
-          gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
-          gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
-        end;
-        StringGridMatrix.ClearSelections;
-        StringGridMatrix.FocusRectVisible := False;
-        FGameControl.SetMatrix;
-      end
-    else Close;
-  finally
-    FormChooseActor.Free;
-  end;
+  if not Assigned(FGameControl) then
+    begin
+      FormChooseActor := TFormChooseActor.Create(Self);
+      FormChooseActor.Style := '.Arrived';
+      try
+        if FormChooseActor.ShowModal = 1 then
+          begin
+            case FormChooseActor.GameActor of
+              gaAdmin:FormMatrixGame.SetGameActor(gaAdmin);
+              gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
+              gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
+            end;
+            StringGridMatrix.ClearSelections;
+            StringGridMatrix.FocusRectVisible := False;
+            FGameControl.SetMatrix;
+          end
+        else Close;
+      finally
+        FormChooseActor.Free;
+      end;
+    end;
 end;
 
 procedure TFormMatrixGame.PopupNotifierClose(Sender: TObject;
