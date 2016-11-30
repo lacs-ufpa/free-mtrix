@@ -160,6 +160,7 @@ type
   public
     constructor Create(AOwner:TComponent; APStyle:TPromptStyle; APTarget : TContingencies; AMessage:string);reintroduce;
     function ResponsesCount : integer;
+    function Response(I:integer):string;
     function AsString: TStringList; overload;
     procedure AppendResponse(AID,R:string);
     procedure Clean;override;
@@ -435,6 +436,11 @@ end;
 function TPrompt.ResponsesCount: integer;
 begin
   Result := Length(FResponses);
+end;
+
+function TPrompt.Response(I: integer): string;
+begin
+  Result := FResponses[I]
 end;
 
 procedure TPrompt.AppendResponse(AID, R: string);

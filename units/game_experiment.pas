@@ -11,8 +11,6 @@ unit game_experiment;
 
 {$mode objfpc}{$H+}
 
-//{$DEFINE DEBUG}
-
 interface
 
 uses
@@ -34,7 +32,6 @@ type
     FExperimentName,
     FFilename,
     FResearcher : string;
-    FExperimentStart : Boolean;
     FGenPlayersAsNeeded : Boolean;
     FResearcherCanChat: Boolean;
     FResearcherCanPlay: Boolean;
@@ -57,6 +54,7 @@ type
     function GetNextTurnPlayerID: UTF8string;
     function GetNextCycle:integer;
     function GetNextCondition:integer;
+    function GetCurrentAbsoluteCycle : integer;
     function GetPlayer(I : integer): TPlayer; overload;
     function GetPlayer(AID : UTF8string): TPlayer; overload;
     function AliasPlayerAsString(P: TPlayer): UTF8string;
@@ -85,6 +83,7 @@ type
     procedure SetSendChatHistoryForNewPlayers(AValue: Boolean);
     procedure SetState(AValue: TExperimentState);
   private
+    FChangeGeneration: string;
     FOnConsequence: TNotifyEvent;
     FOnInterlocking: TNotifyEvent;
     FOnEndTurn: TNotifyEvent;
@@ -93,7 +92,9 @@ type
     FOnEndExperiment: TNotifyEvent;
     FOnEndGeneration: TNotifyEvent;
     procedure Consequence(Sender : TObject);
+    function GetPlayerToKick: string;
     procedure Interlocking(Sender : TObject);
+    procedure SetPlayersQueue(AValue: string);
     procedure WriteReportHeader;
     procedure WriteReportRowNames;
     procedure WriteReportRow;
@@ -108,6 +109,7 @@ type
     procedure SaveToFile; overload;
     procedure Clean;
     procedure Play;
+    procedure WriteReportRowPrompt;
     property ExperimentAim : string read FExperimentAim write FExperimentAim;
     property ExperimentName : string read FExperimentName write FExperimentName;
     property GenPlayersAsNeeded : Boolean read FGenPlayersAsNeeded write FGenPlayersAsNeeded;
@@ -144,6 +146,8 @@ type
     property NextTurn : integer read GetNextTurn;
     property NextCycle : integer read GetNextCycle;
     property NextCondition : integer read GetNextCondition;
+    property NextGeneration: string read GetPlayerToKick write SetPlayersQueue;
+    property ChangeGeneration : string read FChangeGeneration write FChangeGeneration; // helper
     property State : TExperimentState read FState write SetState;
   public
     property OnEndTurn : TNotifyEvent read FOnEndTurn write SetOnEndTurn;
@@ -213,6 +217,7 @@ end;
 function TExperiment.GetNextCycle: integer;
 begin
   Result := FConditions[CurrentCondition].Cycles.Count;
+  WriteReportRow;
   if Assigned(FOnEndCycle) then FOnEndCycle(Self);
 
   if FConditions[CurrentCondition].Cycles.Count < FConditions[CurrentCondition].Cycles.Value-1 then
@@ -231,32 +236,30 @@ end;
 
 function TExperiment.GetNextCondition: integer;
 var
-  LAbsCycles : integer;
   LInterlocks : integer;
 
   procedure EndCondition;
   begin
     if Assigned(FOnEndCondition) then FOnEndCondition(Self);
     Inc(FCurrentCondition);
+    WriteReportRowNames;
   end;
 
 begin
   Result := CurrentCondition;
-  LAbsCycles := (FConditions[CurrentCondition].Cycles.Value *
-             FConditions[CurrentCondition].Cycles.Generation) + FConditions[CurrentCondition].Cycles.Count;
 
   // interlockings in last x cycles
   LInterlocks := InterlockingsIn[FConditions[CurrentCondition].EndCriterium.LastCycles];
   case FConditions[CurrentCondition].EndCriterium.Value of
     gecWhichComeFirst:
       begin
-        if (LAbsCycles = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles) or
+        if (GetCurrentAbsoluteCycle = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles) or
            (LInterlocks = FConditions[CurrentCondition].EndCriterium.InterlockingPorcentage) then
           EndCondition;
 
       end;
     gecAbsoluteCycles:
-        if LAbsCycles = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles then
+        if GetCurrentAbsoluteCycle = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles then
           EndCondition;
 
     gecInterlockingPorcentage:
@@ -267,6 +270,13 @@ begin
   {$IFDEF DEBUG}
     WriteLn('TExperiment.GetNextCondition:',Result);
   {$ENDIF}
+end;
+
+function TExperiment.GetCurrentAbsoluteCycle: integer;
+var c:integer;
+begin
+  c := CurrentCondition;
+  Result := (Condition[c].Cycles.Value*Condition[c].Cycles.Generation)+Condition[c].Cycles.Count;
 end;
 
 function TExperiment.GetPlayer(I : integer): TPlayer;
@@ -496,6 +506,28 @@ begin
   if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
 end;
 
+procedure TExperiment.SetPlayersQueue(AValue: string);
+var
+  i : integer;
+begin
+  for i := 0 to PlayersCount-2 do
+    begin
+      FPlayers[i] := FPlayers[i+1];
+    end;
+  FPlayers[High(FPlayers)] := PlayerFromString[AValue];
+end;
+
+function TExperiment.GetPlayerToKick: string;
+var c : integer;
+begin
+  c := CurrentCondition;
+  if Condition[c].Cycles.Count < Condition[c].Cycles.Value -1 then
+    Result := #32
+  else
+    Result := FPlayers[0].ID;
+end;
+
+
 procedure TExperiment.WriteReportHeader;
 var
   LHeader : string;
@@ -511,79 +543,105 @@ end;
 procedure TExperiment.WriteReportRowNames;
 var
   c,j,i: integer;
-  LHeader : string;
+  LNames : string;
 begin
   c:= CurrentCondition;
+
   // column names, line 1
-  LHeader := 'Experimento'+#9+#9;
+  LNames := 'Experimento'+#9+#9+#9;
   for i:=0 to Condition[c].Turn.Value-1 do // player's response
-    LHeader += 'P'+IntToStr(i+1)+#9+#9;
+    LNames += 'P'+IntToStr(i+1)+#9+#9;
 
   for i:=0 to ContingenciesCount[c]-1 do
     if not Contingency[c,i].Meta then
       begin
-        LHeader += Contingency[c,i].ContingencyName;
+        LNames += Contingency[c,i].ContingencyName;
         for j:=0 to Condition[c].Turn.Value-1 do
-          LHeader += #9;
+          LNames += #9;
       end;
 
-  LHeader += VAL_INTERLOCKING+'s';
+  LNames += VAL_INTERLOCKING+'s';
   for i:=0 to ContingenciesCount[c]-1 do
     if Contingency[c,i].Meta then
-     LHeader += #9;
+     LNames += #9;
 
-  LHeader += LineEnding;
-
+  if Assigned(Condition[c].Prompt) then
+    begin
+      LNames += 'Respostas à Pergunta';
+      for i:=0 to Condition[c].Turn.Value-1 do
+        LNames += #9;
+    end;
+  LNames += LineEnding;
 
   // column names, line 2
-  LHeader += 'Condição'+#9+'Ciclo'+#9;
+  LNames += 'Condição'+#9+'Ciclo (Absoluto)'+#9+'Ciclo (Geração)'+#9;
   for i:=0 to Condition[c].Turn.Value-1 do
-    LHeader += 'Linha'+#9+'Cor'+#9;
+    LNames += 'Linha'+#9+'Cor'+#9;
 
   for i:=0 to ContingenciesCount[c]-1 do
     if not Contingency[c,i].Meta then
       for j:=0 to Condition[c].Turn.Value-1 do
-        LHeader += 'P'+IntToStr(j+1)+#9;
+        LNames += 'P'+IntToStr(j+1)+#9;
 
   for i:=0 to ContingenciesCount[c]-1 do
     if Contingency[c,i].Meta then
-      LHeader += Contingency[c,i].ContingencyName+#9;
-  LHeader += LineEnding;
+      LNames += Contingency[c,i].ContingencyName+#9;
 
-  FLastReportColNames := LHeader;
-  FRegData.SaveData(LHeader);
+  if Assigned(Condition[c].Prompt) then
+    for i:=0 to Condition[c].Turn.Value-1 do
+      LNames += 'P'+IntToStr(i+1)+#9;
+
+  if FLastReportColNames <> LNames then
+    begin
+      FLastReportColNames := LNames;
+      FRegData.SaveData(LNames);
+    end;
 end;
 
 procedure TExperiment.WriteReportRow;
 var
   c,j,i: integer;
-  LHeader : string;
+  LRow : string;
 begin
   c:= CurrentCondition;
 
-  LHeader := IntToStr(c+1)+#9+IntToStr(Condition[c].Cycles.Count+1)+#9;
+  LRow := LineEnding + IntToStr(c+1)+#9+IntToStr(GetCurrentAbsoluteCycle)+#9+IntToStr(Condition[c].Cycles.Count+1)+#9;
   for i:=0 to Condition[c].Turn.Value-1 do
-    LHeader += GetRowString(FPlayers[i].Choice.Row)+#9+GetColorString(FPlayers[i].Choice.Color)+#9;
+    LRow += GetRowString(FPlayers[i].Choice.Row)+#9+GetColorString(FPlayers[i].Choice.Color)+#9;
 
   for i:=0 to ContingenciesCount[c]-1 do
     if not Contingency[c,i].Meta then
       for j:=0 to Condition[c].Turn.Value-1 do
         if Contingency[c,i].ConsequenceFromPlayerID(FPlayers[j].ID) <> '' then
-          LHeader += '1'+#9
+          LRow += '1'+#9
         else
-          LHeader += '0'+#9;
+          LRow += '0'+#9;
 
   for i:=0 to ContingenciesCount[c]-1 do
     if Contingency[c,i].Meta then
       if Contingency[c,i].Fired then
-        LHeader += '1'+#9
+        LRow += '1'+#9
       else
-        LHeader += '0'+#9;
-  LHeader += LineEnding;
+        LRow += '0'+#9;
 
-  FLastReportColNames := LHeader;
-  FRegData.SaveData(LHeader);
+  FRegData.SaveData(LRow);
+end;
 
+procedure TExperiment.WriteReportRowPrompt;
+var
+  c,i: integer;
+  LRow : string;
+begin
+  c := CurrentCondition;
+  LRow := '';
+  if Condition[c].Prompt.ResponsesCount = Condition[c].Turn.Value then
+    for i:=0 to Condition[c].Prompt.ResponsesCount-1 do
+      LRow += Condition[c].Prompt.Response(i)+#9
+  else
+    for i:=0 to Condition[c].Turn.Value-1 do
+      LRow += 'NA'+#9;
+
+  FRegData.SaveData(LRow);
 end;
 
 constructor TExperiment.Create(AOwner: TComponent);
@@ -692,7 +750,6 @@ end;
 procedure TExperiment.Clean;
 var c,i : integer;
 begin
-  WriteReportRow;
   for i := 0 to PlayersCount -1 do
     begin
       FPlayers[i].Choice.Row:=grNone;
@@ -716,6 +773,7 @@ begin
     end;
   FState:=xsRunning;
 end;
+
 
 end.
 

@@ -19,8 +19,6 @@ uses
   //, zmq_client
   ;
 
-  {$DEFINE DEBUG}
-
 type
 
   { TZMQActor }

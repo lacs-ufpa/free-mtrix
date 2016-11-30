@@ -252,16 +252,17 @@ implementation
 uses zhelpers;
 
 function GenResourceName(i: integer): string;
+var r :integer;
 begin
-  Randomize;
-  if (i <= 49) and (i>=0) then
-    begin
-      if Random>0.5 then
-        Result := CPlayerNamesMale[i]
-      else
-        Result := CPlayerNamesFemale[i];
-    end
-  else s_random(10);
+  if  (i >= 0) and (i <= 49) then
+    r := i
+  else r := Random(50);
+
+  if Random > 0.5 then
+    Result := CPlayerNamesMale[r]
+  else
+    Result := CPlayerNamesFemale[r];
+
 end;
 
 function GetColorFromCode(ACode: TGameColor): TColor;
@@ -275,6 +276,10 @@ begin
     gcGreen :Result  :=  ccGreen;
   end;
 end;
+
+initialization
+
+  Randomize;
 
 end.
 

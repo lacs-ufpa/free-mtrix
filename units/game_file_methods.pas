@@ -101,7 +101,7 @@ begin
           Contingencies[0].ContingencyName := 'CRF 1B';
           LConcequence := TConsequence.Create(AExperiment,3,[gscPoints, gscA, gscMessage,gscBroadcastMessage],['$NICNAME','pão','pães']);
           Contingencies[1] := TContingency.Create(AExperiment,LConcequence,LCriteria2,False);
-          Contingencies[1].ContingencyName := 'CRF 1A';
+          Contingencies[1].ContingencyName := 'CRF 3A';
           LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscG, gscMessage],['','item escolar','itens escolares']);
           Contingencies[2] := TContingency.Create(AExperiment,LConcequence,LCriteria3,True);
           Contingencies[2].ContingencyName := 'MCRF 1G';

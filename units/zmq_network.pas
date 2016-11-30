@@ -11,8 +11,6 @@ unit zmq_network;
 
 {$mode objfpc}{$H+}
 
-//{$DEFINE DEBUG}
-
 interface
 
 uses Classes, SysUtils, Process

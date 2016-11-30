@@ -41,6 +41,8 @@ type
     procedure SetStyle(AValue: string);
     { private declarations }
   public
+    procedure ShowPoints(A, B, G : string);
+    procedure ShowResumeButton;
     property GameActor : TGameActor read FGameActor;
     property Style : string read FStyle write SetStyle;
   end;
@@ -94,6 +96,11 @@ begin
   btnAdmin.Visible:= not btnPlayerResume.Visible;
   btnPlayer.Visible:= not btnPlayerResume.Visible;
   FStyle:=AValue;
+end;
+
+procedure TFormChooseActor.ShowPoints(A, B, G: string);
+begin
+
 end;
 
 end.

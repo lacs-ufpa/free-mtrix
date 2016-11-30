@@ -11,8 +11,6 @@ unit game_control;
 
 {$mode objfpc}{$H+}
 
-//{$DEFINE DEBUG}
-
 interface
 
 uses
@@ -43,6 +41,7 @@ type
     function GetSelectedRowF(AStringGrid : TStringGrid) : UTF8string;
     function MessageHas(const A_CONST : UTF8string; AMessage : TStringList; I:ShortInt=0): Boolean;
     procedure CreatePlayerBox(P:TPlayer; Me:Boolean);
+    procedure DeletePlayerBox(AID : string);
     procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType;
       var ARowBase:integer; var ADrawDots, ADrawClear : Boolean);
     procedure ReceiveMessage(AMessage : TStringList);
@@ -62,8 +61,8 @@ type
 
     function ShouldStartExperiment: Boolean;
     function ShouldEndCycle : Boolean;
+    function ShouldEndGeneration : Boolean;
     function ShouldAskQuestion : Boolean;
-    procedure KickPlayer(AID:string);
     procedure NextTurn(Sender: TObject);
     procedure NextCycle(Sender: TObject);
     procedure NextLineage(Sender: TObject);
@@ -91,6 +90,8 @@ type
 
   function GetRowColor(ARow : integer;ARowBase:integer) : TColor;
 
+// TODO: PUT MESSAGES IN RESOURCE STRING
+
 const
   K_FULLROOM = '.Full';
   K_PLAYING  = '.Playing';
@@ -100,17 +101,16 @@ const
   K_CHOICE   = '.Choice';
   K_MESSAGE  = '.Message';
   K_START    = '.Start';
-  K_LEFT     = '.Left';
   K_RESUME   = '.Resume';
   K_DATA_A   = '.Data';
   K_LOGIN    = '.Login';
-  K_KICK     = '.Kick';
   K_QUESTION = '.Question';
   K_QMESSAGE = '.QMessage';
+  K_MOVQUEUE = '.Queue';
   //
   K_STATUS   = '.Status';
-  K_CYCLES   = '.OnEndCycle';
-
+  K_LEFT     = '.Left';
+  K_WAIT     = '.Wait';
   //K_RESPONSE =
 
 implementation
@@ -152,14 +152,14 @@ begin
   Result := FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count = FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value-1;
 end;
 
+function TGameControl.ShouldEndGeneration: Boolean;
+begin
+  Result := FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Count = FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Value-1;
+end;
+
 function TGameControl.ShouldAskQuestion: Boolean;
 begin
   Result := Assigned(FExperiment.Condition[FExperiment.CurrentCondition].Prompt) and FExperiment.Condition[FExperiment.CurrentCondition].Contingencies[3].Fired;
-end;
-
-procedure TGameControl.KickPlayer(AID: string);
-begin
-  FZMQActor.SendMessage([K_KICK, AID]);
 end;
 
 procedure TGameControl.NextTurn(Sender: TObject);
@@ -293,6 +293,18 @@ begin
       Enabled := True;
       Parent := FormMatrixGame.GBLastChoice;
     end;
+end;
+
+procedure TGameControl.DeletePlayerBox(AID: string);
+var i : integer;
+begin
+  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount -1 do
+    if FormMatrixGame.GBLastChoice.Components[i] is TPlayerBox then
+      if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
+        begin
+          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).Free;
+          Break;
+        end;
 end;
 
 procedure TGameControl.SetMatrixType(AStringGrid: TStringGrid;
@@ -437,15 +449,17 @@ procedure TGameControl.ShowConsequenceMessage(AID, S: string; ForGroup: Boolean)
 var
   LConsequence : TConsequence;
 begin
-  LConsequence := TConsequence.Create(nil,S);
-  LConsequence.GenerateMessage(ForGroup);
-  LConsequence.PresentMessage;
-  if ForGroup then
-    LConsequence.PresentPoints
-  else
-    if Self.ID = AID then
-      LConsequence.PresentPoints;
-
+  if FActor = gaPlayer then
+    begin
+      LConsequence := TConsequence.Create(nil,S);
+      LConsequence.GenerateMessage(ForGroup);
+      LConsequence.PresentMessage;
+      if ForGroup then
+        LConsequence.PresentPoints
+      else
+        if Self.ID = AID then
+          LConsequence.PresentPoints;
+    end;
 end;
 
 procedure TGameControl.DisableConfirmationButton;
@@ -629,12 +643,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
         begin
           P := FExperiment.PlayerFromString[AMessage[1]];
           FExperiment.AppendPlayer(P);
-          if Self.ID = P.ID then
-            begin
-              CreatePlayerBox(P, True)
-            end
-          else
-            CreatePlayerBox(P,False);
+          CreatePlayerBox(P, Self.ID = P.ID)
         end;
     end;
   end;
@@ -647,8 +656,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
         , ' '
         , GA_PLAYER+K_QUESTION
         , AskQuestion(AMessage[1])
+        , AMessage[2]
       ]);
     end;
+
   end;
 
   procedure ReceiveChoice;
@@ -656,7 +667,6 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     P : TPlayer;
   begin
     P := FExperiment.PlayerFromID[AMessage[1]];
-
     // add last responses to player box
     with GetPlayerBox(P.ID) do
       begin
@@ -722,44 +732,64 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     end;
   end;
 
-  //procedure OnEndCycle;
-  //var
-  //  LConsequence : TConsequence;
-  //begin
-  //  case FActor of
-  //    gaPlayer:
-  //      begin
-  //        LConsequence := TConsequence.Create(nil,AMessage[1]);
-  //        LConsequence.GenerateMessage(True);
-  //
-  //        LConsequence.PresentPoints;
-  //        LConsequence.PresentMessage;
-  //      end;
-  //  end;
-  //end;
-
   procedure ReceiveChat;
   begin
     FormMatrixGame.ChatMemoRecv.Lines.Append(('['+AMessage[1]+']: ')+AMessage[2]);
   end;
 
-  procedure SayGoodBye;
+  procedure MovePlayerQueue;
+  var P : TPlayer;
   begin
+    P := FExperiment.PlayerFromString[AMessage[1]]; // new
+    CreatePlayerBox(P,Self.ID = P.ID);
+
+    if FActor = gaPlayer then
+      begin
+        FExperiment.Player[FExperiment.PlayerIndexFromID[AMessage[2]]] := P;
+        EnablePlayerMatrix(Self.ID,0, True);
+      end;
+  end;
+
+  procedure SayGoodBye(AID:string);
+  begin
+    DeletePlayerBox(AID); // old player
     case FActor of
       gaPlayer:begin
-        if Self.ID <> AMessage[1] then Exit;
-        FormMatrixGame.Visible := False;
-        FormChooseActor := TFormChooseActor.Create(nil);
-        FormChooseActor.Style := K_LEFT;
-        if FormChooseActor.ShowModal = 1 then
+        if Self.ID = AID then
           begin
-            FZMQActor.Request([K_RESUME,Self.ID]);
-            FormMatrixGame.Visible := True;
+            // TODO: SHOW EARNED POINTS TO PARTICIPANT
+            //FormMatrixGame.LabelIndA.Caption;
+            //FormMatrixGame.LabelIndB.Caption;
+            //FormMatrixGame.LabelIndG.Caption;
+
+            FormMatrixGame.Visible := False;
+            FormChooseActor := TFormChooseActor.Create(nil);
+            FormChooseActor.Style := K_LEFT;
+            if FormChooseActor.ShowModal = 1 then
+              begin
+                FZMQActor.Request([AID,' ',K_RESUME]);
+                FormMatrixGame.Visible := True;
+              end
+            else;
+            FormChooseActor.Free;
           end
-        else;
-        FormChooseActor.Free;
+        else
+          ShowPopUp('O jogador '+FExperiment.PlayerFromID[ID].Nicname+ ' saiu. Por favor, aguarde...');
       end;
+
+      gaAdmin:ShowPopUp(
+        'O participante '+
+        FExperiment.PlayerFromID[ID].Nicname+
+        ' saiu. Aguardando a entrada do próximo participante.'
+      );
     end;
+  end;
+  procedure ResumeNextTurn;
+  begin
+    if AMessage[1] <> #32 then
+      SayGoodBye(AMessage[1])
+    else
+      EnablePlayerMatrix(Self.ID,0, True);
   end;
 
   procedure QuestionMessages;
@@ -771,7 +801,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       gaPlayer:begin
         if AMessage.Count > 1 then
           begin
-            for i := 1 to AMessage.Count -1 do
+            for i := 2 to AMessage.Count -1 do
               begin
                 MID := ExtractDelimited(1,AMessage[i],['+']);
                 ShowConsequenceMessage(MID, ExtractDelimited(2,AMessage[i],['+']),MID = 'M');
@@ -781,36 +811,21 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                 {$ENDIF}
               end;
           end;
-        EnablePlayerMatrix(Self.ID,0, True);
-        WriteLn('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
       end;
     end;
+    ResumeNextTurn;
   end;
-
-
-  //  procedure ResumeActor;
-  //  begin
-  //    case FActor of
-  //      gaPlayer:begin
-  //
-  //      end;
-  //      gaAdmin:begin
-  //
-  //      end;
-  //    end;
-  //  end;
 
 begin
   if MHas(K_ARRIVED) then ReceiveActor;
   if MHas(K_CHAT_M)  then ReceiveChat;
   if MHas(K_CHOICE)  then ReceiveChoice;
   if MHas(K_MESSAGE) then ShowConsequenceMessage(AMessage[1],AMessage[2],StrToBool(AMessage[3]));
-  if MHas(K_KICK)    then SayGoodBye;
   if MHas(K_START) then NotifyPlayers;
   if MHas(K_QUESTION) then ShowQuestion;
-  if MHAS(K_RESUME) then EnablePlayerMatrix(Self.ID,0, True);
-  //if MHas(K_CYCLES) then OnEndCycle;
+  if MHas(K_MOVQUEUE) then MovePlayerQueue;
   if MHas(K_QMESSAGE) then QuestionMessages;
+  if MHas(K_RESUME) then ResumeNextTurn;
 end;
 
 // Here FActor is garanted to be a TZMQAdmin
@@ -925,22 +940,29 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
       S := ReplaceStr(S,'$NICNAME',P.Nicname);
 
     // update turn
-    LEndCycle:=ShouldEndCycle;
+    LEndCycle := ShouldEndCycle;
     P.Turn := FExperiment.NextTurn;
-    FExperiment.Player[P.ID] := P;
+    FExperiment.Player[FExperiment.PlayerIndexFromID[P.ID]] := P;
 
     // append results
-    ARequest.Append(IntToStr(P.Turn));
-    ARequest.Append(S);
-    if LEndCycle then
+    ARequest.Append(IntToStr(P.Turn)); //5
+    ARequest.Append(S);                //6
+    if LEndCycle then // >7 = EndCycle
       begin
-        LConsequences := FExperiment.ConsequenceStringFromChoices;// AsString generates the pts result
-        ARequest.Append(LConsequences);
 
-        if ShouldAskQuestion then  // TODO: prompt only when an odd row was selected
-           ARequest.Append(FExperiment.Condition[FExperiment.CurrentCondition].Prompt.Question)
+        LConsequences := FExperiment.ConsequenceStringFromChoices;// AsString generates the pts result
+        ARequest.Append(LConsequences); //7
+
+        if ShouldAskQuestion then  // DONE: prompt only when an odd row was selected
+           ARequest.Append(FExperiment.Condition[FExperiment.CurrentCondition].Prompt.Question) //8
         else
-          FExperiment.Clean;
+          begin
+            ARequest.Append(#32); // 8
+            if Assigned(FExperiment.Condition[FExperiment.CurrentCondition].Prompt) then
+              FExperiment.WriteReportRowPrompt;
+            FExperiment.Clean;
+          end;
+        ARequest.Append(FExperiment.NextGeneration); // #32 no, else NextGeneration = PlayerToKick
       end;
   end;
 
@@ -963,8 +985,9 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
         // generate messages
         LPromptConsequences := FExperiment.Condition[FExperiment.CurrentCondition].Prompt.AsString;
-        SetLength(M, 1+LPromptConsequences.Count);
+        SetLength(M, 2+LPromptConsequences.Count);
         M[0] := K_QMESSAGE;
+        M[1] := ARequest[4]; // generations
         if LPromptConsequences.Count > 0 then
           begin
             for i := 0 to LPromptConsequences.Count-1 do
@@ -974,17 +997,37 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
                   LPromptConsequences[i] := ReplaceStr(LPromptConsequences[i],'$NICNAME', P.Nicname);
                 end;
             for i := 0 to LPromptConsequences.Count -1 do
-              M[i+1] := LPromptConsequences[i];
+              M[i+2] := LPromptConsequences[i];
           end
         else;
 
          // send identified messages; each player takes only its own message and ignore the rest
         FZMQActor.SendMessage(M);
+        FExperiment.WriteReportRowPrompt;
         FExperiment.Clean;
       end;
   end;
+
+  procedure ReplyResume;// old player becomes a new player
+  var
+    P : TPlayer;
+    S : string;
+  begin
+    P := FExperiment.PlayerFromID[ARequest[0]];
+    ARequest[2] := K_RESUME+K_ARRIVED;
+    if AskQuestion(
+      'Um novo participante entrou no lugar do participante mais antigo. Criar um novo apelido para o novo participante?'
+      ) = 'S' then
+      P.Nicname := GenResourceName(-1);
+
+    S := FExperiment.PlayerAsString[P];
+    ARequest.Append(S); // 3
+    FExperiment.NextGeneration := S;
+  end;
+
 begin
   if MHas(K_LOGIN) then ReplyLoginRequest;
+  if MHas(K_RESUME) then ReplyResume;
   if MHas(K_CHOICE) then ValidateChoice;
   if MHas(K_QUESTION) then ValidateQuestionResponse;
 end;
@@ -1074,29 +1117,23 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
                   //Sleep(1000);
                 end;
 
-            if AReply.Count > 8 then
-              FZMQActor.SendMessage([K_QUESTION,AReply[8]])
+            if AReply[8] <> #32 then
+              FZMQActor.SendMessage([K_QUESTION,AReply[8],AReply[9]])
             else
-              FZMQActor.SendMessage([K_RESUME]);
+              FZMQActor.SendMessage([K_RESUME,AReply[9]]);
           end;
       end;
   end;
 
-  //procedure QuestionValidated;
-  //begin
-  //  // wait
-  //end;
-
-  //procedure ResumePlayer;
-  //begin
-  //
-  //end;
+  procedure ResumePlayer;
+  begin
+    FZMQActor.SendMessage([K_MOVQUEUE, AReply[3],AReply[0]]); //new player,old player (self.id)
+  end;
 
 begin
-  //if MHas(K_RESUME+K_ARRIVED) then ResumePlayer;
+  if MHas(K_RESUME+K_ARRIVED) then ResumePlayer;
   if MHas(K_LOGIN+K_ARRIVED) then LoginAccepted;
   if MHas(K_CHOICE+K_ARRIVED) then ChoiceValidated;
-  //if MHas(K_QUESTION+K_ARRIVED) then QuestionValidated;
 end;
 
 

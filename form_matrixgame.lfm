@@ -248,7 +248,7 @@ object FormMatrixGame: TFormMatrixGame
         Height = 15
         Top = 45
         Width = 128
-        Caption = 'Generação:'
+        Caption = 'Geração:'
         ParentColor = False
       end
       object LabelExpCountGeneration: TLabel
