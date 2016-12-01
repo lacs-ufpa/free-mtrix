@@ -19,6 +19,8 @@ uses
   , game_resources
   ;
 
+function Delimited(i:integer;S:string):string;
+
 function GetRowString(ARow : TGameRow) : string;
 function GetRowFromString(S : string):TGameRow;
 
@@ -118,6 +120,11 @@ begin
   Result := Copy(S, 0, pos(Sep, S)-1);
   Delete(S, 1, pos(Sep, S));
   if Length(S) > 0 then while S[1] = Sep do Delete(S, 1, 1);
+end;
+
+function Delimited(i: integer; S: string): string;
+begin
+  Result := ExtractDelimited(i, S,['|']);
 end;
 
 function GetRowString(ARow: TGameRow): string;

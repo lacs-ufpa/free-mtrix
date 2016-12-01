@@ -147,7 +147,6 @@ type
     property NextCycle : integer read GetNextCycle;
     property NextCondition : integer read GetNextCondition;
     property NextGeneration: string read GetPlayerToKick write SetPlayersQueue;
-    property ChangeGeneration : string read FChangeGeneration write FChangeGeneration; // helper
     property State : TExperimentState read FState write SetState;
   public
     property OnEndTurn : TNotifyEvent read FOnEndTurn write SetOnEndTurn;
@@ -550,15 +549,12 @@ begin
   // column names, line 1
   LNames := 'Experimento'+#9+#9+#9;
   for i:=0 to Condition[c].Turn.Value-1 do // player's response
-    LNames += 'P'+IntToStr(i+1)+#9+#9;
-
-  for i:=0 to ContingenciesCount[c]-1 do
-    if not Contingency[c,i].Meta then
-      begin
-        LNames += Contingency[c,i].ContingencyName;
-        for j:=0 to Condition[c].Turn.Value-1 do
-          LNames += #9;
-      end;
+    begin
+        LNames += 'P'+IntToStr(i+1)+#9+#9;
+        for j:=0 to ContingenciesCount[c]-1 do
+          if not Contingency[c,j].Meta then
+                LNames += #9;
+    end;
 
   LNames += VAL_INTERLOCKING+'s';
   for i:=0 to ContingenciesCount[c]-1 do
@@ -574,14 +570,14 @@ begin
   LNames += LineEnding;
 
   // column names, line 2
-  LNames += 'Condição'+#9+'Ciclo (Absoluto)'+#9+'Ciclo (Geração)'+#9;
+  LNames += 'Condição'+#9+'Geração'+#9+'Ciclos'+#9;
   for i:=0 to Condition[c].Turn.Value-1 do
-    LNames += 'Linha'+#9+'Cor'+#9;
-
-  for i:=0 to ContingenciesCount[c]-1 do
-    if not Contingency[c,i].Meta then
-      for j:=0 to Condition[c].Turn.Value-1 do
-        LNames += 'P'+IntToStr(j+1)+#9;
+    begin
+      LNames += 'Linha'+#9+'Cor'+#9;
+      for j:=0 to ContingenciesCount[c]-1 do
+        if not Contingency[c,j].Meta then
+          LNames += Contingency[c,j].ContingencyName+#9;
+    end;
 
   for i:=0 to ContingenciesCount[c]-1 do
     if Contingency[c,i].Meta then
@@ -605,17 +601,17 @@ var
 begin
   c:= CurrentCondition;
 
-  LRow := LineEnding + IntToStr(c+1)+#9+IntToStr(GetCurrentAbsoluteCycle)+#9+IntToStr(Condition[c].Cycles.Count+1)+#9;
+  LRow := LineEnding + IntToStr(c+1)+#9+IntToStr(Condition[c].Cycles.Generation+1)+#9+IntToStr(GetCurrentAbsoluteCycle+1)+#9;
   for i:=0 to Condition[c].Turn.Value-1 do
+    begin
     LRow += GetRowString(FPlayers[i].Choice.Row)+#9+GetColorString(FPlayers[i].Choice.Color)+#9;
-
-  for i:=0 to ContingenciesCount[c]-1 do
-    if not Contingency[c,i].Meta then
-      for j:=0 to Condition[c].Turn.Value-1 do
-        if Contingency[c,i].ConsequenceFromPlayerID(FPlayers[j].ID) <> '' then
+    for j:=0 to ContingenciesCount[c]-1 do
+      if not Contingency[c,j].Meta then
+        if Contingency[c,j].ConsequenceFromPlayerID(FPlayers[i].ID) <> '' then
           LRow += '1'+#9
         else
           LRow += '0'+#9;
+    end;
 
   for i:=0 to ContingenciesCount[c]-1 do
     if Contingency[c,i].Meta then
@@ -636,7 +632,9 @@ begin
   LRow := '';
   if Condition[c].Prompt.ResponsesCount = Condition[c].Turn.Value then
     for i:=0 to Condition[c].Prompt.ResponsesCount-1 do
-      LRow += Condition[c].Prompt.Response(i)+#9
+      LRow += 'P'+IntToStr(PlayerIndexFromID[Delimited(1,Condition[c].Prompt.Response(i))]+1)+
+      '|'+
+      Delimited(2,Condition[c].Prompt.Response(i))+#9
   else
     for i:=0 to Condition[c].Turn.Value-1 do
       LRow += 'NA'+#9;
@@ -767,10 +765,10 @@ end;
 procedure TExperiment.Play;
 var i : integer;
 begin
-  for i := 0 to Condition[CurrentCondition].Turn.Value-1 do
-    begin
-      //TRegData.Save Header;
-    end;
+  //for i := 0 to Condition[CurrentCondition].Turn.Value-1 do
+  //  begin
+  //    //TRegData.Save Header;
+  //  end;
   FState:=xsRunning;
 end;
 
