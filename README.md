@@ -1,23 +1,16 @@
-# install instructions
+# lacs-matrix
 
-# make sure system is up to date
-sudo apt-get update
-sudo apt-get upgrade
+- How to install?
 
-# install database dependencies
-mysql-server
-mysql-client
-mysql-workbench
+No need for installation. Just run the executable.
 
-# check if database version is compatible with lazarus SQLdb connection component
+- How to setup?
 
-TMySQLXXConnection
+You have at least two options.
 
-# downgrade if necessary. SQLdb component version must match mysql-client version.
+1. Running from different folders in a machine (default for debugging).
+2. Running from different machines in a local network.
 
-mysql -V # client version
-
-# on windows, check if libMySQL.dll is necessary...
+You will need an instance of the program acting as a Server (researcher) and others acting as Clients (players). Clients must connect to the IP address of the Server; just create a file called 'IP' in the root folder of each client containing the Server IP on the first line.
 
 
-# must compile with Lazarus 32 bits ultil delphi-zmq (pool) 64 bit support is available. 
