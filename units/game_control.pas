@@ -941,6 +941,8 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
     // update turn
     LEndCycle := ShouldEndCycle;
+    if LEndCycle then
+      LConsequences := FExperiment.ConsequenceStringFromChoices;// AsString generates the pts result; must be called before next cycle
     P.Turn := FExperiment.NextTurn;
     FExperiment.Player[FExperiment.PlayerIndexFromID[P.ID]] := P;
 
@@ -949,8 +951,6 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     ARequest.Append(S);                //6
     if LEndCycle then // >7 = EndCycle
       begin
-
-        LConsequences := FExperiment.ConsequenceStringFromChoices;// AsString generates the pts result
         ARequest.Append(LConsequences); //7
 
         if ShouldAskQuestion then  // DONE: prompt only when an odd row was selected
