@@ -113,6 +113,7 @@ type
      property PlayerNicname : string read FNicname write FNicname;
      property AppendiceSingular : string read FAppendiceSingular;
      property AppendicePlural : string read FAppendicePlural;
+     property Style : TConsequenceStyle read FStyle;
      property ConsequenseByPlayerID : TStringList read FConsequenceByPlayerID;
    end;
 
@@ -458,7 +459,10 @@ end;
 function TPrompt.AsString: TStringList;
 var
   j,i : integer;
-  LID,LConsequence : string;
+  LAppendiceSingular,
+  LAppendicePlural,
+  LConsequence,
+  LID : string;
   LCsqStyle : TConsequenceStyle;
   Pts : integer;
 
@@ -475,6 +479,8 @@ var
 
   procedure ApplyPointsConditions(IsMeta:Boolean);
   var
+    i : integer;
+    LI,LS,LP,
     S : string;
   begin
     Pts := StrToInt(ExtractDelimited(1,LConsequence, ['|']));
@@ -485,6 +491,15 @@ var
       begin
         LCsqStyle += [gscA];
         LCsqStyle -= [gscB];
+
+        for i := 0 to Length(FPromptTargets) -1 do
+          if not FPromptTargets[i].Meta then
+            if gscA in FPromptTargets[i].Consequence.Style then
+              begin
+                LAppendiceSingular := FPromptTargets[i].Consequence.AppendiceSingular;
+                LAppendicePlural := FPromptTargets[i].Consequence.AppendicePlural;
+                Break;
+              end;
       end;
 
     if IsMeta then
@@ -496,12 +511,12 @@ var
       IntToStr(Pts) +'|'+
       GetConsequenceStylesString(LCsqStyle) +'|'+
       ExtractDelimited(3,LConsequence, ['|']) +'|'+
-      ExtractDelimited(4,LConsequence, ['|']) +'|'+
-      ExtractDelimited(5,LConsequence, ['|']);
+      LAppendiceSingular +'|'+
+      LAppendicePlural;
   end;
 begin
   Result := TStringList.Create;
-  // to do, sanitize FPromptStyle first
+  // todo: sanitize FPromptStyle first
   Pts:= 0;
   if (gsAll in FPromptStyle) and (gsYes in FPromptStyle) then
     if AllPlayersClickedYes then
@@ -512,9 +527,9 @@ begin
             LConsequence := FPromptTargets[i].Consequence.ConsequenseByPlayerID.Values[LID];
             LCsqStyle := GetConsequenceStylesFromString(ExtractDelimited(2,LConsequence, ['|']));
 
-            // TODO: should BasA revert appendices? right now reverting points only
-            //LAppendiceSingular:=
-            //LAppendicePlural:=
+            // BasA must revert appendices
+            LAppendiceSingular := ExtractDelimited(4,LConsequence, ['|']);
+            LAppendicePlural := ExtractDelimited(5,LConsequence, ['|']);
 
             if gsContingency in FPromptStyle then
               if (FPromptTargets[i].Fired) and (not FPromptTargets[i].Meta) then
