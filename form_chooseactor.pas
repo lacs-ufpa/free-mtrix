@@ -103,5 +103,10 @@ begin
 
 end;
 
+procedure TFormChooseActor.ShowResumeButton;
+begin
+
+end;
+
 end.
 
