@@ -64,7 +64,7 @@ type
     function GetPlayerIndexFromID(AID : UTF8string): integer;
     function GetPlayerIsPlaying(AID : UTF8string): Boolean;
     function GetPlayersCount: integer;
-    function GetInterlockingPorcentageInLastCycles:integer;
+    function GetInterlockingPorcentageInLastCycles:real;
     function GetConsequenceStringFromChoice(P:TPlayer): Utf8string;
     function GetConsequenceStringFromChoices:UTF8String;
     procedure CheckNeedForRandomTurns;
@@ -237,7 +237,7 @@ end;
 
 function TExperiment.GetNextCondition: integer;
 var
-  LInterlocks : integer;
+  LInterlocks : real;
 
   procedure EndCondition;
   begin
@@ -356,7 +356,7 @@ begin
   for i :=0 to ContingenciesCount[c] -1 do
     if Contingency[c,i].Meta then
       begin
-        LTarget := Contingency[c,i].ContingencyName;
+        LContingencyName := Contingency[c,i].ContingencyName;
         Break;
       end;
 
