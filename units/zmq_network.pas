@@ -329,7 +329,7 @@ begin
     begin
       S := TStringList.Create;
       try
-        S.LoadFromFile(ExtractFilePath(Application.ExeName))+'IP');
+        S.LoadFromFile(ExtractFilePath(Application.ExeName)+'IP');
         GClientHost := 'tcp://'+S[0]+':';
       finally
         S.Free;
