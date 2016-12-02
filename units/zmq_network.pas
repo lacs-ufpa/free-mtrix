@@ -84,6 +84,10 @@ type
 
 implementation
 
+uses Forms;
+
+var GClientHost : string;
+
 const
   CHost = 'tcp://*:';
   CLocalHost = 'tcp://localhost:';
@@ -92,7 +96,6 @@ const
   CPortPuller_REP = '6057';
   //CPortRouter = '5058';
   CPortReplier = '5059';
-
 
 { TZMQClientThread }
 
@@ -143,19 +146,19 @@ begin
 
   // client subscribe to server, it receives from itself
   FSubscriber := FContext.Socket( stSub );
-  FSubscriber.connect(CLocalHost+CPortPublisher);FSubscriber.Subscribe('');
+  FSubscriber.connect(GClientHost+CPortPublisher);FSubscriber.Subscribe('');
   // pushes to server
   FPusher_PUB := FContext.Socket( stPush );
-  FPusher_PUB.connect(CLocalHost+CPortPuller_PUB);
+  FPusher_PUB.connect(GClientHost+CPortPuller_PUB);
 
   FPusher_REQ := FContext.Socket( stPush );
-  FPusher_REQ.connect(CLocalHost+CPortPuller_REP);
+  FPusher_REQ.connect(GClientHost+CPortPuller_REP);
 
   // request from server
   FRequester := FContext.Socket( stReq );
   //FRequester.Identity := AID;
   //FRequester.connect(CLocalHost+CPortRouter);
-  FRequester.connect(CLocalHost+CPortReplier);
+  FRequester.connect(GClientHost+CPortReplier);
 
   // handle income messages
   FPoller := TZMQPoller.Create(True, FContext);
@@ -319,5 +322,25 @@ begin
   FPusher_PUB.send(AMultipartMessage);
 end;
 
+procedure LoadIP; //forward;
+var S : TStringList;
+begin
+  if FileExists(GetCurrentDir+'IP') then
+    begin
+      S := TStringList.Create;
+      try
+        S.LoadFromFile(ExtractFilePath(Application.ExeName))+'IP');
+        GClientHost := 'tcp://'+S[0]+':';
+      finally
+        S.Free;
+      end;
+    end
+  else GClientHost := CLocalHost;
+end;
+
+initialization
+begin
+  LoadIP;
+end
 
 end.
