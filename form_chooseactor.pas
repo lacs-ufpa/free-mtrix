@@ -34,6 +34,8 @@ type
     procedure btnPlayerResumeClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
+    procedure ExitApplication(Sender: TObject);
+    procedure ShowResumeButton(Sender: TObject);
   private
     FGameActor: TGameActor;
     FCanClose : Boolean;
@@ -41,8 +43,7 @@ type
     procedure SetStyle(AValue: string);
     { private declarations }
   public
-    procedure ShowPoints(A, B, G : string);
-    procedure ShowResumeButton;
+    procedure ShowPoints(M : string);
     property GameActor : TGameActor read FGameActor;
     property Style : string read FStyle write SetStyle;
   end;
@@ -86,26 +87,62 @@ begin
   FCanClose := True;
 end;
 
+procedure TFormChooseActor.ExitApplication(Sender: TObject);
+begin
+  Application.Terminate;
+end;
+
 procedure TFormChooseActor.SetStyle(AValue: string);
 begin
   if FStyle=AValue then Exit;
+  FStyle:=AValue;
   case AValue of
     '.Arrived': btnPlayerResume.Visible:=False;
-    '.Left': btnPlayerResume.Visible:=True;
+    '.Left', '.EndX':
+      begin
+        btnPlayerResume.Visible:=False;
+        btnAdmin.Visible:= False;
+        btnPlayer.Visible:= False;
+        BorderStyle:=bsNone;
+        Position:=poDesigned;
+        FormStyle:=fsNormal;
+        WindowState:=wsFullScreen;
+      end;
   end;
-  btnAdmin.Visible:= not btnPlayerResume.Visible;
-  btnPlayer.Visible:= not btnPlayerResume.Visible;
-  FStyle:=AValue;
 end;
 
-procedure TFormChooseActor.ShowPoints(A, B, G: string);
+procedure TFormChooseActor.ShowPoints(M: string);
+var L : TLabel;
 begin
-
+  L := TLabel.Create(Self);
+  with L do
+  begin
+    Name := 'LabelGoodBye';
+    Align:=alClient;
+    Caption:= M;
+    Alignment := taCenter;
+    Anchors := [akLeft,akRight];
+    Layout := tlCenter;
+    WordWrap := True;
+    Parent:=Self;
+    Font.Size := 30;
+    case FStyle of
+      '.Left': OnClick := @ShowResumeButton;
+      '.EndX': OnClick := @ExitApplication;
+    end;
+  end;
 end;
 
-procedure TFormChooseActor.ShowResumeButton;
+procedure TFormChooseActor.ShowResumeButton(Sender: TObject);
+var i : integer;
 begin
-
+  for i := 0 to ComponentCount-1 do
+    if Components[i].Name = 'LabelGoodBye' then
+      begin
+       TLabel(Components[i]).Visible:=False;
+       Break;
+      end;
+  btnPlayerResume.Visible:=True;
 end;
 
 end.

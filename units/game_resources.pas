@@ -240,7 +240,7 @@ const
 
       Prompt : nil;
       EndCriterium : (
-        Value : gecWhichComeFirst;
+        Style : gecWhichComeFirst;
         InterlockingPorcentage : 50;
         LastCycles : 4;
         AbsoluteCycles: 6;

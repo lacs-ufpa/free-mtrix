@@ -81,7 +81,7 @@ begin
       GenPlayersAsNeeded:=True;
       CurrentCondition := 0;
       MatrixType:=[gmRows];
-
+      ABPoints := True;
       //AppendPlayer(C_PLAYER_TEMPLATE);
       //AppendPlayer(C_PLAYER_TEMPLATE);
 
@@ -95,6 +95,11 @@ begin
           Cycles.Count:=0;
           Cycles.Value:=4;
           Cycles.Generation:=0;
+          EndCriterium.AbsoluteCycles := 20;
+          EndCriterium.InterlockingPorcentage := 80;
+          EndCriterium.LastCycles := 10;
+          EndCriterium.Style := gecWhichComeFirst;
+
           SetLength(Contingencies, 4);
           LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscB, gscMessage,gscBroadcastMessage],['$NICNAME','queijo','queijos']);
           Contingencies[0] := TContingency.Create(AExperiment,LConcequence,LCriteria1,False);

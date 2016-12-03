@@ -11,6 +11,8 @@ unit game_zmq_actors;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE DEBUG}
+
 interface
 
 uses

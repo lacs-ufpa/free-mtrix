@@ -171,7 +171,7 @@ type
   end;
 
   TEndConditionCriterium = record
-    Value : TGameEndCondition;
+    Style : TGameEndCondition;
     InterlockingPorcentage,
     LastCycles,
     AbsoluteCycles: integer;

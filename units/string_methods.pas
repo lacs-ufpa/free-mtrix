@@ -67,9 +67,9 @@ uses strutils;
 function GetEndCriteriaFromString(S:string) : TEndConditionCriterium;
 begin
   case StrToIntDef(ExtractDelimited(1,S,[',']),2) of
-    0: Result.Value := gecAbsoluteCycles;
-    1: Result.Value := gecInterlockingPorcentage;
-    2: Result.Value := gecWhichComeFirst;
+    0: Result.Style := gecAbsoluteCycles;
+    1: Result.Style := gecInterlockingPorcentage;
+    2: Result.Style := gecWhichComeFirst;
   end;
   Result.AbsoluteCycles := StrToIntDef(ExtractDelimited(2,S,[',']), 20);
   Result.InterlockingPorcentage := StrToIntDef(ExtractDelimited(3,S,[',']),10);
@@ -367,7 +367,7 @@ function GetEndCriteriaString(AEndCriterium: TEndConditionCriterium
   ): string;
 begin
   // 2,20,10,10,
-  case AEndCriterium.Value of
+  case AEndCriterium.Style of
    gecAbsoluteCycles: Result := '0';
    gecInterlockingPorcentage: Result := '1';
    gecWhichComeFirst: Result := '2';

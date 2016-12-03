@@ -31,10 +31,6 @@ uses
 
 
 var
-  {$IFDEF DEBUG}
-  I : integer;
-  {$ENDIF}
-  ID : TStringList;
   ApplicationPath,
   F : string;
 
@@ -71,6 +67,7 @@ const
 {$ENDIF}
 
   function GetZMQNetworkID(var F:string):Boolean;
+  var ID : TStringList;
   begin
     Result := True;
     ID := TStringList.Create;
