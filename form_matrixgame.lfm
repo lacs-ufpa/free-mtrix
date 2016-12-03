@@ -431,15 +431,6 @@ object FormMatrixGame: TFormMatrixGame
       WantTabs = True
     end
   end
-  object Button3: TButton
-    Left = 568
-    Height = 91
-    Top = 352
-    Width = 141
-    Caption = 'Button3'
-    OnClick = Button3Click
-    TabOrder = 8
-  end
   object OpenDialog: TOpenDialog
     Width = 862
     Height = 434

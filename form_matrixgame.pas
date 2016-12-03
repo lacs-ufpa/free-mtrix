@@ -30,7 +30,6 @@ type
     btnConfirmRow: TButton;
     ButtonExpStart: TButton;
     ButtonExpPause: TButton;
-    Button3: TButton;
     ButtonExpCancel: TButton;
     GBIndividual: TGroupBox;
     GBLastChoice: TGroupBox;
@@ -66,7 +65,6 @@ type
     StringGridMatrix: TStringGrid;
     Timer: TTimer;
     procedure btnConfirmRowClick(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
     procedure ButtonExpCancelClick(Sender: TObject);
     procedure ButtonExpPauseClick(Sender: TObject);
     procedure ButtonExpStartClick(Sender: TObject);
@@ -79,7 +77,6 @@ type
     procedure TimerTimer(Sender: TObject);
   private
     FGameControl : TGameControl;
-    FAppPath,
     FID: string;
   public
     procedure SetID(S : string);
@@ -310,11 +307,6 @@ end;
 procedure TFormMatrixGame.btnConfirmRowClick(Sender: TObject);
 begin
   FGameControl.SendRequest(K_CHOICE);
-end;
-
-procedure TFormMatrixGame.Button3Click(Sender: TObject);
-begin
-  FGameControl.Experiment.SaveToFile(OpenDialog.FileName+'.ini');
 end;
 
 procedure TFormMatrixGame.ButtonExpCancelClick(Sender: TObject);
