@@ -222,7 +222,7 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
   begin
     FGameControl := TGameControl.Create(TZMQAdmin.Create(Self,FID),ExtractFilePath(Application.ExeName));
     GBIndividual.Visible:=False;
-    GBIndividualAB.Visible:=False;
+    GBIndividualAB.Enabled:=False;
     GBAdmin.Visible:= True;
   end;
 

@@ -248,8 +248,8 @@ begin
   // basic gui setup
 
   // points
-  FormMatrixGame.GBIndividualAB.Visible := FExperiment.ABPoints;
-  FormMatrixGame.GBIndividual.Visible:= not FormMatrixGame.GBIndividualAB.Visible;
+  //FormMatrixGame.GBIndividualAB.Visible := FExperiment.ABPoints;
+  //FormMatrixGame.GBIndividual.Visible:= not FormMatrixGame.GBIndividualAB.Visible;
 
   // turns
   FormMatrixGame.LabelExpCountTurn.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count+1);

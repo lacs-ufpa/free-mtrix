@@ -5,7 +5,7 @@ object FormChooseActor: TFormChooseActor
   Width = 320
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
-  Caption = 'FormChooseActor'
+  Caption = 'Ator'
   ClientHeight = 240
   ClientWidth = 320
   FormStyle = fsStayOnTop

@@ -1,14 +1,14 @@
 object FormMatrixGame: TFormMatrixGame
   Left = 54
-  Height = 612
-  Top = 80
-  Width = 1164
-  HorzScrollBar.Page = 1164
+  Height = 626
+  Top = 66
+  Width = 1167
+  HorzScrollBar.Page = 1167
   VertScrollBar.Page = 542
   AutoScroll = True
-  Caption = 'FormMatrixGame'
-  ClientHeight = 602
-  ClientWidth = 1164
+  Caption = 'Matrix'
+  ClientHeight = 616
+  ClientWidth = 1167
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   LCLVersion = '1.6.2.0'
@@ -184,7 +184,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 0
     Height = 17
-    Top = 585
+    Top = 599
     Width = 1632
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
