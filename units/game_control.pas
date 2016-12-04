@@ -40,7 +40,7 @@ type
     function GetSelectedColorF(AStringGrid : TStringGrid) : UTF8string;
     function GetSelectedRowF(AStringGrid : TStringGrid) : UTF8string;
     function MessageHas(const A_CONST : UTF8string; AMessage : TStringList; I:ShortInt=0): Boolean;
-    procedure CreatePlayerBox(P:TPlayer; Me:Boolean);
+    procedure CreatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
     procedure DeletePlayerBox(AID : string);
     procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType;
       var ARowBase:integer; var ADrawDots, ADrawClear : Boolean);
@@ -58,7 +58,6 @@ type
     procedure CleanMatrix(AEnabled : Boolean);
     procedure EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
   private
-
     function ShouldStartExperiment: Boolean;
     function ShouldEndCycle : Boolean;
     function ShouldEndGeneration : Boolean;
@@ -68,6 +67,7 @@ type
     procedure NextLineage(Sender: TObject);
     procedure NextCondition(Sender: TObject);
     procedure Interlocking(Sender: TObject);
+    procedure TargetInterlocking(Sender: TObject);
     procedure Consequence(Sender: TObject);
     procedure EndExperiment(Sender: TObject);
     procedure StartExperiment;
@@ -116,9 +116,14 @@ const
 
 implementation
 
-uses ButtonPanel,Controls,ExtCtrls,StdCtrls,
-     LazUTF8, Forms, strutils, zhelpers,
-     form_matrixgame, form_chooseactor, game_resources, string_methods ;
+uses ButtonPanel,Controls,ExtCtrls,StdCtrls,LazUTF8, Forms, strutils
+     , zhelpers
+     , form_matrixgame
+     , presentation_classes
+     , form_chooseactor
+     , game_resources
+     , string_methods
+     ;
 
 const
   GA_ADMIN = 'Admin';
@@ -172,7 +177,7 @@ end;
 
 procedure TGameControl.NextCycle(Sender: TObject);
 begin
-  FormMatrixGame.LabelExpCountCycle.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Count+1);
+  FormMatrixGame.LabelExpCountCycle.Caption:= IntToStr(FExperiment.Cycles+1);
   {$IFDEF DEBUG}
   WriteLn('cycle:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
   {$ENDIF}
@@ -197,9 +202,17 @@ begin
 end;
 
 procedure TGameControl.Interlocking(Sender: TObject);
+var i : integer;
 begin
-  FormMatrixGame.LabelExpCountInterlocks.Caption:= IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Interlocks.Count+1);
+  i := StrToInt(FormMatrixGame.LabelExpCountInterlocks.Caption);
+  FormMatrixGame.LabelExpCountInterlocks.Caption:= IntToStr(i+1);
+end;
 
+procedure TGameControl.TargetInterlocking(Sender: TObject);
+var i : integer;
+begin
+  i := StrToInt(FormMatrixGame.LabelExpCountTInterlocks.Caption);
+  FormMatrixGame.LabelExpCounTtInterlocks.Caption:= IntToStr(i+1);
 end;
 
 procedure TGameControl.Consequence(Sender: TObject);
@@ -242,7 +255,7 @@ begin
   FormMatrixGame.LabelExpCountTurn.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count+1);
 
   // cycle
-  FormMatrixGame.LabelExpCountCycle.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Count+1);
+  FormMatrixGame.LabelExpCountCycle.Caption := IntToStr(FExperiment.Cycles+1);
 
   // generation
   FormMatrixGame.LabelExpCountGeneration.Caption:=IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Cycles.Generation+1);
@@ -251,7 +264,10 @@ begin
   FormMatrixGame.LabelExpCountCondition.Caption:= FExperiment.Condition[FExperiment.CurrentCondition].ConditionName;
 
   // interlocks
-  FormMatrixGame.LabelExpCountInterlocks.Caption:= IntToStr(FExperiment.Condition[FExperiment.CurrentCondition].Interlocks.Count+1);
+  FormMatrixGame.LabelExpCountInterlocks.Caption:= '0';
+
+  // target interlocks
+  FormMatrixGame.LabelExpCountTInterlocks.Caption:= '0';
 
   // wait for players
 end;
@@ -307,10 +323,10 @@ begin
   Result := Pos(A_CONST,AMessage[I])>0;
 end;
 
-procedure TGameControl.CreatePlayerBox(P: TPlayer; Me: Boolean);
+procedure TGameControl.CreatePlayerBox(P: TPlayer; Me: Boolean; Admin: Boolean);
 var i1 : integer;
 begin
-  with TPlayerBox.Create(FormMatrixGame.GBLastChoice,P.ID) do
+  with TPlayerBox.Create(FormMatrixGame.GBLastChoice,P.ID,Admin) do
     begin
       if Me then
         Caption := P.Nicname+SysToUtf8(' (Você)' )
@@ -481,17 +497,23 @@ procedure TGameControl.ShowConsequenceMessage(AID, S: string; ForGroup: Boolean)
 var
   LConsequence : TConsequence;
 begin
-  if FActor = gaPlayer then
-    begin
-      LConsequence := TConsequence.Create(nil,S);
-      LConsequence.GenerateMessage(ForGroup);
-      LConsequence.PresentMessage;
+  LConsequence := TConsequence.Create(nil,S);
+  LConsequence.GenerateMessage(ForGroup);
+  LConsequence.PresentMessage;
+  case FActor of
+    gaPlayer:
       if ForGroup then
         LConsequence.PresentPoints
       else
         if Self.ID = AID then
           LConsequence.PresentPoints;
-    end;
+
+    gaAdmin:
+      begin
+        WriteLn(S);
+        LConsequence.PresentPoints(GetPlayerBox(AID));
+      end;
+  end;
 end;
 
 procedure TGameControl.DisableConfirmationButton;
@@ -763,12 +785,12 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   end;
 
   procedure MovePlayerQueue;
-  var P : TPlayer;
+  var
+    P : TPlayer;
   begin
     P := FExperiment.PlayerFromString[AMessage[1]]; // new
-    CreatePlayerBox(P,Self.ID = P.ID);
-
-    if FActor = gaPlayer then
+    CreatePlayerBox(P,Self.ID = P.ID, FActor=gaAdmin);
+    if FActor=gaPlayer then
       begin
         FExperiment.Player[FExperiment.PlayerIndexFromID[AMessage[2]]] := P;
         EnablePlayerMatrix(Self.ID,0, True);
@@ -846,22 +868,18 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     i : integer;
     MID : string;
   begin
-    case FActor of
-      gaPlayer:begin
-        if AMessage.Count > 1 then
+    if AMessage.Count > 1 then
+      begin
+        for i := 2 to AMessage.Count -1 do
           begin
-            for i := 2 to AMessage.Count -1 do
-              begin
-                MID := ExtractDelimited(1,AMessage[i],['+']);
-                ShowConsequenceMessage(MID, ExtractDelimited(2,AMessage[i],['+']),MID = 'M');
+            MID := ExtractDelimited(1,AMessage[i],['+']);
+            ShowConsequenceMessage(MID, ExtractDelimited(2,AMessage[i],['+']),MID = 'M');
 
-                {$IFDEF DEBUG}
-                WriteLn('A Prompt consequence should have shown.');
-                {$ENDIF}
-              end;
+            {$IFDEF DEBUG}
+            WriteLn('A Prompt consequence should have shown.');
+            {$ENDIF}
           end;
       end;
-    end;
     ResumeNextTurn;
   end;
 
@@ -949,7 +967,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
               end;
 
             // create/config playerbox
-            CreatePlayerBox(P,False);
+            CreatePlayerBox(P,False,True);
 
             // Request is now a reply with the following standard:
             // [Requester.ID 0, ' ' 1, ReplyTag 2, PlayerData 3, PlayersPlaying 4 .. n, ChatData Last]
@@ -1157,6 +1175,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
     LConsequence : TConsequence;
     LCount,
     i : integer;
+    LAnnouncer : TIntervalarAnnouncer;
     //P : TPlayer;
   begin
     if Self.ID = AReply[0] then
@@ -1167,6 +1186,9 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         {$ENDIF}
         FZMQActor.SendMessage([K_CHOICE,AReply[0],AReply[3],AReply[4],AReply[5]]);
 
+        LAnnouncer := TIntervalarAnnouncer.Create(nil);
+        LAnnouncer.OnStart := @FZMQActor.SendMessage;
+        LAnnouncer.Interval := 2000;
         LCount := WordCount(AReply[6],['+']);
         if LCount > 0 then
           for i := 1 to LCount do
@@ -1174,7 +1196,8 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
               LConsequence := TConsequence.Create(nil,ExtractDelimited(i,AReply[6],['+']));
               LConsequence.GenerateMessage(False);
               if LConsequence.ShouldPublishMessage then
-                FZMQActor.SendMessage([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
+                //FZMQActor.SendMessage([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
+                LAnnouncer.Append([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
               else
                 begin
                   LConsequence.PresentMessage;
@@ -1183,7 +1206,6 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
               {$IFDEF DEBUG}
               WriteLn('A consequence should have shown.');
               {$ENDIF}
-              //Sleep(1000);
             end;
 
         if AReply.Count > 7 then
@@ -1194,19 +1216,23 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
                 begin
                   LConsequence := TConsequence.Create(nil,ExtractDelimited(i,AReply[7],['+']));
                   LConsequence.GenerateMessage(True);
-                  FZMQActor.SendMessage([K_MESSAGE,'',ExtractDelimited(i,AReply[7],['+']),BoolToStr(True)]);
-
+                  //FZMQActor.SendMessage([K_MESSAGE,'',ExtractDelimited(i,AReply[7],['+']),BoolToStr(True)]);
+                  LAnnouncer.Append([K_MESSAGE,'',ExtractDelimited(i,AReply[7],['+']),BoolToStr(True)]);
                   {$IFDEF DEBUG}
                   WriteLn('A metaconsequence should have shown.');
                   {$ENDIF}
-                  //Sleep(1000);
                 end;
 
             if AReply[8] <> #32 then
-              FZMQActor.SendMessage([K_QUESTION,AReply[8],AReply[9]])
+              //FZMQActor.SendMessage([K_QUESTION,AReply[8],AReply[9]])
+              LAnnouncer.Append([K_QUESTION,AReply[8],AReply[9]])
             else
-              FZMQActor.SendMessage([K_RESUME,AReply[9]]);
+              //FZMQActor.SendMessage([K_RESUME,AReply[9]]);
+              LAnnouncer.Append([K_RESUME,AReply[9]]);
           end;
+
+        LAnnouncer.Reversed;
+        LAnnouncer.Enabled := True;
       end;
   end;
 
