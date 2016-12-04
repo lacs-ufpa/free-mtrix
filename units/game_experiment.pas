@@ -85,6 +85,7 @@ type
     procedure SetResearcherCanPlay(AValue: Boolean);
     procedure SetSendChatHistoryForNewPlayers(AValue: Boolean);
     procedure SetState(AValue: TExperimentState);
+    procedure SetTargetInterlocking;
   private
     FABPoints: Boolean;
     FChangeGeneration: string;
@@ -95,9 +96,11 @@ type
     FOnEndCycle: TNotifyEvent;
     FOnEndExperiment: TNotifyEvent;
     FOnEndGeneration: TNotifyEvent;
+    FOnTargetInterlocking: TNotifyEvent;
     procedure Consequence(Sender : TObject);
     function GetPlayerToKick: string;
     procedure Interlocking(Sender : TObject);
+    procedure TargetInterlocking(Sender : TObject);
     procedure SetPlayersQueue(AValue: string);
     procedure WriteReportHeader;
     procedure WriteReportRowNames;
@@ -136,6 +139,7 @@ type
     property CurrentCondition : integer read FCurrentCondition write FCurrentCondition;
     property Contingency[C, I : integer] : TContingency read GetContingency write SetContingency;
     property ContingenciesCount[C:integer]:integer read GetContingenciesCount;
+    property Cycles : integer read GetCurrentAbsoluteCycle;
     property Player[I : integer] : TPlayer read GetPlayer write SetPlayer;
     property PlayerFromID[S : UTF8string ] : TPlayer read GetPlayer write SetPlayer;
     property PlayersCount : integer read GetPlayersCount;
@@ -161,6 +165,7 @@ type
     property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
     property OnConsequence : TNotifyEvent read FOnConsequence write SetOnConsequence;
     property OnInterlocking : TNotifyEvent read FOnInterlocking write SetOnInterlocking;
+    property OnTargetInterlocking : TNotifyEvent read FOnTargetInterlocking write FOnTargetInterlocking;
   end;
 
 resourcestring
@@ -246,7 +251,7 @@ var
   begin
     if Assigned(FOnEndCondition) then FOnEndCondition(Self);
     Inc(FCurrentCondition);
-    if FCurrentCondition = ConditionsCount-1 then
+    if FCurrentCondition = ConditionsCount then
       begin
         EndExperiment;
         Exit;
@@ -264,13 +269,13 @@ begin
   case FConditions[CurrentCondition].EndCriterium.Style of
     gecWhichComeFirst:
       begin
-        if (GetCurrentAbsoluteCycle = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles) or
+        if (GetCurrentAbsoluteCycle = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles-1) or
            (LInterlocks >= FConditions[CurrentCondition].EndCriterium.InterlockingPorcentage) then
           EndCondition;
 
       end;
     gecAbsoluteCycles:
-        if GetCurrentAbsoluteCycle = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles then
+        if GetCurrentAbsoluteCycle = FConditions[CurrentCondition].EndCriterium.AbsoluteCycles-1 then
           EndCondition;
 
     gecInterlockingPorcentage:
@@ -288,6 +293,9 @@ var c:integer;
 begin
   c := CurrentCondition;
   Result := (Condition[c].Cycles.Value*Condition[c].Cycles.Generation)+Condition[c].Cycles.Count;
+  {$IFDEF DEBUG}
+    WriteLn('TExperiment.GetCurrentAbsoluteCycle:',Result);
+  {$ENDIF}
 end;
 
 function TExperiment.GetPlayer(I : integer): TPlayer;
@@ -382,6 +390,9 @@ begin
       // return result in porcentage
       Result := (i*100)/LContingencyResults.Count;
     end;
+  {$IFDEF DEBUG}
+    WriteLn('TExperiment.GetInterlockingPorcentageInLastCycles:',Result);
+  {$ENDIF}
 end;
 
 function TExperiment.GetConsequenceStringFromChoice(P: TPlayer): Utf8string;
@@ -542,14 +553,25 @@ begin
   FState:=AValue;
 end;
 
+procedure TExperiment.SetTargetInterlocking;
+var i : integer;
+begin
+  for i:= 0 to ContingenciesCount[CurrentCondition] do
+    if Condition[CurrentCondition].Contingencies[i].Meta then
+      begin
+        Condition[CurrentCondition].Contingencies[i].OnTargetCriteria:=@TargetInterlocking;
+        Break;
+      end;
+end;
+
 procedure TExperiment.Consequence(Sender: TObject);
 begin
   if Assigned(FOnConsequence) then FOnConsequence(Sender);
 end;
 
-procedure TExperiment.Interlocking(Sender: TObject);
+procedure TExperiment.TargetInterlocking(Sender: TObject);
 begin
-  if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
+  if Assigned(FOnTargetInterlocking) then FOnTargetInterlocking(Sender);
 end;
 
 procedure TExperiment.SetPlayersQueue(AValue: string);
@@ -571,6 +593,11 @@ begin
     Result := #32
   else
     Result := FPlayers[0].ID;
+end;
+
+procedure TExperiment.Interlocking(Sender: TObject);
+begin
+  if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
 end;
 
 
@@ -715,10 +742,15 @@ begin
 end;
 
 constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
+var i : integer;
 begin
   inherited Create(AOwner);
   FTurnsRandom := TStringList.Create;
   LoadExperimentFromResource(Self);
+
+  // TODO: Allow custom target interlocking. Now just taking the first meta, as usual in the lab.
+  SetTargetInterlocking;
+
   CheckNeedForRandomTurns;
 
   FReportReader := TReportReader.Create;

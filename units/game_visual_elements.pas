@@ -25,16 +25,19 @@ type
     PanelLastColor : TPanel;
     LabelLastRow : TLabel;
     LabelLastRowCount : TLabel;
+    LabelPoints : TLabel;
+    LabelPointsCount : TLabel;
   private
     FID: string;
   public
-    constructor Create(AOwner: TComponent;AID:string); reintroduce;
+    constructor Create(AOwner: TComponent;AID:string;Admin:Boolean=False); reintroduce;
     property ID : string read FID write FID;
   end;
 
 resourcestring
   CAP_ROW = 'Linha:';
   CAP_COLOR = 'Cor:';
+  CAP_POINTS = 'Pontos:';
   CAP_NA = 'NA';
   CAP_WAINTING_FOR_PLAYER = 'Esperando Jogador...';
 
@@ -42,7 +45,7 @@ implementation
 
 { TPlayerBox }
 
-constructor TPlayerBox.Create(AOwner: TComponent; AID: string);
+constructor TPlayerBox.Create(AOwner: TComponent; AID: string; Admin: Boolean);
 begin
   inherited Create(AOwner);
   FID := AID;
@@ -74,6 +77,17 @@ begin
   LabelLastRowCount.Caption:=CAP_NA;
   LabelLastRowCount.Parent := Self;
   Enabled:= False;
+
+  if Admin then
+    begin
+      LabelPoints:= TLabel.Create(Self);
+      LabelPoints.Caption:=CAP_POINTS;
+      LabelPoints.Parent := Self;
+
+      LabelPointsCount:= TLabel.Create(Self);
+      LabelPointsCount.Caption:='0';
+      LabelPointsCount.Parent := Self;
+    end;
   //LabelLastRow.AutoSize := False;
 end;
 

@@ -216,10 +216,10 @@ const
     (
       ConditionName : '';
       Contingencies : nil;
-      Interlocks : (
-        Count : 0;
-        History : nil;
-      );
+      //Interlocks : (
+      //  Count : 0;
+      //  History : nil;
+      //);
 
       Points : (
         Count : ( A:0; B:0; G:0; );

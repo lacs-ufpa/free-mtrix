@@ -234,6 +234,10 @@ begin
     'MENSAGEM A TODOS' : Result:= gscBroadcastMessage;
     'PONTOS' : Result:= gscPoints;
     'PONTOS COM VARIAÇÃO' : Result:= gscVariablePoints;
+    'PONTOS A' : Result:= gscA;
+    'PONTOS B' : Result:= gscB;
+    'PONTOS G' : Result:= gscG;
+    'PONTOS I' : Result:= gscI;
   end;
 end;
 
@@ -245,6 +249,10 @@ begin
     gscBroadcastMessage : Result:= 'MENSAGEM A TODOS';
     gscPoints : Result:= 'PONTOS' ;
     gscVariablePoints : Result:= 'PONTOS COM VARIAÇÃO';
+    gscA :  Result:= 'PONTOS A';
+    gscB :  Result:= 'PONTOS B';
+    gscG :  Result:= 'PONTOS G';
+    gscI :  Result:= 'PONTOS I';
   end;
 end;
 
@@ -358,6 +366,7 @@ begin
         gscA:Result += 'A';
         gscB:Result += 'B';
         gscG:Result += 'G';
+        gscI:Result += 'I';
       end;
       Result += ',';
     end;

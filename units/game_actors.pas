@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, Forms,PopupNotifier, ExtCtrls
-  , game_actors_point
+  , game_actors_point, game_visual_elements
   ;
 type
 
@@ -42,7 +42,7 @@ type
   //TGameOperator = (goNONE, goAND, goOR);
   TGameStyle = (gtNone, gtRowsOnly, gtColorsOnly, gtRowsAndColors, gtRowsOrColors);
 
-  TGameConsequenceStyle = (gscNone, gscMessage, gscBroadcastMessage, gscPoints, gscVariablePoints, gscA, gscB,gscG);
+  TGameConsequenceStyle = (gscNone, gscMessage, gscBroadcastMessage, gscPoints, gscVariablePoints, gscA, gscB,gscG,gscI);
   TConsequenceStyle = set of TGameConsequenceStyle;
 
   TGamePromptStyle = (gsYes, gsNo, gsAll, gsMetacontingency, gsContingency, gsBasA, gsRevertPoints);
@@ -109,6 +109,7 @@ type
      procedure Clean; virtual;
      procedure PresentMessage;
      procedure PresentPoints;
+     procedure PresentPoints(APlayerBox : TPlayerBox); overload;
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
      property PlayerNicname : string read FNicname write FNicname;
      property AppendiceSingular : string read FAppendiceSingular;
@@ -127,6 +128,7 @@ type
     FCriteria : TCriteria;
     FName: string;
     FOnCriteria: TNotifyEvent;
+    FOnTargetCriteria : TNotifyEvent;
     function RowMod(R:TGameRow):TGameRow;
     procedure CriteriaEvent;
   public
@@ -137,6 +139,7 @@ type
     function ConsequenceFromPlayerID(AID:string):string;
     procedure Clean;
     property OnCriteria : TNotifyEvent read FOnCriteria write FOncriteria;
+    property OnTargetCriteria : TNotifyEvent read FOnTargetCriteria write FOnTargetCriteria;
     property Fired : Boolean read FFired;
     property Consequence : TConsequence read FConsequence;
     property Criteria : TCriteria read FCriteria;
@@ -184,10 +187,10 @@ type
   TCondition = record
     ConditionName : string;
     Contingencies : TContingencies; // for producing points during the condition
-    Interlocks : record
-      Count : integer; // culturant,
-      History: array of Boolean; // to calculate interlock porcentage in the last cycles. sync with OnCycles
-    end;
+    //Interlocks : record
+    //  Count : integer; // culturant,
+    //  History: array of Boolean; // to calculate interlock porcentage in the last cycles. sync with OnCycles
+    //end;
 
     Points : record
       Count : TPoints; // sum of points produced during the condition
@@ -235,6 +238,7 @@ procedure TContingency.CriteriaEvent;
 begin
   FFired:=True;
   if Assigned(FOnCriteria) then FOnCriteria(Self);
+  if Assigned(FOnTargetCriteria) then FOnTargetCriteria(Self);
 end;
 
 constructor TContingency.Create(AOwner:TComponent;AConsequence:TConsequence;ACriteria:TCriteria;IsMeta:Boolean);
@@ -646,6 +650,9 @@ end;
 procedure TConsequence.PresentPoints;
 begin
   //is gscPoints in FStyle then just in case...
+  if gscI in FStyle then
+    FormMatrixGame.LabelIndACount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption) + FP.ResultAsInteger);
+
   if gscA in FStyle then
     FormMatrixGame.LabelIndACount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption) + FP.ResultAsInteger);
 
@@ -654,6 +661,14 @@ begin
 
   if gscG in FStyle then
     FormMatrixGame.LabelGroupCount.Caption:= IntToStr(StrToInt(FormMatrixGame.LabelGroupCount.Caption) + FP.ResultAsInteger);
+end;
+
+procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox);
+begin
+  if gscG in FStyle then
+    FormMatrixGame.LabelGroupCount.Caption:= IntToStr(StrToInt(FormMatrixGame.LabelGroupCount.Caption) + FP.ResultAsInteger)
+  else
+    APlayerBox.LabelPointsCount.Caption := IntToStr(StrToInt(APlayerBox.LabelPointsCount.Caption) + FP.ResultAsInteger);
 end;
 
 function TConsequence.GetShouldPublishMessage: Boolean; // for players only

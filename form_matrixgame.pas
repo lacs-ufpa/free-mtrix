@@ -28,23 +28,22 @@ type
 
   TFormMatrixGame = class(TForm)
     btnConfirmRow: TButton;
-    ButtonExpStart: TButton;
-    ButtonExpPause: TButton;
     ButtonExpCancel: TButton;
+    ButtonExpPause: TButton;
+    ButtonExpStart: TButton;
     GBIndividual: TGroupBox;
     GBLastChoice: TGroupBox;
     GBIndividualAB: TGroupBox;
     GBGrupo: TGroupBox;
     GBAdmin: TGroupBox;
     GBExperiment: TGroupBox;
-    LabelUnseen1: TLabel;
-    LabelUnseen2: TLabel;
-    LabelUnseen3: TLabel;
     LabelExpCountCondition: TLabel;
+    LabelExpCountTInterlocks: TLabel;
     LabelExpGen: TLabel;
     LabelExpCountGeneration: TLabel;
     LabelExpCycle: TLabel;
     LabelExpCountCycle: TLabel;
+    LabelExpTInterlocks: TLabel;
     LabelExpTurn: TLabel;
     LabelExpCountTurn: TLabel;
     LabelExpInterlocks: TLabel;
@@ -222,6 +221,8 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
   procedure SetZMQAdmin;
   begin
     FGameControl := TGameControl.Create(TZMQAdmin.Create(Self,FID),ExtractFilePath(Application.ExeName));
+    GBIndividual.Visible:=False;
+    GBIndividualAB.Visible:=False;
     GBAdmin.Visible:= True;
   end;
 
