@@ -50,9 +50,9 @@ const
     Result := True;
     for i := 0 to 2 do
       begin
-        if Pos((PathDelim+'P'+IntToStr(i+1)+PathDelim), Application.ExeName) > 0 then
+        if Pos(('Participant'), Application.ExeName) > 0 then
           Break;
-        F := ApplicationPath+'P'+IntToStr(i+1);
+        F := ApplicationPath+'Participant'+IntToStr(i+1);
         WriteLn(F);
         if ForceDirectoriesUTF8(F) then // ensure we have always the newer version for tests
           begin
