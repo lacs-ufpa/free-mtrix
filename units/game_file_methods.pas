@@ -93,9 +93,9 @@ begin
           Turn.Value:=2;
           Turn.Random:=False;
           Cycles.Count:=0;
-          Cycles.Value:=4;
+          Cycles.Value:=20;
           Cycles.Generation:=0;
-          EndCriterium.AbsoluteCycles := 20;
+          EndCriterium.AbsoluteCycles := 15;
           EndCriterium.InterlockingPorcentage := 80;
           EndCriterium.LastCycles := 10;
           EndCriterium.Style := gecWhichComeFirst;
@@ -113,7 +113,6 @@ begin
           LConcequence := TConsequence.Create(AExperiment,-1,[gscPoints, gscG, gscMessage],['','item escolar','itens escolares']);
           Contingencies[3] := TContingency.Create(AExperiment,LConcequence,LCriteria4,True);
           Contingencies[3].ContingencyName := 'MPUN -1G';
-
           Prompt := TPrompt.Create(
             AExperiment
             , [gsAll,gsYes,gsMetacontingency,gsContingency,gsRevertPoints,gsBasA]

@@ -126,9 +126,10 @@ begin
     WordWrap := True;
     Parent:=Self;
     Font.Size := 30;
+    OnClick := @ShowResumeButton;
     case FStyle of
-      '.Left': OnClick := @ShowResumeButton;
-      '.EndX': OnClick := @ExitApplication;
+      '.Left': btnPlayerResume.Caption := 'Entrar';
+      '.EndX': btnPlayerResume.Caption := 'Sair';
     end;
   end;
 end;

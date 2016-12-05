@@ -38,6 +38,7 @@ type
     VRow : string; //helper
     constructor Create;
     destructor Destroy; override;
+    function Dump : string;
     procedure Append(ARow : string);
     procedure Extend(ARowExtention : string);
     procedure Clean;
@@ -64,10 +65,10 @@ begin
   if c > -1 then
     if FUseRange and (FRowRange.Low <= FRowRange.High) and (FRowRange.Low > 0) then
       for i := FRowRange.Low to FRowRange.High do
-        Result.Append(ExtractDelimited(c+1, FRows[i],[#9,#10]))
+        Result.Append(ExtractDelimited(c+2, FRows[i],[#9,#10]));
     else
       for Row in FRows do
-        Result.Append(ExtractDelimited(c+1, Row,[#9,#10]));
+        Result.Append(ExtractDelimited(c+2, Row,[#9,#10]));
 end;
 
 constructor TReportReader.Create;
@@ -85,6 +86,11 @@ begin
   FRows.Free;
   FCols.Free;
   inherited Destroy;
+end;
+
+function TReportReader.Dump: string;
+begin
+  Result := FCols.Text+LineEnding+FRows.Text;
 end;
 
 procedure TReportReader.Append(ARow: string);
