@@ -14,8 +14,9 @@ unit game_actors;
 interface
 
 uses
-  Classes, SysUtils, Forms,PopupNotifier, ExtCtrls
-  , game_actors_point, game_visual_elements
+  Classes, SysUtils, Controls, StdCtrls, ExtCtrls, Forms, PopupNotifier
+  , game_actors_point
+  , game_visual_elements
   ;
 type
 
@@ -107,9 +108,9 @@ type
      function AsString(AID :string): string;
      function GenerateMessage(ForGroup: Boolean):string;
      procedure Clean; virtual;
-     procedure PresentMessage;
-     procedure PresentPoints;
-     procedure PresentPoints(APlayerBox : TPlayerBox); overload;
+     procedure PresentMessage(AControl : TWinControl);
+     procedure PresentPoints(A, B, I, G : TLabel);
+     procedure PresentPoints(APlayerBox: TPlayerBox; G: TLabel); overload;
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
      property PlayerNicname : string read FNicname write FNicname;
      property AppendiceSingular : string read FAppendiceSingular;
@@ -214,8 +215,7 @@ type
 
 implementation
 
-uses Graphics, strutils, string_methods,
-  form_matrixgame{,StdCtrls};
+uses Graphics,strutils, string_methods;
 
 { TContingency }
 
@@ -484,7 +484,7 @@ var
   procedure ApplyPointsConditions(IsMeta:Boolean);
   var
     i : integer;
-    LI,LS,LP,
+    //LI,LS,LP,
     S : string;
   begin
     Pts := StrToInt(ExtractDelimited(1,LConsequence, ['|']));
@@ -626,47 +626,47 @@ begin
   FConsequenceByPlayerID.Clear;
 end;
 
-procedure TConsequence.PresentMessage;
+procedure TConsequence.PresentMessage(AControl : TWinControl);
 var
   PopUpPos : TPoint;
 begin
-  PopUpPos.X := FormMatrixGame.GBIndividualAB.Left;
+  PopUpPos.X := 0;
   if gscA in FStyle then
-    PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividualAB.Height-20;
+    PopUpPos.Y := AControl.Top+AControl.Height-20;
 
   if gscB in FStyle then
-    PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividualAB.Height+150;
+    PopUpPos.Y := AControl.Top+AControl.Height+150;
 
   if gscG in FStyle then
-    PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividualAB.Height+300;
+    PopUpPos.Y := AControl.Top+AControl.Height+300;
 
-  PopUpPos := FormMatrixGame.ClientToScreen(PopUpPos);
+  PopUpPos := AControl.ClientToScreen(PopUpPos);
   FMessage.Color:=clTeal;
   FMessage.Title:='';
   FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
   FTimer.Enabled:=True;
 end;
 
-procedure TConsequence.PresentPoints;
+procedure TConsequence.PresentPoints(A, B, I, G : TLabel);
 begin
   //is gscPoints in FStyle then just in case...
   if gscI in FStyle then
-    FormMatrixGame.LabelIndACount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption) + FP.ResultAsInteger);
+    I.Caption := IntToStr(StrToInt(I.Caption) + FP.ResultAsInteger);
 
   if gscA in FStyle then
-    FormMatrixGame.LabelIndACount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption) + FP.ResultAsInteger);
+    A.Caption := IntToStr(StrToInt(A.Caption) + FP.ResultAsInteger);
 
   if gscB in FStyle then
-    FormMatrixGame.LabelIndBCount.Caption := IntToStr(StrToInt(FormMatrixGame.LabelIndBCount.Caption) + FP.ResultAsInteger);
+    B.Caption := IntToStr(StrToInt(B.Caption) + FP.ResultAsInteger);
 
   if gscG in FStyle then
-    FormMatrixGame.LabelGroupCount.Caption:= IntToStr(StrToInt(FormMatrixGame.LabelGroupCount.Caption) + FP.ResultAsInteger);
+    G.Caption:= IntToStr(StrToInt(G.Caption) + FP.ResultAsInteger);
 end;
 
-procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox);
+procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G: TLabel);
 begin
   if gscG in FStyle then
-    FormMatrixGame.LabelGroupCount.Caption:= IntToStr(StrToInt(FormMatrixGame.LabelGroupCount.Caption) + FP.ResultAsInteger)
+    G.Caption:= IntToStr(StrToInt(G.Caption) + FP.ResultAsInteger)
   else
     APlayerBox.LabelPointsCount.Caption := IntToStr(StrToInt(APlayerBox.LabelPointsCount.Caption) + FP.ResultAsInteger);
 end;

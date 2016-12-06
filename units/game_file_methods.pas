@@ -16,7 +16,6 @@ interface
 uses
   Classes, SysUtils, Dialogs, IniFiles
   , game_experiment
-  , game_actors
   ;
 
 type
@@ -39,7 +38,7 @@ resourcestring
 
 implementation
 
-uses LCLIntf, game_resources, game_actors_helpers, string_methods, regdata, zhelpers, strutils;
+uses LCLIntf, game_resources, game_actors, game_actors_helpers, string_methods, regdata, zhelpers;
 
 function LoadExperimentFromResource(var AExperiment: TExperiment): Boolean;
 var

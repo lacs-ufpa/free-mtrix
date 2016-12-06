@@ -510,19 +510,21 @@ var
 begin
   LConsequence := TConsequence.Create(nil,S);
   LConsequence.GenerateMessage(ForGroup);
-  LConsequence.PresentMessage;
+  LConsequence.PresentMessage(FormMatrixGame.GBIndividualAB);
   case FActor of
     gaPlayer:
       if ForGroup then
-        LConsequence.PresentPoints
+        LConsequence.PresentPoints(FormMatrixGame.LabelIndACount,FormMatrixGame.LabelIndBCount,
+          FormMatrixGame.LabelIndCount,FormMatrixGame.LabelGroupCount)
       else
         if Self.ID = AID then
-          LConsequence.PresentPoints;
+          LConsequence.PresentPoints(FormMatrixGame.LabelIndACount,FormMatrixGame.LabelIndBCount,
+            FormMatrixGame.LabelIndCount,FormMatrixGame.LabelGroupCount);
 
     gaAdmin:
       begin
         WriteLn(S);
-        LConsequence.PresentPoints(GetPlayerBox(AID));
+        LConsequence.PresentPoints(GetPlayerBox(AID), FormMatrixGame.LabelGroupCount);
       end;
   end;
 end;
@@ -1322,8 +1324,9 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
                 LAnnouncer.Append([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
               else
                 begin
-                  LConsequence.PresentMessage;
-                  LConsequence.PresentPoints;
+                  LConsequence.PresentMessage(FormMatrixGame.GBIndividualAB);
+                  LConsequence.PresentPoints(FormMatrixGame.LabelIndACount,FormMatrixGame.LabelIndBCount,
+                    FormMatrixGame.LabelIndCount,FormMatrixGame.LabelGroupCount);
                 end;
               {$IFDEF DEBUG}
               WriteLn('A consequence should have shown.');
