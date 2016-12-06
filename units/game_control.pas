@@ -126,6 +126,7 @@ uses ButtonPanel,Controls,ExtCtrls,StdCtrls,LazUTF8, Forms, strutils
      , presentation_classes
      , form_chooseactor
      , game_resources
+     , game_actors_helpers
      , string_methods
      ;
 

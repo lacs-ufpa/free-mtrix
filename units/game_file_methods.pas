@@ -32,14 +32,14 @@ type
   procedure SaveExperimentToFile(AExperiment: TExperiment; AFilename : string);
 
 resourcestring
-  ERROR_SECTION_NOT_FOUND = 'O arquivo não pode ser aberto, pois não foi encontrada a secção: ';
+  ERROR_SECTION_NOT_FOUND = 'O arquivo não pode ser aberto, pois a secção não foi encontrada: ';
   ERROR_FILE_NOT_FOUND = 'O arquivo não pode ser aberto, pois ele não existe.';
   WARN_CONDITION_WITH_NO_END = 'Condição sem critério de encerramento: ';
   WARN_END = ' será usado.';
 
 implementation
 
-uses LCLIntf, game_resources, string_methods, regdata, zhelpers, strutils;
+uses LCLIntf, game_resources, game_actors_helpers, string_methods, regdata, zhelpers, strutils;
 
 function LoadExperimentFromResource(var AExperiment: TExperiment): Boolean;
 var
@@ -72,12 +72,12 @@ begin
   Result := False;
   with AExperiment do
     begin
+      ExperimentName:='test_experiment';
+      ExperimentAim:='This is a test experiment.';
       Researcher := VAL_RESEARCHER;
       ResearcherCanPlay:=False;
       ResearcherCanChat:=True;
       SendChatHistoryForNewPlayers:=True;
-      ExperimentName:='test_experiment';
-      ExperimentAim:='This is a test experiment.';
       GenPlayersAsNeeded:=True;
       CurrentCondition := 0;
       MatrixType:=[gmRows];
