@@ -65,7 +65,7 @@ begin
   if c > -1 then
     if FUseRange and (FRowRange.Low <= FRowRange.High) and (FRowRange.Low > 0) then
       for i := FRowRange.Low to FRowRange.High do
-        Result.Append(ExtractDelimited(c+2, FRows[i],[#9,#10]));
+        Result.Append(ExtractDelimited(c+2, FRows[i],[#9,#10]))
     else
       for Row in FRows do
         Result.Append(ExtractDelimited(c+2, Row,[#9,#10]));
