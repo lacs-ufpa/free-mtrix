@@ -1,27 +1,27 @@
 object FormDesigner: TFormDesigner
-  Left = 114
+  Left = 180
   Height = 635
-  Top = 53
+  Top = 54
   Width = 656
-  HorzScrollBar.Page = 521
-  VertScrollBar.Page = 616
+  HorzScrollBar.Page = 387
+  VertScrollBar.Page = 482
   AutoScroll = True
   Caption = 'Planejar Experimento'
   ClientHeight = 616
-  ClientWidth = 646
+  ClientWidth = 656
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  SessionProperties = 'Caption;ComboCurrentCondition.ItemIndex;ComboCurrentCondition.Items;ComboCurrentContingency.ItemIndex;ComboCurrentContingency.Items;Height;Left;PageControl.TabIndex;Top;Width;WindowState'
+  SessionProperties = 'Caption;ComboCurrentCondition.ItemIndex;ComboCurrentCondition.Items;ComboCurrentContingency.ItemIndex;ComboCurrentContingency.Items;Height;Left;PageControl.TabIndex;Top;Width;WindowState;LabelIf.Caption'
   LCLVersion = '1.6.2.0'
   object PageControl: TPageControl
     Left = 0
-    Height = 711
+    Height = 616
     Top = 0
-    Width = 646
-    ActivePage = TabSheetConditions
+    Width = 656
+    ActivePage = TabSheetContingencies
     Align = alClient
-    TabIndex = 1
+    TabIndex = 2
     TabOrder = 0
     object TabSheetExperiment: TTabSheet
       Caption = 'Experimento'
@@ -30,13 +30,13 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 678
-      ClientWidth = 640
+      ClientHeight = 583
+      ClientWidth = 650
       object LabelResearcherName: TLabel
         Left = 0
         Height = 15
         Top = 10
-        Width = 619
+        Width = 640
         Caption = 'Nome do Pesquisador'
         ParentColor = False
       end
@@ -45,14 +45,14 @@ object FormDesigner: TFormDesigner
         Height = 25
         Hint = 'Uma pasta será criada com o seu nome. Os seus experimentos serão salvos dentro dela.'
         Top = 30
-        Width = 619
+        Width = 640
         TabOrder = 0
       end
       object LabelExperimentName: TLabel
         Left = 0
         Height = 15
         Top = 60
-        Width = 619
+        Width = 640
         Caption = 'Nome do Experimento'
         ParentColor = False
       end
@@ -61,23 +61,23 @@ object FormDesigner: TFormDesigner
         Height = 25
         Hint = 'Uma pasta será criada com o nome do experimento. Os dados desse experimento serão salvos dentro dela.'
         Top = 80
-        Width = 619
+        Width = 640
         TabOrder = 1
       end
       object GBExperimentAim: TGroupBox
         Left = 0
         Height = 159
         Top = 110
-        Width = 619
+        Width = 640
         Caption = 'Objetivo do Experimento'
         ClientHeight = 142
-        ClientWidth = 615
+        ClientWidth = 636
         TabOrder = 2
         object MemoExperimentAim: TMemo
           Left = 0
           Height = 142
           Top = 0
-          Width = 615
+          Width = 636
           Align = alCustom
           Anchors = [akTop, akLeft, akRight]
           TabOrder = 0
@@ -88,7 +88,7 @@ object FormDesigner: TFormDesigner
         Height = 113
         Hint = 'Aplicáveis ao longo de todo o experimento'
         Top = 274
-        Width = 619
+        Width = 640
         AutoFill = True
         Caption = 'Configurações globais'
         ChildSizing.LeftRightSpacing = 6
@@ -100,7 +100,7 @@ object FormDesigner: TFormDesigner
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
         ClientHeight = 96
-        ClientWidth = 615
+        ClientWidth = 636
         Items.Strings = (
           'Enviar histórico do bate-papo a novos participantes'
           'Gerar participantes automaticamente'
@@ -116,7 +116,7 @@ object FormDesigner: TFormDesigner
         Left = 0
         Height = 59
         Top = 392
-        Width = 619
+        Width = 640
         AutoFill = True
         Caption = 'Tipo de pontuação'
         ChildSizing.LeftRightSpacing = 6
@@ -127,7 +127,7 @@ object FormDesigner: TFormDesigner
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
         ClientHeight = 42
-        ClientWidth = 615
+        ClientWidth = 636
         ItemIndex = 0
         Items.Strings = (
           'A e B'
@@ -136,52 +136,84 @@ object FormDesigner: TFormDesigner
         OnClick = RGPointsClick
         TabOrder = 4
       end
-      object CGMatrix: TCheckGroup
+      object GBMatrix: TGroupBox
         Left = 0
-        Height = 134
+        Height = 122
         Top = 456
-        Width = 619
-        AutoFill = True
-        Caption = 'Tipo da matrix'
-        ChildSizing.LeftRightSpacing = 6
-        ChildSizing.TopBottomSpacing = 6
-        ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-        ChildSizing.EnlargeVertical = crsHomogenousChildResize
-        ChildSizing.ShrinkHorizontal = crsScaleChilds
-        ChildSizing.ShrinkVertical = crsScaleChilds
+        Width = 640
+        Caption = 'Tipo da Matrix'
+        ChildSizing.LeftRightSpacing = 5
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 117
-        ClientWidth = 615
-        Items.Strings = (
-          '5 cores'
-          '10 Linhas'
-          '10 Colunas'
-          'Círculos'
-          'Círculos Vazados'
-        )
-        TabOrder = 5
-        Data = {
-          050000000303020202
-        }
+        ClientHeight = 105
+        ClientWidth = 636
+        TabOrder = 6
+        object ChkColors: TCheckBox
+          Left = 5
+          Height = 21
+          Top = 0
+          Width = 169
+          Caption = '5 cores'
+          Checked = True
+          Enabled = False
+          State = cbChecked
+          TabOrder = 0
+        end
+        object ChkRows: TCheckBox
+          Left = 5
+          Height = 21
+          Top = 21
+          Width = 169
+          Caption = '10 linhas'
+          Checked = True
+          Enabled = False
+          State = cbChecked
+          TabOrder = 1
+        end
+        object ChkCols: TCheckBox
+          Left = 5
+          Height = 21
+          Top = 42
+          Width = 169
+          Caption = '10  colunas'
+          TabOrder = 2
+        end
+        object ChkDots: TCheckBox
+          Left = 5
+          Height = 21
+          Top = 63
+          Width = 169
+          Caption = 'Com Círculos Preechidos'
+          OnChange = ChkDotsChange
+          TabOrder = 3
+        end
+        object ChkCleanDots: TCheckBox
+          Left = 5
+          Height = 21
+          Top = 84
+          Width = 169
+          Caption = 'Com Círculos Vazados'
+          OnChange = ChkCleanDotsChange
+          TabOrder = 4
+        end
       end
       object GBConditions: TGroupBox
         Left = 0
         Height = 97
-        Top = 595
-        Width = 619
+        Top = 583
+        Width = 640
         Caption = 'Condições'
         ClientHeight = 80
-        ClientWidth = 615
-        TabOrder = 6
+        ClientWidth = 636
+        TabOrder = 5
         object ListBoxConditions: TListBox
           Left = 0
           Height = 80
           Top = 0
-          Width = 615
+          Width = 636
           Anchors = [akTop, akLeft, akRight]
           ItemHeight = 0
-          ScrollWidth = 613
+          ScrollWidth = 634
           TabOrder = 0
           TopIndex = -1
         end
@@ -194,14 +226,15 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 678
-      ClientWidth = 640
+      ClientHeight = 583
+      ClientWidth = 650
       object ComboCurrentCondition: TComboBox
         Left = 0
         Height = 27
         Top = 10
         Width = 640
         ItemHeight = 0
+        OnChange = ComboCurrentConditionChange
         Style = csDropDownList
         TabOrder = 0
       end
@@ -224,6 +257,7 @@ object FormDesigner: TFormDesigner
           Top = 0
           Width = 162
           Caption = 'Adicionar'
+          OnClick = BtnAppendCondClick
           TabOrder = 0
         end
         object BtnRemoveCond: TButton
@@ -232,6 +266,7 @@ object FormDesigner: TFormDesigner
           Top = 0
           Width = 159
           Caption = 'Remover'
+          OnClick = BtnRemoveCondClick
           TabOrder = 1
         end
         object BtnReorderCond: TButton
@@ -257,6 +292,7 @@ object FormDesigner: TFormDesigner
         Height = 25
         Top = 93
         Width = 640
+        OnEditingDone = EditConditionNameEditingDone
         TabOrder = 2
       end
       object LabelTurnValue: TLabel
@@ -274,13 +310,30 @@ object FormDesigner: TFormDesigner
         Width = 640
         MaxValue = 5
         MinValue = 2
+        OnEditingDone = SpinEditTurnValueEditingDone
         TabOrder = 3
         Value = 2
+      end
+      object LabelPointsOnConditionBegin: TLabel
+        Left = 0
+        Height = 15
+        Top = 173
+        Width = 640
+        Caption = 'Pontos ao início da Condição'
+        ParentColor = False
+      end
+      object SpinEditOnConditionBegin: TSpinEdit
+        Left = 0
+        Height = 25
+        Top = 193
+        Width = 640
+        MaxValue = 0
+        TabOrder = 9
       end
       object LabelCyclesValue: TLabel
         Left = 0
         Height = 15
-        Top = 173
+        Top = 223
         Width = 640
         Caption = 'Ciclos para mudança de geração / linhagem'
         ParentColor = False
@@ -288,17 +341,18 @@ object FormDesigner: TFormDesigner
       object SpinEditCyclesValue: TSpinEdit
         Left = 0
         Height = 25
-        Top = 193
+        Top = 243
         Width = 640
         MaxValue = 1000
         MinValue = 1
+        OnEditingDone = SpinEditCyclesValueEditingDone
         TabOrder = 4
         Value = 1
       end
       object GBQuestion: TGroupBox
         Left = 0
         Height = 144
-        Top = 223
+        Top = 273
         Width = 640
         Caption = 'Apresentar pergunta ao final do ciclo'
         ChildSizing.LeftRightSpacing = 50
@@ -308,7 +362,7 @@ object FormDesigner: TFormDesigner
         ChildSizing.ControlsPerLine = 1
         ClientHeight = 127
         ClientWidth = 636
-        TabOrder = 8
+        TabOrder = 5
         object CheckBoxShouldAskQuestion: TCheckBox
           Left = 50
           Height = 21
@@ -323,6 +377,7 @@ object FormDesigner: TFormDesigner
           Height = 25
           Top = 26
           Width = 536
+          OnEditingDone = EditQuestionEditingDone
           TabOrder = 1
           Text = 'Um item escolar foi perdido, desejam recuperá-lo gastando pontos do Tipo A?'
           Visible = False
@@ -348,6 +403,7 @@ object FormDesigner: TFormDesigner
             'Reverter consequências das metacontingências e contingências'
             'Inverter pontos A e B quando pontos B forem consequências'
           )
+          OnItemClick = CGQuestionItemClick
           TabOrder = 2
           Visible = False
           Data = {
@@ -358,7 +414,7 @@ object FormDesigner: TFormDesigner
       object RGEndCriteriaStyle: TRadioGroup
         Left = 0
         Height = 80
-        Top = 372
+        Top = 422
         Width = 640
         AutoFill = True
         Caption = 'Estilo do critério de finalização da condição'
@@ -383,7 +439,7 @@ object FormDesigner: TFormDesigner
       object GBEndCriteria: TGroupBox
         Left = 0
         Height = 109
-        Top = 457
+        Top = 507
         Width = 640
         Caption = 'Valores do critério de finalização da condição'
         ChildSizing.LeftRightSpacing = 50
@@ -393,7 +449,7 @@ object FormDesigner: TFormDesigner
         ChildSizing.ControlsPerLine = 1
         ClientHeight = 92
         ClientWidth = 636
-        TabOrder = 5
+        TabOrder = 7
         object LabelEndCriteriaAbsCycles: TLabel
           Left = 50
           Height = 15
@@ -408,6 +464,7 @@ object FormDesigner: TFormDesigner
           Top = 20
           Width = 536
           MaxValue = 1000
+          OnEditingDone = SpinEditEndCriteriaAbsCyclesEditingDone
           TabOrder = 0
           Value = 20
         end
@@ -428,6 +485,7 @@ object FormDesigner: TFormDesigner
             Height = 25
             Top = 0
             Width = 50
+            OnEditingDone = SpinEditEndCriteriaInterlockingEditingDone
             TabOrder = 0
             Value = 80
           end
@@ -448,6 +506,7 @@ object FormDesigner: TFormDesigner
             Width = 50
             MaxValue = 1000
             MinValue = 2
+            OnEditingDone = SpinEditEndCriteriaInterlockingEditingDone
             TabOrder = 1
             Value = 10
           end
@@ -466,12 +525,12 @@ object FormDesigner: TFormDesigner
       object GBContingencies: TGroupBox
         Left = 0
         Height = 97
-        Top = 571
+        Top = 621
         Width = 640
         Caption = 'Contingências e Metacontingências'
         ClientHeight = 80
         ClientWidth = 636
-        TabOrder = 7
+        TabOrder = 8
         object ListBoxContingencies: TListBox
           Left = 0
           Height = 80
@@ -492,8 +551,8 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 678
-      ClientWidth = 640
+      ClientHeight = 583
+      ClientWidth = 650
       object ComboCurrentContingency: TComboBox
         Left = 0
         Height = 27
@@ -522,6 +581,7 @@ object FormDesigner: TFormDesigner
           Top = 0
           Width = 166
           Caption = 'Adicionar'
+          OnClick = BtnAppendContingencyClick
           TabOrder = 0
         end
         object BtnRemoveContingency: TButton
@@ -598,55 +658,27 @@ object FormDesigner: TFormDesigner
         Top = 276
         Width = 650
         Alignment = taCenter
-        Caption = 'SE'
+        Caption = 'SE O PARTICIPANTE ESCOLHER'
         ParentColor = False
         Visible = False
       end
       object GBContingencyRows: TGroupBox
         Left = 0
-        Height = 40
+        Height = 17
         Top = 296
         Width = 650
         Caption = 'Linhas'
+        ChildSizing.LeftRightSpacing = 5
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-        ChildSizing.Layout = cclTopToBottomThenLeftToRight
-        ChildSizing.ControlsPerLine = 1
-        ClientHeight = 23
-        ClientWidth = 646
+        ChildSizing.Layout = cclLeftToRightThenTopToBottom
+        ChildSizing.ControlsPerLine = 4
         TabOrder = 5
         Visible = False
-        object ComboBoxRows: TComboBox
-          Left = 0
-          Height = 23
-          Top = 0
-          Width = 646
-          ItemHeight = 0
-          ItemIndex = 0
-          Items.Strings = (
-            '1'
-            '2'
-            '3'
-            '4'
-            '5'
-            '6'
-            '7'
-            '8'
-            '9'
-            '10'
-            'PARES'
-            'IMPARES'
-            'TUDO EXCETO PARES'
-            'TUDO EXCETO IMPARES'
-          )
-          Style = csDropDownList
-          TabOrder = 0
-          Text = '1'
-        end
       end
       object LabelOperator: TLabel
         Left = 0
         Height = 15
-        Top = 341
+        Top = 318
         Width = 650
         Alignment = taCenter
         Caption = 'E'
@@ -655,39 +687,21 @@ object FormDesigner: TFormDesigner
       end
       object GBContingencyColors: TGroupBox
         Left = 0
-        Height = 40
-        Top = 361
+        Height = 17
+        Top = 338
         Width = 650
         Caption = 'Cores'
-        ClientHeight = 23
-        ClientWidth = 646
+        ChildSizing.HorizontalSpacing = 5
+        ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+        ChildSizing.Layout = cclLeftToRightThenTopToBottom
+        ChildSizing.ControlsPerLine = 5
         TabOrder = 6
         Visible = False
-        object ComboBoxColors: TComboBox
-          Left = 0
-          Height = 27
-          Top = 0
-          Width = 641
-          ItemHeight = 0
-          ItemIndex = 5
-          Items.Strings = (
-            'AMARELO'
-            'VERMELHO'
-            'ROXO'
-            'AZUL'
-            'VERDE'
-            'DIFERENTES'
-            'IGUAIS'
-          )
-          Style = csDropDownList
-          TabOrder = 0
-          Text = 'DIFERENTES'
-        end
       end
       object LabelThen: TLabel
         Left = 0
         Height = 15
-        Top = 406
+        Top = 360
         Width = 650
         Alignment = taCenter
         Caption = 'ENTÃO'
@@ -697,7 +711,7 @@ object FormDesigner: TFormDesigner
       object GBContingencyConsequence: TGroupBox
         Left = 0
         Height = 59
-        Top = 426
+        Top = 380
         Width = 650
         Caption = 'Consequência'
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
@@ -707,41 +721,8 @@ object FormDesigner: TFormDesigner
         ClientWidth = 646
         TabOrder = 7
         Visible = False
-        object LabelC1: TLabel
-          Left = 0
-          Height = 15
-          Top = 0
-          Width = 134
-          Caption = 'Prefixo'
-          ParentColor = False
-        end
-        object EditMessPrefix: TEdit
-          Left = 0
-          Height = 27
-          Top = 15
-          Width = 134
-          TabOrder = 0
-          Text = '$NICNAME produziu'
-        end
-        object LabelC4: TLabel
-          Left = 134
-          Height = 15
-          Top = 0
-          Width = 104
-          Caption = 'Pontos'
-          ParentColor = False
-        end
-        object SpinEditContingencyPoints: TSpinEdit
-          Left = 134
-          Height = 27
-          Top = 15
-          Width = 104
-          MaxValue = 1000
-          TabOrder = 2
-          Value = 1
-        end
         object LabelC6: TLabel
-          Left = 238
+          Left = 0
           Height = 15
           Top = 0
           Width = 154
@@ -749,13 +730,46 @@ object FormDesigner: TFormDesigner
           ParentColor = False
         end
         object CBPointsType: TComboBox
-          Left = 238
+          Left = 0
           Height = 27
           Top = 15
           Width = 154
           ItemHeight = 0
           Style = csDropDownList
           TabOrder = 4
+        end
+        object LabelC1: TLabel
+          Left = 154
+          Height = 15
+          Top = 0
+          Width = 134
+          Caption = 'Prefixo'
+          ParentColor = False
+        end
+        object EditMessPrefix: TEdit
+          Left = 154
+          Height = 27
+          Top = 15
+          Width = 134
+          TabOrder = 0
+          Text = '$NICNAME produziu'
+        end
+        object LabelC4: TLabel
+          Left = 288
+          Height = 15
+          Top = 0
+          Width = 104
+          Caption = 'Pontos'
+          ParentColor = False
+        end
+        object SpinEditContingencyPoints: TSpinEdit
+          Left = 288
+          Height = 27
+          Top = 15
+          Width = 104
+          MaxValue = 0
+          TabOrder = 2
+          Value = 1
         end
         object LabelC2: TLabel
           Left = 392
@@ -786,6 +800,7 @@ object FormDesigner: TFormDesigner
           Height = 27
           Top = 15
           Width = 120
+          AllowGrayed = True
           Caption = 'a todos'
           Checked = True
           OnChange = CheckBoxBroadcastChange
@@ -818,7 +833,13 @@ object FormDesigner: TFormDesigner
     top = 8
   end
   object XMLPropStorage: TXMLPropStorage
-    StoredValues = <>
+    StoredValues = <    
+      item
+        Name = 'FileName'
+        Value = 'persistence.ini'
+        OnSave = XMLPropStorageStoredValuesFileNameSave
+        OnRestore = XMLPropStorageStoredValuesFileNameRestore
+      end>
     FileName = 'persistence.xml'
     OnSavingProperties = XMLPropStorageSavingProperties
     OnRestoreProperties = XMLPropStorageRestoreProperties
