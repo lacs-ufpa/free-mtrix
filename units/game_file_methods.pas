@@ -18,14 +18,7 @@ uses
   , game_experiment
   ;
 
-type
 
-  { TCIniFile }
-
-  TCIniFile = class (TIniFile)
-  public
-    procedure ReadSectionValues(const Section: string; Strings: TStrings); override;
-  end;
   function LoadExperimentFromResource(var AExperiment: TExperiment):Boolean;
   function LoadExperimentFromFile(var AExperiment: TExperiment; AFilename : string):Boolean;
   procedure SaveExperimentToFile(AExperiment: TExperiment; AFilename : string);
@@ -38,7 +31,7 @@ resourcestring
 
 implementation
 
-uses LCLIntf, game_resources, game_actors, game_actors_helpers, string_methods, regdata, zhelpers;
+uses LCLIntf, game_resources, game_actors, game_actors_helpers, string_methods, regdata;
 
 function LoadExperimentFromResource(var AExperiment: TExperiment): Boolean;
 var
@@ -92,7 +85,7 @@ begin
           Turn.Value:=2;
           Turn.Random:=False;
           Cycles.Count:=0;
-          Cycles.Value:=20;
+          Cycles.Value:=2;
           Cycles.Generation:=0;
           EndCriterium.AbsoluteCycles := 15;
           EndCriterium.InterlockingPorcentage := 80;
@@ -127,7 +120,7 @@ end;
 
 function LoadExperimentFromFile(var AExperiment: TExperiment; AFilename: string):Boolean;
 var
-  LIniFile : TCIniFile;
+  LIniFile : TIniFile;
 
   //procedure HandleRootPath(var APath : string);
   //begin
@@ -166,7 +159,7 @@ var
             begin
               Turn := ReadInteger(LS,KEY_PLAYER_TURN,i);
               Choice := GetChoiceFromString(ReadString(LS,KEY_PLAYER_CHOICE_LAST,'0,NONE,'));
-              ID := ReadString(LS,KEY_PLAYER_ID,s_random(20));
+              ID := ReadString(LS,KEY_PLAYER_ID,'ID');
               Nicname := ReadString(LS,KEY_PLAYER_NICNAME,GenResourceName(i));
               Login := ReadString(LS,KEY_PLAYER_LOGIN,'jogador'+IntToStr(i+1));
               Password := ReadString(LS,KEY_PLAYER_PASSWORD,'1234');
@@ -267,7 +260,7 @@ begin
   Result := False;
   if FileExists(AFileName) then
     begin
-      LIniFile:= TCIniFile.Create(AFileName);
+      LIniFile:= TIniFile.Create(AFileName);
       with LIniFile do
         if SectionExists(SEC_EXPERIMENT) then
           begin
@@ -291,13 +284,13 @@ procedure SaveExperimentToFile(AExperiment: TExperiment; AFilename: string);
 var
   i,j : Integer;
   LWriter : TRegData;
-  LIniFile : TCIniFile;
+  LIniFile : TIniFile;
   LC,
   LCK : string;
 
 begin
   LWriter := TRegData.Create(nil,AFilename);
-  LIniFile:= TCIniFile.Create(LWriter.FileName);
+  LIniFile:= TIniFile.Create(LWriter.FileName);
   LWriter.Free;
 
   LIniFile.WriteString(SEC_EXPERIMENT,KEY_RESEARCHER,AExperiment.Researcher);
@@ -352,31 +345,6 @@ begin
           WriteString(LC,KEY_PLAYER_STATUS,GetStatusString(AExperiment.Player[i].Status));
           WriteString(LC,KEY_PLAYER_TEMP,AExperiment.Player[i].Data.Values[KEY_PLAYER_TEMP]);
         end;
-end;
-
-
-procedure TCIniFile.ReadSectionValues(const Section: string; Strings: TStrings);
-var
-  KeyList: TStringList;
-  I: Integer;
-begin
-  KeyList := TStringList.Create;
-  //KeyList.Sorted := False;
-  KeyList.CaseSensitive := False;
-  KeyList.Duplicates := dupIgnore;
-  try
-    ReadSection(Section, KeyList);
-    //showmessage(Keylist.Text);
-    //Strings.BeginUpdate;
-    //try
-      for I := 0 to KeyList.Count - 1 do
-        Strings.Add(KeyList[I] + '=' + ReadString(Section, KeyList[I], ''))
-    //finally
-    //  Strings.EndUpdate;
-    //end;
-  finally
-    KeyList.Free;
-  end;
 end;
 
 end.

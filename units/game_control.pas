@@ -988,7 +988,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               begin
                 MID := ExtractDelimited(1,AMessage[i],['+']);
                 ShowConsequenceMessage(MID, ExtractDelimited(2,AMessage[i],['+']),MID = 'M');
-
+                // TODO: QMESSAGE present only one message with all information...
                 {$IFDEF DEBUG}
                 WriteLn('A Prompt consequence should have shown.');
                 {$ENDIF}
@@ -1310,7 +1310,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         // The Announcer sends a message, waits interval time until all messages have been sent and then destroys itself.
         LAnnouncer := TIntervalarAnnouncer.Create(nil);
         LAnnouncer.OnStart := @FZMQActor.SendMessage;
-        LAnnouncer.Interval := 500;
+        LAnnouncer.Interval := 5000;
         LCount := WordCount(AReply[6],['+']);
 
         // individual consequences

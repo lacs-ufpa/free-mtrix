@@ -53,12 +53,17 @@ function GetPointsString(APoints : TPoints) : string;
 function GetChoiceString(AChoice : TPlayerChoice) : string;
 function GetChoiceFromString(S:string) : TPlayerChoice;
 
+function GetEndCriteriaLastCyclesFromString(S:string):integer;
+function GetEndCriteriaPorcentageFromString(S:string):integer;
+function GetEndCriteriaStyleString(AEndCriteriaStyle : TGameEndCondition):string;
 function GetEndCriteriaString(AEndCriterium:TEndConditionCriterium) : string;
 function GetEndCriteriaFromString(S:string) : TEndConditionCriterium;
 
 
 function GetPlayerFromString(s: string): TPlayer;
 function GetPlayerAsString(P: TPlayer): string;
+
+// gui helpers
 
 implementation
 
@@ -108,11 +113,12 @@ end;
 function GetPromptStyleFromString(S:string):TPromptStyle;
 var
   i : integer;
+  LCount : integer;
 begin
-  // Yes,All,Metacontingency,RecoverLostPoints,
   Result := [];
-  for i := 1 to 4 do
-      Result := Result + [GetGamePromptStyleFromString(ExtractDelimited(i,S,[',']))];
+  LCount := WordCount(S,[',']);
+  for i := 1 to LCount do
+      Result += [GetGamePromptStyleFromString(ExtractDelimited(i,S,[',']))];
 end;
 
 function GetAndDelFirstValue(var S: string;Sep:Char=','): string;
@@ -204,8 +210,8 @@ begin
     'NÃO','NAO','N' : Result := gsNo;
     'CONTINGÊNCIA','CONTINGENCIA','CONTINGENCY','OPERANTE', 'OPERANT': Result := gsContingency;
     'METACONTINGÊNCIA','METACONTINGENCIA','METACONTINGENCY','META': Result := gsMetacontingency;
-    'RECUPERA','RECUPERAR','RECUPERAR PONTOS','RECOVER','RESETAR', 'RESET': Result := gsRevertPoints;
-    'TIRAR DE A AO INVES DE B','TIRAR DE A AO INVÉS DE B', 'B as A' : Result := gsBasA;
+    'REVERTER','RECUPERA','RECUPERAR','RECUPERAR PONTOS','RECOVER','RESETAR', 'RESET': Result := gsRevertPoints;
+    'TIRAR DE A AO INVES DE B','TIRAR DE A AO INVÉS DE B', 'B as A','B->A' : Result := gsBasA;
   end;
 end;
 
@@ -216,13 +222,13 @@ begin
   for Style in AStyle do
     case Style of
       //gsNone: Result:= Result+'nenhum'+VV_SEP;
-      gsAll: Result:= Result+'todos'+VV_SEP;
-      gsYes: Result:= Result+'s'+VV_SEP;
-      gsNo: Result:= Result+'n'+VV_SEP;
-      gsContingency: Result:= Result+'operante'+VV_SEP;
-      gsMetacontingency: Result:= Result+'meta'+VV_SEP;
-      gsRevertPoints: Result:= Result+'recupera'+VV_SEP;
-      gsBasA: Result:= Result+'b as a'+VV_SEP;
+      gsAll: Result += 'TODOS'+VV_SEP;
+      gsYes: Result += 'SIM'+VV_SEP;
+      gsNo: Result += 'NÃO'+VV_SEP;
+      gsContingency: Result += 'OPERANTE'+VV_SEP;
+      gsMetacontingency: Result += 'META'+VV_SEP;
+      gsRevertPoints: Result += 'REVERTER'+VV_SEP;
+      gsBasA: Result += 'B->A'+VV_SEP;
     end;
 end;
 
@@ -372,15 +378,41 @@ begin
     end;
 end;
 
+function GetEndCriteriaLastCyclesFromString(S: string): integer;
+begin
+  try
+    Result := StrToInt(ExtractDelimited(2,S,[',']));
+  except
+    On E : Exception do
+      Result := 0;
+  end;
+end;
+
+function GetEndCriteriaPorcentageFromString(S: string): integer;
+begin
+  try
+    Result := StrToInt(ExtractDelimited(1,S,[',']));
+  except
+    On E : Exception do
+      Result := 0;
+  end;
+end;
+
+
+function GetEndCriteriaStyleString(AEndCriteriaStyle: TGameEndCondition): string;
+begin
+  case AEndCriteriaStyle of
+   gecAbsoluteCycles: Result := 'CICLOS';
+   gecInterlockingPorcentage: Result := 'PORCENTAGEM';
+   gecWhichComeFirst: Result := 'O QUE OCORRER PRIMEIRO';
+  end;
+end;
+
 function GetEndCriteriaString(AEndCriterium: TEndConditionCriterium
   ): string;
 begin
   // 2,20,10,10,
-  case AEndCriterium.Style of
-   gecAbsoluteCycles: Result := '0';
-   gecInterlockingPorcentage: Result := '1';
-   gecWhichComeFirst: Result := '2';
-  end;
+  Result := GetEndCriteriaStyleString(AEndCriterium.Style);
   Result := Result + VV_SEP;
   Result := Result + IntToStr(AEndCriterium.AbsoluteCycles) + VV_SEP;
   Result := Result + IntToStr(AEndCriterium.InterlockingPorcentage) + VV_SEP;
@@ -488,6 +520,7 @@ begin
   for i := 0 to Length(M)-1 do
     Result += M[i] + '|';
 end;
+
 
 function GetPlayerFromString(s: string): TPlayer;
 

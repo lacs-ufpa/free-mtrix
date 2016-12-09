@@ -24,10 +24,14 @@ resourcestring
   SEC_EXPERIMENT = 'Experimento';
   KEY_NAME = 'Nome';
   KEY_AIM = 'Objetivo';
-  KEY_RESEARCHER = 'Pesquisador.Responsável';
-  KEY_GEN_PLAYER_AS_NEEDED = 'GerarJogadoresAutomaticamente';
+  KEY_RESEARCHER = 'Pesquisador.Nome';
+  KEY_RESEARCHER_CANCHAT = 'Pesquisador.BatePapo';
+  KEY_RESEARCHER_CANPLAY = 'Pesquisador.PodeJogar';
+  KEY_GEN_PLAYER_AS_NEEDED = 'Jogadores.GerarAutomaticamente';
+  KEY_CHAT_HISTORY_FOR_NEW_PLAYERS = 'Jogadores.Novos.Enviar_Histórico_do_BatePapo';
   KEY_CURRENT_CONDITION = 'ComeçarNaCondição';
   KEY_MATRIX_TYPE= 'TipoDaMatrix';
+  KEY_POINTS_TYPE= 'TipoDePontuação';
 
   SEC_PLAYER = 'Jogador.';
   KEY_PLAYER_TEMP = 'Data.X';
@@ -57,13 +61,16 @@ resourcestring
   //KEY_PROMPT_VALUE = 'Questão.Apresentar'; // BOOL,CSQPROMPTCODE
   KEY_PROMPT_STYLE = 'Questão.Estilo'; // string
   KEY_PROMPT_MESSAGE = 'Questão.Mensagem'; // string
-  KEY_ENDCRITERIA = 'Critério.DeFinalizaçãoDaCondição'; //2,50,10,30,
+  KEY_ENDCRITERIA = 'Critério_de_Finalização.Estilo'; //2,50,10,30,
+  KEY_ENDCRITERIA_CYCLES = 'Critério_de_Finalização.Ciclos'; // 20
+  KEY_ENDCRITERIA_PORCENTAGE = 'Critério_de_Finalização.Porcentagem'; // 80|10
+
 
   KEY_CONTINGENCY = 'Contingência.';
   KEY_METACONTINGENCY = 'Metacontingência.';
 
   // ROW,COLOR,OPCODE
-  KEY_CRITERIA = '.EsquemaDeReforço';
+  KEY_CRITERIA = '.Resposta';
   KEY_CONSEQUE = '.Consequência'; // A,B,G,CSQCODE
   KEY_CONSEQUE_MESSAGE_PREPEND = '.Consequência.Mensagem.Prefixo';
   KEY_CONSEQUE_MESSAGE_APPENDS = '.Consequência.Mensagem.Sufixo.Singular';
