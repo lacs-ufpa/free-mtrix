@@ -351,6 +351,7 @@ begin
   ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
   RGPointsClick(RGPoints);
   RGEndCriteriaStyleClick(RGEndCriteriaStyle);
+  TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
 end;
 
 procedure TFormDesigner.XMLPropStorageSavingProperties(Sender: TObject);
@@ -871,40 +872,44 @@ end;
 procedure TFormDesigner.LoadSectionCondition(LS: string);
 begin
   with FExperiment do
-  begin
-    EditConditionName.Text := ReadString(LS, KEY_COND_NAME, LS);
-    SpinEditTurnValue.Value := ReadInteger(LS, KEY_TURN_VALUE, 2);
-    SpinEditOnConditionBegin.Value := ReadInteger(LS, KEY_POINTS_ONSTART,0);
-    SpinEditCyclesValue.Value := ReadInteger(LS, KEY_CYCLES_VALUE, 2);
-
-    CheckBoxShouldAskQuestion.Checked := False;
-    if ValueExists(LS, KEY_PROMPT_STYLE) and ValueExists(LS, KEY_PROMPT_MESSAGE) then
     begin
-      EditQuestion.Text := ReadString(LS, KEY_PROMPT_MESSAGE, '');
-      SetCGQuestion(ReadString(LS, KEY_PROMPT_STYLE, ''));
-      if (EditQuestion.Text <> '') or (ReadString(LS, KEY_PROMPT_STYLE, '') <> '') then
-        CheckBoxShouldAskQuestion.Checked := True;
-    end;
+      EditConditionName.Text := ReadString(LS, KEY_COND_NAME, LS);
+      SpinEditTurnValue.Value := ReadInteger(LS, KEY_TURN_VALUE, 2);
+      SpinEditOnConditionBegin.Value := ReadInteger(LS, KEY_POINTS_ONSTART,0);
+      SpinEditCyclesValue.Value := ReadInteger(LS, KEY_CYCLES_VALUE, 2);
 
-    SetRGEndCriteriaStyle(ReadString(LS, KEY_ENDCRITERIA, 'O QUE OCORRER PRIMEIRO'));
-    SpinEditEndCriteriaAbsCycles.Value := ReadInteger(LS, KEY_ENDCRITERIA_CYCLES, 20);
-    SpinEditEndCriteriaLastCycles.Value :=
-      GetEndCriteriaLastCyclesFromString(ReadString(LS, KEY_ENDCRITERIA_PORCENTAGE, '80,20'));
-    SpinEditEndCriteriaInterlockingPorcentage.Value :=
-      GetEndCriteriaPorcentageFromString(ReadString(LS, KEY_ENDCRITERIA_PORCENTAGE, '80,20'));
-  end;
+      CheckBoxShouldAskQuestion.Checked := False;
+      if ValueExists(LS, KEY_PROMPT_STYLE) and ValueExists(LS, KEY_PROMPT_MESSAGE) then
+      begin
+        EditQuestion.Text := ReadString(LS, KEY_PROMPT_MESSAGE, '');
+        SetCGQuestion(ReadString(LS, KEY_PROMPT_STYLE, ''));
+        if (EditQuestion.Text <> '') or (ReadString(LS, KEY_PROMPT_STYLE, '') <> '') then
+          CheckBoxShouldAskQuestion.Checked := True;
+      end;
+
+      SetRGEndCriteriaStyle(ReadString(LS, KEY_ENDCRITERIA, 'O QUE OCORRER PRIMEIRO'));
+      SpinEditEndCriteriaAbsCycles.Value := ReadInteger(LS, KEY_ENDCRITERIA_CYCLES, 20);
+      SpinEditEndCriteriaLastCycles.Value :=
+        GetEndCriteriaLastCyclesFromString(ReadString(LS, KEY_ENDCRITERIA_PORCENTAGE, '80,20'));
+      SpinEditEndCriteriaInterlockingPorcentage.Value :=
+        GetEndCriteriaPorcentageFromString(ReadString(LS, KEY_ENDCRITERIA_PORCENTAGE, '80,20'));
+    end;
 end;
 
 procedure TFormDesigner.LoadContingency(LS, LC: string);
+var
+  Temp: String;
 begin
+  CheckBoxIsMeta.OnChange := nil;
   if Pos(KEY_METACONTINGENCY, LC) > 0 then
     CheckBoxIsMeta.Checked := True
   else
     CheckBoxIsMeta.Checked := False;
-
+  CheckBoxIsMeta.OnChange:=@CheckBoxIsMetaChange;
   with FExperiment do
     if ValueExists(LS, LC + KEY_CONSEQUE) and ValueExists(LS, LC + KEY_CRITERIA) then
       begin
+        Temp := ReadString(LS, LC + KEY_CONT_NAME, '');
         EditContingencyName.Text := ReadString(LS, LC + KEY_CONT_NAME, '');
         SetContingencyCriteria(ReadString(LS, LC + KEY_CRITERIA, ''));
         SetContingencyStyle(ReadString(LS, LC + KEY_CONSEQUE, ''));
@@ -1057,6 +1062,7 @@ begin
   ComboCurrentCondition.ItemIndex := i;
   SaveSectionCondition(SEC_CONDITION + IntToStr(i + 1));
   ListBoxConditions.Items.Text := ComboCurrentCondition.Items.Text;
+  TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
 end;
 
 procedure TFormDesigner.BtnAppendContingencyClick(Sender: TObject);
@@ -1124,6 +1130,7 @@ begin
         ComboCurrentCondition.ItemIndex := i -1;
   end;
   ListBoxContingencies.Items.Text := ComboCurrentCondition.Items.Text;
+  TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
 end;
 
 procedure TFormDesigner.BtnRemoveContingencyClick(Sender: TObject);
@@ -1259,19 +1266,17 @@ begin
       LabelIf.Caption := 'SE O PARTICIPANTE ESCOLHER';
     end;
 
-
-  if Sender = CheckBoxIsMeta then
-    if ComboCurrentCondition.Items.Count > 0 then
-      if ComboCurrentContingency.Items.Count > 0 then
-        begin
-          LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
-          LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
-          EraseContingency(LS,LC);
-          LC := GetLC(TCheckBox(Sender).Checked,False);
-          SaveContingency(LS,LC);
-          ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex] := LC +'|'+ EditContingencyName.Text;
-          ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
-        end;
+  if ComboCurrentCondition.Items.Count > 0 then
+    if ComboCurrentContingency.Items.Count > 0 then
+      begin
+        LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+        LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
+        EraseContingency(LS,LC);
+        LC := GetLC(TCheckBox(Sender).Checked,False);
+        SaveContingency(LS,LC);
+        ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex] := LC +'|'+ EditContingencyName.Text;
+        ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
+      end;
 end;
 
 procedure TFormDesigner.CheckBoxColorsRowsChange(Sender: TObject);

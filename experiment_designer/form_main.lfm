@@ -554,6 +554,7 @@ object FormDesigner: TFormDesigner
       ChildSizing.ControlsPerLine = 1
       ClientHeight = 583
       ClientWidth = 650
+      Enabled = False
       object ComboCurrentContingency: TComboBox
         Left = 0
         Height = 27
