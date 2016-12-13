@@ -96,15 +96,19 @@ type
     procedure BtnAppendCondClick(Sender: TObject);
     procedure BtnAppendContingencyClick(Sender: TObject);
     procedure BtnRemoveCondClick(Sender: TObject);
+    procedure BtnRemoveContingencyClick(Sender: TObject);
+    procedure CBPointsTypeChange(Sender: TObject);
     procedure CGQuestionItemClick(Sender: TObject; Index: integer);
     procedure CheckBoxBroadcastChange(Sender: TObject);
     procedure CheckBoxIsMetaChange(Sender: TObject);
+    procedure CheckBoxColorsRowsChange(Sender: TObject);
     procedure CheckBoxShouldAskQuestionChange(Sender: TObject);
     procedure ChkCleanDotsChange(Sender: TObject);
     procedure ChkDotsChange(Sender: TObject);
     procedure ComboCurrentConditionChange(Sender: TObject);
-    procedure EditConditionNameChange(Sender: TObject);
+    procedure ComboCurrentContingencyChange(Sender: TObject);
     procedure EditConditionNameEditingDone(Sender: TObject);
+    procedure EditContingencyNameEditingDone(Sender: TObject);
     procedure EditQuestionChange(Sender: TObject);
     procedure EditQuestionEditingDone(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -135,8 +139,9 @@ type
     procedure SaveSectionExperiment;
     procedure SaveSectionCondition(LS: string);
     procedure SaveContingency(LS, LC: string);
+    procedure EraseContingency(LS, LC : string);
   private
-    function GetLC(IsMeta:Boolean):string;
+    function GetLC(IsMeta:Boolean; MustIncrement:Boolean=True):string;
     function GetConsequenceStyle: string;
     function GetContingencyCriteria: string;
     function GetEndCriteriaPorcentage: string;
@@ -147,6 +152,8 @@ type
     procedure SetCGQuestion(AQuestionStyle: string);
     procedure SetRGEndCriteriaStyle(AStyle: string);
     procedure SetContingencyCriteria(S: string);
+    procedure SetConsequenceStyle(S:string);
+    procedure SetContingencyStyle(S:string);
   public
     { public declarations }
   end;
@@ -374,20 +381,14 @@ begin
 
   if ComboCurrentCondition.ItemIndex <> -1 then
   begin
-    LS := SEC_CONDITION + IntToStr(ComboCurrentCondition.ItemIndex + 1);
+    LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
     LoadSectionCondition(LS);
     if ComboCurrentContingency.ItemIndex <> -1 then
-    begin
-      LC := Delimited(1, ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex]);
-      LoadContingency(LS, LC);
-    end;
+      begin
+        LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
+        LoadContingency(LS, LC);
+      end;
   end;
-  //if NamesOnly then
-  //  begin
-  //    ListBoxConditions.Items.Append(LS+'|'+EditConditionName.Text);
-  //    ComboCurrentCondition.Items.Append(LS+'|'+EditConditionName.Text);
-  //    Exit;
-  //  end;
 end;
 
 procedure TFormDesigner.SaveExperiment;
@@ -397,11 +398,11 @@ begin
   SaveSectionExperiment;
   if ComboCurrentCondition.ItemIndex <> -1 then
   begin
-    LS := SEC_CONDITION + IntToStr(ComboCurrentCondition.ItemIndex + 1);
+    LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
     SaveSectionCondition(LS);
     if ComboCurrentContingency.ItemIndex <> -1 then
     begin
-      LC := Delimited(1, ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex]);
+      LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
       SaveContingency(LS, LC);
     end;
   end;
@@ -500,18 +501,18 @@ var
   begin
     for i := 0 to GBContingencyRows.ComponentCount - 1 do
       case GBContingencyRows.Components[i].Name of
-        'Chk1': TCheckBox(GBContingencyColors.Components[i]).Checked := grOne in GR;
-        'Chk2': TCheckBox(GBContingencyColors.Components[i]).Checked := grTwo in GR;
-        'Chk3': TCheckBox(GBContingencyColors.Components[i]).Checked := grThree in GR;
-        'Chk4': TCheckBox(GBContingencyColors.Components[i]).Checked := grFour in GR;
-        'Chk5': TCheckBox(GBContingencyColors.Components[i]).Checked := grFive in GR;
-        'Chk6': TCheckBox(GBContingencyColors.Components[i]).Checked := grSix in GR;
-        'Chk7': TCheckBox(GBContingencyColors.Components[i]).Checked := grSeven in GR;
-        'Chk8': TCheckBox(GBContingencyColors.Components[i]).Checked := grEight in GR;
-        'Chk9': TCheckBox(GBContingencyColors.Components[i]).Checked := grNine in GR;
-        'Chk10': TCheckBox(GBContingencyColors.Components[i]).Checked := grTen in GR;
-        'ChkEven': TCheckBox(GBContingencyColors.Components[i]).Checked := grEven in GR;
-        'ChkOdd': TCheckBox(GBContingencyColors.Components[i]).Checked := grOdd in GR;
+        'Chk1': TCheckBox(GBContingencyRows.Components[i]).Checked := grOne in GR;
+        'Chk2': TCheckBox(GBContingencyRows.Components[i]).Checked := grTwo in GR;
+        'Chk3': TCheckBox(GBContingencyRows.Components[i]).Checked := grThree in GR;
+        'Chk4': TCheckBox(GBContingencyRows.Components[i]).Checked := grFour in GR;
+        'Chk5': TCheckBox(GBContingencyRows.Components[i]).Checked := grFive in GR;
+        'Chk6': TCheckBox(GBContingencyRows.Components[i]).Checked := grSix in GR;
+        'Chk7': TCheckBox(GBContingencyRows.Components[i]).Checked := grSeven in GR;
+        'Chk8': TCheckBox(GBContingencyRows.Components[i]).Checked := grEight in GR;
+        'Chk9': TCheckBox(GBContingencyRows.Components[i]).Checked := grNine in GR;
+        'Chk10': TCheckBox(GBContingencyRows.Components[i]).Checked := grTen in GR;
+        'ChkEven': TCheckBox(GBContingencyRows.Components[i]).Checked := grEven in GR;
+        'ChkOdd': TCheckBox(GBContingencyRows.Components[i]).Checked := grOdd in GR;
       end;
   end;
 
@@ -528,7 +529,7 @@ var
         'ChkR': TCheckBox(GBContingencyColors.Components[i]).Checked := gcRed in GC;
         'ChkM': TCheckBox(GBContingencyColors.Components[i]).Checked := gcMagenta in GC;
         'ChkB': TCheckBox(GBContingencyColors.Components[i]).Checked := gcBlue in GC;
-        'ChkG': TCheckBox(GBContingencyColors.Components[i]).Checked := gcDiff in GC;
+        'ChkG': TCheckBox(GBContingencyColors.Components[i]).Checked := gcGreen in GC;
       end;
   end;
 
@@ -559,6 +560,49 @@ begin
       SetContingencyColors(C.Colors);
     end;
   end;
+end;
+
+procedure TFormDesigner.SetConsequenceStyle(S: string);
+var
+  CS : TConsequenceStyle;
+  //LVariation : integer;
+  SCode,
+  SPoints : string;
+  LPoints : integer;
+begin
+  SPoints := ExtractDelimited(1,S,['|']);
+  LPoints := StrToInt(ExtractDelimited(1,SPoints,[',']));
+  //LVariation := StrToInt(ExtractDelimited(2,SPoints,[',']));
+  SpinEditContingencyPoints.Value := LPoints;
+
+  SCode := ExtractDelimited(2,S,['|']);
+  CS := GetConsequenceStylesFromString(SCode);
+  case RGPoints.ItemIndex of
+    0: { A & B }
+      begin
+        if gscA in CS then CBPointsType.ItemIndex := 0;
+        if gscB in CS then CBPointsType.ItemIndex := 1;
+        if gscG in CS then CBPointsType.ItemIndex := 2;
+      end;
+    1: { I }
+      begin
+        if gscI in CS then CBPointsType.ItemIndex := 0;
+        if gscG in CS then CBPointsType.ItemIndex := 1;
+      end;
+  end;
+  CBPointsType.Text := CBPointsType.Items[CBPointsType.ItemIndex];
+  CheckBoxBroadcast.State := cbUnchecked;
+
+  if gscBroadcastMessage in CS then
+    CheckBoxBroadcast.State := cbChecked;
+
+  if gscMessage in CS then
+    CheckBoxBroadcast.State := cbGrayed;
+end;
+
+procedure TFormDesigner.SetContingencyStyle(S: string);
+begin
+
 end;
 
 procedure TFormDesigner.SaveSectionExperiment;
@@ -620,54 +664,98 @@ procedure TFormDesigner.SaveContingency(LS, LC: string);
 begin
   with FExperiment do
   begin
-    WriteString(LS, LC + KEY_NAME, EditContingencyName.Text);
+    WriteString(LS, LC + KEY_CONT_NAME, EditContingencyName.Text);
     WriteString(LS, LC + KEY_CRITERIA, GetContingencyCriteria);
     WriteString(LS, LC + KEY_CONSEQUE, GetConsequenceStyle);
-    WriteString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDP,{todo: consequence sufix plural}'');
-    WriteString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDS, EditMessSufix.Text);
     WriteString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
+    try
+      WriteString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDS, ExtractDelimited(1,EditMessSufix.Text,['|']));
+      WriteString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDP, ExtractDelimited(2,EditMessSufix.Text,['|']));
+    except
+      on E: Exception do
+        Exit;
+      //if E.Message = 'E';
+
+    end;
   end;
 end;
 
-function TFormDesigner.GetLC(IsMeta: Boolean): string;
+procedure TFormDesigner.EraseContingency(LS, LC: string);
+begin
+  with FExperiment do
+    begin
+      DeleteKey(LS, LC + KEY_CONT_NAME);
+      DeleteKey(LS, LC + KEY_CRITERIA);
+      DeleteKey(LS, LC + KEY_CONSEQUE);
+      DeleteKey(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND);
+      DeleteKey(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDS);
+      DeleteKey(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDP);
+    end;
+end;
+
+function TFormDesigner.GetLC(IsMeta: Boolean; MustIncrement: Boolean): string;
 var
   LCount,
   i : integer;
   S : string;
   Extension : string;
-  ContingencyKey : string;
+  ContingencyKey: string;
 begin
   if ComboCurrentContingency.Items.Count > 0 then
-    for i := ComboCurrentContingency.Items.Count-1 downto 0 do
-      begin
-        S := ExtractDelimited(1,ComboCurrentContingency.Items[i],['|']);
-        ContingencyKey := ExtractFileNameWithoutExt(S);
+    begin
+      for i := ComboCurrentContingency.Items.Count-1 downto 0 do
+        begin
+          S := ExtractDelimited(1,ComboCurrentContingency.Items[i],['|']);
+          ContingencyKey := ExtractFileNameWithoutExt(S);
 
-        if IsMeta then
-          begin
-            if ContingencyKey = KEY_METACONTINGENCY[16] then
-              begin
-                Result := KEY_METACONTINGENCY;
-                Extension := ExtractFileExt(S);
-                LCount := StrToInt(Extension);
-                Inc(LCount);
-                Result += IntToStr(LCount);
-                Break;
-              end;
-          end
-        else
-          begin
-            if ContingencyKey = KEY_CONTINGENCY[12] then
-              begin
-                Result := KEY_CONTINGENCY;
-                Extension := ExtractFileExt(S);
-                Lcount := StrToInt(Extension);
-                Inc(LCount);
-                Result += IntToStr(LCount);
-                Break;
-              end;
-          end;
-      end
+          if IsMeta then
+            begin
+              if ContingencyKey = ExtractFileNameWithoutExt(KEY_METACONTINGENCY) then
+                begin
+                  Result := KEY_METACONTINGENCY;
+                  Extension := ExtractFileExt(S);
+                  Delete(Extension,1,1);
+                  LCount := StrToInt(Extension);
+                  if MustIncrement then
+                    Inc(LCount);
+                  Result += IntToStr(LCount);
+                  Break;
+                end
+              else
+                begin
+                  if i = 0 then
+                    begin
+                      Result := KEY_METACONTINGENCY+'1';
+                      Exit;
+                    end;
+                  Continue;
+                end;
+            end
+          else
+            begin
+              if ContingencyKey = ExtractFileNameWithoutExt(KEY_CONTINGENCY) then
+                begin
+                  Result := KEY_CONTINGENCY;
+                  Extension := ExtractFileExt(S);
+                  Delete(Extension,1,1);
+                  LCount := StrToInt(Extension);
+                  if MustIncrement then
+                    Inc(LCount);
+                  Result += IntToStr(LCount);
+                  Break;
+                end
+              else
+                begin
+                  if i = 0 then
+                    begin
+                      Result := KEY_CONTINGENCY+'1';
+                      Exit;
+                    end;
+                  Continue;
+                end;
+            end;
+        end;
+    end
   else
     if IsMeta then
       Result := KEY_METACONTINGENCY+'1'
@@ -700,12 +788,84 @@ begin
     cbGrayed: CS -= [gscMessage];
   end;
 
-  Result := GetConsequenceStylesString(CS);
+  Result := IntToStr(SpinEditContingencyPoints.Value)+',0|';
+  Result += GetConsequenceStylesString(CS);
 end;
 
 function TFormDesigner.GetContingencyCriteria: string;
-begin
+var
+  C: TCriteria;
 
+  function GetContingencyRows: TGameRows;
+  var
+    i: integer;
+  begin
+    Result := [];
+    for i := 0 to GBContingencyRows.ComponentCount - 1 do
+      case GBContingencyRows.Components[i].Name of
+        'Chk1': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grOne];
+        'Chk2': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grTwo];
+        'Chk3': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grThree];
+        'Chk4': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grFour];
+        'Chk5': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grFive];
+        'Chk6': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grSix];
+        'Chk7': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grSeven];
+        'Chk8': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grEight];
+        'Chk9': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grNine];
+        'Chk10': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grTen];
+        'ChkEven': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grEven];
+        'ChkOdd': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grOdd];
+      end;
+  end;
+
+  function GetContingencyColors: TGameColors;
+  var
+    i: integer;
+  begin
+    Result := [];
+    for i := 0 to GBContingencyColors.ComponentCount - 1 do
+      case GBContingencyColors.Components[i].Name of
+        'ChkEqual': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcEqual];
+        'ChkDiff': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcDiff];
+        'ChkNot': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcNot];
+        'ChkY': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcYellow];
+        'ChkR': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcRed];
+        'ChkM': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcMagenta];
+        'ChkB': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcBlue];
+        'ChkG': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcGreen];
+      end;
+  end;
+
+begin
+  C.Style := gtNone;
+  C.Rows := [];
+  C.Colors := [];
+  case RGContingencyStyle.ItemIndex of
+    0: { do nothing };
+    1:
+    begin
+      C.Style := gtRowsOnly;
+      C.Rows := GetContingencyRows;
+    end;
+    2:
+    begin
+      C.Style := gtColorsOnly;
+      C.Colors := GetContingencyColors;
+    end;
+    3:
+    begin
+      C.Style := gtRowsAndColors;
+      C.Rows := GetContingencyRows;
+      C.Colors := GetContingencyColors;
+    end;
+    4:
+    begin
+      C.Style := gtRowsOrColors;
+      C.Rows := GetContingencyRows;
+      C.Colors := GetContingencyColors;
+    end;
+  end;
+  Result := GetCriteriaString(C);
 end;
 
 procedure TFormDesigner.LoadSectionCondition(LS: string);
@@ -737,18 +897,20 @@ end;
 
 procedure TFormDesigner.LoadContingency(LS, LC: string);
 begin
-  if Pos('Metacontingency', LC) > 0 then
+  if Pos(KEY_METACONTINGENCY, LC) > 0 then
     CheckBoxIsMeta.Checked := True
   else
     CheckBoxIsMeta.Checked := False;
 
   with FExperiment do
     if ValueExists(LS, LC + KEY_CONSEQUE) and ValueExists(LS, LC + KEY_CRITERIA) then
-    begin
-      EditContingencyName.Text := ReadString(LS, LC + KEY_NAME, '');
-      SetContingencyCriteria(ReadString(LS, LC + KEY_CRITERIA, ''));
-      ReadString(LS, LC + KEY_CONSEQUE, '');
-    end;
+      begin
+        EditContingencyName.Text := ReadString(LS, LC + KEY_CONT_NAME, '');
+        SetContingencyCriteria(ReadString(LS, LC + KEY_CRITERIA, ''));
+        SetContingencyStyle(ReadString(LS, LC + KEY_CONSEQUE, ''));
+        EditMessPrefix.Text := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND,'');
+        EditMessSufix.Text := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDS,'')+'|'+ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDP,'');
+      end;
 end;
 
 function TFormDesigner.GetEndCriteriaPorcentage: string;
@@ -823,9 +985,9 @@ begin
   LoadSectionCondition(SEC_CONDITION + IntToStr(ComboCurrentCondition.ItemIndex + 1));
 end;
 
-procedure TFormDesigner.EditConditionNameChange(Sender: TObject);
+procedure TFormDesigner.ComboCurrentContingencyChange(Sender: TObject);
 begin
-
+  LoadContingency(ExtractDelimited(1,ComboCurrentCondition.Text,['|']),ExtractDelimited(1,ComboCurrentContingency.Text,['|']));
 end;
 
 procedure TFormDesigner.EditConditionNameEditingDone(Sender: TObject);
@@ -840,6 +1002,22 @@ begin
         ComboCurrentCondition.Items[ComboCurrentCondition.ItemIndex] :=
           SEC_CONDITION + IntToStr(ComboCurrentCondition.ItemIndex + 1) + '|' + EditConditionName.Text;
         ListBoxConditions.Items.Text := ComboCurrentCondition.Items.Text;
+      end;
+end;
+
+procedure TFormDesigner.EditContingencyNameEditingDone(Sender: TObject);
+var
+  LS, LC: string;
+begin
+  with FExperiment do
+    if ComboCurrentContingency.ItemIndex <> -1 then
+      begin
+        LS := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
+        LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
+        WriteString(LS, LC+ KEY_CONT_NAME, EditContingencyName.Text);
+        ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex] :=
+          LC + '|' + EditContingencyName.Text;
+        ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
       end;
 end;
 
@@ -887,9 +1065,9 @@ var
   LS, LC : string;
 
 begin
-  i := ComboCurrentContingency.Items.Add('');
   LS := ExtractDelimited(1,ComboCurrentCondition.Items[ComboCurrentCondition.ItemIndex],['|']);
   LC := GetLC(CheckBoxIsMeta.Checked);
+  i := ComboCurrentContingency.Items.Add('');
   ComboCurrentContingency.Items[i] :=
     LC + '|' + EditContingencyName.Text;
   ComboCurrentContingency.ItemIndex := i;
@@ -904,27 +1082,30 @@ var
 
   procedure Reorder(index : integer);
   var
-    j, i: integer;
+    i: integer;
     Section: TStringList;
     KeyName,Line,SectionName: string;
   begin
     Section := TStringList.Create;
     with FExperiment do
       for i := index to ComboCurrentCondition.Items.Count - 1 do
-      begin
-        SectionName := ExtractDelimited(1, ComboCurrentCondition.Items[i], ['|']);
-        ReadSectionValues(SectionName, Section);
-        EraseSection(SectionName);
-        SectionName := SEC_CONDITION + IntToStr(i + 1);
-        for Line in Section do
-          begin
-            KeyName := Section.ExtractName(Line);
-            WriteString(SectionName, KeyName, Section.Values[KeyName]);
-          end;
-        Section.Clear;
-        ComboCurrentCondition.Items[i] :=
-          SectionName + '|' + ExtractDelimited(2, ComboCurrentCondition.Items[i], ['|']);
-      end;
+        begin
+          // whatever the section name is, save and erase section
+          SectionName := ExtractDelimited(1, ComboCurrentCondition.Items[i], ['|']);
+          ReadSectionValues(SectionName, Section);
+          EraseSection(SectionName);
+
+          // then rename and rewrite section
+          SectionName := SEC_CONDITION + IntToStr(i + 1);
+          for Line in Section do
+            begin
+              KeyName := Section.ExtractName(Line);
+              WriteString(SectionName, KeyName, Section.Values[KeyName]);
+            end;
+          Section.Clear;
+          ComboCurrentCondition.Items[i] :=
+            SectionName + '|' + ExtractDelimited(2, ComboCurrentCondition.Items[i], ['|']);
+        end;
     Section.Free;
   end;
 
@@ -942,8 +1123,79 @@ begin
       else
         ComboCurrentCondition.ItemIndex := i -1;
   end;
-  ListBoxConditions.Items.Text := ComboCurrentCondition.Items.Text;
+  ListBoxContingencies.Items.Text := ComboCurrentCondition.Items.Text;
 end;
+
+procedure TFormDesigner.BtnRemoveContingencyClick(Sender: TObject);
+var
+  i: integer;
+  MustReorder: boolean;
+
+  procedure ReadContingencyValuesInSection(LS,LC : string; var Keys : TStringList);
+  begin
+    Keys.BeginUpdate;
+    with FExperiment do
+      begin
+        Keys.Values[LC + KEY_NAME] := ReadString(LS,LC+KEY_NAME,'');
+        Keys.Values[LC + KEY_CRITERIA] := ReadString(LS, LC + KEY_CRITERIA,'');
+        Keys.Values[LC + KEY_CONSEQUE] := ReadString(LS, LC + KEY_CONSEQUE,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPENDS] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDS,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPENDP] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDP,'');
+      end;
+    Keys.EndUpdate;
+  end;
+
+  procedure Reorder(index : integer);
+  var
+    i: integer;
+    SectionKeys: TStringList;
+    KeyName,Line,SectionName: string;
+  begin
+    SectionKeys := TStringList.Create;
+    with FExperiment do
+      for i := index to ComboCurrentContingency.Items.Count - 1 do
+        begin
+          SectionName := ExtractDelimited(1, ComboCurrentCondition.Items[ComboCurrentCondition.ItemIndex], ['|']);
+          KeyName := ExtractDelimited(1, ComboCurrentContingency.Items[i], ['|']);
+          ReadContingencyValuesInSection(SectionName,KeyName, SectionKeys);
+          EraseContingency(SectionName,KeyName);
+          // todo: contingencies on top, meta on bootom...
+          KeyName := GetLC(ExtractFileNameWithoutExt(KeyName) = ExtractFileNameWithoutExt(KEY_METACONTINGENCY));
+          for Line in SectionKeys do
+            begin
+              KeyName := SectionKeys.ExtractName(Line);
+              WriteString(SectionName, KeyName, SectionKeys.Values[KeyName]);
+            end;
+          SectionKeys.Clear;
+          ComboCurrentContingency.Items[i] :=
+            KeyName + '|' + ExtractDelimited(2, ComboCurrentContingency.Items[i], ['|']);
+        end;
+    SectionKeys.Free;
+  end;
+
+begin
+  i := ComboCurrentContingency.ItemIndex;
+  MustReorder := i < ComboCurrentContingency.Items.Count - 1;
+  ComboCurrentContingency.Items.Delete(i);
+  if MustReorder then
+    Reorder(i);
+  case ComboCurrentContingency.Items.Count of
+    0: {do nothing};
+    1..MaxInt:
+      if i = 1 then
+        ComboCurrentContingency.ItemIndex := i
+      else
+        ComboCurrentContingency.ItemIndex := i -1;
+  end;
+  ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
+end;
+
+procedure TFormDesigner.CBPointsTypeChange(Sender: TObject);
+begin
+
+end;
+
 
 procedure TFormDesigner.CGQuestionItemClick(Sender: TObject; Index: integer);
 var
@@ -961,6 +1213,7 @@ procedure TFormDesigner.CheckBoxIsMetaChange(Sender: TObject);
 var
   i: integer;
   CH: TCheckBox;
+  LS,LC : string;
 
   procedure CreateChkBox(N, C: string; AOwner: TWinControl);
   begin
@@ -968,6 +1221,9 @@ var
     CH.Name := N;
     CH.Caption := C;
     CH.Parent := AOwner;
+    CH.ShowHint := True;
+    CH.Hint := C;
+    CH.OnChange := @CheckBoxColorsRowsChange;
   end;
 
 begin
@@ -1002,6 +1258,48 @@ begin
       CreateChkBox('ChkG', 'VERDE', GBContingencyColors);
       LabelIf.Caption := 'SE O PARTICIPANTE ESCOLHER';
     end;
+
+
+  if Sender = CheckBoxIsMeta then
+    if ComboCurrentCondition.Items.Count > 0 then
+      if ComboCurrentContingency.Items.Count > 0 then
+        begin
+          LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+          LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
+          EraseContingency(LS,LC);
+          LC := GetLC(TCheckBox(Sender).Checked,False);
+          SaveContingency(LS,LC);
+          ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex] := LC +'|'+ EditContingencyName.Text;
+          ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
+        end;
+end;
+
+procedure TFormDesigner.CheckBoxColorsRowsChange(Sender: TObject);
+var
+  LS, LC : String;
+
+  procedure UncheckBox(ACheckBoxName : string);
+  var i : integer;
+  begin
+    for i := 0 to TCheckBox(Sender).Owner.ComponentCount -1 do
+      if TCheckBox(Sender).Owner.Components[i].Name = ACheckBoxName then
+        TCheckBox(TCheckBox(Sender).Owner.Components[i]).Checked := not TCheckBox(Sender).Checked;
+  end;
+
+begin
+  LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+  LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
+  with FExperiment do
+    WriteString(LS, LC + KEY_CRITERIA, GetContingencyCriteria);
+
+  if TCheckBox(Sender).Name = 'ChkEqual' then
+    if TCheckBox(Sender).Checked then
+      UncheckBox('ChkDiff');
+
+  if TCheckBox(Sender).Name = 'ChkDiff' then
+    if TCheckBox(Sender).Checked then
+      UncheckBox('ChkEqual');
+
 end;
 
 end.

@@ -135,6 +135,7 @@ end;
 
 function GetRowString(ARow: TGameRow): string;
 begin
+  Result := '';
   case ARow of
     grNone : Result := '0';
     grOne : Result := '1';
@@ -155,7 +156,7 @@ end;
 function GetRowFromString(S: string): TGameRow;
 begin
   case UpperCase(S) of
-    'NA', '.' , '0', 'NONE'           : Result := grNone;
+    'NA', '.' , '0', 'NONE'     : Result := grNone;
     '01', '1', 'UM', 'ONE'      : Result := grOne;
     '02', '2', 'DOIS', 'TWO'    : Result := grTwo;
     '03', '3', 'TRÊS', 'THREE'  : Result := grThree;
@@ -173,6 +174,7 @@ end;
 
 function GetColorString(AColor: TGameColor): string;
 begin
+  Result := '';
   case AColor of
     gcNone :Result  :=  'INDIFERENTE';
     gcYellow :Result  :=  'AMARELO';
@@ -202,7 +204,6 @@ end;
 
 function GetGamePromptStyleFromString(S: string): TGamePromptStyle;
 begin
-  // todos,sim,metacontingência,recuperar pontos,
   case UpperCase(S) of
     //'NENHUM','NONE': Result:=[gsNone];
     'TODOS', 'ALL' : Result := gsAll;
@@ -249,6 +250,7 @@ end;
 
 function GetConsequenceStyleString(AStyle: TGameConsequenceStyle): string;
 begin
+  Result := '';
   case AStyle of
     gscNone : Result:= 'NADA';
     gscMessage : Result:= 'MENSAGEM' ;
@@ -266,6 +268,7 @@ function GetCriteriaString(ACriteria: TCriteria): string;
 var R : TGameRow;
     C : TGameColor;
 begin
+  Result := '';
   for R in ACriteria.Rows do
     Result += GetRowString(R) + VV_SEP;
   Result += '|';

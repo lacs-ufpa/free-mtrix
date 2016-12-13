@@ -1,7 +1,7 @@
 object FormDesigner: TFormDesigner
-  Left = 180
+  Left = 469
   Height = 635
-  Top = 54
+  Top = 57
   Width = 656
   HorzScrollBar.Page = 387
   VertScrollBar.Page = 482
@@ -12,7 +12,8 @@ object FormDesigner: TFormDesigner
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  SessionProperties = 'Caption;ComboCurrentCondition.ItemIndex;ComboCurrentCondition.Items;ComboCurrentContingency.ItemIndex;ComboCurrentContingency.Items;Height;Left;PageControl.TabIndex;Top;Width;WindowState;LabelIf.Caption'
+  SessionProperties = 'Caption;ComboCurrentCondition.ItemIndex;ComboCurrentCondition.Items;ComboCurrentContingency.ItemIndex;ComboCurrentContingency.Items;Height;LabelIf.Caption;Left;PageControl.TabIndex;Top;Width;WindowState;ComboCurrentCondition.Text;ComboCurrentContingency.Text'
+  ShowHint = True
   LCLVersion = '1.6.2.0'
   object PageControl: TPageControl
     Left = 0
@@ -559,6 +560,7 @@ object FormDesigner: TFormDesigner
         Top = 10
         Width = 650
         ItemHeight = 0
+        OnChange = ComboCurrentContingencyChange
         Style = csDropDownList
         TabOrder = 0
       end
@@ -590,6 +592,7 @@ object FormDesigner: TFormDesigner
           Top = 0
           Width = 163
           Caption = 'Remover'
+          OnClick = BtnRemoveContingencyClick
           TabOrder = 1
         end
         object BtnReorderContingency: TButton
@@ -623,6 +626,7 @@ object FormDesigner: TFormDesigner
         Height = 25
         Top = 119
         Width = 650
+        OnEditingDone = EditContingencyNameEditingDone
         TabOrder = 3
       end
       object RGContingencyStyle: TRadioGroup
@@ -735,6 +739,7 @@ object FormDesigner: TFormDesigner
           Top = 15
           Width = 154
           ItemHeight = 0
+          OnChange = CBPointsTypeChange
           Style = csDropDownList
           TabOrder = 4
         end
@@ -782,10 +787,11 @@ object FormDesigner: TFormDesigner
         object EditMessSufix: TEdit
           Left = 392
           Height = 27
+          Hint = 'singular|plural'
           Top = 15
           Width = 134
           TabOrder = 1
-          Text = 'ponto.'
+          Text = 'ponto.|pontos.'
         end
         object LabelC5: TLabel
           Left = 526

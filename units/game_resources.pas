@@ -70,6 +70,7 @@ resourcestring
   KEY_METACONTINGENCY = 'Metacontingência.';
 
   // ROW,COLOR,OPCODE
+  KEY_CONT_NAME = '.Nome';
   KEY_CRITERIA = '.Resposta';
   KEY_CONSEQUE = '.Consequência'; // A,B,G,CSQCODE
   KEY_CONSEQUE_MESSAGE_PREPEND = '.Consequência.Mensagem.Prefixo';
