@@ -20,6 +20,7 @@ type
     BtnReorderCond: TButton;
     BtnReorderContingency: TButton;
     CGGlobal: TCheckGroup;
+    ChkDotsCleanDots: TCheckBox;
     ChkColors: TCheckBox;
     ChkRows: TCheckBox;
     ChkCols: TCheckBox;
@@ -48,6 +49,7 @@ type
     GBContingencyRows: TGroupBox;
     GBContingencyConsequence: TGroupBox;
     GBMatrix: TGroupBox;
+    LabelQuestion: TLabel;
     LabelPointsOnConditionBegin: TLabel;
     LabelC1: TLabel;
     LabelC2: TLabel;
@@ -97,6 +99,9 @@ type
     procedure BtnAppendContingencyClick(Sender: TObject);
     procedure BtnRemoveCondClick(Sender: TObject);
     procedure BtnRemoveContingencyClick(Sender: TObject);
+    procedure BtnReorderCondClick(Sender: TObject);
+    procedure BtnReorderContingencyClick(Sender: TObject);
+    procedure ChkDotsCleanDotsChange(Sender: TObject);
     //
     procedure ConsequenceMessageEditingDone(Sender: TObject);
     procedure ConsequenceStyleChange(Sender: TObject);
@@ -321,7 +326,10 @@ begin
       LC += '1';
       with FExperiment do
         if ValueExists(LS,LC+KEY_CONT_NAME) and (not FLoading) then
-          LoadContingency(LS,LC);
+          begin
+            LoadContingency(LS,LC);
+            ComboCurrentContingency.ItemIndex:=0;
+          end;
 
     end;
 end;
@@ -1126,13 +1134,28 @@ end;
 procedure TFormDesigner.ChkCleanDotsChange(Sender: TObject);
 begin
   if ChkCleanDots.Checked then
-    ChkDots.Checked := not ChkCleanDots.Checked;
+    begin
+      ChkDots.Checked := not ChkCleanDots.Checked;
+      ChkDotsCleanDots.Checked := not ChkCleanDots.Checked;
+    end;
 end;
 
 procedure TFormDesigner.ChkDotsChange(Sender: TObject);
 begin
   if ChkDots.Checked then
-    ChkCleanDots.Checked := not ChkDots.Checked;
+    begin
+      ChkCleanDots.Checked := not ChkDots.Checked;
+      ChkDotsCleanDots.Checked := not ChkDots.Checked;
+    end;
+end;
+
+procedure TFormDesigner.ChkDotsCleanDotsChange(Sender: TObject);
+begin
+  if ChkDotsCleanDots.Checked then
+    begin
+      ChkCleanDots.Checked := not ChkDotsCleanDots.Checked;
+      ChkDots.Checked := not ChkDotsCleanDots.Checked;
+    end;
 end;
 
 procedure TFormDesigner.ComboCurrentConditionChange(Sender: TObject);
@@ -1239,13 +1262,14 @@ begin
     LC + '|' + EditContingencyName.Text;
   ComboCurrentContingency.ItemIndex := i;
   SaveContingency(LS,LC);
-  ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
+  UpdateContingencyList(LS);
 end;
 
 procedure TFormDesigner.BtnRemoveCondClick(Sender: TObject);
 var
   i: integer;
   MustReorder: boolean;
+  LS: String;
 
   procedure Reorder(index : integer);
   var
@@ -1277,27 +1301,34 @@ var
   end;
 
 begin
-  i := ComboCurrentCondition.ItemIndex;
-  MustReorder := i < ComboCurrentCondition.Items.Count - 1;
-  ComboCurrentCondition.Items.Delete(i);
-  if MustReorder then
-    Reorder(i);
-  case ComboCurrentCondition.Items.Count of
-    0: {do nothing};
-    1..MaxInt:
-      if i = 1 then
-        ComboCurrentCondition.ItemIndex := i
-      else
-        ComboCurrentCondition.ItemIndex := i -1;
-  end;
-  ListBoxContingencies.Items.Text := ComboCurrentCondition.Items.Text;
-  TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
+  if ComboCurrentCondition.ItemIndex > -1 then
+    begin
+      i := ComboCurrentCondition.ItemIndex;
+      MustReorder := i < ComboCurrentCondition.Items.Count - 1;
+      LS := ExtractDelimited(1, ComboCurrentCondition.Text, ['|']);
+      ComboCurrentCondition.Items.Delete(i);
+      FExperiment.EraseSection(LS);
+
+      if MustReorder then
+        Reorder(i);
+      case ComboCurrentCondition.Items.Count of
+        0: {do nothing};
+        1..MaxInt:
+          if i = 1 then
+            ComboCurrentCondition.ItemIndex := i
+          else
+            ComboCurrentCondition.ItemIndex := i -1;
+      end;
+      ListBoxContingencies.Items.Text := ComboCurrentCondition.Items.Text;
+      TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
+    end;
 end;
 
 procedure TFormDesigner.BtnRemoveContingencyClick(Sender: TObject);
 var
   i: integer;
   MustReorder: boolean;
+  LS, LC: String;
 
   procedure ReadContingencyValuesInSection(LS,LC : string; var Keys : TStringList);
   begin
@@ -1322,42 +1353,64 @@ var
   begin
     SectionKeys := TStringList.Create;
     with FExperiment do
-      for i := Index to ComboCurrentContingency.Items.Count - 1 do
-        begin
-          SectionName := ExtractDelimited(1, ComboCurrentCondition.Items[ComboCurrentCondition.ItemIndex], ['|']);
-          KeyPrefix := ExtractDelimited(1, ComboCurrentContingency.Items[i], ['|']);
-          ReadContingencyValuesInSection(SectionName,KeyPrefix, SectionKeys);
-          EraseContingency(SectionName,KeyPrefix);
-          // todo: contingencies on top, meta on bootom...
-          KeyPrefix := GetContingencyName(ExtractFileNameWithoutExt(KeyPrefix) = ExtractFileNameWithoutExt(KEY_METACONTINGENCY));
-          for Line in SectionKeys do
-            begin
-              KeyName := SectionKeys.ExtractName(Line);
-              WriteString(SectionName, KeyName, SectionKeys.Values[KeyName]);
-            end;
-          SectionKeys.Clear;
-          ComboCurrentContingency.Items[i] :=
-            KeyPrefix + '|' + ExtractDelimited(2, ComboCurrentContingency.Items[i], ['|']);
-        end;
+      begin
+        SectionName := ExtractDelimited(1, ComboCurrentCondition.Text, ['|']);
+        for i := Index to ComboCurrentContingency.Items.Count - 1 do
+          begin
+            KeyPrefix := ExtractDelimited(1, ComboCurrentContingency.Items[i], ['|']);
+            ReadContingencyValuesInSection(SectionName,KeyPrefix, SectionKeys);
+            EraseContingency(SectionName,KeyPrefix);
+            KeyPrefix := ExtractFileNameWithoutExt(KeyPrefix) + '.' + IntToStr(i);
+            for Line in SectionKeys do
+              begin
+                KeyName := SectionKeys.ExtractName(Line);
+                WriteString(SectionName, KeyName, SectionKeys.Values[KeyName]);
+              end;
+            SectionKeys.Clear;
+            ComboCurrentContingency.Items[i] :=
+              KeyPrefix + '|' + ExtractDelimited(2, ComboCurrentContingency.Items[i], ['|']);
+          end;
+      end;
     SectionKeys.Free;
   end;
 
 begin
-  i := ComboCurrentContingency.ItemIndex;
-  MustReorder := i < ComboCurrentContingency.Items.Count - 1;
-  ComboCurrentContingency.Items.Delete(i);
-  if MustReorder then
-    Reorder(i);
-  case ComboCurrentContingency.Items.Count of
-    0: {do nothing};
-    1..MaxInt:
-      if i = 1 then
-        ComboCurrentContingency.ItemIndex := i
-      else
-        ComboCurrentContingency.ItemIndex := i -1;
-  end;
-  UpdateContingencyList(ExtractDelimited(1,ComboCurrentCondition.Text,['|']));
+  if ComboCurrentContingency.ItemIndex > -1 then
+    begin
+      i := ComboCurrentContingency.ItemIndex;
+      MustReorder := i < ComboCurrentContingency.Items.Count - 1;
+      LS := ExtractDelimited(1, ComboCurrentCondition.Text, ['|']);
+      LC := ExtractDelimited(1, ComboCurrentContingency.Text, ['|']);
+      ComboCurrentContingency.Items.Delete(i);
+      EraseContingency(LS,LC);
+
+      if MustReorder then
+        Reorder(i);
+
+      case ComboCurrentContingency.Items.Count of
+        0: {do nothing};
+        1..MaxInt:
+          if i = 1 then
+            ComboCurrentContingency.ItemIndex := i
+          else
+            ComboCurrentContingency.ItemIndex := i -1;
+      end;
+      UpdateContingencyList(LS);
+    end;
 end;
+
+procedure TFormDesigner.BtnReorderCondClick(Sender: TObject);
+begin
+  // todo: custom reorder contingencies
+  ShowMessage('Não implementado.');
+end;
+
+procedure TFormDesigner.BtnReorderContingencyClick(Sender: TObject);
+begin
+  // todo: custom reorder contingencies
+  ShowMessage('Não implementado.');
+end;
+
 
 procedure TFormDesigner.ConsequenceStyleChange(Sender: TObject);
 var

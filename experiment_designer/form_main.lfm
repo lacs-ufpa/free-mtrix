@@ -1,14 +1,14 @@
 object FormDesigner: TFormDesigner
-  Left = 327
+  Left = 291
   Height = 635
-  Top = 106
+  Top = 44
   Width = 656
-  HorzScrollBar.Page = 387
-  VertScrollBar.Page = 520
+  HorzScrollBar.Page = 346
+  VertScrollBar.Page = 616
   AutoScroll = True
   Caption = 'Planejar Experimento'
   ClientHeight = 616
-  ClientWidth = 656
+  ClientWidth = 646
   Menu = MainMenu1
   OnActivate = FormActivate
   OnCreate = FormCreate
@@ -18,12 +18,12 @@ object FormDesigner: TFormDesigner
   LCLVersion = '1.6.2.0'
   object PageControl: TPageControl
     Left = 0
-    Height = 616
+    Height = 744
     Top = 0
-    Width = 656
-    ActivePage = TabSheetContingencies
+    Width = 646
+    ActivePage = TabSheetExperiment
     Align = alClient
-    TabIndex = 2
+    TabIndex = 0
     TabOrder = 0
     object TabSheetExperiment: TTabSheet
       Caption = 'Experimento'
@@ -32,8 +32,8 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 583
-      ClientWidth = 650
+      ClientHeight = 711
+      ClientWidth = 640
       object LabelResearcherName: TLabel
         Left = 0
         Height = 15
@@ -140,21 +140,21 @@ object FormDesigner: TFormDesigner
       end
       object GBMatrix: TGroupBox
         Left = 0
-        Height = 122
+        Height = 143
         Top = 456
         Width = 640
         Caption = 'Tipo da Matrix'
         ChildSizing.LeftRightSpacing = 5
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 105
+        ClientHeight = 126
         ClientWidth = 636
         TabOrder = 6
         object ChkColors: TCheckBox
           Left = 5
           Height = 21
           Top = 0
-          Width = 169
+          Width = 239
           Caption = '5 cores'
           Checked = True
           Enabled = False
@@ -165,7 +165,7 @@ object FormDesigner: TFormDesigner
           Left = 5
           Height = 21
           Top = 21
-          Width = 169
+          Width = 239
           Caption = '10 linhas'
           Checked = True
           Enabled = False
@@ -176,7 +176,7 @@ object FormDesigner: TFormDesigner
           Left = 5
           Height = 21
           Top = 42
-          Width = 169
+          Width = 239
           Caption = '10  colunas'
           TabOrder = 2
         end
@@ -184,7 +184,7 @@ object FormDesigner: TFormDesigner
           Left = 5
           Height = 21
           Top = 63
-          Width = 169
+          Width = 239
           Caption = 'Com Círculos Preechidos'
           OnChange = ChkDotsChange
           TabOrder = 3
@@ -193,16 +193,25 @@ object FormDesigner: TFormDesigner
           Left = 5
           Height = 21
           Top = 84
-          Width = 169
+          Width = 239
           Caption = 'Com Círculos Vazados'
           OnChange = ChkCleanDotsChange
           TabOrder = 4
+        end
+        object ChkDotsCleanDots: TCheckBox
+          Left = 5
+          Height = 21
+          Top = 105
+          Width = 239
+          Caption = 'Com Círculos Vazados e Preenchidos'
+          OnChange = ChkDotsCleanDotsChange
+          TabOrder = 5
         end
       end
       object GBConditions: TGroupBox
         Left = 0
         Height = 97
-        Top = 583
+        Top = 604
         Width = 640
         Caption = 'Condições'
         ClientHeight = 80
@@ -228,8 +237,8 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 583
-      ClientWidth = 650
+      ClientHeight = 711
+      ClientWidth = 640
       object ComboCurrentCondition: TComboBox
         Left = 0
         Height = 27
@@ -277,6 +286,7 @@ object FormDesigner: TFormDesigner
           Top = 0
           Width = 169
           Caption = 'Reordenar'
+          OnClick = BtnReorderCondClick
           TabOrder = 2
         end
       end
@@ -353,7 +363,7 @@ object FormDesigner: TFormDesigner
       end
       object GBQuestion: TGroupBox
         Left = 0
-        Height = 144
+        Height = 164
         Top = 273
         Width = 640
         Caption = 'Apresentar pergunta ao final do ciclo'
@@ -362,7 +372,7 @@ object FormDesigner: TFormDesigner
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 127
+        ClientHeight = 147
         ClientWidth = 636
         TabOrder = 5
         object CheckBoxShouldAskQuestion: TCheckBox
@@ -374,10 +384,18 @@ object FormDesigner: TFormDesigner
           OnChange = CheckBoxShouldAskQuestionChange
           TabOrder = 0
         end
+        object LabelQuestion: TLabel
+          Left = 50
+          Height = 15
+          Top = 26
+          Width = 536
+          Caption = 'Texto da Pergunta'
+          ParentColor = False
+        end
         object EditQuestion: TEdit
           Left = 50
           Height = 25
-          Top = 26
+          Top = 46
           Width = 536
           OnEditingDone = EditQuestionEditingDone
           TabOrder = 1
@@ -387,7 +405,7 @@ object FormDesigner: TFormDesigner
         object CGQuestion: TCheckGroup
           Left = 50
           Height = 71
-          Top = 56
+          Top = 76
           Width = 536
           AutoFill = True
           Caption = 'O que deve acontecer quando todos responderem sim?'
@@ -416,7 +434,7 @@ object FormDesigner: TFormDesigner
       object RGEndCriteriaStyle: TRadioGroup
         Left = 0
         Height = 80
-        Top = 422
+        Top = 442
         Width = 640
         AutoFill = True
         Caption = 'Estilo do critério de finalização da condição'
@@ -441,7 +459,7 @@ object FormDesigner: TFormDesigner
       object GBEndCriteria: TGroupBox
         Left = 0
         Height = 109
-        Top = 507
+        Top = 527
         Width = 640
         Caption = 'Valores do critério de finalização da condição'
         ChildSizing.LeftRightSpacing = 50
@@ -527,7 +545,7 @@ object FormDesigner: TFormDesigner
       object GBContingencies: TGroupBox
         Left = 0
         Height = 97
-        Top = 621
+        Top = 641
         Width = 640
         Caption = 'Contingências e Metacontingências'
         ClientHeight = 80
@@ -553,8 +571,8 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 583
-      ClientWidth = 650
+      ClientHeight = 711
+      ClientWidth = 640
       Enabled = False
       object RGContingencyType: TRadioGroup
         Left = 0
@@ -626,6 +644,7 @@ object FormDesigner: TFormDesigner
           Top = 0
           Width = 171
           Caption = 'Reordenar'
+          OnClick = BtnReorderContingencyClick
           TabOrder = 2
         end
       end
