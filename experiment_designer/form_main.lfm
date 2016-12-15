@@ -1,18 +1,19 @@
 object FormDesigner: TFormDesigner
-  Left = 469
+  Left = 327
   Height = 635
-  Top = 57
+  Top = 106
   Width = 656
   HorzScrollBar.Page = 387
-  VertScrollBar.Page = 482
+  VertScrollBar.Page = 520
   AutoScroll = True
   Caption = 'Planejar Experimento'
   ClientHeight = 616
   ClientWidth = 656
   Menu = MainMenu1
+  OnActivate = FormActivate
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  SessionProperties = 'Caption;ComboCurrentCondition.ItemIndex;ComboCurrentCondition.Items;ComboCurrentContingency.ItemIndex;ComboCurrentContingency.Items;Height;LabelIf.Caption;Left;PageControl.TabIndex;Top;Width;WindowState;ComboCurrentCondition.Text;ComboCurrentContingency.Text'
+  SessionProperties = 'Caption;ComboCurrentCondition.ItemIndex;ComboCurrentCondition.Items;ComboCurrentCondition.Text;ComboCurrentContingency.ItemIndex;ComboCurrentContingency.Items;ComboCurrentContingency.Text;Height;LabelIf.Caption;Left;PageControl.TabIndex;Top;Width;WindowState;RGContingencyType.ItemIndex'
   ShowHint = True
   LCLVersion = '1.6.2.0'
   object PageControl: TPageControl
@@ -555,10 +556,33 @@ object FormDesigner: TFormDesigner
       ClientHeight = 583
       ClientWidth = 650
       Enabled = False
+      object RGContingencyType: TRadioGroup
+        Left = 0
+        Height = 59
+        Top = 10
+        Width = 650
+        AutoFill = True
+        Caption = 'Mostrar'
+        ChildSizing.LeftRightSpacing = 6
+        ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+        ChildSizing.EnlargeVertical = crsHomogenousChildResize
+        ChildSizing.ShrinkHorizontal = crsScaleChilds
+        ChildSizing.ShrinkVertical = crsScaleChilds
+        ChildSizing.Layout = cclLeftToRightThenTopToBottom
+        ChildSizing.ControlsPerLine = 1
+        ClientHeight = 42
+        ClientWidth = 646
+        Items.Strings = (
+          'Contingências Operantes'
+          'Metacontingências'
+        )
+        OnClick = RGContingencyTypeClick
+        TabOrder = 7
+      end
       object ComboCurrentContingency: TComboBox
         Left = 0
         Height = 27
-        Top = 10
+        Top = 74
         Width = 650
         ItemHeight = 0
         OnChange = ComboCurrentContingencyChange
@@ -568,7 +592,7 @@ object FormDesigner: TFormDesigner
       object PanelContingenciesButtons: TPanel
         Left = 0
         Height = 26
-        Top = 42
+        Top = 106
         Width = 650
         ChildSizing.LeftRightSpacing = 25
         ChildSizing.HorizontalSpacing = 50
@@ -605,19 +629,10 @@ object FormDesigner: TFormDesigner
           TabOrder = 2
         end
       end
-      object CheckBoxIsMeta: TCheckBox
-        Left = 0
-        Height = 21
-        Top = 73
-        Width = 650
-        Caption = 'Meta'
-        OnChange = CheckBoxIsMetaChange
-        TabOrder = 2
-      end
       object LabelContingencyName: TLabel
         Left = 0
         Height = 15
-        Top = 99
+        Top = 137
         Width = 650
         Caption = 'Nome da contingência'
         ParentColor = False
@@ -625,15 +640,15 @@ object FormDesigner: TFormDesigner
       object EditContingencyName: TEdit
         Left = 0
         Height = 25
-        Top = 119
+        Top = 157
         Width = 650
         OnEditingDone = EditContingencyNameEditingDone
-        TabOrder = 3
+        TabOrder = 2
       end
       object RGContingencyStyle: TRadioGroup
         Left = 0
         Height = 122
-        Top = 149
+        Top = 187
         Width = 650
         AutoFill = True
         Caption = 'Estilo da Resposta'
@@ -655,12 +670,13 @@ object FormDesigner: TFormDesigner
           'Linhas ou Cores'
         )
         OnClick = RGContingencyStyleClick
-        TabOrder = 4
+        OnExit = RGContingencyStyleExit
+        TabOrder = 3
       end
       object LabelIf: TLabel
         Left = 0
         Height = 15
-        Top = 276
+        Top = 314
         Width = 650
         Alignment = taCenter
         Caption = 'SE O PARTICIPANTE ESCOLHER'
@@ -670,20 +686,20 @@ object FormDesigner: TFormDesigner
       object GBContingencyRows: TGroupBox
         Left = 0
         Height = 17
-        Top = 296
+        Top = 334
         Width = 650
         Caption = 'Linhas'
         ChildSizing.LeftRightSpacing = 5
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 4
-        TabOrder = 5
+        TabOrder = 4
         Visible = False
       end
       object LabelOperator: TLabel
         Left = 0
         Height = 15
-        Top = 318
+        Top = 356
         Width = 650
         Alignment = taCenter
         Caption = 'E'
@@ -693,20 +709,20 @@ object FormDesigner: TFormDesigner
       object GBContingencyColors: TGroupBox
         Left = 0
         Height = 17
-        Top = 338
+        Top = 376
         Width = 650
         Caption = 'Cores'
         ChildSizing.HorizontalSpacing = 5
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 5
-        TabOrder = 6
+        TabOrder = 5
         Visible = False
       end
       object LabelThen: TLabel
         Left = 0
         Height = 15
-        Top = 360
+        Top = 398
         Width = 650
         Alignment = taCenter
         Caption = 'ENTÃO'
@@ -716,7 +732,7 @@ object FormDesigner: TFormDesigner
       object GBContingencyConsequence: TGroupBox
         Left = 0
         Height = 59
-        Top = 380
+        Top = 418
         Width = 650
         Caption = 'Consequência'
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
@@ -724,7 +740,7 @@ object FormDesigner: TFormDesigner
         ChildSizing.ControlsPerLine = 2
         ClientHeight = 42
         ClientWidth = 646
-        TabOrder = 7
+        TabOrder = 6
         Visible = False
         object LabelC6: TLabel
           Left = 0
@@ -740,7 +756,7 @@ object FormDesigner: TFormDesigner
           Top = 15
           Width = 154
           ItemHeight = 0
-          OnChange = CBPointsTypeChange
+          OnChange = ConsequenceStyleChange
           Style = csDropDownList
           TabOrder = 4
         end
@@ -774,6 +790,7 @@ object FormDesigner: TFormDesigner
           Top = 15
           Width = 104
           MaxValue = 0
+          OnEditingDone = ConsequenceStyleChange
           TabOrder = 2
           Value = 1
         end

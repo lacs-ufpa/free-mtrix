@@ -26,7 +26,6 @@ type
     ChkDots: TCheckBox;
     ChkCleanDots: TCheckBox;
     CheckBoxBroadcast: TCheckBox;
-    CheckBoxIsMeta: TCheckBox;
     CheckBoxShouldAskQuestion: TCheckBox;
     CGQuestion: TCheckGroup;
     CBPointsType: TComboBox;
@@ -79,6 +78,7 @@ type
     PageControl: TPageControl;
     PanelConditionButtons: TPanel;
     PanelContingenciesButtons: TPanel;
+    RGContingencyType: TRadioGroup;
     RGContingencyStyle: TRadioGroup;
     RGEndCriteriaStyle: TRadioGroup;
     RGPoints: TRadioGroup;
@@ -97,10 +97,12 @@ type
     procedure BtnAppendContingencyClick(Sender: TObject);
     procedure BtnRemoveCondClick(Sender: TObject);
     procedure BtnRemoveContingencyClick(Sender: TObject);
-    procedure CBPointsTypeChange(Sender: TObject);
+    //
+    procedure ConsequenceMessageEditingDone(Sender: TObject);
+    procedure ConsequenceStyleChange(Sender: TObject);
+
     procedure CGQuestionItemClick(Sender: TObject; Index: integer);
     procedure CheckBoxBroadcastChange(Sender: TObject);
-    procedure CheckBoxIsMetaChange(Sender: TObject);
     procedure CheckBoxColorsRowsChange(Sender: TObject);
     procedure CheckBoxShouldAskQuestionChange(Sender: TObject);
     procedure ChkCleanDotsChange(Sender: TObject);
@@ -109,13 +111,16 @@ type
     procedure ComboCurrentContingencyChange(Sender: TObject);
     procedure EditConditionNameEditingDone(Sender: TObject);
     procedure EditContingencyNameEditingDone(Sender: TObject);
-    procedure EditQuestionChange(Sender: TObject);
     procedure EditQuestionEditingDone(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
     procedure MenuItemOpenClick(Sender: TObject);
     procedure RGContingencyStyleClick(Sender: TObject);
+    procedure RGContingencyStyleExit(Sender: TObject);
+
+    procedure RGContingencyTypeClick(Sender: TObject);
     procedure RGEndCriteriaStyleClick(Sender: TObject);
     procedure RGPointsClick(Sender: TObject);
     procedure SpinEditCyclesValueEditingDone(Sender: TObject);
@@ -133,15 +138,14 @@ type
     FExperiment: TIniFile;
     procedure LoadExperiment;
     procedure LoadSectionExperiment;
-    procedure LoadSectionCondition(LS: string);
-    procedure LoadContingency(LS, LC: string);
+    procedure LoadSectionCondition(ASection: string);
+    procedure LoadContingency(ASection, AContingency: string);// A condition section and a contingency key prefix
     procedure SaveExperiment;
     procedure SaveSectionExperiment;
-    procedure SaveSectionCondition(LS: string);
-    procedure SaveContingency(LS, LC: string);
-    procedure EraseContingency(LS, LC : string);
+    procedure SaveSectionCondition(ASection: string);
+    procedure SaveContingency(ASection, AContingency: string);
+    procedure EraseContingency(ASection, AContingency : string);
   private
-    function GetLC(IsMeta:Boolean; MustIncrement:Boolean=True):string;
     function GetConsequenceStyle: string;
     function GetContingencyCriteria: string;
     function GetEndCriteriaPorcentage: string;
@@ -153,7 +157,13 @@ type
     procedure SetRGEndCriteriaStyle(AStyle: string);
     procedure SetContingencyCriteria(S: string);
     procedure SetConsequenceStyle(S:string);
-    procedure SetContingencyStyle(S:string);
+    procedure UpdateContingencyList(ASection: String);
+    procedure UpdateContingencyCombo(ASection: String);
+  private
+    FLoading : Boolean;
+    function GetContingencyName(IsMeta:Boolean; MustIncrement:Boolean=True):string;
+    procedure IncContingencyName(var AContingency : string; N : integer = 1);
+    procedure ReadContingencyNames(ASection, AContingency, AKeySuffix:string; S:TStrings);
   public
     { public declarations }
   end;
@@ -185,113 +195,193 @@ procedure TFormDesigner.RGContingencyStyleClick(Sender: TObject);
 var
   LVisible: boolean;
 begin
-  LVisible := True;
-  case TRadioGroup(Sender).ItemIndex of
-    0:
+  if Sender = RGContingencyStyle then
     begin
-      LabelIf.Visible := not LVisible;
-      LabelThen.Visible := not LVisible;
-      LabelOperator.Visible := not LVisible;
-      GBContingencyRows.Visible := not LVisible;
-      GBContingencyColors.Visible := not LVisible;
-      GBContingencyConsequence.Visible := not LVisible;
-    end;
+      LVisible := True;
 
-    1:
-    begin
-      LabelIf.Visible := LVisible;
-      LabelThen.Visible := LVisible;
-      LabelOperator.Visible := not LVisible;
-      GBContingencyRows.Visible := LVisible;
-      GBContingencyColors.Visible := not LVisible;
-      GBContingencyConsequence.Visible := LVisible;
-    end;
+      case TRadioGroup(Sender).ItemIndex of
+        0:
+        begin
+          LabelIf.Visible := not LVisible;
+          LabelThen.Visible := not LVisible;
+          LabelOperator.Visible := not LVisible;
+          GBContingencyRows.Visible := not LVisible;
+          GBContingencyColors.Visible := not LVisible;
+          GBContingencyConsequence.Visible := not LVisible;
+        end;
 
-    2:
-    begin
-      LabelIf.Visible := LVisible;
-      LabelThen.Visible := LVisible;
-      LabelOperator.Visible := not LVisible;
-      GBContingencyRows.Visible := not LVisible;
-      GBContingencyColors.Visible := LVisible;
-      GBContingencyConsequence.Visible := LVisible;
+        1:
+        begin
+          LabelIf.Visible := LVisible;
+          LabelThen.Visible := LVisible;
+          LabelOperator.Visible := not LVisible;
+          GBContingencyRows.Visible := LVisible;
+          GBContingencyColors.Visible := not LVisible;
+          GBContingencyConsequence.Visible := LVisible;
+        end;
+
+        2:
+        begin
+          LabelIf.Visible := LVisible;
+          LabelThen.Visible := LVisible;
+          LabelOperator.Visible := not LVisible;
+          GBContingencyRows.Visible := not LVisible;
+          GBContingencyColors.Visible := LVisible;
+          GBContingencyConsequence.Visible := LVisible;
+        end;
+        3:
+        begin
+          LabelIf.Visible := LVisible;
+          LabelThen.Visible := LVisible;
+          LabelOperator.Caption := 'E';
+          LabelOperator.Visible := LVisible;
+          GBContingencyRows.Visible := LVisible;
+          GBContingencyColors.Visible := LVisible;
+          GBContingencyConsequence.Visible := LVisible;
+        end;
+        4:
+        begin
+          LabelIf.Visible := LVisible;
+          LabelThen.Visible := LVisible;
+          LabelOperator.Caption := 'OU';
+          LabelOperator.Visible := LVisible;
+          GBContingencyRows.Visible := LVisible;
+          GBContingencyColors.Visible := LVisible;
+          GBContingencyConsequence.Visible := LVisible;
+        end;
+      end;
     end;
-    3:
-    begin
-      LabelIf.Visible := LVisible;
-      LabelThen.Visible := LVisible;
-      LabelOperator.Caption := 'E';
-      LabelOperator.Visible := LVisible;
-      GBContingencyRows.Visible := LVisible;
-      GBContingencyColors.Visible := LVisible;
-      GBContingencyConsequence.Visible := LVisible;
-    end;
-    4:
-    begin
-      LabelIf.Visible := LVisible;
-      LabelThen.Visible := LVisible;
-      LabelOperator.Caption := 'OU';
-      LabelOperator.Visible := LVisible;
-      GBContingencyRows.Visible := LVisible;
-      GBContingencyColors.Visible := LVisible;
-      GBContingencyConsequence.Visible := LVisible;
-    end;
+end;
+
+procedure TFormDesigner.RGContingencyStyleExit(Sender: TObject);
+begin
+  SaveContingency(ExtractDelimited(1,ComboCurrentCondition.Text,['|']),ExtractDelimited(1,ComboCurrentContingency.Text,['|']));
+end;
+
+
+procedure TFormDesigner.RGContingencyTypeClick(Sender: TObject);
+var
+  i: integer;
+  CH: TCheckBox;
+  LS,LC : string;
+
+  procedure CreateChkBox(N, C: string; AOwner: TWinControl);
+  begin
+    CH := TCheckBox.Create(AOwner);
+    CH.Name := N;
+    CH.Caption := C;
+    CH.Parent := AOwner;
+    CH.ShowHint := True;
+    CH.Hint := C;
+    CH.OnChange := @CheckBoxColorsRowsChange;
   end;
-  CheckBoxIsMetaChange(CheckBoxIsMeta);
+
+begin
+  if Sender = RGContingencyType then
+    begin
+      while GBContingencyRows.ComponentCount > 0 do
+        GBContingencyRows.Components[0].Free;
+
+      while GBContingencyColors.ComponentCount > 0 do
+        GBContingencyColors.Components[0].Free;
+
+      case TRadioGroup(Sender).ItemIndex of
+        0:
+          begin
+            for i := 0 to 9 do
+              CreateChkBox('Chk' + IntToStr(i + 1), IntToStr(i + 1), GBContingencyRows);
+
+            CreateChkBox('ChkEven', 'PAR', GBContingencyRows);
+            CreateChkBox('ChkOdd', 'IMPAR', GBContingencyRows);
+
+            CreateChkBox('ChkY', 'AMARELO', GBContingencyColors);
+            CreateChkBox('ChkR', 'VERMELHO', GBContingencyColors);
+            CreateChkBox('ChkM', 'ROXO', GBContingencyColors);
+            CreateChkBox('ChkB', 'AZUL', GBContingencyColors);
+            CreateChkBox('ChkG', 'VERDE', GBContingencyColors);
+            LabelIf.Caption := 'SE O PARTICIPANTE ESCOLHER';
+            LC := KEY_CONTINGENCY;
+          end;
+        1:
+          begin
+            CreateChkBox('ChkEven', 'PARES', GBContingencyRows);
+            CreateChkBox('ChkOdd', 'IMPARES', GBContingencyRows);
+
+            CreateChkBox('ChkNot', 'TUDO EXCETO', GBContingencyColors);
+            CreateChkBox('ChkEqual', 'CORES IGUAIS', GBContingencyColors);
+            CreateChkBox('ChkDiff', 'CORES DIFERENTES', GBContingencyColors);
+            LabelIf.Caption := 'SE OS PARTICIPANTES ESCOLHEREM';
+            LC := KEY_METACONTINGENCY;
+          end;
+        else Exit;
+      end;
+
+      LS := ExtractDelimited(1, ComboCurrentCondition.Text,['|']);
+      UpdateContingencyCombo(LS);
+      LC += '1';
+      with FExperiment do
+        if ValueExists(LS,LC+KEY_CONT_NAME) and (not FLoading) then
+          LoadContingency(LS,LC);
+
+    end;
 end;
 
 procedure TFormDesigner.RGEndCriteriaStyleClick(Sender: TObject);
 var
   LS: String;
 begin
-  case TRadioGroup(Sender).ItemIndex of
-    0:
+  if Sender = RGEndCriteriaStyle then
     begin
-      LabelEndCriteriaAbsCycles.Visible := True;
-      SpinEditEndCriteriaAbsCycles.Visible := True;
-      GBEndCriteriaLastCycles.Visible := False;
+      case TRadioGroup(Sender).ItemIndex of
+        0:
+        begin
+          LabelEndCriteriaAbsCycles.Visible := True;
+          SpinEditEndCriteriaAbsCycles.Visible := True;
+          GBEndCriteriaLastCycles.Visible := False;
 
-    end;
-    1:
-    begin
-      LabelEndCriteriaAbsCycles.Visible := False;
-      SpinEditEndCriteriaAbsCycles.Visible := False;
-      GBEndCriteriaLastCycles.Visible := True;
-    end;
-    2:
-    begin
-      LabelEndCriteriaAbsCycles.Visible := True;
-      SpinEditEndCriteriaAbsCycles.Visible := True;
-      GBEndCriteriaLastCycles.Visible := True;
-    end;
-  end;
-
-  with FExperiment do
-    if ComboCurrentCondition.ItemIndex <> -1 then
-      begin
-        LS := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
-        WriteString(LS, KEY_ENDCRITERIA, GetEndCriteriaStyleFromRGEndCriteriaStyle);
+        end;
+        1:
+        begin
+          LabelEndCriteriaAbsCycles.Visible := False;
+          SpinEditEndCriteriaAbsCycles.Visible := False;
+          GBEndCriteriaLastCycles.Visible := True;
+        end;
+        2:
+        begin
+          LabelEndCriteriaAbsCycles.Visible := True;
+          SpinEditEndCriteriaAbsCycles.Visible := True;
+          GBEndCriteriaLastCycles.Visible := True;
+        end;
       end;
+
+      with FExperiment do
+        if ComboCurrentCondition.ItemIndex <> -1 then
+          begin
+            LS := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
+            WriteString(LS, KEY_ENDCRITERIA, GetEndCriteriaStyleFromRGEndCriteriaStyle);
+          end;
+    end;
 end;
 
 procedure TFormDesigner.RGPointsClick(Sender: TObject);
 begin
-  case TRadioGroup(Sender).ItemIndex of
-    0:
-    begin
-      CBPointsType.Items.Clear;
-      CBPointsType.Items.Append('Individual A');
-      CBPointsType.Items.Append('Individual B');
-      CBPointsType.Items.Append('Para o Grupo');
-    end;
+  if Sender = RGPoints then
+    case TRadioGroup(Sender).ItemIndex of
+      0:
+      begin
+        CBPointsType.Items.Clear;
+        CBPointsType.Items.Append('Individual A');
+        CBPointsType.Items.Append('Individual B');
+        CBPointsType.Items.Append('Para o Grupo');
+      end;
 
-    1:
-    begin
-      CBPointsType.Items.Clear;
-      CBPointsType.Items.Append('Individual');
-      CBPointsType.Items.Append('Para o Grupo');
+      1:
+      begin
+        CBPointsType.Items.Clear;
+        CBPointsType.Items.Append('Individual');
+        CBPointsType.Items.Append('Para o Grupo');
+      end;
     end;
-  end;
 end;
 
 procedure TFormDesigner.SpinEditCyclesValueEditingDone(Sender: TObject);
@@ -569,7 +659,8 @@ var
   //LVariation : integer;
   SCode,
   SPoints : string;
-  LPoints : integer;
+  LPoints //, temp, t2
+  : integer;
 begin
   SPoints := ExtractDelimited(1,S,['|']);
   LPoints := StrToInt(ExtractDelimited(1,SPoints,[',']));
@@ -591,19 +682,88 @@ begin
         if gscG in CS then CBPointsType.ItemIndex := 1;
       end;
   end;
-  CBPointsType.Text := CBPointsType.Items[CBPointsType.ItemIndex];
-  CheckBoxBroadcast.State := cbUnchecked;
+
+  //if RGContingencyStyle.ItemIndex > 0 then
+  //  if CBPointsType.ItemIndex > 0 then
+  //    begin
+  //      temp := CBPointsType.ItemIndex;
+  //      t2 := CBPointsType.Items.Count;
+  //      CBPointsType.Text := CBPointsType.Items[CBPointsType.ItemIndex];
+  //    end;
 
   if gscBroadcastMessage in CS then
-    CheckBoxBroadcast.State := cbChecked;
-
+    CheckBoxBroadcast.State := cbChecked
+  else
   if gscMessage in CS then
-    CheckBoxBroadcast.State := cbGrayed;
+    CheckBoxBroadcast.State := cbGrayed
+  else
+    CheckBoxBroadcast.State := cbUnchecked;
+
+
+  case CheckBoxBroadcast.State of
+    cbChecked: CheckBoxBroadcast.Caption := 'a todos';
+    cbUnchecked: CheckBoxBroadcast.Caption := 'ao participante';
+    cbGrayed: CheckBoxBroadcast.Caption := 'a ninguém';
+  end;
 end;
 
-procedure TFormDesigner.SetContingencyStyle(S: string);
+procedure TFormDesigner.UpdateContingencyList(ASection: String);
+var
+  LC: String;
+  //S : TStringList;
 begin
+  //S := TStringList.Create;
+  ListBoxContingencies.Items.Clear;
+  LC := KEY_CONTINGENCY+'1';
+  ReadContingencyNames(ASection,LC,KEY_CONT_NAME,ListBoxContingencies.Items);
+  LC := KEY_METACONTINGENCY+'1';
+  ReadContingencyNames(ASection,LC,KEY_CONT_NAME,ListBoxContingencies.Items);
+  //ListBoxContingencies.Items.Text := S.Text;
+  //S.Free;
+end;
 
+procedure TFormDesigner.UpdateContingencyCombo(ASection: String);
+var
+  LC: String;
+begin
+  ComboCurrentContingency.Items.Clear;
+  case RGContingencyType.ItemIndex of
+    0:
+      begin
+        LC := KEY_CONTINGENCY+'1';
+        ReadContingencyNames(ASection,LC,KEY_CONT_NAME,ComboCurrentContingency.Items);
+      end;
+    1:
+      begin
+        LC := KEY_METACONTINGENCY+'1';
+        ReadContingencyNames(ASection,LC,KEY_CONT_NAME,ComboCurrentContingency.Items);
+      end;
+  end;
+end;
+
+procedure TFormDesigner.IncContingencyName(var AContingency: string; N: integer);
+var
+  LContingencyType: String;
+  LExtension: RawByteString;
+  LCount: LongInt;
+begin
+  LContingencyType := ExtractFileNameWithoutExt(AContingency);
+  LExtension := ExtractFileExt(AContingency);
+  Delete(LExtension,1,1);
+  LCount := StrToInt(LExtension);
+  Inc(LCount,N);
+  AContingency := LContingencyType + '.' + IntToStr(LCount);
+end;
+
+procedure TFormDesigner.ReadContingencyNames(ASection, AContingency,
+  AKeySuffix: string; S: TStrings);
+begin
+  with FExperiment do
+    while ValueExists(ASection,AContingency+AKeySuffix) do
+      begin
+        S.Append(AContingency+'|'+ReadString(ASection,AContingency+AKeySuffix,''));
+        IncContingencyName(AContingency);
+      end;
 end;
 
 procedure TFormDesigner.SaveSectionExperiment;
@@ -628,73 +788,74 @@ end;
 procedure TFormDesigner.LoadSectionExperiment;
 begin
   with FExperiment do
-  begin
-    EditResearcherName.Text := ReadString(SEC_EXPERIMENT, KEY_RESEARCHER, '');
-    EditExperimentName.Text := ReadString(SEC_EXPERIMENT, KEY_NAME, '');
-    MemoExperimentAim.Text := ReadString(SEC_EXPERIMENT, KEY_AIM, '');
-    CGGlobal.Checked[0] :=
-      ReadBool(SEC_EXPERIMENT, KEY_CHAT_HISTORY_FOR_NEW_PLAYERS, False);
-    CGGlobal.Checked[1] := ReadBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED, False);
-    CGGlobal.Checked[2] := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANPLAY, False);
-    CGGlobal.Checked[3] := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT, False);
-    if ReadBool(SEC_EXPERIMENT, KEY_POINTS_TYPE, True) then
-      RGPoints.ItemIndex := 0
-    else
-      RGPoints.ItemIndex := 1;
-    SetCGMatrix(ReadString(SEC_EXPERIMENT, KEY_MATRIX_TYPE, 'CORES,LINHAS'));
-  end;
-end;
-
-procedure TFormDesigner.SaveSectionCondition(LS: string);
-begin
-  with FExperiment do
-  begin
-    WriteString(LS, KEY_COND_NAME, EditConditionName.Text);
-    WriteInteger(LS, KEY_TURN_VALUE, SpinEditTurnValue.Value);
-    WriteInteger(LS, KEY_POINTS_ONSTART,SpinEditOnConditionBegin.Value);
-    WriteInteger(LS, KEY_CYCLES_VALUE, SpinEditCyclesValue.Value);
-    WriteString(LS, KEY_PROMPT_MESSAGE, EditQuestion.Text);
-    WriteString(LS, KEY_PROMPT_STYLE, GetPromptQuestionStringFromCGQuestion);
-    WriteString(LS, KEY_ENDCRITERIA, GetEndCriteriaStyleFromRGEndCriteriaStyle);
-    WriteInteger(LS, KEY_ENDCRITERIA_CYCLES, SpinEditEndCriteriaAbsCycles.Value);
-    WriteString(LS, KEY_ENDCRITERIA_PORCENTAGE, GetEndCriteriaPorcentage);
-  end;
-end;
-
-procedure TFormDesigner.SaveContingency(LS, LC: string);
-begin
-  with FExperiment do
-  begin
-    WriteString(LS, LC + KEY_CONT_NAME, EditContingencyName.Text);
-    WriteString(LS, LC + KEY_CRITERIA, GetContingencyCriteria);
-    WriteString(LS, LC + KEY_CONSEQUE, GetConsequenceStyle);
-    WriteString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
-    try
-      WriteString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDS, ExtractDelimited(1,EditMessSufix.Text,['|']));
-      WriteString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDP, ExtractDelimited(2,EditMessSufix.Text,['|']));
-    except
-      on E: Exception do
-        Exit;
-      //if E.Message = 'E';
-
+    begin
+      EditResearcherName.Text := ReadString(SEC_EXPERIMENT, KEY_RESEARCHER, '');
+      EditExperimentName.Text := ReadString(SEC_EXPERIMENT, KEY_NAME, '');
+      MemoExperimentAim.Text := ReadString(SEC_EXPERIMENT, KEY_AIM, '');
+      CGGlobal.Checked[0] :=
+        ReadBool(SEC_EXPERIMENT, KEY_CHAT_HISTORY_FOR_NEW_PLAYERS, False);
+      CGGlobal.Checked[1] := ReadBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED, False);
+      CGGlobal.Checked[2] := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANPLAY, False);
+      CGGlobal.Checked[3] := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT, False);
+      if ReadBool(SEC_EXPERIMENT, KEY_POINTS_TYPE, True) then
+        RGPoints.ItemIndex := 0
+      else
+        RGPoints.ItemIndex := 1;
+      RGPointsClick(RGPoints);
+      SetCGMatrix(ReadString(SEC_EXPERIMENT, KEY_MATRIX_TYPE, 'CORES,LINHAS'));
     end;
-  end;
 end;
 
-procedure TFormDesigner.EraseContingency(LS, LC: string);
+procedure TFormDesigner.SaveSectionCondition(ASection: string);
 begin
   with FExperiment do
     begin
-      DeleteKey(LS, LC + KEY_CONT_NAME);
-      DeleteKey(LS, LC + KEY_CRITERIA);
-      DeleteKey(LS, LC + KEY_CONSEQUE);
-      DeleteKey(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND);
-      DeleteKey(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDS);
-      DeleteKey(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDP);
+      WriteString(ASection, KEY_COND_NAME, EditConditionName.Text);
+      WriteInteger(ASection, KEY_TURN_VALUE, SpinEditTurnValue.Value);
+      WriteInteger(ASection, KEY_POINTS_ONSTART,SpinEditOnConditionBegin.Value);
+      WriteInteger(ASection, KEY_CYCLES_VALUE, SpinEditCyclesValue.Value);
+      WriteString(ASection, KEY_PROMPT_MESSAGE, EditQuestion.Text);
+      WriteString(ASection, KEY_PROMPT_STYLE, GetPromptQuestionStringFromCGQuestion);
+      WriteString(ASection, KEY_ENDCRITERIA, GetEndCriteriaStyleFromRGEndCriteriaStyle);
+      WriteInteger(ASection, KEY_ENDCRITERIA_CYCLES, SpinEditEndCriteriaAbsCycles.Value);
+      WriteString(ASection, KEY_ENDCRITERIA_PORCENTAGE, GetEndCriteriaPorcentage);
     end;
 end;
 
-function TFormDesigner.GetLC(IsMeta: Boolean; MustIncrement: Boolean): string;
+procedure TFormDesigner.SaveContingency(ASection, AContingency: string);
+begin
+  with FExperiment do
+    begin
+      WriteString(ASection, AContingency + KEY_CONT_NAME, EditContingencyName.Text);
+      WriteString(ASection, AContingency + KEY_CRITERIA, GetContingencyCriteria);
+      WriteString(ASection, AContingency + KEY_CONSEQUE, GetConsequenceStyle);
+      WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
+      try
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDS, ExtractDelimited(1,EditMessSufix.Text,['|']));
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDP, ExtractDelimited(2,EditMessSufix.Text,['|']));
+      except
+        on E: Exception do
+          Exit;
+        //if E.Message = 'E';
+
+      end;
+    end;
+end;
+
+procedure TFormDesigner.EraseContingency(ASection, AContingency: string);
+begin
+  with FExperiment do
+    begin
+      DeleteKey(ASection, AContingency + KEY_CONT_NAME);
+      DeleteKey(ASection, AContingency + KEY_CRITERIA);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDS);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDP);
+    end;
+end;
+
+function TFormDesigner.GetContingencyName(IsMeta: Boolean; MustIncrement: Boolean): string;
 var
   LCount,
   i : integer;
@@ -869,52 +1030,44 @@ begin
   Result := GetCriteriaString(C);
 end;
 
-procedure TFormDesigner.LoadSectionCondition(LS: string);
+procedure TFormDesigner.LoadSectionCondition(ASection: string);
 begin
   with FExperiment do
     begin
-      EditConditionName.Text := ReadString(LS, KEY_COND_NAME, LS);
-      SpinEditTurnValue.Value := ReadInteger(LS, KEY_TURN_VALUE, 2);
-      SpinEditOnConditionBegin.Value := ReadInteger(LS, KEY_POINTS_ONSTART,0);
-      SpinEditCyclesValue.Value := ReadInteger(LS, KEY_CYCLES_VALUE, 2);
+      EditConditionName.Text := ReadString(ASection, KEY_COND_NAME, ASection);
+      SpinEditTurnValue.Value := ReadInteger(ASection, KEY_TURN_VALUE, 2);
+      SpinEditOnConditionBegin.Value := ReadInteger(ASection, KEY_POINTS_ONSTART,0);
+      SpinEditCyclesValue.Value := ReadInteger(ASection, KEY_CYCLES_VALUE, 2);
 
       CheckBoxShouldAskQuestion.Checked := False;
-      if ValueExists(LS, KEY_PROMPT_STYLE) and ValueExists(LS, KEY_PROMPT_MESSAGE) then
+      if ValueExists(ASection, KEY_PROMPT_STYLE) and ValueExists(ASection, KEY_PROMPT_MESSAGE) then
       begin
-        EditQuestion.Text := ReadString(LS, KEY_PROMPT_MESSAGE, '');
-        SetCGQuestion(ReadString(LS, KEY_PROMPT_STYLE, ''));
-        if (EditQuestion.Text <> '') or (ReadString(LS, KEY_PROMPT_STYLE, '') <> '') then
+        EditQuestion.Text := ReadString(ASection, KEY_PROMPT_MESSAGE, '');
+        SetCGQuestion(ReadString(ASection, KEY_PROMPT_STYLE, ''));
+        if (EditQuestion.Text <> '') or (ReadString(ASection, KEY_PROMPT_STYLE, '') <> '') then
           CheckBoxShouldAskQuestion.Checked := True;
       end;
 
-      SetRGEndCriteriaStyle(ReadString(LS, KEY_ENDCRITERIA, 'O QUE OCORRER PRIMEIRO'));
-      SpinEditEndCriteriaAbsCycles.Value := ReadInteger(LS, KEY_ENDCRITERIA_CYCLES, 20);
+      SetRGEndCriteriaStyle(ReadString(ASection, KEY_ENDCRITERIA, 'O QUE OCORRER PRIMEIRO'));
+      SpinEditEndCriteriaAbsCycles.Value := ReadInteger(ASection, KEY_ENDCRITERIA_CYCLES, 20);
       SpinEditEndCriteriaLastCycles.Value :=
-        GetEndCriteriaLastCyclesFromString(ReadString(LS, KEY_ENDCRITERIA_PORCENTAGE, '80,20'));
+        GetEndCriteriaLastCyclesFromString(ReadString(ASection, KEY_ENDCRITERIA_PORCENTAGE, '80,20'));
       SpinEditEndCriteriaInterlockingPorcentage.Value :=
-        GetEndCriteriaPorcentageFromString(ReadString(LS, KEY_ENDCRITERIA_PORCENTAGE, '80,20'));
+        GetEndCriteriaPorcentageFromString(ReadString(ASection, KEY_ENDCRITERIA_PORCENTAGE, '80,20'));
     end;
 end;
 
-procedure TFormDesigner.LoadContingency(LS, LC: string);
-var
-  Temp: String;
+procedure TFormDesigner.LoadContingency(ASection, AContingency: string);
 begin
-  CheckBoxIsMeta.OnChange := nil;
-  if Pos(KEY_METACONTINGENCY, LC) > 0 then
-    CheckBoxIsMeta.Checked := True
-  else
-    CheckBoxIsMeta.Checked := False;
-  CheckBoxIsMeta.OnChange:=@CheckBoxIsMetaChange;
   with FExperiment do
-    if ValueExists(LS, LC + KEY_CONSEQUE) and ValueExists(LS, LC + KEY_CRITERIA) then
+    if ValueExists(ASection, AContingency + KEY_CONSEQUE) and ValueExists(ASection, AContingency + KEY_CRITERIA) then
       begin
-        Temp := ReadString(LS, LC + KEY_CONT_NAME, '');
-        EditContingencyName.Text := ReadString(LS, LC + KEY_CONT_NAME, '');
-        SetContingencyCriteria(ReadString(LS, LC + KEY_CRITERIA, ''));
-        SetContingencyStyle(ReadString(LS, LC + KEY_CONSEQUE, ''));
-        EditMessPrefix.Text := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND,'');
-        EditMessSufix.Text := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDS,'')+'|'+ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDP,'');
+        EditContingencyName.Text := ReadString(ASection, AContingency + KEY_CONT_NAME, '');
+        SetContingencyCriteria(ReadString(ASection, AContingency + KEY_CRITERIA, ''));
+        SetConsequenceStyle(ReadString(ASection, AContingency + KEY_CONSEQUE, ''));
+        EditMessPrefix.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND,'');
+        EditMessSufix.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDS,'')+'|'+
+          ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDP,'');
       end;
 end;
 
@@ -940,10 +1093,7 @@ end;
 
 procedure TFormDesigner.FormCreate(Sender: TObject);
 begin
-  //IPSExperiment.IniSection := SEC_EXPERIMENT;
-  //IPSConditions.IniSection := SEC_CONDITION;
-  //IPSPlayers.IniSection := SEC_PLAYER;
-
+  FLoading := True;
 end;
 
 procedure TFormDesigner.FormDestroy(Sender: TObject);
@@ -1026,9 +1176,13 @@ begin
       end;
 end;
 
-procedure TFormDesigner.EditQuestionChange(Sender: TObject);
+procedure TFormDesigner.ConsequenceMessageEditingDone(Sender: TObject);
+var
+  LS, LC: String;
 begin
-
+  LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+  LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
+  FExperiment.WriteString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
 end;
 
 procedure TFormDesigner.EditQuestionEditingDone(Sender: TObject);
@@ -1043,6 +1197,11 @@ begin
       end;
 end;
 
+procedure TFormDesigner.FormActivate(Sender: TObject);
+begin
+  FLoading := False;
+end;
+
 procedure TFormDesigner.CheckBoxBroadcastChange(Sender: TObject);
 begin
   case TCheckBox(Sender).State of
@@ -1050,7 +1209,9 @@ begin
     cbUnchecked: TCheckBox(Sender).Caption := 'ao participante';
     cbGrayed: TCheckBox(Sender).Caption := 'a ninguém';
   end;
+  ConsequenceStyleChange(CheckBoxBroadcast);
 end;
+
 
 procedure TFormDesigner.BtnAppendCondClick(Sender: TObject);
 var
@@ -1072,7 +1233,7 @@ var
 
 begin
   LS := ExtractDelimited(1,ComboCurrentCondition.Items[ComboCurrentCondition.ItemIndex],['|']);
-  LC := GetLC(CheckBoxIsMeta.Checked);
+  LC := GetContingencyName(RGContingencyType.ItemIndex = 1);
   i := ComboCurrentContingency.Items.Add('');
   ComboCurrentContingency.Items[i] :=
     LC + '|' + EditContingencyName.Text;
@@ -1153,22 +1314,22 @@ var
     Keys.EndUpdate;
   end;
 
-  procedure Reorder(index : integer);
+  procedure Reorder(Index:integer);
   var
     i: integer;
     SectionKeys: TStringList;
-    KeyName,Line,SectionName: string;
+    KeyName,KeyPrefix,Line,SectionName: string;
   begin
     SectionKeys := TStringList.Create;
     with FExperiment do
-      for i := index to ComboCurrentContingency.Items.Count - 1 do
+      for i := Index to ComboCurrentContingency.Items.Count - 1 do
         begin
           SectionName := ExtractDelimited(1, ComboCurrentCondition.Items[ComboCurrentCondition.ItemIndex], ['|']);
-          KeyName := ExtractDelimited(1, ComboCurrentContingency.Items[i], ['|']);
-          ReadContingencyValuesInSection(SectionName,KeyName, SectionKeys);
-          EraseContingency(SectionName,KeyName);
+          KeyPrefix := ExtractDelimited(1, ComboCurrentContingency.Items[i], ['|']);
+          ReadContingencyValuesInSection(SectionName,KeyPrefix, SectionKeys);
+          EraseContingency(SectionName,KeyPrefix);
           // todo: contingencies on top, meta on bootom...
-          KeyName := GetLC(ExtractFileNameWithoutExt(KeyName) = ExtractFileNameWithoutExt(KEY_METACONTINGENCY));
+          KeyPrefix := GetContingencyName(ExtractFileNameWithoutExt(KeyPrefix) = ExtractFileNameWithoutExt(KEY_METACONTINGENCY));
           for Line in SectionKeys do
             begin
               KeyName := SectionKeys.ExtractName(Line);
@@ -1176,7 +1337,7 @@ var
             end;
           SectionKeys.Clear;
           ComboCurrentContingency.Items[i] :=
-            KeyName + '|' + ExtractDelimited(2, ComboCurrentContingency.Items[i], ['|']);
+            KeyPrefix + '|' + ExtractDelimited(2, ComboCurrentContingency.Items[i], ['|']);
         end;
     SectionKeys.Free;
   end;
@@ -1195,14 +1356,17 @@ begin
       else
         ComboCurrentContingency.ItemIndex := i -1;
   end;
-  ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
+  UpdateContingencyList(ExtractDelimited(1,ComboCurrentCondition.Text,['|']));
 end;
 
-procedure TFormDesigner.CBPointsTypeChange(Sender: TObject);
+procedure TFormDesigner.ConsequenceStyleChange(Sender: TObject);
+var
+  LS, LC: String;
 begin
-
+  LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+  LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
+  FExperiment.WriteString(LS, LC+KEY_CONSEQUE, GetConsequenceStyle);
 end;
-
 
 procedure TFormDesigner.CGQuestionItemClick(Sender: TObject; Index: integer);
 var
@@ -1216,68 +1380,22 @@ begin
       end;
 end;
 
-procedure TFormDesigner.CheckBoxIsMetaChange(Sender: TObject);
-var
-  i: integer;
-  CH: TCheckBox;
-  LS,LC : string;
-
-  procedure CreateChkBox(N, C: string; AOwner: TWinControl);
-  begin
-    CH := TCheckBox.Create(AOwner);
-    CH.Name := N;
-    CH.Caption := C;
-    CH.Parent := AOwner;
-    CH.ShowHint := True;
-    CH.Hint := C;
-    CH.OnChange := @CheckBoxColorsRowsChange;
-  end;
-
-begin
-  while GBContingencyRows.ComponentCount > 0 do
-    GBContingencyRows.Components[0].Free;
-
-  while GBContingencyColors.ComponentCount > 0 do
-    GBContingencyColors.Components[0].Free;
-
-  if TCheckBox(Sender).Checked then
-    begin
-      CreateChkBox('ChkEven', 'PARES', GBContingencyRows);
-      CreateChkBox('ChkOdd', 'IMPARES', GBContingencyRows);
-
-      CreateChkBox('ChkNot', 'TUDO EXCETO', GBContingencyColors);
-      CreateChkBox('ChkEqual', 'CORES IGUAIS', GBContingencyColors);
-      CreateChkBox('ChkDiff', 'CORES DIFERENTES', GBContingencyColors);
-      LabelIf.Caption := 'SE OS PARTICIPANTES ESCOLHEREM';
-    end
-  else
-    begin
-      for i := 0 to 9 do
-        CreateChkBox('Chk' + IntToStr(i + 1), IntToStr(i + 1), GBContingencyRows);
-
-      CreateChkBox('ChkEven', 'PAR', GBContingencyRows);
-      CreateChkBox('ChkOdd', 'IMPAR', GBContingencyRows);
-
-      CreateChkBox('ChkY', 'AMARELO', GBContingencyColors);
-      CreateChkBox('ChkR', 'VERMELHO', GBContingencyColors);
-      CreateChkBox('ChkM', 'ROXO', GBContingencyColors);
-      CreateChkBox('ChkB', 'AZUL', GBContingencyColors);
-      CreateChkBox('ChkG', 'VERDE', GBContingencyColors);
-      LabelIf.Caption := 'SE O PARTICIPANTE ESCOLHER';
-    end;
-
-  if ComboCurrentCondition.Items.Count > 0 then
-    if ComboCurrentContingency.Items.Count > 0 then
-      begin
-        LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
-        LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
-        EraseContingency(LS,LC);
-        LC := GetLC(TCheckBox(Sender).Checked,False);
-        SaveContingency(LS,LC);
-        ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex] := LC +'|'+ EditContingencyName.Text;
-        ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
-      end;
-end;
+//procedure TFormDesigner.CheckBoxIsMetaClick(Sender: TObject);
+//var
+//  LS, LC: String;
+//begin
+//  if ComboCurrentCondition.Items.Count > 0 then
+//    if ComboCurrentContingency.Items.Count > 0 then
+//      begin
+//        LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+//        LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
+//        EraseContingency(LS,LC);
+//        LC := GetLC(CheckBoxIsMeta.Checked,False);
+//        SaveContingency(LS,LC);
+//        ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex] := LC +'|'+ EditContingencyName.Text;
+//        ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
+//      end;
+//end;
 
 procedure TFormDesigner.CheckBoxColorsRowsChange(Sender: TObject);
 var
