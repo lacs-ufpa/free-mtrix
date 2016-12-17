@@ -523,7 +523,9 @@ begin
 
     gaAdmin:
       begin
+        {$IFDEF DEBUG}
         WriteLn(S);
+        {$ENDIF}
         LConsequence.PresentPoints(GetPlayerBox(AID), FormMatrixGame.LabelGroupCount);
       end;
   end;
