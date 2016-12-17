@@ -754,9 +754,9 @@ constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
 var LDataPath : string;
 begin
   inherited Create(AOwner);
-  LDataPath := AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim;
   FTurnsRandom := TStringList.Create;
   LoadExperimentFromResource(Self);
+  LDataPath := AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim;
 
   // TODO: Allow custom target interlocking. Now just taking the first meta, as usual in the lab.
   SetTargetInterlockingEvent;
