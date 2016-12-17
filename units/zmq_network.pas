@@ -323,13 +323,16 @@ begin
 end;
 
 procedure LoadIP; //forward;
-var S : TStringList;
+var
+  S : TStringList;
+  IPPath: String;
 begin
-  if FileExists(GetCurrentDir+'IP') then
+  IPPath := ExtractFilePath(Application.ExeName)+'IP';
+  if FileExists(IPPath) then
     begin
       S := TStringList.Create;
       try
-        S.LoadFromFile(ExtractFilePath(Application.ExeName)+'IP');
+        S.LoadFromFile(IPPath);
         GClientHost := 'tcp://'+S[0]+':';
       finally
         S.Free;
