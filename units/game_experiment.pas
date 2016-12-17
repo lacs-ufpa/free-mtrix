@@ -738,8 +738,11 @@ end;
 
 procedure TExperiment.WriteChatLn(ALn: string);
 begin
-  FRegChat.SaveData(ALn);
-  FRegChat.CloseAndOpen;
+  if Assigned(FRegChat) then
+    begin
+      FRegChat.SaveData(ALn);
+      FRegChat.CloseAndOpen;
+    end;
 end;
 
 constructor TExperiment.Create(AOwner: TComponent);
@@ -769,8 +772,7 @@ begin
   FReportReader.SetXLastRows(Condition[CurrentCondition].EndCriterium.LastCycles);
 
   FRegData := TRegData.Create(Self, LDataPath+'000.dat');
-  if ShowChat then
-    FRegChat := TRegData.Create(Self, LDataPath+'000.chat');
+  FRegChat := TRegData.Create(Self, LDataPath+'000.chat');
   WriteReportHeader;
 end;
 
