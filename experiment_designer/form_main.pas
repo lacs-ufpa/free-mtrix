@@ -520,6 +520,8 @@ begin
     Result += 'CÍRCULOS PREENCHIDOS,';
   if ChkCleanDots.Checked then
     Result += 'CÍRCULOS VAZADOS,';
+  if ChkDotsCleanDots.Checked then
+    Result += 'CÍRCULOS AMBOS,';
 end;
 
 function TFormDesigner.GetPromptQuestionStringFromCGQuestion: string;
@@ -562,6 +564,11 @@ begin
     ChkCleanDots.Checked := True
   else
     ChkCleanDots.Checked := False;
+
+  if Pos('CÍRCULOS AMBOS', UpperCase(AMatrixType)) > 0 then
+    ChkDotsCleanDots.Checked := True
+  else
+    ChkDotsCleanDots.Checked := False;
 end;
 
 procedure TFormDesigner.SetCGQuestion(AQuestionStyle: string);
@@ -1295,7 +1302,7 @@ var
             end;
           Section.Clear;
           ComboCurrentCondition.Items[i] :=
-            SectionName + '|' + ExtractDelimited(2, ComboCurrentCondition.Items[i], ['|']);
+            SectionName + '|' + ReadString(SectionName,KEY_COND_NAME,'');
         end;
     Section.Free;
   end;
@@ -1314,12 +1321,12 @@ begin
       case ComboCurrentCondition.Items.Count of
         0: {do nothing};
         1..MaxInt:
-          if i = 1 then
+          if i = 0 then
             ComboCurrentCondition.ItemIndex := i
           else
             ComboCurrentCondition.ItemIndex := i -1;
       end;
-      ListBoxContingencies.Items.Text := ComboCurrentCondition.Items.Text;
+      ListBoxConditions.Items.Text := ComboCurrentCondition.Items.Text;
       TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
     end;
 end;
@@ -1335,7 +1342,7 @@ var
     Keys.BeginUpdate;
     with FExperiment do
       begin
-        Keys.Values[LC + KEY_NAME] := ReadString(LS,LC+KEY_NAME,'');
+        Keys.Values[LC + KEY_CONT_NAME] := ReadString(LS,LC+KEY_CONT_NAME,'');
         Keys.Values[LC + KEY_CRITERIA] := ReadString(LS, LC + KEY_CRITERIA,'');
         Keys.Values[LC + KEY_CONSEQUE] := ReadString(LS, LC + KEY_CONSEQUE,'');
         Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND,'');
@@ -1344,7 +1351,7 @@ var
       end;
     Keys.EndUpdate;
   end;
-
+  //todo:fix bug in here
   procedure Reorder(Index:integer);
   var
     i: integer;
@@ -1360,7 +1367,7 @@ var
             KeyPrefix := ExtractDelimited(1, ComboCurrentContingency.Items[i], ['|']);
             ReadContingencyValuesInSection(SectionName,KeyPrefix, SectionKeys);
             EraseContingency(SectionName,KeyPrefix);
-            KeyPrefix := ExtractFileNameWithoutExt(KeyPrefix) + '.' + IntToStr(i);
+            KeyPrefix := ExtractFileNameWithoutExt(KeyPrefix) + '.' + IntToStr(i + 1);
             for Line in SectionKeys do
               begin
                 KeyName := SectionKeys.ExtractName(Line);
@@ -1368,7 +1375,7 @@ var
               end;
             SectionKeys.Clear;
             ComboCurrentContingency.Items[i] :=
-              KeyPrefix + '|' + ExtractDelimited(2, ComboCurrentContingency.Items[i], ['|']);
+              KeyPrefix + '|' + ReadString(SectionName,KeyPrefix+KEY_CONT_NAME,'');
           end;
       end;
     SectionKeys.Free;
@@ -1381,8 +1388,8 @@ begin
       MustReorder := i < ComboCurrentContingency.Items.Count - 1;
       LS := ExtractDelimited(1, ComboCurrentCondition.Text, ['|']);
       LC := ExtractDelimited(1, ComboCurrentContingency.Text, ['|']);
-      ComboCurrentContingency.Items.Delete(i);
       EraseContingency(LS,LC);
+      ComboCurrentContingency.Items.Delete(i);
 
       if MustReorder then
         Reorder(i);
@@ -1390,7 +1397,7 @@ begin
       case ComboCurrentContingency.Items.Count of
         0: {do nothing};
         1..MaxInt:
-          if i = 1 then
+          if i = 0 then
             ComboCurrentContingency.ItemIndex := i
           else
             ComboCurrentContingency.ItemIndex := i -1;
