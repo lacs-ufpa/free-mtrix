@@ -26,6 +26,8 @@ uses
 resourcestring
   ERROR_SECTION_NOT_FOUND = 'O arquivo não pode ser aberto, pois a secção não foi encontrada: ';
   ERROR_FILE_NOT_FOUND = 'O arquivo não pode ser aberto, pois ele não existe.';
+  ERROR_NO_CONTINGENCIES = 'O experimento não pode ser aberto, pois uma condição sem contingências foi encontrada: ';
+  ERROR_NO_CONDITIONS = 'O experimento não pode ser aberto, pois nenhuma condição foi encontrada.';
   WARN_CONDITION_WITH_NO_END = 'Condição sem critério de encerramento: ';
   WARN_END = ' será usado.';
 
@@ -93,18 +95,43 @@ begin
           EndCriterium.Style := gecWhichComeFirst;
 
           SetLength(Contingencies, 4);
-          LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscB, gscMessage,gscBroadcastMessage],['$NICNAME','queijo','queijos']);
+          // test contingency
+          LConcequence := TConsequence.Create(
+            AExperiment,
+            1,
+            [gscPoints, gscB, gscMessage,gscBroadcastMessage],
+            ['$NICNAME','perdeu','queijo','queijos', 'ganhou', 'queijo','queijos','não perdeu nem ganhou queijos']);
           Contingencies[0] := TContingency.Create(AExperiment,LConcequence,LCriteria1,False);
           Contingencies[0].ContingencyName := 'CRF 1B';
-          LConcequence := TConsequence.Create(AExperiment,3,[gscPoints, gscA, gscMessage,gscBroadcastMessage],['$NICNAME','pão','pães']);
+
+          // test contingency 2
+          LConcequence := TConsequence.Create(
+            AExperiment,
+            3,
+            [gscPoints, gscA, gscMessage,gscBroadcastMessage],
+            ['$NICNAME','queimou','pão','pães','assou','pão','pães','não cozinhou nada.']);
           Contingencies[1] := TContingency.Create(AExperiment,LConcequence,LCriteria2,False);
           Contingencies[1].ContingencyName := 'CRF 3A';
-          LConcequence := TConsequence.Create(AExperiment,1,[gscPoints, gscG, gscMessage],['','item escolar','itens escolares']);
+
+          // test contingency 3
+          LConcequence := TConsequence.Create(
+            AExperiment,
+            1,
+            [gscPoints, gscG, gscMessage],
+            ['','perderam','item escolar','itens escolares','produziram','item escolar','itens escolares','não produziram nem perderam itens escolares']);
           Contingencies[2] := TContingency.Create(AExperiment,LConcequence,LCriteria3,True);
           Contingencies[2].ContingencyName := 'MCRF 1G';
-          LConcequence := TConsequence.Create(AExperiment,-1,[gscPoints, gscG, gscMessage],['','item escolar','itens escolares']);
+
+          // test contingency 4
+          LConcequence := TConsequence.Create(
+            AExperiment,
+            -1,
+            [gscPoints, gscG, gscMessage],
+            ['','perderam','item escolar','itens escolares','produziram','item escolar','itens escolares','não produziram nem perderam itens escolares']);
           Contingencies[3] := TContingency.Create(AExperiment,LConcequence,LCriteria4,True);
           Contingencies[3].ContingencyName := 'MPUN -1G';
+
+          // test prompt
           Prompt := TPrompt.Create(
             AExperiment
             , [gsAll,gsYes,gsMetacontingency,gsContingency,gsRevertPoints,gsBasA]
@@ -121,6 +148,7 @@ end;
 function LoadExperimentFromFile(var AExperiment: TExperiment; AFilename: string):Boolean;
 var
   LIniFile : TIniFile;
+  i: Integer;
 
   //procedure HandleRootPath(var APath : string);
   //begin
@@ -131,46 +159,26 @@ var
 
   procedure ReadExperiment;
   begin
-    // Experiment;
     with LIniFile do
       begin
+        // must have something
         AExperiment.Researcher := ReadString(SEC_EXPERIMENT, KEY_RESEARCHER,VAL_RESEARCHER);
-        AExperiment.ExperimentName:=ReadString(SEC_EXPERIMENT, KEY_NAME,'');
+        AExperiment.ExperimentName:=ReadString(SEC_EXPERIMENT, KEY_NAME,VAL_EXPERIMENT);
+
+        // optional
         AExperiment.ExperimentAim:=ReadString(SEC_EXPERIMENT, KEY_AIM,'');
-        AExperiment.GenPlayersAsNeeded:=ReadBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED,True);
+
+        // general configs
+        AExperiment.ResearcherCanPlay := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANPLAY,False);
+        AExperiment.ResearcherCanChat := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT,False);
+        AExperiment.GenPlayersAsNeeded := ReadBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED,False);
+        AExperiment.SendChatHistoryForNewPlayers := ReadBool(SEC_EXPERIMENT, KEY_CHAT_HISTORY_FOR_NEW_PLAYERS,False);
+        AExperiment.ABPoints:= ReadBool(SEC_EXPERIMENT, KEY_POINTS_TYPE,False);
+        AExperiment.MatrixType := GetMatrixTypeFromString(ReadString(SEC_EXPERIMENT,KEY_MATRIX_TYPE,DEF_MATRIX_TYPE));
+
+        // used when loading from paused experiments
         AExperiment.CurrentCondition := ReadInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION,0)-1; //zero based
       end;
-  end;
-
-  procedure ReadPlayers;
-  var
-    LS : string;
-    i : integer;
-    P : TPlayer;
-  begin
-    i := 0;
-    LS := SEC_PLAYER+IntToStr(i+1);
-    with LIniFile do
-      while SectionExists(LS) do
-        begin
-          if i = 0 then
-            i := AExperiment.AppendPlayer;
-          with P do
-            begin
-              Turn := ReadInteger(LS,KEY_PLAYER_TURN,i);
-              Choice := GetChoiceFromString(ReadString(LS,KEY_PLAYER_CHOICE_LAST,'0,NONE,'));
-              ID := ReadString(LS,KEY_PLAYER_ID,'ID');
-              Nicname := ReadString(LS,KEY_PLAYER_NICNAME,GenResourceName(i));
-              Login := ReadString(LS,KEY_PLAYER_LOGIN,'jogador'+IntToStr(i+1));
-              Password := ReadString(LS,KEY_PLAYER_PASSWORD,'1234');
-              Points := GetPPointsFromString(ReadString(LS,KEY_PLAYER_POINTS,'0,0,'));
-              Status := GetStatusFromString(ReadString(LS,KEY_PLAYER_STATUS,'esperando'));
-              Data.Values[KEY_PLAYER_TEMP] := ReadString(LS,KEY_PLAYER_TEMP,'');
-            end;
-          AExperiment.Player[i] := P;
-          i := AExperiment.AppendPlayer;
-          LS := SEC_PLAYER+IntToStr(i+1);
-        end;
   end;
 
   procedure ReadContingencies(ACondition:integer;IsMeta : Boolean);
@@ -208,51 +216,76 @@ var
     i : integer;
     C :TCondition;
   begin
-    i := 0;
+    //i := 0;
+    i := AExperiment.AppendCondition;
     LS := SEC_CONDITION+IntToStr(i+1);
     with LIniFile do
       while SectionExists(LS) do
         begin
-          if i = 0 then
-            i := AExperiment.AppendCondition;
-
+          //if i = 0 then
+          //  i := AExperiment.AppendCondition;
           with C do
             begin
-              s1 := ReadString(LS, KEY_ENDCRITERIA,'');
-              if s1 = '' then
-                begin
-                  {$IFDEF DEBUG}
-                  WriteLn(WARN_CONDITION_WITH_NO_END+LS+'. '+KEY_ENDCRITERIA+KV_SEP+DEF_END+WARN_END);
-                  {$ENDIF}
-                  s1 := DEF_END;
-                end;
-              EndCriterium := GetEndCriteriaFromString(s1);
               ConditionName := ReadString(LS,KEY_COND_NAME,LS);
               Points.Count := GetPointsFromString(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
               Points.OnStart := GetPointsFromString(ReadString(LS, KEY_POINTS_ONSTART,DEF_POINTS));
-              Turn.Count:= ReadInteger(LS, KEY_TURN_COUNT,1);
+              Turn.Count:= ReadInteger(LS, KEY_TURN_COUNT,0);
               Turn.Value:= ReadInteger(LS, KEY_TURN_VALUE,2);
               Turn.Random:= ReadBool(LS, KEY_TURN_RANDOM,False);
-              Cycles.Count:= ReadInteger(LS, KEY_CYCLES_COUNT,1);
+              Cycles.Count:= ReadInteger(LS, KEY_CYCLES_COUNT,0);
               Cycles.Value:= ReadInteger(LS, KEY_CYCLES_VALUE,10);
-              Cycles.Generation:= ReadInteger(LS, KEY_CYCLES_GEN,1);
+              Cycles.Generation:= ReadInteger(LS, KEY_CYCLES_GEN,5);
+              EndCriterium.Style := GetEndCriteriaStyleFromString(ReadString(LS,KEY_ENDCRITERIA,DEF_END_CRITERIA_STYLE));
+              EndCriterium.AbsoluteCycles:=ReadInteger(LS,KEY_ENDCRITERIA_CYCLES,20);
+              s1 := ReadString(LS,KEY_ENDCRITERIA_PORCENTAGE,DEF_END_CRITERIA_PORCENTAGE);
+              EndCriterium.InterlockingPorcentage:= GetEndCriteriaPorcentageFromString(s1);
+              EndCriterium.LastCycles:= GetEndCriteriaLastCyclesFromString(s1);
 
               ReadContingencies(i,True);
               ReadContingencies(i,False);
 
-              // if no contingencies, return false...
-
               Prompt := TPrompt.Create(
                 AExperiment
-                , GetPromptStyleFromString(ReadString(LS,KEY_PROMPT_STYLE,'todos,sim,metacontingência,recuperar pontos,'))
+                , GetPromptStyleFromString(ReadString(LS,KEY_PROMPT_STYLE,''))
                 , Contingencies
-                , ReadString(LS,KEY_PROMPT_MESSAGE,DEF_PROMPTMESSAGE)
+                , ReadString(LS,KEY_PROMPT_MESSAGE,'')
               );
 
             end;
             AExperiment.Condition[i]:= C;
             i := AExperiment.AppendCondition;
             LS := SEC_CONDITION+IntToStr(i+1);
+        end;
+  end;
+
+  procedure ReadPlayers;
+  var
+    LS : string;
+    i : integer;
+    P : TPlayer;
+  begin
+    i := 0;
+    LS := SEC_PLAYER+IntToStr(i+1);
+    with LIniFile do
+      while SectionExists(LS) do
+        begin
+          if i = 0 then
+            i := AExperiment.AppendPlayer;
+          with P do
+            begin
+              Turn := ReadInteger(LS,KEY_PLAYER_TURN,i);
+              Choice := GetChoiceFromString(ReadString(LS,KEY_PLAYER_CHOICE_LAST,'0,NONE,'));
+              ID := ReadString(LS,KEY_PLAYER_ID,'ID');
+              Nicname := ReadString(LS,KEY_PLAYER_NICNAME,GenResourceName(i));
+              Login := ReadString(LS,KEY_PLAYER_LOGIN,'jogador'+IntToStr(i+1));
+              Password := ReadString(LS,KEY_PLAYER_PASSWORD,'1234');
+              Points := GetPPointsFromString(ReadString(LS,KEY_PLAYER_POINTS,'0,0,'));
+              Status := GetStatusFromString(ReadString(LS,KEY_PLAYER_STATUS,'esperando'));
+              Data.Values[KEY_PLAYER_TEMP] := ReadString(LS,KEY_PLAYER_TEMP,'');
+            end;
+          AExperiment.Player[i] := P;
+          i := AExperiment.AppendPlayer;
+          LS := SEC_PLAYER+IntToStr(i+1);
         end;
   end;
 
@@ -266,15 +299,33 @@ begin
           begin
             AExperiment := TExperiment.Create(AExperiment.Owner);
             ReadExperiment;
-            ReadPlayers;
             ReadConditions;
+            ReadPlayers;
+
+            with AExperiment do
+              if ConditionsCount > 0 then
+                for i := 0 to ConditionsCount-1 do
+                  if ContingenciesCount[i] > 0 then
+                    Continue
+                  else
+                    begin
+                      ShowMessage(ERROR_NO_CONTINGENCIES+SEC_CONDITION+IntToStr(i+1));
+                      Exit;
+                    end
+              else
+                begin
+                  ShowMessage(ERROR_NO_CONDITIONS);
+                  Exit;
+                end;
+
+            Result := True;
           end
         else
           begin
             ShowMessage(ERROR_SECTION_NOT_FOUND+SEC_EXPERIMENT);
-            LIniFile.Free;
             Exit;
           end;
+      LIniFile.Free;
     end
   else
     ShowMessage(ERROR_FILE_NOT_FOUND);
@@ -311,7 +362,7 @@ begin
             WriteInteger(LC, KEY_CYCLES_VALUE,Cycles.Value);
             WriteInteger(LC, KEY_CYCLES_GEN,Cycles.Generation);
             //WriteBool(LC, KEY_PROMPT_VALUE,Prompt.Value);
-            //WriteString(LC, KEY_PROMPT_MESSAGE, Prompt.PromptMessage);   TODO: write prompt as string
+            //WriteString(LC, KEY_PROMPT_MESSAGE, Prompt.PromptMessage);
             //WriteString(LC, KEY_PROMPT_STYLE, GetPromptStyleString(Prompt.PromptStyle));
 
             for j := 0 to High(Contingencies) do
@@ -323,7 +374,7 @@ begin
 
                 with Contingencies[j] do
                   begin
-                    WriteString(LC,LCK+KEY_CONSEQUE,Consequence.AsString(''));   // TODO review this
+                    WriteString(LC,LCK+KEY_CONSEQUE,Consequence.AsString(''));
                     WriteString(LC,LCK+KEY_CRITERIA,CriteriaString);
                   end;
               end;

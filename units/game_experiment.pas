@@ -46,6 +46,7 @@ type
     FShowChat: Boolean;
     FMatrixType: TGameMatrixType;
   private
+    FAppPath,
     FLastReportColNames : string;
     FRegData : TRegData;
     FRegChat : TRegData;
@@ -757,23 +758,24 @@ constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
 var LDataPath : string;
 begin
   inherited Create(AOwner);
+  FAppPath := AppPath;
   FTurnsRandom := TStringList.Create;
-  LoadExperimentFromResource(Self);
-  LDataPath := AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim;
-
+  //LoadExperimentFromResource(Self);
+  //LDataPath := AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim;
+  //
   // TODO: Allow custom target interlocking. Now just taking the first meta, as usual in the lab.
-  SetTargetInterlockingEvent;
-  SetContingenciesEvents;
-
-  CheckNeedForRandomTurns;
-
-  FReportReader := TReportReader.Create;
-  FReportReader.UseRange:=True;
-  FReportReader.SetXLastRows(Condition[CurrentCondition].EndCriterium.LastCycles);
-
-  FRegData := TRegData.Create(Self, LDataPath+'000.dat');
-  FRegChat := TRegData.Create(Self, LDataPath+'000.chat');
-  WriteReportHeader;
+  //SetTargetInterlockingEvent;
+  //SetContingenciesEvents;
+  //
+  //CheckNeedForRandomTurns;
+  //
+  //FReportReader := TReportReader.Create;
+  //FReportReader.UseRange:=True;
+  //FReportReader.SetXLastRows(Condition[CurrentCondition].EndCriterium.LastCycles);
+  //
+  //FRegData := TRegData.Create(Self, LDataPath+'000.dat');
+  //FRegChat := TRegData.Create(Self, LDataPath+'000.chat');
+  //WriteReportHeader;
 end;
 
 constructor TExperiment.Create(AOwner:TComponent;AFilename,AppPath:string);
@@ -795,11 +797,28 @@ begin
 end;
 
 function TExperiment.LoadFromFile(AFilename: string): Boolean;
+var
+  LDataPath : string;
 begin
   Result := LoadExperimentFromFile(Self, AFilename);
   if Result then
-    FFilename := AFilename;
+    FFilename := AFilename
+  else Exit;
+
+  LDataPath := FAppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim;
+
+  SetTargetInterlockingEvent;
+  SetContingenciesEvents;
+
   CheckNeedForRandomTurns;
+
+  FReportReader := TReportReader.Create;
+  FReportReader.UseRange:=True;
+  FReportReader.SetXLastRows(Condition[CurrentCondition].EndCriterium.LastCycles);
+
+  FRegData := TRegData.Create(Self, LDataPath+'000.dat');
+  FRegChat := TRegData.Create(Self, LDataPath+'000.chat');
+  WriteReportHeader;
 end;
 
 function TExperiment.LoadFromGenerator: Boolean;

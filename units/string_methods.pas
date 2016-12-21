@@ -56,9 +56,12 @@ function GetChoiceFromString(S:string) : TPlayerChoice;
 function GetEndCriteriaLastCyclesFromString(S:string):integer;
 function GetEndCriteriaPorcentageFromString(S:string):integer;
 function GetEndCriteriaStyleString(AEndCriteriaStyle : TGameEndCondition):string;
+function GetEndCriteriaStyleFromString(S:string):TGameEndCondition;
 function GetEndCriteriaString(AEndCriterium:TEndConditionCriterium) : string;
 function GetEndCriteriaFromString(S:string) : TEndConditionCriterium;
 
+function GetMatrixTypeFromString(S:string) : TGameMatrixType;
+function GetMatrixTypeString(AMatrixType: TGameMatrixType): string;
 
 function GetPlayerFromString(s: string): TPlayer;
 function GetPlayerAsString(P: TPlayer): string;
@@ -411,6 +414,15 @@ begin
   end;
 end;
 
+function GetEndCriteriaStyleFromString(S: string): TGameEndCondition;
+begin
+  case S of
+   'CICLOS': Result := gecAbsoluteCycles;
+   'PORCENTAGEM': Result := gecInterlockingPorcentage;
+   'O QUE OCORRER PRIMEIRO': Result := gecWhichComeFirst;
+  end;
+end;
+
 function GetEndCriteriaString(AEndCriterium: TEndConditionCriterium
   ): string;
 begin
@@ -524,6 +536,39 @@ begin
     Result += M[i] + '|';
 end;
 
+function GetMatrixTypeFromString(S: string): TGameMatrixType;
+var
+  LCount, i: Integer;
+begin
+  Result := [];
+  LCount := WordCount(S,[#0,',']);
+  for i:= 1 to LCount do
+    case ExtractDelimited(i,S,[',']) of
+      'CORES' : Result +=[gmColors];
+      'LINHAS':Result+=[gmRows];
+      'COLUNAS':Result+=[gmColumns];
+      'CÍRCULOS PREENCHIDOS':Result+=[gmDots];
+      'CÍRCULOS VAZADOS':Result+=[gmClearDots];
+      'CÍRCULOS AMBOS':Result+=[gmDotsClearDots];
+    end;
+end;
+
+function GetMatrixTypeString(AMatrixType: TGameMatrixType): string;
+var
+  LCount: Integer;
+  LType : TGameMatrix;
+begin
+  Result := '';
+  for LType in AMatrixType do
+    case LType of
+      gmColors : Result += 'CORES,';
+      gmRows : Result += 'LINHAS,';
+      gmColumns : Result += 'COLUNAS,';
+      gmDots : Result += 'CÍRCULOS PREENCHIDOS,';
+      gmClearDots : Result += 'CÍRCULOS VAZADOS,';
+      gmDotsClearDots : Result += 'CÍRCULOS AMBOS,';
+    end;
+end;
 
 function GetPlayerFromString(s: string): TPlayer;
 

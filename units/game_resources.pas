@@ -81,16 +81,19 @@ resourcestring
   VAL_RESEARCHER = 'Pesquisador';
   VAL_EXPERIMENT = 'Experimento';
   VAL_INTERLOCKING = 'Entrelaçamento';
-
   VAL_BEGIN_TIME = 'Começo';
+  VAL_RESEARCHERS = 'Pesquisadores';
 
-  DEF_END = '2,20,10,10,';  // which come first, 20 cycles | 10% entrelaçamentos in the last 10 cycles
+  DEF_END_CRITERIA_STYLE = 'CICLOS';
+  //DEF_END_CRITERIA_CYCLES = '20';
+  DEF_END_CRITERIA_PORCENTAGE = '80,10';
+
   DEF_POINTS = '0,0,0,';
-  DEF_CONSEQUENCE = '1,0|M,C,P,A,|$NICNAME|ponto|pontos|';
+  DEF_CONSEQUENCE = '1,0|M,C,P,A,|$NICNAME produziu|ponto.|pontos.|';
   DEF_METARESPONSE = 'IMPAR,E,DIFERENTES,';
   DEF_CRITERIA = 'PAR,E,INDIFERENTE,';
-  DEF_PROMPTMESSAGE = 'Vocês perderam <$G> item escolar. Desejam recuperá-lo gastando pontos do Tipo A?';
-
+  //DEF_PROMPTMESSAGE = 'Vocês perderam 1 item escolar. Desejam recuperá-lo gastando pontos do Tipo A?';
+  DEF_MATRIX_TYPE = 'CORES,LINHAS,';
 const
   // grid colors
   ccYellow = $00FFFF;
