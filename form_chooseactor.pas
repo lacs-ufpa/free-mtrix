@@ -104,6 +104,9 @@ begin
         btnAdmin.Visible:= False;
         btnPlayer.Visible:= False;
         BorderStyle:=bsNone;
+        {$IFDEF WINDOWS}
+        BoundsRect := Monitor.BoundsRect;
+        {$ENDIF}
         Position:=poDesigned;
         FormStyle:=fsNormal;
         WindowState:=wsFullScreen;
