@@ -85,8 +85,11 @@ type
 
 var
   FormMatrixGame: TFormMatrixGame;
+
 resourcestring
-  RS_RESEARCHERS = 'Pesquisadores';
+  CAPTION_RESUME = 'Recomeçar';
+  CAPTION_START = 'Começar';
+  CAPTION_RUNNING = 'Rodando';
 
 implementation
 
@@ -313,7 +316,7 @@ end;
 procedure TFormMatrixGame.ButtonExpCancelClick(Sender: TObject);
 begin
   ButtonExpStart.Enabled := True;
-  ButtonExpStart.Caption := 'Começar';
+  ButtonExpStart.Caption := CAPTION_START;
   ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
   ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
   //FGameControl.Experiment.SaveToFile(SaveDialog.FileName'.canceled');
@@ -323,28 +326,28 @@ end;
 procedure TFormMatrixGame.ButtonExpPauseClick(Sender: TObject);
 begin
   ButtonExpStart.Enabled := True;
-  ButtonExpStart.Caption := 'Recomeçar';
+  ButtonExpStart.Caption := CAPTION_RESUME;
   ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
   //FGameControl.Experiment.Pause;
 end;
 
 procedure TFormMatrixGame.ButtonExpStartClick(Sender: TObject);
 begin
-  OpenDialog.InitialDir:=ExtractFilePath(Application.ExeName)+RS_RESEARCHERS;
-  if ButtonExpStart.Caption = 'Começar' then
+  OpenDialog.InitialDir:=ExtractFilePath(Application.ExeName)+VAL_RESEARCHERS;
+  if ButtonExpStart.Caption = CAPTION_START then
     if OpenDialog.Execute then
       begin
         ButtonExpStart.Enabled := False;
-        ButtonExpStart.Caption := 'Rodando';
+        ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
         ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-        //FGameControl.Experiment.LoadFromFile(OpenDialog.FileName);
+        FGameControl.Experiment.LoadFromFile(OpenDialog.FileName);
       end;
 
-  if ButtonExpStart.Caption = 'Recomeçar' then
+  if ButtonExpStart.Caption = CAPTION_RESUME then
       begin
         ButtonExpStart.Enabled := False;
-        ButtonExpStart.Caption := 'Rodando';
+        ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
         ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
         //FGameControl.Experiment.Resume;
