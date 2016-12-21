@@ -52,8 +52,8 @@ type
     procedure SetRowBase(AValue: integer);
   private
     function AskQuestion(AQuestion:string):UTF8string;
-    procedure ShowPopUp(AText:string);
-    procedure ShowConsequenceMessage(AID,S:string;ForGroup:Boolean);
+    function ShowConsequence(AID,S:string;ForGroup:Boolean;ShowPopUp : Boolean = True) : string;
+    procedure ShowPopUp(AText:string;AInterval : integer = 5000);
     procedure DisableConfirmationButton;
     procedure CleanMatrix(AEnabled : Boolean);
     procedure NextConditionSetup(S : string);
@@ -120,7 +120,7 @@ const
 
 implementation
 
-uses ButtonPanel,Controls,ExtCtrls,StdCtrls,LazUTF8, Forms, strutils
+uses ButtonPanel,Controls,ExtCtrls,StdCtrls,LazUTF8, Forms, Dialogs, strutils
      , zhelpers
      , form_matrixgame
      , presentation_classes
@@ -247,16 +247,9 @@ begin
   // wait some time, we just sent a message earlier
   Sleep(5);
 
+  // gui setup
   // enable matrix grid for the first player
   FZMQActor.SendMessage([K_START]);
-
-  //
-  Start;
-end;
-
-procedure TGameControl.Start;
-begin
-  // basic gui setup
 
   // points
   //FormMatrixGame.GBIndividualAB.Visible := FExperiment.ABPoints;
@@ -283,8 +276,14 @@ begin
   // wait for players
 end;
 
+procedure TGameControl.Start;
+begin
+  // check if experiment is running
+end;
+
 procedure TGameControl.Pause;
 begin
+  //FExperiment.State:=xsPaused;
   // save to file
 
   // inform players
@@ -292,6 +291,7 @@ end;
 
 procedure TGameControl.Resume;
 begin
+  //FExperiment.State:=xsRunning;
   // load from file
 
   // wait for players
@@ -299,6 +299,8 @@ end;
 
 procedure TGameControl.Stop;
 begin
+  // Pause
+
   // cleaning
 end;
 
@@ -457,41 +459,46 @@ var
 begin
   Prompt:=TForm.CreateNew(nil);
   try
-    with Prompt do begin
-      BorderStyle:=bsNone;
-      Position:=poScreenCenter;
-      ButtonPanel:=TButtonPanel.Create(Prompt);
-      with ButtonPanel do begin
-        ButtonOrder:=boCloseOKCancel;
-        OKButton.Caption:='Sim';
-        CancelButton.Caption:='Não';
-        ShowButtons:=[pbOK, pbCancel];
-        ShowBevel:=True;
-        ShowGlyphs:=[];
-        Parent:=Prompt;
-      end;
-      LabelQuestion:=TLabel.Create(Prompt);
-      with LabelQuestion do begin
-        Align:=alClient;
-        Caption:= AQuestion;
-        Alignment := taCenter;
-        Anchors := [akLeft,akRight];
-        Layout := tlCenter;
-        WordWrap := True;
-        Parent:=Prompt;
-      end;
+    with Prompt do
+      begin
+        BorderStyle:=bsNone;
+        Position:=poScreenCenter;
+        ButtonPanel:=TButtonPanel.Create(Prompt);
+        with ButtonPanel do
+          begin
+            ButtonOrder:=boCloseOKCancel;
+            OKButton.Caption:='Sim';
+            CancelButton.Caption:='Não';
+            ShowButtons:=[pbOK, pbCancel];
+            ShowBevel:=True;
+            ShowGlyphs:=[];
+            Parent:=Prompt;
+          end;
 
-      mr:=ShowModal;
-      if mr = mrOK then
-        Result := 'S'
-      else Result := 'N';
-    end;
+        LabelQuestion:=TLabel.Create(Prompt);
+        with LabelQuestion do
+          begin
+            Align:=alClient;
+            Caption:= AQuestion;
+            Alignment := taCenter;
+            Anchors := [akLeft,akRight];
+            Layout := tlCenter;
+            WordWrap := True;
+            Parent:=Prompt;
+          end;
+
+        mr:=ShowModal;
+        if mr = mrOK then
+          Result := 'S'
+        else
+          Result := 'N';
+      end;
   finally
     Prompt.Free;
   end;
 end;
 
-procedure TGameControl.ShowPopUp(AText: string);
+procedure TGameControl.ShowPopUp(AText: string; AInterval: integer);
 var PopUpPos : TPoint;
 begin
   PopUpPos.X := FormMatrixGame.GBIndividualAB.Left-110;
@@ -501,15 +508,19 @@ begin
   FormMatrixGame.PopupNotifier.Text:=AText;
   FormMatrixGame.PopupNotifier.ShowAtPos(PopUpPos.X,PopUpPos.Y);
   FormMatrixGame.Timer.OnTimer:=@FormMatrixGame.TimerTimer;
+  FormMatrixGame.Timer.Interval:=AInterval;
   FormMatrixGame.Timer.Enabled:=True;
 end;
 
-procedure TGameControl.ShowConsequenceMessage(AID, S: string; ForGroup: Boolean);
+function TGameControl.ShowConsequence(AID, S: string;
+  ForGroup: Boolean; ShowPopUp: Boolean):string;
 var
   LConsequence : TConsequence;
 begin
+  Result := '';
   LConsequence := TConsequence.Create(nil,S);
-  LConsequence.GenerateMessage(ForGroup);
+  Result := LConsequence.GenerateMessage(ForGroup);
+  if ShowPopUp then
   LConsequence.PresentMessage(FormMatrixGame.GBIndividualAB);
   case FActor of
     gaPlayer:
@@ -981,20 +992,24 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   var
     i : integer;
     MID : string;
+    LQConsequence : string;
   begin
     if AMessage[2] <> #27 then
       begin
         if AMessage.Count > 1 then
           begin
+            // present only one popup with all messages
+            LQConsequence := '';
             for i := 3 to AMessage.Count -1 do
               begin
                 MID := ExtractDelimited(1,AMessage[i],['+']);
-                ShowConsequenceMessage(MID, ExtractDelimited(2,AMessage[i],['+']),MID = 'M');
-                // TODO: QMESSAGE present only one message with all information...
+                LQConsequence += ShowConsequence(MID, ExtractDelimited(2,AMessage[i],['+']),MID = 'M',False)+' ';
+
                 {$IFDEF DEBUG}
                 WriteLn('A Prompt consequence should have shown.');
                 {$ENDIF}
               end;
+            ShowPopUp(LQConsequence);
           end;
         ResumeNextTurn;
         if AMessage[2] <> #32 then
@@ -1007,7 +1022,7 @@ begin
   if MHas(K_ARRIVED) then ReceiveActor;
   if MHas(K_CHAT_M)  then ReceiveChat;
   if MHas(K_CHOICE)  then ReceiveChoice;
-  if MHas(K_MESSAGE) then ShowConsequenceMessage(AMessage[1],AMessage[2],StrToBool(AMessage[3]));
+  if MHas(K_MESSAGE) then ShowConsequence(AMessage[1],AMessage[2],StrToBool(AMessage[3]));
   if MHas(K_START) then NotifyPlayers;
   if MHas(K_QUESTION) then ShowQuestion;
   if MHas(K_MOVQUEUE) then MovePlayerQueue;
@@ -1166,17 +1181,17 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
         ARequest.Append(LEndGeneration); // 9, #32 resume, else NextGeneration = PlayerToKick AID
         LEndCondition := ShouldEndCondition;
         if IsLastCondition and LEndCondition then // 10
-          // end experiment envelop
+          // end experiment envelop item
           ARequest.Append(#27)
         else
           if LEndCondition then
             begin
               FExperiment.NextCondition;
-              // end condition envelop
+              // end condition envelop item
               ARequest.Append(FExperiment.CurrentConditionAsString);
             end
           else
-            // do nothing envelop
+            // do nothing envelop item
             ARequest.Append(#32);
       end;
   end;
@@ -1231,10 +1246,12 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   begin
     P := FExperiment.PlayerFromID[ARequest[0]];
     ARequest[2] := K_RESUME+K_ARRIVED;
-    if AskQuestion(
-      'Um novo participante entrou no lugar do participante mais antigo. Criar um novo apelido para o novo participante?'
-      ) = 'S' then
-      P.Nicname := GenResourceName(-1);
+    P.Nicname := InputBox
+      (
+        'Mudança de geração',
+        'Um novo participante entrou no lugar do participante mais antigo.Qual o apelido do novo participante?',
+        GenResourceName(-1)
+      );
 
     S := FExperiment.PlayerAsString[P];
     ARequest.Append(S); // 3
@@ -1242,10 +1259,13 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   end;
 
 begin
-  if MHas(K_LOGIN) then ReplyLoginRequest;
-  if MHas(K_RESUME) then ReplyResume;
-  if MHas(K_CHOICE) then ValidateChoice;
-  if MHas(K_QUESTION) then ValidateQuestionResponse;
+  if FExperiment.State = xsRunning then
+    begin
+      if MHas(K_LOGIN) then ReplyLoginRequest;
+      if MHas(K_RESUME) then ReplyResume;
+      if MHas(K_CHOICE) then ValidateChoice;
+      if MHas(K_QUESTION) then ValidateQuestionResponse;
+    end;
 end;
 
 // Here FActor is garanted to be a TZMQPlayer, replying by:
@@ -1286,7 +1306,8 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
     else
       begin
       {$IFDEF DEBUG}
-        WriteLn(Self.ID +' sent but' + AReply[0]  +' received. <<<<<<<<<<<<<<<<<<<<<<< This must not occur >>>>>>>>>>>>>>>>>>>>>>>>>>');
+        WriteLn(Self.ID + ' sent but' + AReply[0] +
+          ' received. <<<<<<<<<<<<<<<<<<<<<<< This must never occur >>>>>>>>>>>>>>>>>>>>>>>>>>');
       {$ENDIF}
       end;
   end;
