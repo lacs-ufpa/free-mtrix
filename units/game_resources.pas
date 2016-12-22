@@ -74,8 +74,13 @@ resourcestring
   KEY_CRITERIA = '.Resposta';
   KEY_CONSEQUE = '.Consequência'; // A,B,G,CSQCODE
   KEY_CONSEQUE_MESSAGE_PREPEND = '.Consequência.Mensagem.Prefixo';
-  KEY_CONSEQUE_MESSAGE_APPENDS = '.Consequência.Mensagem.Sufixo.Singular';
-  KEY_CONSEQUE_MESSAGE_APPENDP = '.Consequência.Mensagem.Sufixo.Plural';
+  KEY_CONSEQUE_MESSAGE_PREPEND_LOSS = '.Consequência.Mensagem.Prefixo_ao_perder';
+  KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S = '.Consequência.Mensagem.Sufixo_ao_perder.Singular';
+  KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P = '.Consequência.Mensagem.Sufixo_ao_perder.Plural';
+  KEY_CONSEQUE_MESSAGE_PREPEND_EARN = '.Consequência.Mensagem.Prefixo_ao_ganhar';
+  KEY_CONSEQUE_MESSAGE_APPEND_EARN_S = '.Consequência.Mensagem.Sufixo_ao_ganhar.Singular';
+  KEY_CONSEQUE_MESSAGE_APPEND_EARN_P = '.Consequência.Mensagem.Sufixo_ao_ganhar.Plural';
+  KEY_CONSEQUE_MESSAGE_APPEND_ZERO = '.Consequência.Mensagem.Sufixo_zero';
 
   VAL_CONSEQUENCE = 'Cosequência';
   VAL_RESEARCHER = 'Pesquisador';

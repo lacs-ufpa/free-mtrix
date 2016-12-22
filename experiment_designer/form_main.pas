@@ -15,7 +15,8 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  Menus, ExtCtrls, StdCtrls, XMLPropStorage, IniFiles, Spin, PropertyStorage;
+  Menus, ExtCtrls, StdCtrls, XMLPropStorage, IniFiles, Spin, PropertyStorage,
+  PopupNotifier;
 
 type
 
@@ -28,22 +29,29 @@ type
     BtnRemoveContingency: TButton;
     BtnReorderCond: TButton;
     BtnReorderContingency: TButton;
+    ButtonPreviewMessage: TButton;
     CGGlobal: TCheckGroup;
+    CheckBoxImutableMessage: TCheckBox;
     ChkDotsCleanDots: TCheckBox;
     ChkColors: TCheckBox;
     ChkRows: TCheckBox;
     ChkCols: TCheckBox;
     ChkDots: TCheckBox;
     ChkCleanDots: TCheckBox;
-    CheckBoxBroadcast: TCheckBox;
     CheckBoxShouldAskQuestion: TCheckBox;
     CGQuestion: TCheckGroup;
     CBPointsType: TComboBox;
     ComboCurrentCondition: TComboBox;
     ComboCurrentContingency: TComboBox;
-    EditMessPrefix: TEdit;
-    EditMessSufix: TEdit;
     EditContingencyName: TEdit;
+    EditMessPrefix: TEdit;
+    EditMessSufixEarnPlural: TEdit;
+    EditMessPrefixEarn: TEdit;
+    EditMessSufixZero: TEdit;
+    EditMessPrefixLoss: TEdit;
+    EditMessSufixLossSingular: TEdit;
+    EditMessSufixLossPlural: TEdit;
+    EditMessSufixEarnSingular: TEdit;
     EditQuestion: TEdit;
     EditConditionName: TEdit;
     EditExperimentName: TEdit;
@@ -58,13 +66,18 @@ type
     GBContingencyRows: TGroupBox;
     GBContingencyConsequence: TGroupBox;
     GBMatrix: TGroupBox;
+    LabelCsq10: TLabel;
+    LabelCsq3: TLabel;
+    LabelCsq5: TLabel;
+    LabelCsq8: TLabel;
+    LabelCsq6: TLabel;
+    LabelCsq9: TLabel;
+    LabelCsq4: TLabel;
+    LabelCsq7: TLabel;
     LabelQuestion: TLabel;
     LabelPointsOnConditionBegin: TLabel;
-    LabelC1: TLabel;
-    LabelC2: TLabel;
-    LabelC4: TLabel;
-    LabelC5: TLabel;
-    LabelC6: TLabel;
+    LabelCsq1: TLabel;
+    LabelCsq2: TLabel;
     LabelThen: TLabel;
     LabelOperator: TLabel;
     LabelContingencyName: TLabel;
@@ -89,6 +102,7 @@ type
     PageControl: TPageControl;
     PanelConditionButtons: TPanel;
     PanelContingenciesButtons: TPanel;
+    RGBroadcastMessage: TRadioGroup;
     RGContingencyType: TRadioGroup;
     RGContingencyStyle: TRadioGroup;
     RGEndCriteriaStyle: TRadioGroup;
@@ -110,13 +124,14 @@ type
     procedure BtnRemoveContingencyClick(Sender: TObject);
     procedure BtnReorderCondClick(Sender: TObject);
     procedure BtnReorderContingencyClick(Sender: TObject);
+    procedure ButtonPreviewMessageClick(Sender: TObject);
+    procedure CheckBoxImutableMessageChange(Sender: TObject);
     procedure ChkDotsCleanDotsChange(Sender: TObject);
     //
     procedure ConsequenceMessageEditingDone(Sender: TObject);
     procedure ConsequenceStyleChange(Sender: TObject);
 
     procedure CGQuestionItemClick(Sender: TObject; Index: integer);
-    procedure CheckBoxBroadcastChange(Sender: TObject);
     procedure CheckBoxColorsRowsChange(Sender: TObject);
     procedure CheckBoxShouldAskQuestionChange(Sender: TObject);
     procedure ChkCleanDotsChange(Sender: TObject);
@@ -125,12 +140,14 @@ type
     procedure ComboCurrentContingencyChange(Sender: TObject);
     procedure EditConditionNameEditingDone(Sender: TObject);
     procedure EditContingencyNameEditingDone(Sender: TObject);
+    procedure EditMessSufixZeroChange(Sender: TObject);
     procedure EditQuestionEditingDone(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
     procedure MenuItemOpenClick(Sender: TObject);
+    procedure RGBroadcastMessageClick(Sender: TObject);
     procedure RGContingencyStyleClick(Sender: TObject);
     procedure RGContingencyStyleExit(Sender: TObject);
 
@@ -187,7 +204,7 @@ var
 
 implementation
 
-uses game_resources, game_actors, string_methods, strutils;
+uses game_resources, game_actors, game_actors_point, string_methods, strutils;
 
 {$R *.lfm}
 
@@ -203,6 +220,35 @@ begin
     FExperiment := TIniFile.Create(OpenDialog.FileName);
     XMLPropStorage.StoredValue['FileName'] := FExperiment.FileName;
   end;
+end;
+
+procedure TFormDesigner.RGBroadcastMessageClick(Sender: TObject);
+var
+  LVisible : Boolean;
+begin
+  case RGBroadcastMessage.ItemIndex of
+    0,1: LVisible := True;
+    2 : LVisible := False;
+  end;
+  CheckBoxImutableMessage.Visible := LVisible;
+  LabelCsq3.Visible := LVisible;
+  LabelCsq4.Visible := LVisible;
+  LabelCsq5.Visible := LVisible;
+  LabelCsq6.Visible := LVisible;
+  LabelCsq7.Visible := LVisible;
+  LabelCsq8.Visible := LVisible;
+  LabelCsq9.Visible := LVisible;
+  LabelCsq10.Visible := LVisible;
+  EditMessPrefix.Visible := LVisible;
+  EditMessPrefixLoss.Visible:= LVisible;
+  EditMessSufixLossPlural.Visible:= LVisible;
+  EditMessSufixLossSingular.Visible:= LVisible;
+  EditMessPrefixEarn.Visible:= LVisible;
+  EditMessSufixEarnPlural.Visible:= LVisible;
+  EditMessSufixEarnSingular.Visible:= LVisible;
+  EditMessSufixZero.Visible:= LVisible;
+  ButtonPreviewMessage.Visible:=LVisible;
+  ConsequenceStyleChange(RGBroadcastMessage);
 end;
 
 procedure TFormDesigner.RGContingencyStyleClick(Sender: TObject);
@@ -716,19 +762,14 @@ begin
   //    end;
 
   if gscBroadcastMessage in CS then
-    CheckBoxBroadcast.State := cbChecked
+    RGBroadcastMessage.ItemIndex := 0
   else
   if gscMessage in CS then
-    CheckBoxBroadcast.State := cbGrayed
+    RGBroadcastMessage.ItemIndex := 1
   else
-    CheckBoxBroadcast.State := cbUnchecked;
+    RGBroadcastMessage.ItemIndex := 2;
 
 
-  case CheckBoxBroadcast.State of
-    cbChecked: CheckBoxBroadcast.Caption := 'a todos';
-    cbUnchecked: CheckBoxBroadcast.Caption := 'ao participante';
-    cbGrayed: CheckBoxBroadcast.Caption := 'a ninguém';
-  end;
 end;
 
 procedure TFormDesigner.UpdateContingencyList(ASection: String);
@@ -854,15 +895,21 @@ begin
       WriteString(ASection, AContingency + KEY_CRITERIA, GetContingencyCriteria);
       WriteString(ASection, AContingency + KEY_CONSEQUE, GetConsequenceStyle);
       WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
-      try
-        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDS, ExtractDelimited(1,EditMessSufix.Text,['|']));
-        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDP, ExtractDelimited(2,EditMessSufix.Text,['|']));
-      except
-        on E: Exception do
-          Exit;
-        //if E.Message = 'E';
 
-      end;
+      if EditMessPrefixLoss.Text <> '' then
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,EditMessPrefixLoss.Text);
+      if EditMessSufixLossSingular.Text <> '' then
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,EditMessSufixLossSingular.Text);
+      if EditMessSufixLossPlural.Text <> '' then
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,EditMessSufixLossPlural.Text);
+      if EditMessPrefixEarn.Text <> '' then
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,EditMessPrefixEarn.Text);
+      if EditMessSufixEarnSingular.Text <> '' then
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,EditMessSufixEarnSingular.Text);
+      if EditMessSufixEarnPlural.Text <> '' then
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,EditMessSufixEarnPlural.Text);
+      if EditMessSufixZero.Text <> '' then
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_ZERO, EditMessSufixZero.Text);
     end;
 end;
 
@@ -874,8 +921,13 @@ begin
       DeleteKey(ASection, AContingency + KEY_CRITERIA);
       DeleteKey(ASection, AContingency + KEY_CONSEQUE);
       DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND);
-      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDS);
-      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDP);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_EARN);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P);
+      DeleteKey(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_ZERO);
     end;
 end;
 
@@ -968,10 +1020,10 @@ begin
       end;
   end;
 
-  case CheckBoxBroadcast.State of
-    cbChecked : CS += [gscBroadcastMessage];
-    cbUnchecked: { do nothing };
-    cbGrayed: CS -= [gscMessage];
+  case RGBroadcastMessage.ItemIndex of
+    0 : CS += [gscBroadcastMessage];
+    1: { do nothing };
+    2: CS -= [gscMessage];
   end;
 
   Result := IntToStr(SpinEditContingencyPoints.Value)+',0|';
@@ -1090,8 +1142,20 @@ begin
         SetContingencyCriteria(ReadString(ASection, AContingency + KEY_CRITERIA, ''));
         SetConsequenceStyle(ReadString(ASection, AContingency + KEY_CONSEQUE, ''));
         EditMessPrefix.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND,'');
-        EditMessSufix.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDS,'')+'|'+
-          ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPENDP,'');
+        EditMessPrefixLoss.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,'');
+        EditMessSufixLossSingular.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,'');
+        EditMessSufixLossPlural.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,'');
+        EditMessPrefixEarn.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,'');
+        EditMessSufixEarnSingular.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,'');
+        EditMessSufixEarnPlural.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,'');
+        EditMessSufixZero.Text := ReadString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_ZERO, '');
+
+        if (EditMessPrefixLoss.Text = '') and (EditMessSufixLossSingular.Text = '') and (EditMessSufixLossPlural.Text = '') and
+           (EditMessPrefixEarn.Text = '') and (EditMessSufixEarnSingular.Text = '') and (EditMessSufixEarnPlural.Text = '') and
+           (EditMessSufixZero.Text = '') then
+          CheckBoxImutableMessage.Checked := True
+        else
+          CheckBoxImutableMessage.Checked := False;
       end;
 end;
 
@@ -1215,6 +1279,11 @@ begin
       end;
 end;
 
+procedure TFormDesigner.EditMessSufixZeroChange(Sender: TObject);
+begin
+
+end;
+
 procedure TFormDesigner.ConsequenceMessageEditingDone(Sender: TObject);
 var
   LS, LC: String;
@@ -1239,16 +1308,6 @@ end;
 procedure TFormDesigner.FormActivate(Sender: TObject);
 begin
   FLoading := False;
-end;
-
-procedure TFormDesigner.CheckBoxBroadcastChange(Sender: TObject);
-begin
-  case TCheckBox(Sender).State of
-    cbChecked: TCheckBox(Sender).Caption := 'a todos';
-    cbUnchecked: TCheckBox(Sender).Caption := 'ao participante';
-    cbGrayed: TCheckBox(Sender).Caption := 'a ninguém';
-  end;
-  ConsequenceStyleChange(CheckBoxBroadcast);
 end;
 
 
@@ -1355,8 +1414,13 @@ var
         Keys.Values[LC + KEY_CRITERIA] := ReadString(LS, LC + KEY_CRITERIA,'');
         Keys.Values[LC + KEY_CONSEQUE] := ReadString(LS, LC + KEY_CONSEQUE,'');
         Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPENDS] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDS,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPENDP] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPENDP,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND_EARN] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,'');
+        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_ZERO] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_ZERO,'');
       end;
     Keys.EndUpdate;
   end;
@@ -1425,6 +1489,89 @@ procedure TFormDesigner.BtnReorderContingencyClick(Sender: TObject);
 begin
   // todo: custom reorder contingencies
   ShowMessage('Não implementado.');
+end;
+
+procedure TFormDesigner.ButtonPreviewMessageClick(Sender: TObject);
+var
+  LGamePoint : TGamePoint;
+  LMessage : TPopupNotifier;
+  i: Integer;
+  procedure CreateMessage(AValue : integer = 0);
+  begin
+    if CheckBoxImutableMessage.Checked then
+      LGamePoint := TGamePoint.Create(Nil,IntToStr(SpinEditContingencyPoints.Value))
+    else
+      LGamePoint := TGamePoint.Create(Nil,IntToStr(AValue));
+    LMessage := TPopupNotifier.Create(nil);
+    LMessage.Title := '';
+    LMessage.Color := clTeal;
+    LMessage.Text := LGamePoint.PointMessage(EditMessPrefix.Text,
+      EditMessPrefixLoss.Text,EditMessSufixLossSingular.Text,EditMessSufixLossPlural.Text,
+      EditMessPrefixEarn.Text,EditMessSufixEarnSingular.Text,EditMessSufixEarnPlural.Text,
+      EditMessSufixZero.Text,
+      RGContingencyType.ItemIndex = 1);
+      LMessage.ShowAtPos(
+        (Screen.Width div 2)-150,(Screen.Height div 2)-50);
+  end;
+
+begin
+  if CheckBoxImutableMessage.Checked then
+    CreateMessage
+  else
+    for i := -2 to 2 do
+      CreateMessage(i);
+end;
+
+procedure TFormDesigner.CheckBoxImutableMessageChange(Sender: TObject);
+var
+  LVisible : Boolean;
+  LGamePoint : TGamePoint;
+begin
+  LVisible := TCheckBox(Sender).Checked;
+  if LVisible then
+    begin
+      LabelCsq3.Caption := 'Texto da mensagem de notificação';
+      LGamePoint := TGamePoint.Create(Self,IntToStr(SpinEditContingencyPoints.Value));
+      if not FLoading then
+      case RGContingencyType.ItemIndex of
+        0:EditMessPrefix.Text := LGamePoint.PointMessage('','','','','','','','',False);
+        1:EditMessPrefix.Text := LGamePoint.PointMessage('','','','','','','','',True);
+      end;
+      LGamePoint.Free;
+      ButtonPreviewMessage.Caption:= 'Ver como a mensagem será apresentada';
+    end
+  else
+    begin
+      LabelCsq3.Caption := 'Texto no início da mensagem';
+      if not FLoading then
+      case RGContingencyType.ItemIndex of
+        0:EditMessPrefix.Text := '$NICNAME';
+        1:EditMessPrefix.Text := 'Vocês';
+      end;
+      ButtonPreviewMessage.Caption:= 'Ver como a mensagem pode ser apresentada';
+    end;
+
+  LabelCsq4.Visible := not LVisible;
+  LabelCsq5.Visible := not LVisible;
+  LabelCsq6.Visible := not LVisible;
+  LabelCsq7.Visible := not LVisible;
+  LabelCsq8.Visible := not LVisible;
+  LabelCsq9.Visible := not LVisible;
+  LabelCsq10.Visible := not LVisible;
+  EditMessPrefixLoss.Visible:= not LVisible;
+  EditMessPrefixLoss.Text := '';
+  EditMessSufixLossPlural.Visible:= not LVisible;
+  EditMessSufixLossPlural.Text := '';
+  EditMessSufixLossSingular.Visible:= not LVisible;
+  EditMessSufixLossSingular.Text := '';
+  EditMessPrefixEarn.Visible:= not LVisible;
+  EditMessPrefixEarn.Text := '';
+  EditMessSufixEarnPlural.Visible:= not LVisible;
+  EditMessSufixEarnPlural.Text := '';
+  EditMessSufixEarnSingular.Visible:= not LVisible;
+  EditMessSufixEarnSingular.Text := '';
+  EditMessSufixZero.Visible:= not LVisible;
+  EditMessSufixZero.Text := '';
 end;
 
 

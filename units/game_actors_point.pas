@@ -29,7 +29,6 @@ type
     function GetResultAsString: string;
     function GetValue: integer;
   public
-    //Cycles : integer; // specify when present points regarding condition cycles
     constructor Create(AOwner:TComponent;AValue : integer);overload;
     constructor Create(AOwner:TComponent;AValue : array of integer); overload;
     constructor Create(AOwner:TComponent;AResult : string); overload;
@@ -37,17 +36,17 @@ type
       APrependEarn,AAppendiceEarnSingular,AAppendiceEarnPlural,AAppendiceZero: string; IsGroupPoint: Boolean) : string;
     property ValueWithVariation : integer read GetValue write FValue;
     property Variation : integer read FVariation write FVariation;
-
     property AsString : string read GetResultAsString;
     property ResultAsInteger : integer read GetResult;
   end;
 
 //operator :=(I :integer) : TGamePoint;
 //operator :=(A : array of integer):TGamePoint;
-//
+
 implementation
 
 uses strutils;
+
 //operator:=(I: integer):TGamePoint;
 //begin
 //  Result := ;
@@ -106,6 +105,7 @@ function TGamePoint.PointMessage(APrepend,
 
   procedure ReadCustomMessage;
   begin
+    Result := APrepend;
     case FResult of
       -MaxInt..-2: Result += #32+APrependLoss+#32+Self.AsString+#32+AAppendiceLossPlural;
      -1 : Result += #32+APrependLoss+#32+Self.AsString+#32+AAppendiceLossSingular;
@@ -115,52 +115,58 @@ function TGamePoint.PointMessage(APrepend,
     end;
   end;
 
-begin
-  if IsGroupPoint then
-    begin
-      if APrepend = '' then
-        Result := 'Vocês'
-      else
-        Result := APrepend;
-
-      if (APrependLoss = '') or (AAppendiceLossSingular = '') or (AAppendiceLossPlural = '') or
-         (APrependEarn = '') or (AAppendiceEarnSingular = '') or (AAppendiceEarnPlural = '') or
-         (AAppendiceZero = '') then
-        begin
-          case FResult of
-            -MaxInt..-2: Result += #32+'retiraram'+#32+Self.AsString+#32+'itens escolares de uma escola pública';
-           -1 : Result += #32+'retiraram'+#32+Self.AsString+#32+'item escolar de uma escola pública';
-            0 : Result += #32+'não doaram e nem retiraram itens escolares';
-            1 : Result += #32+'doaram'+#32+Self.AsString+#32+'item escolar a uma escola pública';
-            2..MaxInt: Result += #32+'doaram'+#32+Self.AsString+#32+'itens escolares a uma escola pública';
-          end;
-        end
-      else
-        ReadCustomMessage;
-    end
-  else
-    begin
-      if APrepend = '' then
-        Result := 'Alguém'
-      else
-        Result := APrepend;
-
-      if (APrependLoss = '') or (AAppendiceLossSingular = '') or (AAppendiceLossPlural = '') or
-         (APrependEarn = '') or (AAppendiceEarnSingular = '') or (AAppendiceEarnPlural = '') or
-         (AAppendiceZero = '') then
-        begin
-          case FResult of
-            -MaxInt..-2: Result += #32+'perdeu'+#32+Self.AsString+#32+'pontos';
-           -1 : Result += #32+'perdeu'+#32+Self.AsString+#32+'ponto';
-            0 : Result += #32+'não perdeu nem ganhou pontos';
-            1 : Result += #32+'ganhou'+#32+Self.AsString+#32+'ponto';
-            2..MaxInt: Result += #32+'ganhou'+#32+Self.AsString+#32+'pontos';
-          end;
-        end
-      else
-        ReadCustomMessage;
+  procedure ReadBuiltInGroupMessage;
+  begin
+    Result := 'Vocês';
+    case FResult of
+      -MaxInt..-2: Result += #32+'retiraram'+#32+Self.AsString+#32+'itens escolares de uma escola pública';
+     -1 : Result += #32+'retiraram'+#32+Self.AsString+#32+'item escolar de uma escola pública';
+      0 : Result += #32+'não doaram e nem retiraram itens escolares';
+      1 : Result += #32+'doaram'+#32+Self.AsString+#32+'item escolar a uma escola pública';
+      2..MaxInt: Result += #32+'doaram'+#32+Self.AsString+#32+'itens escolares a uma escola pública';
     end;
-  Result += '.';
+    Result += '.';
+  end;
+
+  procedure ReadBuiltInIndividualMessage;
+  begin
+    Result := '$NICNAME';
+    case FResult of
+      -MaxInt..-2: Result += #32+'perdeu'+#32+Self.AsString+#32+'pontos';
+     -1 : Result += #32+'perdeu'+#32+Self.AsString+#32+'ponto';
+      0 : Result += #32+'não perdeu nem ganhou pontos';
+      1 : Result += #32+'ganhou'+#32+Self.AsString+#32+'ponto';
+      2..MaxInt: Result += #32+'ganhou'+#32+Self.AsString+#32+'pontos';
+    end;
+    Result += '.';
+  end;
+
+begin
+  if (APrependLoss = '') and (AAppendiceLossSingular = '') and (AAppendiceLossPlural = '') and
+     (APrependEarn = '') and (AAppendiceEarnSingular = '') and (AAppendiceEarnPlural = '') and
+     (AAppendiceZero = '') and (APrepend <> '') then
+    begin
+      Result := APrepend;
+      Exit;
+    end;
+
+    if (APrependLoss <> '') and (AAppendiceLossSingular <> '') and (AAppendiceLossPlural <> '') and
+     (APrependEarn <> '') and (AAppendiceEarnSingular <> '') and (AAppendiceEarnPlural <> '') and
+     (AAppendiceZero <> '') and (APrepend <> '') then
+    begin
+      ReadCustomMessage;
+      Exit;
+    end;
+
+    if (APrependLoss = '') and (AAppendiceLossSingular = '') and (AAppendiceLossPlural = '') and
+       (APrependEarn = '') and (AAppendiceEarnSingular = '') and (AAppendiceEarnPlural = '') and
+       (AAppendiceZero = '') and (APrepend = '') then
+      begin
+        if IsGroupPoint then
+          ReadBuiltInGroupMessage
+        else
+          ReadBuiltInIndividualMessage;
+      end;
 end;
 
 
