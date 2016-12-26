@@ -230,7 +230,6 @@ uses game_resources, game_actors, game_actors_point, string_methods, strutils
   {$IFDEF WINDOWS}
   , Dos
   {$ENDIF}
-  , Dos
   ;
 
 const SV_FILENAME : string = 'Filename';
