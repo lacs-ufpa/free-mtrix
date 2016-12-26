@@ -176,6 +176,9 @@ type
     procedure SpinEditOnConditionBeginAEditingDone(Sender: TObject);
     procedure SpinEditTurnValueEditingDone(Sender: TObject);
     procedure XMLPropStorageRestoreProperties(Sender: TObject);
+    {$IFDEF WINDOWS}
+    procedure XMLPropStorageSaveProperties(Sender: TObject);
+    {$ENDIF}
     procedure XMLPropStorageSavingProperties(Sender: TObject);
     procedure XMLPropStorageStoredValuesFileNameRestore(Sender: TStoredValue;
       var Value: TStoredType);
@@ -213,6 +216,7 @@ type
     procedure IncContingencyName(var AContingency : string; N : integer = 1);
     procedure ReadContingencyNames(ASection, AContingency, AKeySuffix:string; S:TStrings);
     procedure ReadContingencyValuesInSection(LS, LC : string; Keys:TStrings);
+    procedure SetPropstorageFilename;
   public
     { public declarations }
   end;
@@ -222,7 +226,12 @@ var
 
 implementation
 
-uses game_resources, game_actors, game_actors_point, string_methods, strutils;
+uses game_resources, game_actors, game_actors_point, string_methods, strutils
+  {$IFDEF WINDOWS}
+  , Dos
+  {$ENDIF}
+  , Dos
+  ;
 
 const SV_FILENAME : string = 'Filename';
 
@@ -240,7 +249,7 @@ begin
       FExperiment.Free;
       FExperiment := TIniFile.Create(OpenDialog.FileName);
       XMLPropStorage.StoredValue[SV_FILENAME] := FExperiment.FileName;
-      XMLPropStorage.FileName := ExtractFilePath(FExperiment.FileName)+'persistence.xml';
+      SetPropstorageFilename;
       LoadExperiment;
 
       OpenDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
@@ -262,9 +271,7 @@ begin
       CopyFile(LOldExperimentPath,SaveDialog.FileName);
       FExperiment := TIniFile.Create(SaveDialog.FileName);
       XMLPropStorage.StoredValue[SV_FILENAME] := FExperiment.FileName;
-
-      XMLPropStorage.FileName := ExtractFilePath(FExperiment.FileName)+'persistence.xml';
-
+      SetPropstorageFilename;
       OpenDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
       SaveDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
     end;
@@ -602,6 +609,20 @@ begin
   //RGEndCriteriaStyleClick(RGEndCriteriaStyle);
   TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
 end;
+
+{$IFDEF WINDOWS}
+procedure TFormDesigner.XMLPropStorageSaveProperties(Sender: TObject);
+var
+  F : TextFile;
+begin
+  if FileExists(XMLPropStorage.FileName) then
+    begin
+      AssignFile(F, XMLPropStorage.FileName);
+      SetFAttr(F,Hidden);
+      CloseFile(F);
+    end;
+end;
+{$ENDIF}
 
 procedure TFormDesigner.XMLPropStorageSavingProperties(Sender: TObject);
   procedure SavePropStorageFilename;
@@ -957,6 +978,24 @@ begin
       Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_ZERO] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_ZERO,'');
       Keys.EndUpdate;
     end;
+end;
+
+procedure TFormDesigner.SetPropstorageFilename;
+var
+  LRootPath : string;
+begin
+  if FExperiment.FileName = '' then
+    LRootPath := ExtractFilePath(Application.ExeName)
+  else
+    LRootPath := ExtractFilePath(FExperiment.FileName);
+
+  {$IFDEF WINDOWS}
+  XMLPropStorage.FileName := LRootPath+'persistence.xml';
+  {$ENDIF}
+
+  {$IFDEF LINUX}
+  XMLPropStorage.FileName := LRootPath+'.persistence';
+  {$ENDIF}
 end;
 
 procedure TFormDesigner.SaveSectionExperiment;
@@ -1335,11 +1374,14 @@ var
       end
   end;
 begin
+  {$IFDEF WINDOWS}
+  XMLPropStorage.OnSaveProperties := @XMLPropStorageSaveProperties;
+  {$ENDIF}
+
   // TRadioGroup OnClick events are triggered programmatically by LCL code, not by us
   // FLoading is a temporary workaround to avoid
   // calls for SaveProcedures while loading FExperiment
   FLoading := True;
-
 
   LRootPath := ExtractFilePath(Application.ExeName);
 
@@ -1349,7 +1391,7 @@ begin
   // XMLPropStorage.FileName may change during runtime
   XMLPropStorage.FileName := ReadLnFromFile(FPersistentTXTFilename,0);
   if XMLPropStorage.FileName = '' then
-    XMLPropStorage.FileName := LRootPath+'persistence.xml';
+    SetPropstorageFilename;
 
   // XMLPropStorage.StoredValue[SV_FILENAME] may change during runtime
   XMLPropStorage.StoredValue[SV_FILENAME] := LRootPath+'persistence.ini';
