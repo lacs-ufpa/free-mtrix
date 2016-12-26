@@ -33,10 +33,10 @@ function GetPromptStyleFromString(S : string) : TPromptStyle;
 function GetPromptStyleString(AStyle : TPromptStyle) : string;
 function GetGamePromptStyleFromString(S : string) : TGamePromptStyle;
 
-function GetConsequenceStyleFromString(s : string):TGameConsequenceStyle;
-function GetConsequenceStyleString(AStyle : TGameConsequenceStyle): string;
-function GetConsequenceStylesFromString(S : string):TConsequenceStyle;
-function GetConsequenceStylesString(CS : TConsequenceStyle): string;
+function GetGConsequenceStyleFromString(s : string):TGameConsequenceStyle;
+function GetGConsequenceStyleString(AStyle : TGameConsequenceStyle): string;
+function GetConsequenceStyleFromString(S : string):TConsequenceStyle;
+function GetConsequenceStyleString(CS : TConsequenceStyle): string;
 
 function GetCriteriaString(ACriteria : TCriteria) : string;
 function GetCriteriaFromString(S : string) : TCriteria;
@@ -236,7 +236,7 @@ begin
     end;
 end;
 
-function GetConsequenceStyleFromString(s: string): TGameConsequenceStyle;
+function GetGConsequenceStyleFromString(s: string): TGameConsequenceStyle;
 begin
   case UpperCase(S) of
     'NADA': Result:= gscNone;
@@ -251,7 +251,7 @@ begin
   end;
 end;
 
-function GetConsequenceStyleString(AStyle: TGameConsequenceStyle): string;
+function GetGConsequenceStyleString(AStyle: TGameConsequenceStyle): string;
 begin
   Result := '';
   case AStyle of
@@ -343,7 +343,7 @@ begin
   end;
 end;
 
-function GetConsequenceStylesFromString(S:string):TConsequenceStyle;
+function GetConsequenceStyleFromString(S:string):TConsequenceStyle;
 var
   LCount,
   i : integer;
@@ -363,7 +363,7 @@ begin
     end;
 end;
 
-function GetConsequenceStylesString(CS: TConsequenceStyle): string;
+function GetConsequenceStyleString(CS: TConsequenceStyle): string;
 var ConsequenceStyle : TGameConsequenceStyle;
 begin
   Result := '';

@@ -107,7 +107,7 @@ type
      procedure StopTimer(Sender:TObject;var ACloseAction:TCloseAction);
      procedure SelfDestroy(Sender:TOBject);virtual;
    public
-     constructor Create(AOwner:TComponent; AP:TGamePoint; AStyle:TConsequenceStyle; ANicname,
+     constructor Create(AOwner:TComponent; ACsqString, ANicname,
        APrependLoss,AAppendiceLossSingular,AAppendiceLossPlural,
        APrependEarn,AAppendiceEarnSingular,AAppendiceEarnPlural,AAppendiceZero:string);overload;
      constructor Create(AOwner:TComponent; AP:integer; AStyle: TConsequenceStyle; AMessage:array of string);overload;
@@ -533,7 +533,7 @@ var
 
     LConsequence := S + '+' +
       IntToStr(Pts) +'|'+
-      GetConsequenceStylesString(LCsqStyle) +'|'+
+      GetConsequenceStyleString(LCsqStyle) +'|'+
       ExtractDelimited(3,LConsequence, ['|']) +'|'+
       LPrependLoss +'|'+
       LAppendiceLossSingular +'|'+
@@ -554,7 +554,7 @@ begin
           begin
             LID := FPromptTargets[i].Consequence.ConsequenseByPlayerID.Names[j];
             LConsequence := FPromptTargets[i].Consequence.ConsequenseByPlayerID.Values[LID];
-            LCsqStyle := GetConsequenceStylesFromString(ExtractDelimited(2,LConsequence, ['|']));
+            LCsqStyle := GetConsequenceStyleFromString(ExtractDelimited(2,LConsequence, ['|']));
 
             // BasA must revert message variables
             LPrependLoss := ExtractDelimited(4,LConsequence, ['|']);
@@ -582,12 +582,15 @@ end;
 
 { TConsequence }
 
-constructor TConsequence.Create(AOwner: TComponent; AP: TGamePoint;AStyle: TConsequenceStyle; ANicname,
-  APrependLoss, AAppendiceLossSingular, AAppendiceLossPlural,
-  APrependEarn, AAppendiceEarnSingular, AAppendiceEarnPlural, AAppendiceZero: string);
+constructor TConsequence.Create(AOwner: TComponent; ACsqString, ANicname,
+  APrependLoss, AAppendiceLossSingular, AAppendiceLossPlural, APrependEarn,
+  AAppendiceEarnSingular, AAppendiceEarnPlural, AAppendiceZero: string);
+var
+  LP : string;
 begin
   inherited Create(AOwner);
-  FStyle:=AStyle;
+
+  // custom message
   FNicname:=ANicname;
   FPrependLoss:=APrependLoss;
   FAppendiceLossSingular:=AAppendiceLossSingular;
@@ -597,7 +600,15 @@ begin
   FAppendiceEarnPlural:=AAppendiceEarnPlural;
   FAppendiceZero:=AAppendiceZero;
 
-  FP := AP;
+  // extract game point string
+  LP := ExtractDelimited(1,ACsqString,['|']);
+
+  // [value,variation]
+  FP := TGamePoint.Create(AOwner,[StrToInt(ExtractDelimited(1,LP,[','])),StrToInt(ExtractDelimited(2,LP,[',']))]);
+
+  // consequesen style string
+  FStyle := GetConsequenceStyleFromString(ExtractDelimited(2,ACsqString,['|']));
+
   FMessage := TPopupNotifier.Create(AOwner);
   FConsequenceByPlayerID := TStringList.Create;
 end;
@@ -625,7 +636,7 @@ constructor TConsequence.Create(AOwner: TComponent;
 begin
   inherited Create(AOwner);
   FP := TGamePoint.Create(AOwner,ExtractDelimited(1,AConsequenceString,['|']));
-  FStyle:=GetConsequenceStylesFromString(ExtractDelimited(2,AConsequenceString,['|']));
+  FStyle:=GetConsequenceStyleFromString(ExtractDelimited(2,AConsequenceString,['|']));
   FNicname:=ExtractDelimited(3,AConsequenceString,['|']);
   FPrependLoss:=ExtractDelimited(4,AConsequenceString,['|']);
   FAppendiceLossSingular:=ExtractDelimited(5,AConsequenceString,['|']);
@@ -652,7 +663,7 @@ end;
 function TConsequence.AsString(AID: string): string;
 begin
   Result := IntToStr(FP.ValueWithVariation) + '|';
-  Result += GetConsequenceStylesString(FStyle)+'|';
+  Result += GetConsequenceStyleString(FStyle)+'|';
   Result += FNicname +'|';
   Result += FPrependLoss + '|';
   Result += FAppendiceLossSingular + '|';

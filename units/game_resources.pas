@@ -52,7 +52,10 @@ resourcestring
   KEY_TURN_RANDOM = 'Rodada.OrdemDeJogadaAleatória'; // Sim
 
   KEY_POINTS_COUNT = 'Pontos.AoRecomeço';
-  KEY_POINTS_ONSTART = 'Pontos.SomarAoComeço';
+  KEY_POINTS_ONSTART_A = 'Pontos.Somar_ao_iniciar_condição.A';
+  KEY_POINTS_ONSTART_B = 'Pontos.Somar_ao_iniciar_condição.B';
+  KEY_POINTS_ONSTART_I = 'Pontos.Somar_ao_iniciar_condição.I';
+  KEY_POINTS_ONSTART_G = 'Pontos.Somar_ao_iniciar_condição.G';
 
   KEY_CYCLES_VALUE = 'Ciclos.MudançaDeGeração';
   KEY_CYCLES_COUNT = 'Ciclos.AoRecomeço';

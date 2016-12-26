@@ -202,8 +202,21 @@ var
     with LIniFile do
       while ValueExists(LS, LCK+KEY_CONSEQUE) and ValueExists(LS, LCK+KEY_CRITERIA)do
         begin
-          LConsequence := TConsequence.Create(AExperiment,ReadString(LS,LCK+KEY_CONSEQUE,DEF_CONSEQUENCE));
-          LCriteria := GetCriteriaFromString(ReadString(LS,LCK+KEY_CRITERIA,DEF_CRITERIA));
+          AExperiment.Condition[ACondition].Contingencies[i].ContingencyName := ReadString(LS, LCK+KEY_CONT_NAME, '');
+          ReadString(LS, LCK+KEY_CONSEQUE, '');
+          ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_PREPEND,'');
+          ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,'');
+          ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,'');
+          ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,'');
+          ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_PREPEND_EARN,'');
+          ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,'');
+          ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,'');
+          ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_APPEND_ZERO, '');
+
+
+          LConsequence := TConsequence.Create(AExperiment,
+            ReadString(LS,LCK+KEY_CONSEQUE,DEF_CONSEQUENCE));
+          LCriteria := GetCriteriaFromString(ReadString(LS, LCK+KEY_CRITERIA, ''));
           AExperiment.Condition[ACondition].Contingencies[i] := TContingency.Create(AExperiment,LConsequence,LCriteria,IsMeta);
           i := AExperiment.AppendContingency(ACondition);
           SetLCK(i);
@@ -277,11 +290,13 @@ var
               Choice := GetChoiceFromString(ReadString(LS,KEY_PLAYER_CHOICE_LAST,'0,NONE,'));
               ID := ReadString(LS,KEY_PLAYER_ID,'ID');
               Nicname := ReadString(LS,KEY_PLAYER_NICNAME,GenResourceName(i));
-              Login := ReadString(LS,KEY_PLAYER_LOGIN,'jogador'+IntToStr(i+1));
-              Password := ReadString(LS,KEY_PLAYER_PASSWORD,'1234');
-              Points := GetPPointsFromString(ReadString(LS,KEY_PLAYER_POINTS,'0,0,'));
-              Status := GetStatusFromString(ReadString(LS,KEY_PLAYER_STATUS,'esperando'));
-              Data.Values[KEY_PLAYER_TEMP] := ReadString(LS,KEY_PLAYER_TEMP,'');
+
+              // currently not in use
+              //Login := ReadString(LS,KEY_PLAYER_LOGIN,'jogador'+IntToStr(i+1));
+              //Password := ReadString(LS,KEY_PLAYER_PASSWORD,'1234');
+              //Points := GetPPointsFromString(ReadString(LS,KEY_PLAYER_POINTS,'0,0,'));
+              //Status := GetStatusFromString(ReadString(LS,KEY_PLAYER_STATUS,'esperando'));
+              //Data.Values[KEY_PLAYER_TEMP] := ReadString(LS,KEY_PLAYER_TEMP,'');
             end;
           AExperiment.Player[i] := P;
           i := AExperiment.AppendPlayer;

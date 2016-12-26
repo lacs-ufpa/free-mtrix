@@ -11,6 +11,8 @@ unit form_main;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE DEBUG}
+
 interface
 
 uses
@@ -66,6 +68,11 @@ type
     GBContingencyRows: TGroupBox;
     GBContingencyConsequence: TGroupBox;
     GBMatrix: TGroupBox;
+    GroupBox1: TGroupBox;
+    LabelPA: TLabel;
+    LabelPB: TLabel;
+    LabelPI: TLabel;
+    LabelPG: TLabel;
     LabelCsq10: TLabel;
     LabelCsq3: TLabel;
     LabelCsq5: TLabel;
@@ -75,7 +82,6 @@ type
     LabelCsq4: TLabel;
     LabelCsq7: TLabel;
     LabelQuestion: TLabel;
-    LabelPointsOnConditionBegin: TLabel;
     LabelCsq1: TLabel;
     LabelCsq2: TLabel;
     LabelThen: TLabel;
@@ -94,6 +100,7 @@ type
     ListBoxContingencies: TListBox;
     MainMenu1: TMainMenu;
     MemoExperimentAim: TMemo;
+    MenuItemSaveAs: TMenuItem;
     MenuItemFile: TMenuItem;
     MenuItemExit: TMenuItem;
     MenuItemOpen: TMenuItem;
@@ -107,12 +114,16 @@ type
     RGContingencyStyle: TRadioGroup;
     RGEndCriteriaStyle: TRadioGroup;
     RGPoints: TRadioGroup;
+    SaveDialog: TSaveDialog;
     SpinEditContingencyPoints: TSpinEdit;
     SpinEditEndCriteriaInterlockingPorcentage: TSpinEdit;
     SpinEditEndCriteriaLastCycles: TSpinEdit;
     SpinEditEndCriteriaAbsCycles: TSpinEdit;
     SpinEditCyclesValue: TSpinEdit;
-    SpinEditOnConditionBegin: TSpinEdit;
+    SpinEditOnConditionBeginA: TSpinEdit;
+    SpinEditOnConditionBeginB: TSpinEdit;
+    SpinEditOnConditionBeginI: TSpinEdit;
+    SpinEditOnConditionBeginG: TSpinEdit;
     SpinEditTurnValue: TSpinEdit;
     TabSheetContingencies: TTabSheet;
     TabSheetConditions: TTabSheet;
@@ -125,7 +136,9 @@ type
     procedure BtnReorderCondClick(Sender: TObject);
     procedure BtnReorderContingencyClick(Sender: TObject);
     procedure ButtonPreviewMessageClick(Sender: TObject);
+    procedure CGGlobalItemClick(Sender: TObject; Index: integer);
     procedure CheckBoxImutableMessageChange(Sender: TObject);
+    procedure ChkMatrixTypeClick(Sender: TObject);
     procedure ChkDotsCleanDotsChange(Sender: TObject);
     //
     procedure ConsequenceMessageEditingDone(Sender: TObject);
@@ -140,13 +153,15 @@ type
     procedure ComboCurrentContingencyChange(Sender: TObject);
     procedure EditConditionNameEditingDone(Sender: TObject);
     procedure EditContingencyNameEditingDone(Sender: TObject);
-    procedure EditMessSufixZeroChange(Sender: TObject);
+    procedure EditMessDone(Sender: TObject);
     procedure EditQuestionEditingDone(Sender: TObject);
+    procedure EditExperimentEditingDone(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure MenuItemExitClick(Sender: TObject);
     procedure MenuItemOpenClick(Sender: TObject);
+    procedure MenuItemSaveAsClick(Sender: TObject);
     procedure RGBroadcastMessageClick(Sender: TObject);
     procedure RGContingencyStyleClick(Sender: TObject);
     procedure RGContingencyStyleExit(Sender: TObject);
@@ -158,6 +173,7 @@ type
     procedure SpinEditEndCriteriaAbsCyclesEditingDone(Sender: TObject);
     procedure SpinEditEndCriteriaInterlockingEditingDone(
       Sender: TObject);
+    procedure SpinEditOnConditionBeginAEditingDone(Sender: TObject);
     procedure SpinEditTurnValueEditingDone(Sender: TObject);
     procedure XMLPropStorageRestoreProperties(Sender: TObject);
     procedure XMLPropStorageSavingProperties(Sender: TObject);
@@ -170,7 +186,7 @@ type
     procedure LoadExperiment;
     procedure LoadSectionExperiment;
     procedure LoadSectionCondition(ASection: string);
-    procedure LoadContingency(ASection, AContingency: string);// A condition section and a contingency key prefix
+    procedure LoadContingency(ASection, AContingency: string);// LabelPA condition section and LabelPA contingency key prefix
     procedure SaveExperiment;
     procedure SaveSectionExperiment;
     procedure SaveSectionCondition(ASection: string);
@@ -192,9 +208,11 @@ type
     procedure UpdateContingencyCombo(ASection: String);
   private
     FLoading : Boolean;
+    FPersistentTXTFilename : string;
     function GetContingencyName(IsMeta:Boolean; MustIncrement:Boolean=True):string;
     procedure IncContingencyName(var AContingency : string; N : integer = 1);
     procedure ReadContingencyNames(ASection, AContingency, AKeySuffix:string; S:TStrings);
+    procedure ReadContingencyValuesInSection(LS, LC : string; Keys:TStrings);
   public
     { public declarations }
   end;
@@ -206,6 +224,8 @@ implementation
 
 uses game_resources, game_actors, game_actors_point, string_methods, strutils;
 
+const SV_FILENAME : string = 'Filename';
+
 {$R *.lfm}
 
 { TFormDesigner }
@@ -213,13 +233,41 @@ uses game_resources, game_actors, game_actors_point, string_methods, strutils;
 procedure TFormDesigner.MenuItemOpenClick(Sender: TObject);
 begin
   if OpenDialog.Execute then
-  begin
-    if FExperiment.FileName = OpenDialog.FileName then
-      Exit;
-    FExperiment.Free;
-    FExperiment := TIniFile.Create(OpenDialog.FileName);
-    XMLPropStorage.StoredValue['FileName'] := FExperiment.FileName;
-  end;
+    begin
+      if FExperiment.FileName = OpenDialog.FileName then
+        Exit;
+      SaveExperiment;
+      FExperiment.Free;
+      FExperiment := TIniFile.Create(OpenDialog.FileName);
+      XMLPropStorage.StoredValue[SV_FILENAME] := FExperiment.FileName;
+      XMLPropStorage.FileName := ExtractFilePath(FExperiment.FileName)+'persistence.xml';
+      LoadExperiment;
+
+      OpenDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
+      SaveDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
+    end;
+end;
+
+procedure TFormDesigner.MenuItemSaveAsClick(Sender: TObject);
+var
+  LOldExperimentPath : string;
+begin
+  if SaveDialog.Execute then
+    begin
+      if FExperiment.FileName = SaveDialog.FileName then
+        Exit;
+      LOldExperimentPath := FExperiment.FileName;
+      SaveExperiment;
+      FExperiment.Free;
+      CopyFile(LOldExperimentPath,SaveDialog.FileName);
+      FExperiment := TIniFile.Create(SaveDialog.FileName);
+      XMLPropStorage.StoredValue[SV_FILENAME] := FExperiment.FileName;
+
+      XMLPropStorage.FileName := ExtractFilePath(FExperiment.FileName)+'persistence.xml';
+
+      OpenDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
+      SaveDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
+    end;
 end;
 
 procedure TFormDesigner.RGBroadcastMessageClick(Sender: TObject);
@@ -427,6 +475,8 @@ begin
 end;
 
 procedure TFormDesigner.RGPointsClick(Sender: TObject);
+var
+  LVisible : Boolean;
 begin
   if Sender = RGPoints then
     case TRadioGroup(Sender).ItemIndex of
@@ -436,6 +486,13 @@ begin
         CBPointsType.Items.Append('Individual A');
         CBPointsType.Items.Append('Individual B');
         CBPointsType.Items.Append('Para o Grupo');
+        LVisible := True;
+        SpinEditOnConditionBeginA.Visible:=LVisible;
+        SpinEditOnConditionBeginB.Visible:=LVisible;
+        SpinEditOnConditionBeginI.Visible:=not LVisible;
+        LabelPA.Visible:=LVisible;
+        LabelPB.Visible:=LVisible;
+        LabelPI.Visible:=not LVisible;
       end;
 
       1:
@@ -443,8 +500,22 @@ begin
         CBPointsType.Items.Clear;
         CBPointsType.Items.Append('Individual');
         CBPointsType.Items.Append('Para o Grupo');
+        LVisible := False;
+        SpinEditOnConditionBeginA.Visible:=LVisible;
+        SpinEditOnConditionBeginB.Visible:=LVisible;
+        SpinEditOnConditionBeginI.Visible:=not LVisible;
+        LabelPA.Visible:=LVisible;
+        LabelPB.Visible:=LVisible;
+        LabelPI.Visible:=not LVisible;
       end;
     end;
+
+  if not FLoading then
+    with FExperiment do
+      case RGPoints.ItemIndex of
+        0: WriteBool(SEC_EXPERIMENT, KEY_POINTS_TYPE, True);
+        1: WriteBool(SEC_EXPERIMENT, KEY_POINTS_TYPE, False);
+      end;
 end;
 
 procedure TFormDesigner.SpinEditCyclesValueEditingDone(Sender: TObject);
@@ -485,6 +556,30 @@ begin
       end;
 end;
 
+procedure TFormDesigner.SpinEditOnConditionBeginAEditingDone(Sender: TObject);
+var
+  LS: string;
+begin
+  if Sender is TSpinEdit then
+    with FExperiment do
+      if ComboCurrentCondition.ItemIndex <> -1 then
+        begin
+          LS := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
+
+          if TSpinEdit(Sender) = SpinEditOnConditionBeginA then
+            WriteInteger(LS, KEY_POINTS_ONSTART_A, SpinEditOnConditionBeginA.Value);
+
+          if TSpinEdit(Sender) = SpinEditOnConditionBeginB then
+            WriteInteger(LS, KEY_POINTS_ONSTART_B, SpinEditOnConditionBeginB.Value);
+
+          if TSpinEdit(Sender) = SpinEditOnConditionBeginI then
+            WriteInteger(LS, KEY_POINTS_ONSTART_I, SpinEditOnConditionBeginI.Value);
+
+          if TSpinEdit(Sender) = SpinEditOnConditionBeginG then
+            WriteInteger(LS, KEY_POINTS_ONSTART_G, SpinEditOnConditionBeginG.Value);
+        end;
+end;
+
 procedure TFormDesigner.SpinEditTurnValueEditingDone(Sender: TObject);
 var
   LS: string;
@@ -498,17 +593,31 @@ begin
 end;
 
 procedure TFormDesigner.XMLPropStorageRestoreProperties(Sender: TObject);
+
 begin
   LoadExperiment;
   ListBoxConditions.Items.Text := ComboCurrentCondition.Items.Text;
-  ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
-  RGPointsClick(RGPoints);
-  RGEndCriteriaStyleClick(RGEndCriteriaStyle);
+  UpdateContingencyList(ExtractDelimited(1,ComboCurrentCondition.Text,['|']));
+  //RGPointsClick(RGPoints);
+  //RGEndCriteriaStyleClick(RGEndCriteriaStyle);
   TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
 end;
 
 procedure TFormDesigner.XMLPropStorageSavingProperties(Sender: TObject);
+  procedure SavePropStorageFilename;
+  var
+    S : TStringList;
+  begin
+    S := TStringList.Create;
+    try
+      S.Text := XMLPropStorage.FileName;
+      S.SaveToFile(FPersistentTXTFilename);
+    finally
+      S.Free;
+    end;
+  end;
 begin
+  SavePropStorageFilename;
   SaveExperiment;
 end;
 
@@ -738,9 +847,9 @@ begin
   SpinEditContingencyPoints.Value := LPoints;
 
   SCode := ExtractDelimited(2,S,['|']);
-  CS := GetConsequenceStylesFromString(SCode);
+  CS := GetConsequenceStyleFromString(SCode);
   case RGPoints.ItemIndex of
-    0: { A & B }
+    0: { LabelPA & B }
       begin
         if gscA in CS then CBPointsType.ItemIndex := 0;
         if gscB in CS then CBPointsType.ItemIndex := 1;
@@ -768,8 +877,6 @@ begin
     RGBroadcastMessage.ItemIndex := 1
   else
     RGBroadcastMessage.ItemIndex := 2;
-
-
 end;
 
 procedure TFormDesigner.UpdateContingencyList(ASection: String);
@@ -831,6 +938,27 @@ begin
       end;
 end;
 
+procedure TFormDesigner.ReadContingencyValuesInSection(LS, LC: string;
+  Keys: TStrings);
+begin
+  with FExperiment do
+    begin
+      Keys.BeginUpdate;
+      Keys.Values[LC + KEY_CONT_NAME] := ReadString(LS,LC+KEY_CONT_NAME,'');
+      Keys.Values[LC + KEY_CRITERIA] := ReadString(LS, LC + KEY_CRITERIA,'');
+      Keys.Values[LC + KEY_CONSEQUE] := ReadString(LS, LC + KEY_CONSEQUE,'');
+      Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND,'');
+      Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,'');
+      Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,'');
+      Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,'');
+      Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND_EARN] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,'');
+      Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,'');
+      Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,'');
+      Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_ZERO] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_ZERO,'');
+      Keys.EndUpdate;
+    end;
+end;
+
 procedure TFormDesigner.SaveSectionExperiment;
 begin
   with FExperiment do
@@ -857,8 +985,7 @@ begin
       EditResearcherName.Text := ReadString(SEC_EXPERIMENT, KEY_RESEARCHER, '');
       EditExperimentName.Text := ReadString(SEC_EXPERIMENT, KEY_NAME, '');
       MemoExperimentAim.Text := ReadString(SEC_EXPERIMENT, KEY_AIM, '');
-      CGGlobal.Checked[0] :=
-        ReadBool(SEC_EXPERIMENT, KEY_CHAT_HISTORY_FOR_NEW_PLAYERS, False);
+      CGGlobal.Checked[0] := ReadBool(SEC_EXPERIMENT, KEY_CHAT_HISTORY_FOR_NEW_PLAYERS, False);
       CGGlobal.Checked[1] := ReadBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED, False);
       CGGlobal.Checked[2] := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANPLAY, False);
       CGGlobal.Checked[3] := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT, False);
@@ -877,7 +1004,10 @@ begin
     begin
       WriteString(ASection, KEY_COND_NAME, EditConditionName.Text);
       WriteInteger(ASection, KEY_TURN_VALUE, SpinEditTurnValue.Value);
-      WriteInteger(ASection, KEY_POINTS_ONSTART,SpinEditOnConditionBegin.Value);
+      WriteInteger(ASection, KEY_POINTS_ONSTART_A,SpinEditOnConditionBeginA.Value);
+      WriteInteger(ASection, KEY_POINTS_ONSTART_B,SpinEditOnConditionBeginB.Value);
+      WriteInteger(ASection, KEY_POINTS_ONSTART_I,SpinEditOnConditionBeginI.Value);
+      WriteInteger(ASection, KEY_POINTS_ONSTART_G,SpinEditOnConditionBeginG.Value);
       WriteInteger(ASection, KEY_CYCLES_VALUE, SpinEditCyclesValue.Value);
       WriteString(ASection, KEY_PROMPT_MESSAGE, EditQuestion.Text);
       WriteString(ASection, KEY_PROMPT_STYLE, GetPromptQuestionStringFromCGQuestion);
@@ -1007,7 +1137,7 @@ var
 begin
   CS := [gscMessage,gscPoints];
   case RGPoints.ItemIndex of
-    0: { A & B }
+    0: { LabelPA & B }
       case CBPointsType.ItemIndex of
         0 {'Individual A'} : CS += [gscA];
         1 {'Individual B'} : CS += [gscB];
@@ -1027,7 +1157,7 @@ begin
   end;
 
   Result := IntToStr(SpinEditContingencyPoints.Value)+',0|';
-  Result += GetConsequenceStylesString(CS);
+  Result += GetConsequenceStyleString(CS);
 end;
 
 function TFormDesigner.GetContingencyCriteria: string;
@@ -1112,7 +1242,6 @@ begin
     begin
       EditConditionName.Text := ReadString(ASection, KEY_COND_NAME, ASection);
       SpinEditTurnValue.Value := ReadInteger(ASection, KEY_TURN_VALUE, 2);
-      SpinEditOnConditionBegin.Value := ReadInteger(ASection, KEY_POINTS_ONSTART,0);
       SpinEditCyclesValue.Value := ReadInteger(ASection, KEY_CYCLES_VALUE, 2);
 
       CheckBoxShouldAskQuestion.Checked := False;
@@ -1123,6 +1252,11 @@ begin
         if (EditQuestion.Text <> '') or (ReadString(ASection, KEY_PROMPT_STYLE, '') <> '') then
           CheckBoxShouldAskQuestion.Checked := True;
       end;
+      LabelQuestion.Visible:= CheckBoxShouldAskQuestion.Checked;
+      SpinEditOnConditionBeginA.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_A, 0);
+      SpinEditOnConditionBeginB.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_B, 0);
+      SpinEditOnConditionBeginI.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_I, 0);
+      SpinEditOnConditionBeginG.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_G, 0);
 
       SetRGEndCriteriaStyle(ReadString(ASection, KEY_ENDCRITERIA, 'O QUE OCORRER PRIMEIRO'));
       SpinEditEndCriteriaAbsCycles.Value := ReadInteger(ASection, KEY_ENDCRITERIA_CYCLES, 20);
@@ -1180,8 +1314,47 @@ begin
 end;
 
 procedure TFormDesigner.FormCreate(Sender: TObject);
+var
+  LRootPath: RawByteString;
+
+  function ReadLnFromFile(AFilename:string;ALine : integer):string;
+  var
+    S : TStringList;
+  begin
+    Result := '';
+    if FileExists(AFilename) then
+      begin
+        S := TStringList.Create;
+        try
+          S.LoadFromFile(AFilename);
+          if S.Count > 0 then
+            Result := S[ALine];
+        finally
+          S.Free;
+        end;
+      end
+  end;
 begin
+  // TRadioGroup OnClick events are triggered programmatically by LCL code, not by us
+  // FLoading is a temporary workaround to avoid
+  // calls for SaveProcedures while loading FExperiment
   FLoading := True;
+
+
+  LRootPath := ExtractFilePath(Application.ExeName);
+
+  // FPersistentTXTFilename must not change during runtime.
+  FPersistentTXTFilename := LRootPath+'persistence.txt';
+
+  // XMLPropStorage.FileName may change during runtime
+  XMLPropStorage.FileName := ReadLnFromFile(FPersistentTXTFilename,0);
+  if XMLPropStorage.FileName = '' then
+    XMLPropStorage.FileName := LRootPath+'persistence.xml';
+
+  // XMLPropStorage.StoredValue[SV_FILENAME] may change during runtime
+  XMLPropStorage.StoredValue[SV_FILENAME] := LRootPath+'persistence.ini';
+  OpenDialog.InitialDir:=LRootPath;
+  SaveDialog.InitialDir:=LRootPath;
 end;
 
 procedure TFormDesigner.FormDestroy(Sender: TObject);
@@ -1202,11 +1375,12 @@ begin
         if ComboCurrentCondition.ItemIndex <> -1 then
           begin
             LS := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
+            EditQuestion.Text:='';
             WriteString(LS, KEY_PROMPT_MESSAGE, '');
             WriteString(LS, KEY_PROMPT_STYLE, '');
           end;
     end;
-
+  LabelQuestion.Visible:= CheckBoxShouldAskQuestion.Checked;
   EditQuestion.Visible := CheckBoxShouldAskQuestion.Checked;
   CGQuestion.Visible := CheckBoxShouldAskQuestion.Checked;
 end;
@@ -1239,8 +1413,22 @@ begin
 end;
 
 procedure TFormDesigner.ComboCurrentConditionChange(Sender: TObject);
+var
+  LS, LC: String;
 begin
-  LoadSectionCondition(SEC_CONDITION + IntToStr(ComboCurrentCondition.ItemIndex + 1));
+  LS := SEC_CONDITION + IntToStr(ComboCurrentCondition.ItemIndex + 1);
+  LoadSectionCondition(LS);
+  UpdateContingencyList(LS);
+  if ListBoxContingencies.Items.Count > 0 then
+    begin
+      LC := ExtractDelimited(1,ListBoxContingencies.Items[0],['|']);
+      if Pos(KEY_METACONTINGENCY,LC) > 0 then
+        RGContingencyType.ItemIndex := 1
+      else
+        RGContingencyType.ItemIndex := 0;
+      RGContingencyTypeClick(ComboCurrentCondition);
+      LoadContingency(LS,LC);
+    end;
 end;
 
 procedure TFormDesigner.ComboCurrentContingencyChange(Sender: TObject);
@@ -1275,13 +1463,44 @@ begin
         WriteString(LS, LC+ KEY_CONT_NAME, EditContingencyName.Text);
         ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex] :=
           LC + '|' + EditContingencyName.Text;
-        ListBoxContingencies.Items.Text := ComboCurrentContingency.Items.Text;
+        UpdateContingencyList(LS);
       end;
 end;
 
-procedure TFormDesigner.EditMessSufixZeroChange(Sender: TObject);
+procedure TFormDesigner.EditMessDone(Sender: TObject);
+var
+  LSection, LContingency: String;
 begin
+  LSection := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
+  LContingency := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
 
+  if Sender is TEdit then
+    with FExperiment do
+      begin
+        if TEdit(Sender) = EditMessPrefix then
+          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
+
+        if TEdit(Sender) = EditMessPrefixLoss then
+          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,EditMessPrefixLoss.Text);
+
+        if TEdit(Sender) = EditMessSufixLossSingular then
+          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,EditMessSufixLossSingular.Text);
+
+        if TEdit(Sender) = EditMessSufixLossPlural then
+          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,EditMessSufixLossPlural.Text);
+
+        if TEdit(Sender) = EditMessPrefixEarn then
+          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,EditMessPrefixEarn.Text);
+
+        if TEdit(Sender) = EditMessSufixEarnSingular then
+          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,EditMessSufixEarnSingular.Text);
+
+        if TEdit(Sender) = EditMessSufixEarnPlural then
+          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,EditMessSufixEarnPlural.Text);
+
+        if TEdit(Sender) = EditMessSufixZero then
+          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_ZERO, EditMessSufixZero.Text);
+      end;
 end;
 
 procedure TFormDesigner.ConsequenceMessageEditingDone(Sender: TObject);
@@ -1305,6 +1524,27 @@ begin
       end;
 end;
 
+procedure TFormDesigner.EditExperimentEditingDone(Sender: TObject);
+begin
+  with FExperiment do
+    begin
+      if Sender is TEdit then
+        begin
+          if TEdit(Sender) = EditResearcherName then
+            WriteString(SEC_EXPERIMENT, KEY_RESEARCHER, EditResearcherName.Text);
+
+          if TEdit(Sender) = EditExperimentName then
+            WriteString(SEC_EXPERIMENT, KEY_NAME, EditExperimentName.Text);
+        end;
+
+      if Sender is TMemo then
+        begin
+          if TMemo(Sender) = MemoExperimentAim then
+            WriteString(SEC_EXPERIMENT, KEY_AIM, MemoExperimentAim.Text);
+        end;
+    end;
+end;
+
 procedure TFormDesigner.FormActivate(Sender: TObject);
 begin
   FLoading := False;
@@ -1313,15 +1553,48 @@ end;
 
 procedure TFormDesigner.BtnAppendCondClick(Sender: TObject);
 var
-  i: integer;
+  i, LOldSection: integer;
+  LContingency : TStringList;
+  LS, KeyNameValue, LSectionToRead, LContingencyToRead, KeyName: String;
 begin
+  // make LabelPA copy of old components
+  LOldSection := ComboCurrentCondition.ItemIndex;
+
+  // add new condition
   i := ComboCurrentCondition.Items.Add('');
   ComboCurrentCondition.Items[i] :=
     SEC_CONDITION + IntToStr(i + 1) + '|' + EditConditionName.Text;
   ComboCurrentCondition.ItemIndex := i;
-  SaveSectionCondition(SEC_CONDITION + IntToStr(i + 1));
+  LS := SEC_CONDITION + IntToStr(i + 1);
+  SaveSectionCondition(LS);
   ListBoxConditions.Items.Text := ComboCurrentCondition.Items.Text;
   TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
+
+  // handle selection of contingencies
+  if LOldSection > -1 then
+    if ListBoxContingencies.Items.Count > 0 then
+      if ListBoxContingencies.SelCount > 0 then
+        begin
+          LContingency := TStringList.Create;
+          LSectionToRead := SEC_CONDITION+IntToStr(LOldSection+1);
+          try
+            for i := 0 to ListBoxContingencies.Items.Count -1 do
+              if ListBoxContingencies.Selected[i] then
+                begin
+                  LContingency.Clear;
+                  LContingencyToRead := ExtractDelimited(1,ListBoxContingencies.Items[i],['|']);
+                  ReadContingencyValuesInSection(LSectionToRead,LContingencyToRead,LContingency);
+                  for KeyNameValue in LContingency do
+                    begin
+                      KeyName := LContingency.ExtractName(KeyNameValue);
+                      FExperiment.WriteString(LS,KeyName,LContingency.Values[KeyName]);
+                    end;
+                end;
+          finally
+            LContingency.Free;
+          end;
+        end;
+  UpdateContingencyList(LS);
 end;
 
 procedure TFormDesigner.BtnAppendContingencyClick(Sender: TObject);
@@ -1344,7 +1617,7 @@ procedure TFormDesigner.BtnRemoveCondClick(Sender: TObject);
 var
   i: integer;
   MustReorder: boolean;
-  LS: String;
+  LS, LC: String;
 
   procedure Reorder(index : integer);
   var
@@ -1396,6 +1669,18 @@ begin
       end;
       ListBoxConditions.Items.Text := ComboCurrentCondition.Items.Text;
       TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
+      if ComboCurrentCondition.Items.Count > 0 then
+        if ComboCurrentCondition.ItemIndex <> -1 then
+          begin
+            LS := ExtractDelimited(1, ComboCurrentCondition.Text, ['|']);
+            LoadSectionCondition(LS);
+            UpdateContingencyList(LS);
+            if ListBoxContingencies.Items.Count > 0 then
+              begin
+                LC := ExtractDelimited(1, ListBoxContingencies.Items[0], ['|']);
+                LoadContingency(LS,LC);
+              end;
+          end;
     end;
 end;
 
@@ -1405,25 +1690,6 @@ var
   MustReorder: boolean;
   LS, LC: String;
 
-  procedure ReadContingencyValuesInSection(LS,LC : string; var Keys : TStringList);
-  begin
-    Keys.BeginUpdate;
-    with FExperiment do
-      begin
-        Keys.Values[LC + KEY_CONT_NAME] := ReadString(LS,LC+KEY_CONT_NAME,'');
-        Keys.Values[LC + KEY_CRITERIA] := ReadString(LS, LC + KEY_CRITERIA,'');
-        Keys.Values[LC + KEY_CONSEQUE] := ReadString(LS, LC + KEY_CONSEQUE,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_PREPEND_EARN] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,'');
-        Keys.Values[LC + KEY_CONSEQUE_MESSAGE_APPEND_ZERO] := ReadString(LS, LC + KEY_CONSEQUE_MESSAGE_APPEND_ZERO,'');
-      end;
-    Keys.EndUpdate;
-  end;
   //todo:fix bug in here
   procedure Reorder(Index:integer);
   var
@@ -1476,12 +1742,19 @@ begin
             ComboCurrentContingency.ItemIndex := i -1;
       end;
       UpdateContingencyList(LS);
+      if ComboCurrentContingency.Items.Count > 0 then
+        if (ComboCurrentContingency.ItemIndex > -1) and
+           (ComboCurrentContingency.ItemIndex < ComboCurrentContingency.Items.Count) then
+          begin
+            LC := ExtractDelimited(1, ComboCurrentContingency.Text, ['|']);
+            LoadContingency(LS,LC);
+          end;
     end;
 end;
 
 procedure TFormDesigner.BtnReorderCondClick(Sender: TObject);
 begin
-  // todo: custom reorder contingencies
+  // todo: custom reorder conditions
   ShowMessage('Não implementado.');
 end;
 
@@ -1522,6 +1795,26 @@ begin
       CreateMessage(i);
 end;
 
+procedure TFormDesigner.CGGlobalItemClick(Sender: TObject; Index: integer);
+begin
+  if not FLoading then
+    if Sender is TCheckGroup then
+      with FExperiment do
+        begin
+          if Index = 0 then
+            WriteBool(SEC_EXPERIMENT, KEY_CHAT_HISTORY_FOR_NEW_PLAYERS, CGGlobal.Checked[Index]);
+
+          if Index = 1 then
+            WriteBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED, CGGlobal.Checked[Index]);
+
+          if Index = 2 then
+            WriteBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANPLAY, CGGlobal.Checked[Index]);
+
+          if Index = 3 then
+            WriteBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT, CGGlobal.Checked[Index]);
+        end;
+end;
+
 procedure TFormDesigner.CheckBoxImutableMessageChange(Sender: TObject);
 var
   LVisible : Boolean;
@@ -1531,24 +1824,46 @@ begin
   if LVisible then
     begin
       LabelCsq3.Caption := 'Texto da mensagem de notificação';
-      LGamePoint := TGamePoint.Create(Self,IntToStr(SpinEditContingencyPoints.Value));
-      if not FLoading then
-      case RGContingencyType.ItemIndex of
-        0:EditMessPrefix.Text := LGamePoint.PointMessage('','','','','','','','',False);
-        1:EditMessPrefix.Text := LGamePoint.PointMessage('','','','','','','','',True);
-      end;
-      LGamePoint.Free;
       ButtonPreviewMessage.Caption:= 'Ver como a mensagem será apresentada';
+      LGamePoint := TGamePoint.Create(nil,IntToStr(SpinEditContingencyPoints.Value));
+      try
+        if not FLoading then
+          begin
+            case RGContingencyType.ItemIndex of
+              0:EditMessPrefix.Text := LGamePoint.PointMessage('','','','','','','','',False);
+              1:EditMessPrefix.Text := LGamePoint.PointMessage('','','','','','','','',True);
+            end;
+
+            EditMessPrefixLoss.Text := '';
+            EditMessSufixLossPlural.Text := '';
+            EditMessSufixLossSingular.Text := '';
+            EditMessPrefixEarn.Text := '';
+            EditMessSufixEarnPlural.Text := '';
+            EditMessSufixEarnSingular.Text := '';
+            EditMessSufixZero.Text := '';
+          end;
+      finally
+        LGamePoint.Free;
+      end;
     end
   else
     begin
       LabelCsq3.Caption := 'Texto no início da mensagem';
       if not FLoading then
-      case RGContingencyType.ItemIndex of
-        0:EditMessPrefix.Text := '$NICNAME';
-        1:EditMessPrefix.Text := 'Vocês';
-      end;
-      ButtonPreviewMessage.Caption:= 'Ver como a mensagem pode ser apresentada';
+        begin
+          case RGContingencyType.ItemIndex of
+            0:EditMessPrefix.Text := '$NICNAME';
+            1:EditMessPrefix.Text := 'Vocês';
+          end;
+          EditMessPrefixLoss.Text := 'retiraram';
+          EditMessSufixLossSingular.Text := 'item escolar de uma escola pública.';
+          EditMessSufixLossPlural.Text := 'itens escolares de uma escola pública.';
+          EditMessPrefixEarn.Text := 'doaram';
+          EditMessSufixEarnSingular.Text := 'item escolar a uma escola pública.';
+          EditMessSufixEarnPlural.Text := 'itens escolares a uma escola pública.';
+          EditMessSufixZero.Text := 'não doaram nem retiram itens escolares.';
+          ButtonPreviewMessage.Caption:= 'Ver como a mensagem poderá ser apresentada';
+        end;
     end;
 
   LabelCsq4.Visible := not LVisible;
@@ -1559,19 +1874,26 @@ begin
   LabelCsq9.Visible := not LVisible;
   LabelCsq10.Visible := not LVisible;
   EditMessPrefixLoss.Visible:= not LVisible;
-  EditMessPrefixLoss.Text := '';
   EditMessSufixLossPlural.Visible:= not LVisible;
-  EditMessSufixLossPlural.Text := '';
   EditMessSufixLossSingular.Visible:= not LVisible;
-  EditMessSufixLossSingular.Text := '';
   EditMessPrefixEarn.Visible:= not LVisible;
-  EditMessPrefixEarn.Text := '';
   EditMessSufixEarnPlural.Visible:= not LVisible;
-  EditMessSufixEarnPlural.Text := '';
   EditMessSufixEarnSingular.Visible:= not LVisible;
-  EditMessSufixEarnSingular.Text := '';
   EditMessSufixZero.Visible:= not LVisible;
-  EditMessSufixZero.Text := '';
+  EditMessDone(EditMessPrefix);
+  EditMessDone(EditMessPrefixLoss);
+  EditMessDone(EditMessSufixLossSingular);
+  EditMessDone(EditMessSufixLossPlural);
+  EditMessDone(EditMessPrefixEarn);
+  EditMessDone(EditMessSufixEarnSingular);
+  EditMessDone(EditMessSufixEarnPlural);
+  EditMessDone(EditMessSufixZero);
+end;
+
+procedure TFormDesigner.ChkMatrixTypeClick(Sender: TObject);
+begin
+  if Sender is TCheckBox then
+    FExperiment.WriteString(SEC_EXPERIMENT, KEY_MATRIX_TYPE, GetMatrixTypeStringFromCGMatrix);
 end;
 
 
