@@ -46,7 +46,7 @@ type
     FShowChat: Boolean;
     FMatrixType: TGameMatrixType;
   private
-    FAppPath,
+    FExperimentPath,
     FLastReportColNames : string;
     FRegData : TRegData;
     FRegChat : TRegData;
@@ -719,7 +719,7 @@ var
   c,i: integer;
   LRow : string;
 begin
-  if Assigned(FRegData) then
+  if Assigned(FRegData) and Assigned(Condition[c].Prompt) then
     begin
       c := CurrentCondition;
       LRow := '';
@@ -750,15 +750,13 @@ constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FTurnsRandom := TStringList.Create;
-  LoadExperimentFromResource(Self);
-  CheckNeedForRandomTurns;
 end;
 
 constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
 var LDataPath : string;
 begin
   inherited Create(AOwner);
-  FAppPath := AppPath;
+  FExperimentPath := AppPath;
   FTurnsRandom := TStringList.Create;
   //LoadExperimentFromResource(Self);
   //LDataPath := AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim;
@@ -804,8 +802,8 @@ begin
   if Result then
     FFilename := AFilename
   else Exit;
-
-  LDataPath := FAppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim;
+  FExperimentPath := ExtractFilePath(FFilename);
+  LDataPath := FExperimentPath+ExperimentName+PathDelim;
 
   SetTargetInterlockingEvent;
   SetContingenciesEvents;
@@ -816,7 +814,7 @@ begin
   FReportReader.UseRange:=True;
   FReportReader.SetXLastRows(Condition[CurrentCondition].EndCriterium.LastCycles);
 
-  FRegData := TRegData.Create(Self, LDataPath+'000.dat');
+  FRegData := TRegData.Create(Self, LDataPath+'000.data');
   FRegChat := TRegData.Create(Self, LDataPath+'000.chat');
   WriteReportHeader;
 end;
@@ -943,7 +941,8 @@ begin
   for i := 0 to ContingenciesCount[c]-1 do
     Contingency[c,i].Clean;
 
-  Condition[c].Prompt.Clean;
+  if Assigned(Condition[c].Prompt) then
+    Condition[c].Prompt.Clean;
 
   FRegData.CloseAndOpen;
 end;

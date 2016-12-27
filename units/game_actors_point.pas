@@ -35,7 +35,8 @@ type
     function PointMessage(APrepend, APrependLoss, AAppendiceLossSingular,AAppendiceLossPlural,
       APrependEarn,AAppendiceEarnSingular,AAppendiceEarnPlural,AAppendiceZero: string; IsGroupPoint: Boolean) : string;
     property ValueWithVariation : integer read GetValue write FValue;
-    property Variation : integer read FVariation write FVariation;
+    property Value : integer read FValue;
+    property Variation : integer read FVariation;
     property AsString : string read GetResultAsString;
     property ResultAsInteger : integer read GetResult;
   end;
