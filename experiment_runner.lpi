@@ -5,7 +5,7 @@
     <General>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <Title Value="cultural_matrix"/>
+      <Title Value="experiment_runner"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <Icon Value="0"/>
@@ -22,7 +22,7 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="cultural_matrix"/>
+            <Filename Value="experiment_runner"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -43,7 +43,7 @@
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="cultural_matrix"/>
+            <Filename Value="experiment_runner"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -90,7 +90,7 @@
     </RequiredPackages>
     <Units Count="15">
       <Unit0>
-        <Filename Value="cultural_matrix.lpr"/>
+        <Filename Value="experiment_runner.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
@@ -160,7 +160,7 @@
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="cultural_matrix"/>
+      <Filename Value="experiment_runner"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
