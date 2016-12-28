@@ -328,7 +328,7 @@ begin
   ButtonExpStart.Enabled := True;
   ButtonExpStart.Caption := CAPTION_RESUME;
   ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-  //FGameControl.Experiment.Pause;
+  //FGameControl.Pause;
 end;
 
 procedure TFormMatrixGame.ButtonExpStartClick(Sender: TObject);
@@ -350,7 +350,7 @@ begin
         ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
         ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-        //FGameControl.Experiment.Resume;
+        //FGameControl.Resume;
       end;
 end;
 
