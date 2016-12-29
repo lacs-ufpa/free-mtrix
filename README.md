@@ -1,9 +1,9 @@
-/*
+/*   
 Free-mtrix - Free cultural selection and social behavior experiments.
 Copyright (C) 2016 Carlos Rafael Fernandes Picanço, Universidade Federal do Pará.
 
 You should have received a copy of the GNU General Public License
-along with this program. If not, see http://www.gnu.org/licenses/.
+along with this program. If not, see http://www.gnu.org/licenses/.   
 */
 
 # Free-mtrix
