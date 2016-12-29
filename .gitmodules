@@ -1,0 +1,6 @@
+[submodule "dependencies/delphizmq"]
+	path = dependencies/delphizmq
+	url = git@github.com:cpicanco/delphizmq.git
+[submodule "dependencies/libzmq"]
+	path = dependencies/libzmq
+	url = git@github.com:cpicanco/libzmq.git
