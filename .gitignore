@@ -27,9 +27,8 @@
 *.xml
 *.zip
 *.~*~
-*/backup/*
 *~
 /P*/*
 __history
-backup/*
+*backup*
 id
