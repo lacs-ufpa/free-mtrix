@@ -1,14 +1,18 @@
-/*
-Free-mtrix - Free cultural selection and social behavior experiments.
-Copyright (C) 2016 Carlos Rafael Fernandes Picanço, Universidade Federal do Pará.
+/*   
+  Free-mtrix - Free cultural selection and social behavior experiments.   
+  Copyright (C) 2016-2017 Carlos Rafael Fernandes Picanço, Universidade Federal do Pará.   
 
-You should have received a copy of the GNU General Public License
-along with this program. If not, see http://www.gnu.org/licenses/.
+  The present file is distributed under the terms of the GNU General Public License (GPL v3.0).
+
+  You should have received a copy of the GNU General Public License   
+  along with this program. If not, see <http://www.gnu.org/licenses/>.   
 */
+
+## How to install?
 
 ### Linux
 
-   1. Install libzmq.so, v3.2.5, 64 or 32 bits, on your system.
+   1. Install libzmq.so (see http://zeromq.org/intro:get-the-software), v3.2.5, 64 or 32 bits, on your system.
 
    2. Done!
 
@@ -31,6 +35,14 @@ along with this program. If not, see http://www.gnu.org/licenses/.
    - You will need an instance of the program running as Server (researcher) and others running as Clients (players). You will need at least two clients.
 
    - Clients must connect to the IP address of the Server; just create a file named 'IP' in the root folder of each client containing the Server IP on the first line.
+
+## How to compile?
+
+   1. Install Lazarus RAD IDE (v1.6.2+) Free Pascal compiler and sources (v3.0.0+): http://lazarus-ide.org/.
+   2. Compile and install libzmq (v3.2.5) on your system: http://zeromq.org/intro:get-the-software.
+   3. Install epiktimer 
+
+   Note: If windows, all sofware must be compiled for 32bits, otherwise, you must write 64bits support yourself.
 
 ## Known Issues
 
