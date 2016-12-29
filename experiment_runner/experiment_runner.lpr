@@ -11,8 +11,6 @@ program experiment_runner;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE DEBUG}
-
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
@@ -26,7 +24,7 @@ uses
   {$ENDIF}
   , StrUtils, Forms, Classes, sysutils
   , form_matrixgame, game_actors
-  , zhelpers, form_chooseactor
+  , helpers
   ;
 
 
@@ -80,7 +78,7 @@ const
       end
     else
       try
-        ID.Text := s_random(32);
+        ID.Text := RandomString(32);
         ID.SaveToFile(F);
         F := Copy(ID.Text,0,Length(ID.Text)-2);
       except

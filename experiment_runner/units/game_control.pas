@@ -121,7 +121,6 @@ const
 implementation
 
 uses ButtonPanel,Controls,ExtCtrls,StdCtrls,LazUTF8, Forms, Dialogs, strutils
-     , zhelpers
      , form_matrixgame
      , presentation_classes
      , form_chooseactor
