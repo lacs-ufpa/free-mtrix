@@ -32,6 +32,7 @@
 __history
 *backup*
 id
+.persistence
 experiment_runner/experiment_runner
 experiment_runner/Participant*/*
 experiment_runner/lib/x86_64-linux/*.lfm

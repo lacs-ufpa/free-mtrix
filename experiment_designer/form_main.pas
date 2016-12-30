@@ -983,10 +983,10 @@ procedure TFormDesigner.SetPropstorageFilename;
 var
   LRootPath : string;
 begin
-  if FExperiment.FileName = '' then
-    LRootPath := ExtractFilePath(Application.ExeName)
-  else
-    LRootPath := ExtractFilePath(FExperiment.FileName);
+  LRootPath := ExtractFilePath(Application.ExeName);
+  if Assigned(FExperiment) then
+    if FExperiment.FileName <> '' then
+      LRootPath := ExtractFilePath(FExperiment.FileName);
 
   {$IFDEF WINDOWS}
   XMLPropStorage.FileName := LRootPath+'persistence.xml';
