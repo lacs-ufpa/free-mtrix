@@ -37,3 +37,5 @@ experiment_runner/experiment_runner
 experiment_runner/Participant*/*
 experiment_runner/lib/x86_64-linux/*.lfm
 experiment_runner/lib/i386-win32/*.lfm
+*.data
+*.chat
