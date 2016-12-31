@@ -28,7 +28,7 @@ type
 
   { TExperiment }
 
-  TExperimentState = (xsWaiting,xsRunning,xsPaused,xsCanceled);
+  TExperimentState = (xsNone,xsWaiting,xsRunning,xsPaused,xsCanceled);
   TConditions = array of TCondition;
 
   TExperiment = class(TComponent)
@@ -750,6 +750,7 @@ constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FTurnsRandom := TStringList.Create;
+  State := xsNone;
 end;
 
 constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
@@ -758,6 +759,7 @@ begin
   inherited Create(AOwner);
   FExperimentPath := AppPath;
   FTurnsRandom := TStringList.Create;
+  State := xsNone;
   //LoadExperimentFromResource(Self);
   //LDataPath := AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim;
   //
@@ -782,7 +784,7 @@ begin
   FTurnsRandom := TStringList.Create;
   LoadExperimentFromFile(Self,AFilename);
   CheckNeedForRandomTurns;
-
+  State := xsWaiting;
   //FReportReader := TReportReader.Create;
   //FRegData := TRegData.Create(Self, AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim+'000.dat');
 end;
