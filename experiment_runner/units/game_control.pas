@@ -1269,9 +1269,13 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   end;
 
 begin
-  if FExperiment.State = xsRunning then
+  if FExperiment.State = xsWaiting then
     begin
       if MHas(K_LOGIN) then ReplyLoginRequest;
+    end;
+
+  if FExperiment.State = xsRunning then
+    begin
       if MHas(K_RESUME) then ReplyResume;
       if MHas(K_CHOICE) then ValidateChoice;
       if MHas(K_QUESTION) then ValidateQuestionResponse;

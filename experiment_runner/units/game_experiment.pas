@@ -817,6 +817,7 @@ begin
   FRegData := TRegData.Create(Self, LDataPath+'000.data');
   FRegChat := TRegData.Create(Self, LDataPath+'000.chat');
   WriteReportHeader;
+  State := xsWaiting;
 end;
 
 function TExperiment.LoadFromGenerator: Boolean;
