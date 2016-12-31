@@ -1480,52 +1480,56 @@ procedure TFormDesigner.EditContingencyNameEditingDone(Sender: TObject);
 var
   LS, LC: string;
 begin
-  with FExperiment do
-    if ComboCurrentContingency.ItemIndex <> -1 then
-      begin
-        LS := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
-        LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
-        WriteString(LS, LC+ KEY_CONT_NAME, EditContingencyName.Text);
-        ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex] :=
-          LC + '|' + EditContingencyName.Text;
-        UpdateContingencyList(LS);
-      end;
+  if RGContingencyType.ItemIndex > -1 then
+    with FExperiment do
+      if ComboCurrentContingency.ItemIndex <> -1 then
+        begin
+          LS := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
+          LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
+          WriteString(LS, LC+ KEY_CONT_NAME, EditContingencyName.Text);
+          ComboCurrentContingency.Items[ComboCurrentContingency.ItemIndex] :=
+            LC + '|' + EditContingencyName.Text;
+          UpdateContingencyList(LS);
+        end;
 end;
 
 procedure TFormDesigner.EditMessDone(Sender: TObject);
 var
   LSection, LContingency: String;
 begin
-  LSection := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
-  LContingency := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
+  if RGContingencyType.ItemIndex > -1 then
+    begin
+      LSection := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
+      LContingency := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
 
-  if Sender is TEdit then
-    with FExperiment do
-      begin
-        if TEdit(Sender) = EditMessPrefix then
-          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
+      if Sender is TEdit then
+        with FExperiment do
+          begin
+            if TEdit(Sender) = EditMessPrefix then
+              WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
 
-        if TEdit(Sender) = EditMessPrefixLoss then
-          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,EditMessPrefixLoss.Text);
+            if TEdit(Sender) = EditMessPrefixLoss then
+              WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,EditMessPrefixLoss.Text);
 
-        if TEdit(Sender) = EditMessSufixLossSingular then
-          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,EditMessSufixLossSingular.Text);
+            if TEdit(Sender) = EditMessSufixLossSingular then
+              WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,EditMessSufixLossSingular.Text);
 
-        if TEdit(Sender) = EditMessSufixLossPlural then
-          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,EditMessSufixLossPlural.Text);
+            if TEdit(Sender) = EditMessSufixLossPlural then
+              WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,EditMessSufixLossPlural.Text);
 
-        if TEdit(Sender) = EditMessPrefixEarn then
-          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,EditMessPrefixEarn.Text);
+            if TEdit(Sender) = EditMessPrefixEarn then
+              WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,EditMessPrefixEarn.Text);
 
-        if TEdit(Sender) = EditMessSufixEarnSingular then
-          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,EditMessSufixEarnSingular.Text);
+            if TEdit(Sender) = EditMessSufixEarnSingular then
+              WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,EditMessSufixEarnSingular.Text);
 
-        if TEdit(Sender) = EditMessSufixEarnPlural then
-          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,EditMessSufixEarnPlural.Text);
+            if TEdit(Sender) = EditMessSufixEarnPlural then
+              WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,EditMessSufixEarnPlural.Text);
 
-        if TEdit(Sender) = EditMessSufixZero then
-          WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_ZERO, EditMessSufixZero.Text);
-      end;
+            if TEdit(Sender) = EditMessSufixZero then
+              WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_ZERO, EditMessSufixZero.Text);
+          end;
+    end;
 end;
 
 procedure TFormDesigner.ConsequenceMessageEditingDone(Sender: TObject);
@@ -1628,14 +1632,17 @@ var
   LS, LC : string;
 
 begin
-  LS := ExtractDelimited(1,ComboCurrentCondition.Items[ComboCurrentCondition.ItemIndex],['|']);
-  LC := GetContingencyName(RGContingencyType.ItemIndex = 1);
-  i := ComboCurrentContingency.Items.Add('');
-  ComboCurrentContingency.Items[i] :=
-    LC + '|' + EditContingencyName.Text;
-  ComboCurrentContingency.ItemIndex := i;
-  SaveContingency(LS,LC);
-  UpdateContingencyList(LS);
+  if RGContingencyType.ItemIndex > -1 then
+    begin
+      LS := ExtractDelimited(1,ComboCurrentCondition.Items[ComboCurrentCondition.ItemIndex],['|']);
+      LC := GetContingencyName(RGContingencyType.ItemIndex = 1);
+      i := ComboCurrentContingency.Items.Add('');
+      ComboCurrentContingency.Items[i] :=
+        LC + '|' + EditContingencyName.Text;
+      ComboCurrentContingency.ItemIndex := i;
+      SaveContingency(LS,LC);
+      UpdateContingencyList(LS);
+    end;
 end;
 
 procedure TFormDesigner.BtnRemoveCondClick(Sender: TObject);
@@ -1746,35 +1753,36 @@ var
   end;
 
 begin
-  if ComboCurrentContingency.ItemIndex > -1 then
-    begin
-      i := ComboCurrentContingency.ItemIndex;
-      MustReorder := i < ComboCurrentContingency.Items.Count - 1;
-      LS := ExtractDelimited(1, ComboCurrentCondition.Text, ['|']);
-      LC := ExtractDelimited(1, ComboCurrentContingency.Text, ['|']);
-      EraseContingency(LS,LC);
-      ComboCurrentContingency.Items.Delete(i);
+  if RGContingencyType.ItemIndex > -1 then
+    if ComboCurrentContingency.ItemIndex > -1 then
+      begin
+        i := ComboCurrentContingency.ItemIndex;
+        MustReorder := i < ComboCurrentContingency.Items.Count - 1;
+        LS := ExtractDelimited(1, ComboCurrentCondition.Text, ['|']);
+        LC := ExtractDelimited(1, ComboCurrentContingency.Text, ['|']);
+        EraseContingency(LS,LC);
+        ComboCurrentContingency.Items.Delete(i);
 
-      if MustReorder then
-        Reorder(i);
+        if MustReorder then
+          Reorder(i);
 
-      case ComboCurrentContingency.Items.Count of
-        0: {do nothing};
-        1..MaxInt:
-          if i = 0 then
-            ComboCurrentContingency.ItemIndex := i
-          else
-            ComboCurrentContingency.ItemIndex := i -1;
+        case ComboCurrentContingency.Items.Count of
+          0: {do nothing};
+          1..MaxInt:
+            if i = 0 then
+              ComboCurrentContingency.ItemIndex := i
+            else
+              ComboCurrentContingency.ItemIndex := i -1;
+        end;
+        UpdateContingencyList(LS);
+        if ComboCurrentContingency.Items.Count > 0 then
+          if (ComboCurrentContingency.ItemIndex > -1) and
+             (ComboCurrentContingency.ItemIndex < ComboCurrentContingency.Items.Count) then
+            begin
+              LC := ExtractDelimited(1, ComboCurrentContingency.Text, ['|']);
+              LoadContingency(LS,LC);
+            end;
       end;
-      UpdateContingencyList(LS);
-      if ComboCurrentContingency.Items.Count > 0 then
-        if (ComboCurrentContingency.ItemIndex > -1) and
-           (ComboCurrentContingency.ItemIndex < ComboCurrentContingency.Items.Count) then
-          begin
-            LC := ExtractDelimited(1, ComboCurrentContingency.Text, ['|']);
-            LoadContingency(LS,LC);
-          end;
-    end;
 end;
 
 procedure TFormDesigner.BtnReorderCondClick(Sender: TObject);
@@ -1926,9 +1934,12 @@ procedure TFormDesigner.ConsequenceStyleChange(Sender: TObject);
 var
   LS, LC: String;
 begin
-  LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
-  LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
-  FExperiment.WriteString(LS, LC+KEY_CONSEQUE, GetConsequenceStyle);
+  if RGContingencyType.ItemIndex > -1 then
+    begin
+      LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+      LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
+      FExperiment.WriteString(LS, LC+KEY_CONSEQUE, GetConsequenceStyle);
+    end;
 end;
 
 procedure TFormDesigner.CGQuestionItemClick(Sender: TObject; Index: integer);
@@ -1973,19 +1984,21 @@ var
   end;
 
 begin
-  LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
-  LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
-  with FExperiment do
-    WriteString(LS, LC + KEY_CRITERIA, GetContingencyCriteria);
+  if RGContingencyType.ItemIndex > -1 then
+    begin
+      LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+      LC := ExtractDelimited(1,ComboCurrentContingency.Text,['|']);
+      with FExperiment do
+        WriteString(LS, LC + KEY_CRITERIA, GetContingencyCriteria);
 
-  if TCheckBox(Sender).Name = 'ChkEqual' then
-    if TCheckBox(Sender).Checked then
-      UncheckBox('ChkDiff');
+      if TCheckBox(Sender).Name = 'ChkEqual' then
+        if TCheckBox(Sender).Checked then
+          UncheckBox('ChkDiff');
 
-  if TCheckBox(Sender).Name = 'ChkDiff' then
-    if TCheckBox(Sender).Checked then
-      UncheckBox('ChkEqual');
-
+      if TCheckBox(Sender).Name = 'ChkDiff' then
+        if TCheckBox(Sender).Checked then
+          UncheckBox('ChkEqual');
+    end;
 end;
 
 // TODO: hidden persistence.xml on windows
