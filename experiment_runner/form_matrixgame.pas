@@ -337,11 +337,13 @@ begin
   if ButtonExpStart.Caption = CAPTION_START then
     if OpenDialog.Execute then
       begin
+        if not FGameControl.Experiment.LoadFromFile(OpenDialog.FileName) then
+          Exit;
         ButtonExpStart.Enabled := False;
         ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
         ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-        FGameControl.Experiment.LoadFromFile(OpenDialog.FileName);
+
       end;
 
   if ButtonExpStart.Caption = CAPTION_RESUME then
