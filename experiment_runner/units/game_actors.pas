@@ -731,7 +731,7 @@ end;
 procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G: TLabel);
 begin
   if gscG in FStyle then
-    G.Caption:= IntToStr(StrToInt(G.Caption) + FP.ResultAsInteger)
+    G.Caption:= IntToStr(StrToInt(G.Caption) + FP.ResultAsInteger);
 
   if (gscI in FStyle) or (gscA in FStyle) or (gscB in FStyle) then
     if Assigned(APlayerBox) then
