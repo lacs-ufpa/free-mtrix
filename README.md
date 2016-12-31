@@ -10,7 +10,11 @@
 
 # Free-mtrix
 
-Free-mtrix is a software for scientists of fields like Behavioral Sociology and Behavioral Analysis. You can design and present social behavior experiments that uses choice-based tasks similiar to the ones created by Wiggins (1969), Vichi (2004) and Vichi, Andery & Glenn (2009). Participants can choose elements of a matrix (for instance, a row, a column or a cell) and the scientist can build social consequences (for example, messages, points and questions) for their choices.
+**Abstract**
+
+Free-mtrix is free software (GPL3) for scientists of fields like Behavioral Sociology and Behavioral Analysis. You can design and present social behavior experiments that uses choice-based tasks similiar to the ones created by Wiggins (1969), Vichi (2004) and Vichi, Andery & Glenn (2009). Participants can choose elements of a matrix (e.g., a row) and the scientist can determine how individual and social consequences will be presented (e.g., which messages, how many points and reasoning questions).
+
+**References**
 
 Vichi, C. (2004). Igualdade ou desigualdade em pequeno grupo: Um análogo experimental de manipulação de uma prática cultural. Dissertação de Mestrado. São Paulo: Pontifícia Universidade Católica de São Paulo.
 
@@ -20,4 +24,4 @@ Wiggins, J. A. (1969). Status differentiation, external consequences and alterna
 
 # How to install and setup the software?
 
-Please, see the INSTALL file.
+Please, check the INSTALL directory.
