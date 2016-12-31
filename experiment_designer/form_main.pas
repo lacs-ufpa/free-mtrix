@@ -1038,28 +1038,29 @@ end;
 
 procedure TFormDesigner.SaveContingency(ASection, AContingency: string);
 begin
-  with FExperiment do
-    begin
-      WriteString(ASection, AContingency + KEY_CONT_NAME, EditContingencyName.Text);
-      WriteString(ASection, AContingency + KEY_CRITERIA, GetContingencyCriteria);
-      WriteString(ASection, AContingency + KEY_CONSEQUE, GetConsequenceStyle);
-      WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
+  if ASection <> '' then
+    with FExperiment do
+      begin
+        WriteString(ASection, AContingency + KEY_CONT_NAME, EditContingencyName.Text);
+        WriteString(ASection, AContingency + KEY_CRITERIA, GetContingencyCriteria);
+        WriteString(ASection, AContingency + KEY_CONSEQUE, GetConsequenceStyle);
+        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND, EditMessPrefix.Text);
 
-      if EditMessPrefixLoss.Text <> '' then
-        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,EditMessPrefixLoss.Text);
-      if EditMessSufixLossSingular.Text <> '' then
-        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,EditMessSufixLossSingular.Text);
-      if EditMessSufixLossPlural.Text <> '' then
-        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,EditMessSufixLossPlural.Text);
-      if EditMessPrefixEarn.Text <> '' then
-        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,EditMessPrefixEarn.Text);
-      if EditMessSufixEarnSingular.Text <> '' then
-        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,EditMessSufixEarnSingular.Text);
-      if EditMessSufixEarnPlural.Text <> '' then
-        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,EditMessSufixEarnPlural.Text);
-      if EditMessSufixZero.Text <> '' then
-        WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_ZERO, EditMessSufixZero.Text);
-    end;
+        if EditMessPrefixLoss.Text <> '' then
+          WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,EditMessPrefixLoss.Text);
+        if EditMessSufixLossSingular.Text <> '' then
+          WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S,EditMessSufixLossSingular.Text);
+        if EditMessSufixLossPlural.Text <> '' then
+          WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_LOSS_P,EditMessSufixLossPlural.Text);
+        if EditMessPrefixEarn.Text <> '' then
+          WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_PREPEND_EARN,EditMessPrefixEarn.Text);
+        if EditMessSufixEarnSingular.Text <> '' then
+          WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_S,EditMessSufixEarnSingular.Text);
+        if EditMessSufixEarnPlural.Text <> '' then
+          WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,EditMessSufixEarnPlural.Text);
+        if EditMessSufixZero.Text <> '' then
+          WriteString(ASection, AContingency + KEY_CONSEQUE_MESSAGE_APPEND_ZERO, EditMessSufixZero.Text);
+      end;
 end;
 
 procedure TFormDesigner.EraseContingency(ASection, AContingency: string);

@@ -650,14 +650,14 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 711
-      ClientWidth = 658
+      ClientHeight = 762
+      ClientWidth = 628
       Enabled = False
       object RGContingencyType: TRadioGroup
         Left = 0
-        Height = 59
+        Height = 58
         Top = 10
-        Width = 658
+        Width = 628
         AutoFill = True
         Caption = 'Mostrar'
         ChildSizing.LeftRightSpacing = 6
@@ -667,8 +667,8 @@ object FormDesigner: TFormDesigner
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 39
-        ClientWidth = 654
+        ClientHeight = 38
+        ClientWidth = 624
         Items.Strings = (
           'Contingências Operantes'
           'Metacontingências'
@@ -679,8 +679,8 @@ object FormDesigner: TFormDesigner
       object ComboCurrentContingency: TComboBox
         Left = 0
         Height = 23
-        Top = 74
-        Width = 658
+        Top = 73
+        Width = 628
         ItemHeight = 15
         OnChange = ComboCurrentContingencyChange
         Style = csDropDownList
@@ -689,39 +689,39 @@ object FormDesigner: TFormDesigner
       object PanelContingenciesButtons: TPanel
         Left = 0
         Height = 26
-        Top = 106
-        Width = 658
+        Top = 101
+        Width = 628
         ChildSizing.LeftRightSpacing = 25
         ChildSizing.HorizontalSpacing = 50
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
         ClientHeight = 26
-        ClientWidth = 658
+        ClientWidth = 628
         TabOrder = 1
         object BtnAppendContingency: TButton
           Left = 25
           Height = 25
           Top = 0
-          Width = 168
+          Width = 160
           Caption = 'Adicionar'
           OnClick = BtnAppendContingencyClick
           TabOrder = 0
         end
         object BtnRemoveContingency: TButton
-          Left = 243
+          Left = 235
           Height = 25
           Top = 0
-          Width = 165
+          Width = 156
           Caption = 'Remover'
           OnClick = BtnRemoveContingencyClick
           TabOrder = 1
         end
         object BtnReorderContingency: TButton
-          Left = 458
+          Left = 441
           Height = 25
           Top = 0
-          Width = 175
+          Width = 162
           Caption = 'Reordenar'
           OnClick = BtnReorderContingencyClick
           TabOrder = 2
@@ -731,24 +731,24 @@ object FormDesigner: TFormDesigner
       object LabelContingencyName: TLabel
         Left = 0
         Height = 15
-        Top = 137
-        Width = 658
+        Top = 132
+        Width = 628
         Caption = 'Nome da contingência'
         ParentColor = False
       end
       object EditContingencyName: TEdit
         Left = 0
-        Height = 25
-        Top = 157
-        Width = 658
+        Height = 23
+        Top = 152
+        Width = 628
         OnEditingDone = EditContingencyNameEditingDone
         TabOrder = 2
       end
       object RGContingencyStyle: TRadioGroup
         Left = 0
-        Height = 122
-        Top = 187
-        Width = 658
+        Height = 115
+        Top = 180
+        Width = 628
         AutoFill = True
         Caption = 'Estilo da Resposta'
         ChildSizing.LeftRightSpacing = 6
@@ -758,8 +758,8 @@ object FormDesigner: TFormDesigner
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 102
-        ClientWidth = 654
+        ClientHeight = 95
+        ClientWidth = 624
         ItemIndex = 0
         Items.Strings = (
           'Extinção'
@@ -775,8 +775,8 @@ object FormDesigner: TFormDesigner
       object LabelIf: TLabel
         Left = 0
         Height = 15
-        Top = 314
-        Width = 658
+        Top = 300
+        Width = 628
         Alignment = taCenter
         Caption = 'SE O PARTICIPANTE ESCOLHER'
         ParentColor = False
@@ -784,9 +784,9 @@ object FormDesigner: TFormDesigner
       end
       object GBContingencyRows: TGroupBox
         Left = 0
-        Height = 17
-        Top = 334
-        Width = 658
+        Height = 19
+        Top = 320
+        Width = 628
         Caption = 'Linhas'
         ChildSizing.LeftRightSpacing = 5
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
@@ -798,8 +798,8 @@ object FormDesigner: TFormDesigner
       object LabelOperator: TLabel
         Left = 0
         Height = 15
-        Top = 356
-        Width = 658
+        Top = 344
+        Width = 628
         Alignment = taCenter
         Caption = 'E'
         ParentColor = False
@@ -807,9 +807,9 @@ object FormDesigner: TFormDesigner
       end
       object GBContingencyColors: TGroupBox
         Left = 0
-        Height = 17
-        Top = 376
-        Width = 658
+        Height = 19
+        Top = 364
+        Width = 628
         Caption = 'Cores'
         ChildSizing.HorizontalSpacing = 5
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
@@ -821,8 +821,8 @@ object FormDesigner: TFormDesigner
       object LabelThen: TLabel
         Left = 0
         Height = 15
-        Top = 398
-        Width = 658
+        Top = 388
+        Width = 628
         Alignment = taCenter
         Caption = 'ENTÃO'
         ParentColor = False
@@ -830,47 +830,47 @@ object FormDesigner: TFormDesigner
       end
       object GBContingencyConsequence: TGroupBox
         Left = 0
-        Height = 364
-        Top = 418
-        Width = 658
+        Height = 344
+        Top = 408
+        Width = 628
         Caption = 'Consequência'
         ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 2
-        ClientHeight = 344
-        ClientWidth = 654
+        ClientHeight = 324
+        ClientWidth = 624
         TabOrder = 6
         Visible = False
         object LabelCsq1: TLabel
           Left = 0
           Height = 15
           Top = 0
-          Width = 420
+          Width = 394
           Caption = 'Pontos'
           ParentColor = False
         end
         object LabelCsq2: TLabel
-          Left = 420
+          Left = 394
           Height = 15
           Top = 0
-          Width = 234
+          Width = 230
           Caption = 'do Tipo'
           ParentColor = False
         end
         object SpinEditContingencyPoints: TSpinEdit
           Left = 0
-          Height = 27
+          Height = 23
           Top = 15
-          Width = 420
+          Width = 394
           MaxValue = 0
           OnEditingDone = ConsequenceStyleChange
           TabOrder = 0
         end
         object CBPointsType: TComboBox
-          Left = 420
+          Left = 394
           Height = 23
           Top = 15
-          Width = 234
+          Width = 230
           ItemHeight = 15
           OnChange = ConsequenceStyleChange
           Style = csDropDownList
@@ -878,9 +878,9 @@ object FormDesigner: TFormDesigner
         end
         object RGBroadcastMessage: TRadioGroup
           Left = 0
-          Height = 80
-          Top = 42
-          Width = 420
+          Height = 77
+          Top = 38
+          Width = 394
           AutoFill = True
           Caption = 'Apresentar mensagem de notificação'
           ChildSizing.LeftRightSpacing = 6
@@ -890,8 +890,8 @@ object FormDesigner: TFormDesigner
           ChildSizing.ShrinkVertical = crsScaleChilds
           ChildSizing.Layout = cclLeftToRightThenTopToBottom
           ChildSizing.ControlsPerLine = 1
-          ClientHeight = 60
-          ClientWidth = 416
+          ClientHeight = 57
+          ClientWidth = 390
           ItemIndex = 0
           Items.Strings = (
             'a todos os participantes'
@@ -902,11 +902,11 @@ object FormDesigner: TFormDesigner
           TabOrder = 9
         end
         object CheckBoxImutableMessage: TCheckBox
-          Left = 420
-          Height = 80
+          Left = 394
+          Height = 77
           Hint = 'Marque se deseja uma mensagem fixa; o programa não atualizará o texto da mensagem caso o valor da pontuação mude ao longo do experimento.'
-          Top = 42
-          Width = 234
+          Top = 38
+          Width = 230
           AutoSize = False
           Caption = 'imutável'
           OnChange = CheckBoxImutableMessageChange
@@ -914,136 +914,136 @@ object FormDesigner: TFormDesigner
         end
         object LabelCsq3: TLabel
           Left = 0
-          Height = 25
-          Top = 122
-          Width = 420
+          Height = 23
+          Top = 115
+          Width = 394
           Caption = 'Texto no início da mensagem'
           ParentColor = False
         end
         object EditMessPrefix: TEdit
-          Left = 420
-          Height = 25
-          Top = 122
-          Width = 234
+          Left = 394
+          Height = 23
+          Top = 115
+          Width = 230
           OnEditingDone = EditMessDone
           TabOrder = 2
           Text = '$NICNAME'
         end
         object LabelCsq4: TLabel
           Left = 0
-          Height = 25
-          Top = 147
-          Width = 420
+          Height = 23
+          Top = 138
+          Width = 394
           Caption = 'Prefixo ao perder pontos'
           ParentColor = False
         end
         object EditMessPrefixLoss: TEdit
-          Left = 420
-          Height = 25
-          Top = 147
-          Width = 234
+          Left = 394
+          Height = 23
+          Top = 138
+          Width = 230
           OnEditingDone = EditMessDone
           TabOrder = 3
           Text = 'perdeu'
         end
         object LabelCsq5: TLabel
           Left = 0
-          Height = 25
-          Top = 172
-          Width = 420
+          Height = 23
+          Top = 161
+          Width = 394
           Caption = 'Sufixo ao perder pontos (Singular)'
           ParentColor = False
         end
         object EditMessSufixLossSingular: TEdit
-          Left = 420
-          Height = 25
-          Top = 172
-          Width = 234
+          Left = 394
+          Height = 23
+          Top = 161
+          Width = 230
           OnEditingDone = EditMessDone
           TabOrder = 4
           Text = 'ponto.'
         end
         object LabelCsq6: TLabel
           Left = 0
-          Height = 25
-          Top = 197
-          Width = 420
+          Height = 23
+          Top = 184
+          Width = 394
           Caption = 'Sufixo ao perder pontos (Plural)'
           ParentColor = False
         end
         object EditMessSufixLossPlural: TEdit
-          Left = 420
-          Height = 25
-          Top = 197
-          Width = 234
+          Left = 394
+          Height = 23
+          Top = 184
+          Width = 230
           OnEditingDone = EditMessDone
           TabOrder = 5
           Text = 'pontos.'
         end
         object LabelCsq7: TLabel
           Left = 0
-          Height = 25
-          Top = 222
-          Width = 420
+          Height = 23
+          Top = 207
+          Width = 394
           Caption = 'Prefixo ao ganhar pontos'
           ParentColor = False
         end
         object EditMessPrefixEarn: TEdit
-          Left = 420
-          Height = 25
-          Top = 222
-          Width = 234
+          Left = 394
+          Height = 23
+          Top = 207
+          Width = 230
           OnEditingDone = EditMessDone
           TabOrder = 6
           Text = 'ganhou'
         end
         object LabelCsq8: TLabel
           Left = 0
-          Height = 25
-          Top = 247
-          Width = 420
+          Height = 23
+          Top = 230
+          Width = 394
           Caption = 'Sufixo ao ganhar pontos (Singular)'
           ParentColor = False
         end
         object EditMessSufixEarnSingular: TEdit
-          Left = 420
-          Height = 25
-          Top = 247
-          Width = 234
+          Left = 394
+          Height = 23
+          Top = 230
+          Width = 230
           OnEditingDone = EditMessDone
           TabOrder = 7
           Text = 'ponto.'
         end
         object LabelCsq9: TLabel
           Left = 0
-          Height = 25
-          Top = 272
-          Width = 420
+          Height = 23
+          Top = 253
+          Width = 394
           Caption = 'Sufixo ao ganhar pontos (Plural)'
           ParentColor = False
         end
         object EditMessSufixEarnPlural: TEdit
-          Left = 420
-          Height = 25
-          Top = 272
-          Width = 234
+          Left = 394
+          Height = 23
+          Top = 253
+          Width = 230
           OnEditingDone = EditMessDone
           TabOrder = 8
           Text = 'pontos.'
         end
         object LabelCsq10: TLabel
           Left = 0
-          Height = 25
-          Top = 297
-          Width = 420
+          Height = 23
+          Top = 276
+          Width = 394
           Caption = 'Sufixo 0 pontos'
           ParentColor = False
         end
         object EditMessSufixZero: TEdit
-          Left = 420
-          Height = 25
-          Top = 297
-          Width = 234
+          Left = 394
+          Height = 23
+          Top = 276
+          Width = 230
           OnEditingDone = EditMessDone
           TabOrder = 11
           Text = 'não ganhou nem perdeu pontos.'
@@ -1051,8 +1051,8 @@ object FormDesigner: TFormDesigner
         object ButtonPreviewMessage: TButton
           Left = 0
           Height = 25
-          Top = 322
-          Width = 420
+          Top = 299
+          Width = 394
           Caption = 'Ver como a mensagem pode ser apresentada'
           OnClick = ButtonPreviewMessageClick
           TabOrder = 12
