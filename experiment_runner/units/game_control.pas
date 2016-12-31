@@ -306,6 +306,7 @@ end;
 function TGameControl.GetPlayerBox(AID: UTF8string): TPlayerBox;
 var i : integer;
 begin
+  Result := nil;
   for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount-1 do
     if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
       begin
@@ -536,6 +537,8 @@ begin
         {$IFDEF DEBUG}
         WriteLn(S);
         {$ENDIF}
+        // player box is ignored for group points
+        // LabelGroupCount is ignored for player points
         LConsequence.PresentPoints(GetPlayerBox(AID), FormMatrixGame.LabelGroupCount);
       end;
   end;
@@ -644,7 +647,6 @@ begin
     gaPlayer:FExperiment := TExperiment.Create(FZMQActor.Owner);
     gaWatcher:FExperiment := TExperiment.Create(FZMQActor.Owner);
   end;
-  FExperiment.State:=xsWaiting;
   FExperiment.OnEndTurn := @NextTurn;
   FExperiment.OnEndCycle := @NextCycle;
   FExperiment.OnEndCondition:= @NextCondition;

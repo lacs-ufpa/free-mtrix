@@ -732,8 +732,10 @@ procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G: TLabel);
 begin
   if gscG in FStyle then
     G.Caption:= IntToStr(StrToInt(G.Caption) + FP.ResultAsInteger)
-  else
-    APlayerBox.LabelPointsCount.Caption := IntToStr(StrToInt(APlayerBox.LabelPointsCount.Caption) + FP.ResultAsInteger);
+
+  if (gscI in FStyle) or (gscA in FStyle) or (gscB in FStyle) then
+    if Assigned(APlayerBox) then
+      APlayerBox.LabelPointsCount.Caption := IntToStr(StrToInt(APlayerBox.LabelPointsCount.Caption) + FP.ResultAsInteger);
 end;
 
 function TConsequence.GetShouldPublishMessage: Boolean; // for players only
