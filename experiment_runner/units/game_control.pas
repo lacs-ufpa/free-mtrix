@@ -1062,7 +1062,15 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
               begin
                 // if not then generate and save p data
                 i := FExperiment.AppendPlayer;
-                P.Nicname := GenResourceName(i);
+                if FExperiment.GenPlayersAsNeeded then
+                  P.Nicname := GenResourceName(i)
+                else
+                  P.Nicname := InputBox
+                    (
+                      'Um participante entrou no experimento.',
+                      'Qual o apelido do novo participante?',
+                      GenResourceName(i)
+                    );
                 P.Points.A:=0;
                 P.Points.B:=0;
                 P.Status:=gpsPlaying;
@@ -1245,12 +1253,15 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   begin
     P := FExperiment.PlayerFromID[ARequest[0]];
     ARequest[2] := K_RESUME+K_ARRIVED;
-    P.Nicname := InputBox
-      (
-        'Mudança de geração',
-        'Um novo participante entrou no lugar do participante mais antigo.Qual o apelido do novo participante?',
-        GenResourceName(-1)
-      );
+    if FExperiment.GenPlayersAsNeeded then
+      P.Nicname := GenResourceName(-1)
+    else
+      P.Nicname := InputBox
+        (
+          'Mudança de geração',
+          'Um novo participante entrou no lugar do participante mais antigo.Qual o apelido do novo participante?',
+          GenResourceName(-1)
+        );
 
     S := FExperiment.PlayerAsString[P];
     ARequest.Append(S); // 3
