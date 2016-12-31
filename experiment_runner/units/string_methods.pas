@@ -359,7 +359,8 @@ begin
       'V':Result+=[gscVariablePoints];
       'A':Result+=[gscA];
       'B':Result+=[gscB];
-      'G':Result+=[gscG]
+      'G':Result+=[gscG];
+      'I':Result+=[gscI];
     end;
 end;
 
