@@ -11,8 +11,6 @@ unit form_main;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE DEBUG}
-
 interface
 
 uses
@@ -176,9 +174,6 @@ type
     procedure SpinEditOnConditionBeginAEditingDone(Sender: TObject);
     procedure SpinEditTurnValueEditingDone(Sender: TObject);
     procedure XMLPropStorageRestoreProperties(Sender: TObject);
-    {$IFDEF WINDOWS}
-    procedure XMLPropStorageSaveProperties(Sender: TObject);
-    {$ENDIF}
     procedure XMLPropStorageSavingProperties(Sender: TObject);
     procedure XMLPropStorageStoredValuesFileNameRestore(Sender: TStoredValue;
       var Value: TStoredType);
@@ -227,9 +222,9 @@ var
 implementation
 
 uses game_resources, game_actors, game_actors_point, string_methods, strutils
-  {$IFDEF WINDOWS}
-  , Dos
-  {$ENDIF}
+  //{$IFDEF WINDOWS}
+  //, Dos
+  //{$ENDIF}
   ;
 
 const SV_FILENAME : string = 'Filename';
@@ -608,20 +603,6 @@ begin
   //RGEndCriteriaStyleClick(RGEndCriteriaStyle);
   TabSheetContingencies.Enabled := ComboCurrentCondition.Items.Count > 0;
 end;
-
-{$IFDEF WINDOWS}
-procedure TFormDesigner.XMLPropStorageSaveProperties(Sender: TObject);
-var
-  F : TextFile;
-begin
-  if FileExists(XMLPropStorage.FileName) then
-    begin
-      AssignFile(F, XMLPropStorage.FileName);
-      SetFAttr(F,Hidden);
-      CloseFile(F);
-    end;
-end;
-{$ENDIF}
 
 procedure TFormDesigner.XMLPropStorageSavingProperties(Sender: TObject);
   procedure SavePropStorageFilename;
@@ -1373,10 +1354,6 @@ var
       end
   end;
 begin
-  {$IFDEF WINDOWS}
-  XMLPropStorage.OnSaveProperties := @XMLPropStorageSaveProperties;
-  {$ENDIF}
-
   // TRadioGroup OnClick events are triggered programmatically by LCL code, not by us
   // FLoading is a temporary workaround to avoid
   // calls for SaveProcedures while loading FExperiment
@@ -1408,7 +1385,11 @@ var
   LS: String;
 begin
   if TCheckBox(Sender).Checked then
-    TCheckBox(Sender).Caption := 'Sim'
+    begin
+      TCheckBox(Sender).Caption := 'Sim';
+      CGQuestion.Checked[0] := True;
+      CGQuestion.Checked[1] := True;
+    end
   else
     begin
       TCheckBox(Sender).Caption := 'Não';
@@ -1420,6 +1401,8 @@ begin
             WriteString(LS, KEY_PROMPT_MESSAGE, '');
             WriteString(LS, KEY_PROMPT_STYLE, '');
           end;
+      CGQuestion.Checked[0] := False;
+      CGQuestion.Checked[1] := False;
     end;
   LabelQuestion.Visible:= CheckBoxShouldAskQuestion.Checked;
   EditQuestion.Visible := CheckBoxShouldAskQuestion.Checked;
@@ -2003,5 +1986,20 @@ begin
       UncheckBox('ChkEqual');
 
 end;
+
+// TODO: hidden persistence.xml on windows
+//var
+//  F : TextFile;
+//
+//finalization
+//begin
+//  if FileExists(FormDesigner.XMLPropStorage.FileName) then
+//    begin
+//      AssignFile(F, FormDesigner.XMLPropStorage.FileName);
+//      Reset(F);
+//      SetFAttr(F,Hidden);
+//      CloseFile(F);
+//    end;
+//end;
 
 end.
