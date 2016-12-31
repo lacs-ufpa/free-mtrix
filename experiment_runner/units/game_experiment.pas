@@ -103,7 +103,9 @@ type
     FOnEndGeneration: TNotifyEvent;
     FOnTargetInterlocking: TNotifyEvent;
     procedure Consequence(Sender : TObject);
+    function GetMatrixTypeAsUTF8String: UTF8String;
     procedure Interlocking(Sender : TObject);
+    procedure SetMatrixTypeFromUTF8String(AValue: UTF8String);
     procedure SetOnTargetInterlocking(AValue: TNotifyEvent);
     procedure TargetInterlocking(Sender : TObject);
     procedure SetOnConsequence(AValue: TNotifyEvent);
@@ -133,6 +135,7 @@ type
     property ShowChat : Boolean read FShowChat write FShowChat;
     property SendChatHistoryForNewPlayers : Boolean read FSendChatHistoryForNewPlayers write SetSendChatHistoryForNewPlayers;
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
+    property MatrixTypeAsString : UTF8String read GetMatrixTypeAsUTF8String write SetMatrixTypeFromUTF8String;
   public // manipulation/ self awareness
     function AppendCondition : integer; overload;
     function AppendCondition(ACondition : TCondition) : integer;overload;
@@ -567,6 +570,11 @@ begin
   if Assigned(FOnConsequence) then FOnConsequence(Sender);
 end;
 
+function TExperiment.GetMatrixTypeAsUTF8String: UTF8String;
+begin
+  Result := GetMatrixTypeString(MatrixType);
+end;
+
 procedure TExperiment.TargetInterlocking(Sender: TObject);
 begin
   if Assigned(FOnTargetInterlocking) then FOnTargetInterlocking(Sender);
@@ -596,6 +604,11 @@ end;
 procedure TExperiment.Interlocking(Sender: TObject);
 begin
   if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
+end;
+
+procedure TExperiment.SetMatrixTypeFromUTF8String(AValue: UTF8String);
+begin
+  MatrixType := GetMatrixTypeFromString(AValue);
 end;
 
 procedure TExperiment.SetOnTargetInterlocking(AValue: TNotifyEvent);
@@ -719,9 +732,9 @@ var
   c,i: integer;
   LRow : string;
 begin
+  c := CurrentCondition;
   if Assigned(FRegData) and Assigned(Condition[c].Prompt) then
     begin
-      c := CurrentCondition;
       LRow := '';
       if Condition[c].Prompt.ResponsesCount = Condition[c].Turn.Value then
         for i:=0 to Condition[c].Prompt.ResponsesCount-1 do
@@ -754,7 +767,7 @@ begin
 end;
 
 constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
-var LDataPath : string;
+//var LDataPath : string;
 begin
   inherited Create(AOwner);
   FExperimentPath := AppPath;
@@ -782,9 +795,12 @@ constructor TExperiment.Create(AOwner:TComponent;AFilename,AppPath:string);
 begin
   inherited Create(AOwner);
   FTurnsRandom := TStringList.Create;
-  LoadExperimentFromFile(Self,AFilename);
-  CheckNeedForRandomTurns;
-  State := xsWaiting;
+  if LoadExperimentFromFile(Self,AFilename) then
+    begin
+      FExperimentPath := AppPath;
+      CheckNeedForRandomTurns;
+      State := xsWaiting;
+    end;
   //FReportReader := TReportReader.Create;
   //FRegData := TRegData.Create(Self, AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim+'000.dat');
 end;

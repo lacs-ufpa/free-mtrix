@@ -1100,8 +1100,10 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
                 if FExperiment.Player[i].ID <> P.ID then
                   begin
                     TS := FExperiment.PlayerAsString[FEXperiment.Player[i]];
-                    ARequest.Append(TS);  // FROM 3 to COUNT-4
+                    ARequest.Append(TS);  // FROM 3 to COUNT-5
                   end;
+            // appen matrix type
+            ARequest.Append(FExperiment.MatrixTypeAsString); // COUNT-4
 
             // append chat data if allowed
             if FExperiment.SendChatHistoryForNewPlayers then
@@ -1300,12 +1302,15 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
   begin
     if Self.ID = AReply[0] then
       begin
-        for i:= 3 to AReply.Count -4 do
+        for i:= 3 to AReply.Count -5 do
           begin
             P := FExperiment.PlayerFromString[AReply[i]];
             FExperiment.AppendPlayer(P);
             CreatePlayerBox(P, False);
           end;
+
+        // set matrix type/ stringgrid
+        FExperiment.MatrixTypeAsString:=AReply[AReply.Count-4];
 
         // add chat
         FormMatrixGame.ChatMemoRecv.Lines.Clear;

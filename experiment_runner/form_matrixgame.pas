@@ -339,6 +339,7 @@ begin
       begin
         if not FGameControl.Experiment.LoadFromFile(OpenDialog.FileName) then
           Exit;
+        FGameControl.SetMatrix;
         ButtonExpStart.Enabled := False;
         ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
