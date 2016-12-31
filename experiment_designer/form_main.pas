@@ -202,13 +202,17 @@ type
     procedure SetRGEndCriteriaStyle(AStyle: string);
     procedure SetContingencyCriteria(S: string);
     procedure SetConsequenceStyle(S:string);
-    procedure UpdateContingencyList(ASection: String);
+    procedure UpdateConditionsCombo;
+    procedure UpdateConditionsList;
     procedure UpdateContingencyCombo(ASection: String);
+    procedure UpdateContingencyList(ASection: String);
   private
     FLoading : Boolean;
     FPersistentTXTFilename : string;
     function GetContingencyName(IsMeta:Boolean; MustIncrement:Boolean=True):string;
+    procedure IncConditionName(var ACondition: string; N : integer = 1);
     procedure IncContingencyName(var AContingency : string; N : integer = 1);
+    procedure ReadCondintionNames(S:TStrings);
     procedure ReadContingencyNames(ASection, AContingency, AKeySuffix:string; S:TStrings);
     procedure ReadContingencyValuesInSection(LS, LC : string; Keys:TStrings);
     procedure SetPropstorageFilename;
@@ -642,18 +646,38 @@ var
   LC: string;
 begin
   LoadSectionExperiment;
-
   if ComboCurrentCondition.ItemIndex <> -1 then
-  begin
-    LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
-    LoadSectionCondition(LS);
-    if ComboCurrentContingency.ItemIndex <> -1 then
-      begin
-        LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
-        LoadContingency(LS, LC);
-      end;
-  end;
+    begin
+      LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+      LoadSectionCondition(LS);
+      if ComboCurrentContingency.ItemIndex = -1 then
+        begin
+          LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
+          LoadContingency(LS, LC);
+        end;
+    end
+  else
+    begin
+      UpdateConditionsCombo;
+      UpdateConditionsList;
+      if ComboCurrentCondition.Items.Count > 0 then
+        begin
+          TabSheetContingencies.Enabled := True;
+          ComboCurrentCondition.ItemIndex := 0;
+          LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
+          LoadSectionCondition(LS);
+          UpdateContingencyCombo(LS);
+          UpdateContingencyList(LS);
+          if ComboCurrentContingency.Items.Count > 0 then
+            begin
+              ComboCurrentContingency.ItemIndex := 0;
+              LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
+              LoadContingency(LS, LC);
+            end;
+        end;
+    end;
 end;
+
 
 procedure TFormDesigner.SaveExperiment;
 var
@@ -880,6 +904,18 @@ begin
     RGBroadcastMessage.ItemIndex := 2;
 end;
 
+procedure TFormDesigner.UpdateConditionsCombo;
+begin
+  ComboCurrentCondition.Items.Clear;
+  ReadCondintionNames(ComboCurrentCondition.Items);
+end;
+
+procedure TFormDesigner.UpdateConditionsList;
+begin
+  ListBoxConditions.Items.Clear;
+  ReadCondintionNames(ListBoxConditions.Items);
+end;
+
 procedure TFormDesigner.UpdateContingencyList(ASection: String);
 var
   LC: String;
@@ -914,6 +950,20 @@ begin
   end;
 end;
 
+procedure TFormDesigner.IncConditionName(var ACondition: string; N: integer);
+var
+  LConditionName: String;
+  LExtension: RawByteString;
+  LCount: LongInt;
+begin
+  LConditionName := ExtractFileNameWithoutExt(ACondition);
+  LExtension := ExtractFileExt(ACondition);
+  Delete(LExtension,1,1);
+  LCount := StrToInt(LExtension);
+  Inc(LCount,N);
+  ACondition := LConditionName + '.' + IntToStr(LCount);
+end;
+
 procedure TFormDesigner.IncContingencyName(var AContingency: string; N: integer);
 var
   LContingencyType: String;
@@ -926,6 +976,19 @@ begin
   LCount := StrToInt(LExtension);
   Inc(LCount,N);
   AContingency := LContingencyType + '.' + IntToStr(LCount);
+end;
+
+procedure TFormDesigner.ReadCondintionNames(S: TStrings);
+var
+  ASection: string;
+begin
+  ASection := SEC_CONDITION+'1';
+  with FExperiment do
+    while SectionExists(ASection) do
+      begin
+        S.Append(ASection+'|'+ReadString(ASection,KEY_COND_NAME,''));
+        IncConditionName(ASection);
+      end;
 end;
 
 procedure TFormDesigner.ReadContingencyNames(ASection, AContingency,
