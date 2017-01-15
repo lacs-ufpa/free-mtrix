@@ -28,6 +28,7 @@ resourcestring
   KEY_RESEARCHER_CANCHAT = 'Pesquisador.BatePapo';
   KEY_RESEARCHER_CANPLAY = 'Pesquisador.PodeJogar';
   KEY_GEN_PLAYER_AS_NEEDED = 'Jogadores.GerarAutomaticamente';
+  KEY_CHAT_FOR_PLAYERS = 'Jogadores.BatePapo';
   KEY_CHAT_HISTORY_FOR_NEW_PLAYERS = 'Jogadores.Novos.Enviar_Histórico_do_BatePapo';
   KEY_CURRENT_CONDITION = 'ComeçarNaCondição';
   KEY_MATRIX_TYPE= 'TipoDaMatrix';

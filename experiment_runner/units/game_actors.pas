@@ -442,7 +442,7 @@ end;
 
 procedure TPrompt.ClearResponses;
 begin
-  FResponses := nil;
+  SetLength(FResponses,0);
 end;
 
 constructor TPrompt.Create(AOwner: TComponent; APStyle: TPromptStyle;
@@ -473,7 +473,7 @@ end;
 procedure TPrompt.Clean;
 begin
   //inherited Clean;
-  FResponses := nil;
+  SetLength(FResponses,0);
 end;
 
 function TPrompt.AsString: TStringList;

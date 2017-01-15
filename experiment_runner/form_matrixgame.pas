@@ -80,6 +80,7 @@ type
   public
     procedure SetID(S : string);
     procedure SetGameActor(AValue: TGameActor);
+    procedure SetFullscreen;
     property ID : string read FID;
   end;
 
@@ -248,6 +249,17 @@ begin
   end;
 end;
 
+procedure TFormMatrixGame.SetFullscreen;
+begin
+  BorderStyle:=bsNone;
+  {$IFDEF WINDOWS}
+  BoundsRect := Monitor.BoundsRect;
+  {$ENDIF}
+  Position:=poDesigned;
+  FormStyle:=fsNormal;
+  WindowState:=wsFullScreen;
+end;
+
 procedure TFormMatrixGame.SetID(S: string);
 begin
   FID := S;
@@ -256,6 +268,7 @@ end;
 
 procedure TFormMatrixGame.FormActivate(Sender: TObject);
 begin
+  PopupNotifier.Icon.Assign(Application.Icon);
   if not Assigned(FGameControl) then
     begin
       FormChooseActor := TFormChooseActor.Create(Self);
@@ -319,15 +332,15 @@ begin
   ButtonExpStart.Caption := CAPTION_START;
   ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
   ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-  //FGameControl.Experiment.SaveToFile(SaveDialog.FileName'.canceled');
-  //FGameControl.Experiment.Clean;
+  FGameControl.Experiment.SaveToFile(OpenDialog.FileName+'.canceled');
+  FGameControl.SendMessage(K_END);
 end;
 
 procedure TFormMatrixGame.ButtonExpPauseClick(Sender: TObject);
 begin
-  ButtonExpStart.Enabled := True;
-  ButtonExpStart.Caption := CAPTION_RESUME;
-  ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
+  //ButtonExpStart.Enabled := True;
+  //ButtonExpStart.Caption := CAPTION_RESUME;
+  //ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
   //FGameControl.Pause;
 end;
 
@@ -344,7 +357,7 @@ begin
         ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
         ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-
+        ChatPanel.Visible := FGameControl.Experiment.ShowChat;
       end;
 
   if ButtonExpStart.Caption = CAPTION_RESUME then
@@ -353,7 +366,7 @@ begin
         ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
         ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-        //FGameControl.Resume;
+        FGameControl.Resume;
       end;
 end;
 

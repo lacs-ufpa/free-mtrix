@@ -53,7 +53,7 @@ type
   private
     function AskQuestion(AQuestion:string):UTF8string;
     function ShowConsequence(AID,S:string;ForGroup:Boolean;ShowPopUp : Boolean = True) : string;
-    procedure ShowPopUp(AText:string;AInterval : integer = 5000);
+    procedure ShowPopUp(AText:string;AInterval : integer = 15000);
     procedure DisableConfirmationButton;
     procedure CleanMatrix(AEnabled : Boolean);
     procedure NextConditionSetup(S : string);
@@ -137,6 +137,7 @@ const
 function GetRowColor(ARow: integer; ARowBase:integer): TColor;
 var LRow : integer;
 begin
+  Result := 0;
   if ARowBase = 1 then
     LRow := aRow -1
   else LRow := aRow;
@@ -179,7 +180,7 @@ end;
 
 function TGameControl.ShouldAskQuestion: Boolean;
 begin
-  Result := Assigned(FExperiment.Condition[FExperiment.CurrentCondition].Prompt) and FExperiment.Condition[FExperiment.CurrentCondition].Contingencies[3].Fired;
+  Result := Assigned(FExperiment.Condition[FExperiment.CurrentCondition].Prompt) and FExperiment.TargetIntelockingFired;
 end;
 
 procedure TGameControl.EndExperiment(Sender: TObject);
@@ -298,9 +299,8 @@ end;
 
 procedure TGameControl.Stop;
 begin
-  // Pause
-
   // cleaning
+  FExperiment.Clean;
 end;
 
 function TGameControl.GetPlayerBox(AID: UTF8string): TPlayerBox;
@@ -317,6 +317,7 @@ end;
 
 function TGameControl.GetActorNicname(AID: UTF8string): UTF8string;
 begin
+  Result := '';
   case FActor of
     gaPlayer: begin
       Result := 'UNKNOWN';
@@ -501,8 +502,8 @@ end;
 procedure TGameControl.ShowPopUp(AText: string; AInterval: integer);
 var PopUpPos : TPoint;
 begin
-  PopUpPos.X := FormMatrixGame.GBIndividualAB.Left-110;
-  PopUpPos.Y := FormMatrixGame.GBIndividualAB.Top+FormMatrixGame.GBIndividual.Height-10;
+  PopUpPos.X := (FormMatrixGame.StringGridMatrix.Width div 2) - (FormMatrixGame.PopupNotifier.vNotifierForm.Width div 2);
+  PopUpPos.Y := (FormMatrixGame.StringGridMatrix.Height div 2) - (FormMatrixGame.PopupNotifier.vNotifierForm.Height div 2);
   PopUpPos := FormMatrixGame.ClientToScreen(PopUpPos);
   FormMatrixGame.PopupNotifier.Title:='';
   FormMatrixGame.PopupNotifier.Text:=AText;
@@ -609,7 +610,7 @@ begin
          for P in FExperiment.Players do
           begin
             PB := GetPlayerBox(P.ID);
-            A += StrToInt(PB.LabelPointsCount.Caption) + B;
+            A += StrToInt(PB.LabelPointsCount.Caption);
             PB.LabelPointsCount.Caption := IntToStr(A);
           end;
        end;
@@ -620,6 +621,9 @@ procedure TGameControl.EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnable
 begin
   if FExperiment.PlayerFromID[AID].Turn = ATurn then
     CleanMatrix(AEnabled);
+
+  if AEnabled then
+    ShowPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
 end;
 
 constructor TGameControl.Create(AOwner: TComponent;AppPath:string);
@@ -681,6 +685,7 @@ var
       M[i] := A[i];
   end;
 begin
+  SetLength(M,0);
   case ARequest of
     K_LOGIN :SetM([
         FZMQActor.ID
@@ -854,10 +859,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     case FActor of
       gaPlayer:
           if FExperiment.PlayerFromID[Self.ID].Turn = 0 then
-            begin
-              EnablePlayerMatrix(Self.ID, 0, True);
-              ShowPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
-            end
+              EnablePlayerMatrix(Self.ID, 0, True)
           else
               ShowPopUp('Começou! Aguarde sua vez.');
 
@@ -1055,7 +1057,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
             // check if we already know this player
             i := FExperiment.PlayerIndexFromID[P.ID];
-            if i > -1then
+            if i > -1 then
               begin
                 // then load p data
                 P := FExperiment.Player[i]
@@ -1105,11 +1107,16 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
             // appen matrix type
             ARequest.Append(FExperiment.MatrixTypeAsString); // COUNT-4
 
-            // append chat data if allowed
-            if FExperiment.SendChatHistoryForNewPlayers then
-              ARequest.Append(FormMatrixGame.ChatMemoRecv.Lines.Text) // COUNT-3
+            // append chat data
+            if FExperiment.ShowChat then
+              begin
+                if FExperiment.SendChatHistoryForNewPlayers then
+                  ARequest.Append(FormMatrixGame.ChatMemoRecv.Lines.Text) // COUNT-3
+                else
+                  ARequest.Append('[CHAT]'); // must append something to keep the message envelop with standard size
+              end
             else
-              ARequest.Append('[CHAT]'); // must append something to keep the message envelop standard
+              ARequest.Append('[NOCHAT]'); // must append something to keep the message envelop with standard size
 
             // append global configs.
             ARequest.Append(BoolToStr(FExperiment.ABPoints)); // COUNT-2
@@ -1145,6 +1152,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     LEndCycle : Boolean;
     LEndGeneration: string;
   begin
+    LConsequences := '';
     {$IFDEF DEBUG}
     WriteLn('Count:',FExperiment.Condition[FExperiment.CurrentCondition].Turn.Count, '<', FExperiment.Condition[FExperiment.CurrentCondition].Turn.Value);
     {$ENDIF}
@@ -1185,7 +1193,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
           begin
             ARequest.Append(#32); // 8
             if Assigned(FExperiment.Condition[FExperiment.CurrentCondition].Prompt) then
-              FExperiment.WriteReportRowPrompt;
+              FExperiment.WriteReportRowPrompt; //TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
             FExperiment.Clean;
           end;
 
@@ -1223,7 +1231,6 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     // return to experiment and present the prompt consequence, if any
     if FExperiment.Condition[FExperiment.CurrentCondition].Prompt.ResponsesCount = FExperiment.PlayersCount then
       begin
-
         // generate messages
         LPromptConsequences := FExperiment.Condition[FExperiment.CurrentCondition].Prompt.AsString;
         SetLength(M, 3+LPromptConsequences.Count);
@@ -1243,7 +1250,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
           end
         else;
 
-         // send identified messages; each player takes only its own message and ignore the rest
+        // send identified messages; each player takes only its own message and ignore the rest
         FZMQActor.SendMessage(M);
         FExperiment.WriteReportRowPrompt;
         FExperiment.Clean;
@@ -1263,7 +1270,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
       P.Nicname := InputBox
         (
           'Mudança de geração',
-          'Um novo participante entrou no lugar do participante mais antigo.Qual o apelido do novo participante?',
+          'Um novo participante entrou no lugar do participante mais antigo. Qual o apelido do novo participante?',
           GenResourceName(-1)
         );
 
@@ -1312,9 +1319,15 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         // set matrix type/ stringgrid
         FExperiment.MatrixTypeAsString:=AReply[AReply.Count-4];
 
-        // add chat
-        FormMatrixGame.ChatMemoRecv.Lines.Clear;
-        FormMatrixGame.ChatMemoRecv.Lines.Add(AReply[AReply.Count-3]);
+        // enable chat
+        if AReply[AReply.Count-3] = '[NOCHAT]' then
+          FormMatrixGame.ChatPanel.Visible := False
+        else
+          begin
+            FormMatrixGame.ChatPanel.Visible := True;
+            FormMatrixGame.ChatMemoRecv.Lines.Clear;
+            FormMatrixGame.ChatMemoRecv.Lines.Append(AReply[AReply.Count-3]);
+          end;
 
         // set global configs
         FExperiment.ABPoints := StrToBool(AReply[AReply.Count-2]);
@@ -1322,7 +1335,10 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         FormMatrixGame.GBIndividual.Visible:= not FormMatrixGame.GBIndividualAB.Visible;
 
         // set condition specific configurations
-        NextConditionSetup(AReply[AReply.Count-1])
+        NextConditionSetup(AReply[AReply.Count-1]);
+
+        // set fullscreen
+        FormMatrixGame.SetFullscreen;
       end
     else
       begin

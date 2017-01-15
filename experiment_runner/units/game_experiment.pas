@@ -143,6 +143,7 @@ type
     function AppendContingency(ACondition : integer;AContingency : TContingency) : integer;overload;
     function AppendPlayer : integer;overload;
     function AppendPlayer(APlayer : TPlayer) : integer; overload;
+    function TargetIntelockingFired : Boolean;
     property Condition[I : Integer]: TCondition read GetCondition write SetCondition;
     property ConditionsCount : integer read GetConditionsCount;
     property CurrentCondition : integer read FCurrentCondition write FCurrentCondition;
@@ -300,8 +301,19 @@ end;
 function TExperiment.GetPlayer(AID: UTF8string): TPlayer;
 var
   i : integer;
+  P : TPlayer = (
+    ID : '';
+    Nicname : '';
+    Login: '';
+    Password: '';
+    Status : gpsWaiting;
+    Data : nil;
+    Choice : (Row:grNone; Color:gcNone);
+    Points : (A:0; B:0);
+    Turn : -1;
+  );
 begin
-  //Result.ID := '';
+  Result := P;
   if PlayersCount > 0 then
     for i:= 0 to PlayersCount -1 do
       if FPlayers[i].ID = AID then
@@ -746,7 +758,7 @@ begin
           LRow += 'NA'+#9;
 
       FRegData.SaveData(LRow);
-      FReportReader.Extend(LRow);
+      FReportReader.Extend(LRow);  // Write, i.e, extend last row
     end;
 end;
 
@@ -886,6 +898,18 @@ begin
   FPlayers[Result] := APlayer;
 end;
 
+function TExperiment.TargetIntelockingFired: Boolean;
+var i : integer;
+begin
+  Result := False;
+  for i:= 0 to ContingenciesCount[CurrentCondition]-1 do
+    if Condition[CurrentCondition].Contingencies[i].Meta then
+      begin
+        Result := Condition[CurrentCondition].Contingencies[i].Fired;
+        Break;
+      end;
+end;
+
 function TExperiment.ShouldEndCondition: Boolean;
 var
   LInterlocks: Real;
@@ -960,7 +984,7 @@ begin
   for i := 0 to ContingenciesCount[c]-1 do
     Contingency[c,i].Clean;
 
-  if Assigned(Condition[c].Prompt) then
+  if Assigned(Condition[c].Prompt) then  // TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
     Condition[c].Prompt.Clean;
 
   FRegData.CloseAndOpen;

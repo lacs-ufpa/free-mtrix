@@ -35,6 +35,7 @@ implementation
 
 uses LCLIntf, game_resources, game_actors, game_actors_helpers, string_methods, regdata;
 
+// for dev only
 function LoadExperimentFromResource(var AExperiment: TExperiment): Boolean;
 var
   C : TCondition;
@@ -68,6 +69,7 @@ begin
     begin
       ExperimentName:='test_experiment';
       ExperimentAim:='This is a test experiment.';
+      ShowChat := True;
       Researcher := VAL_RESEARCHER;
       ResearcherCanPlay:=False;
       ResearcherCanChat:=True;
@@ -169,6 +171,7 @@ var
         AExperiment.ExperimentAim:=ReadString(SEC_EXPERIMENT, KEY_AIM,'');
 
         // general configs
+        AExperiment.ShowChat := ReadBool(SEC_EXPERIMENT, KEY_CHAT_FOR_PLAYERS, False);
         AExperiment.ResearcherCanPlay := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANPLAY,False);
         AExperiment.ResearcherCanChat := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT,False);
         AExperiment.GenPlayersAsNeeded := ReadBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED,False);
@@ -177,7 +180,7 @@ var
         AExperiment.MatrixType := GetMatrixTypeFromString(ReadString(SEC_EXPERIMENT,KEY_MATRIX_TYPE,DEF_MATRIX_TYPE));
 
         // used when loading from paused experiments
-        AExperiment.CurrentCondition := ReadInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION,0)-1; //zero based
+        AExperiment.CurrentCondition := ReadInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION,0); //zero based
       end;
   end;
 
@@ -256,7 +259,7 @@ var
               Turn.Random:= ReadBool(LS, KEY_TURN_RANDOM,False);
               Cycles.Count:= ReadInteger(LS, KEY_CYCLES_COUNT,0);
               Cycles.Value:= ReadInteger(LS, KEY_CYCLES_VALUE,10);
-              Cycles.Generation:= ReadInteger(LS, KEY_CYCLES_GEN,5);
+              Cycles.Generation:= ReadInteger(LS, KEY_CYCLES_GEN,0);
               EndCriterium.Style := GetEndCriteriaStyleFromString(ReadString(LS,KEY_ENDCRITERIA,DEF_END_CRITERIA_STYLE));
               EndCriterium.AbsoluteCycles:=ReadInteger(LS,KEY_ENDCRITERIA_CYCLES,20);
               s1 := ReadString(LS,KEY_ENDCRITERIA_PORCENTAGE,DEF_END_CRITERIA_PORCENTAGE);
@@ -383,9 +386,23 @@ begin
   LIniFile:= TIniFile.Create(LWriter.FileName);
   LWriter.Free;
 
-  LIniFile.WriteString(SEC_EXPERIMENT,KEY_RESEARCHER,AExperiment.Researcher);
-
+  // write experiment
   with LIniFile do
+    begin
+      WriteString(SEC_EXPERIMENT, KEY_RESEARCHER, AExperiment.Researcher);
+      WriteString(SEC_EXPERIMENT, KEY_NAME, AExperiment.ExperimentName);
+      WriteString(SEC_EXPERIMENT, KEY_AIM, AExperiment.ExperimentAim);
+      WriteBool(SEC_EXPERIMENT, KEY_CHAT_FOR_PLAYERS, AExperiment.ShowChat);
+      WriteBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANPLAY, AExperiment.ResearcherCanPlay);
+      WriteBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT, AExperiment.ResearcherCanChat);
+      WriteBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED, AExperiment.GenPlayersAsNeeded);
+      WriteBool(SEC_EXPERIMENT, KEY_CHAT_HISTORY_FOR_NEW_PLAYERS, AExperiment.SendChatHistoryForNewPlayers);
+      WriteBool(SEC_EXPERIMENT, KEY_POINTS_TYPE, AExperiment.ABPoints);
+      WriteString(SEC_EXPERIMENT,KEY_MATRIX_TYPE,GetMatrixTypeString(AExperiment.MatrixType));
+      WriteInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION, AExperiment.CurrentCondition);
+    end;
+
+  with LIniFile do // write conditions
     for i := 0 to AExperiment.ConditionsCount-1 do
       begin
         LC := SEC_CONDITION+IntToStr(i+1);
@@ -415,7 +432,7 @@ begin
 
             MI := 0;
             CI := 0;
-            for j := 0 to High(Contingencies) do
+            for j := 0 to High(Contingencies) do // write ocntingencies
               begin
                 if Contingencies[j].Meta then
                   begin
