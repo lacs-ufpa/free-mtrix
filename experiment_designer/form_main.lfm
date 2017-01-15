@@ -18,7 +18,7 @@ object FormDesigner: TFormDesigner
   LCLVersion = '1.6.2.0'
   object PageControl: TPageControl
     Left = 0
-    Height = 744
+    Height = 765
     Top = 0
     Width = 643
     ActivePage = TabSheetExperiment
@@ -32,7 +32,7 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 711
+      ClientHeight = 732
       ClientWidth = 637
       object GBConditions: TGroupBox
         Left = 0
@@ -111,7 +111,7 @@ object FormDesigner: TFormDesigner
       end
       object CGGlobal: TCheckGroup
         Left = 0
-        Height = 113
+        Height = 134
         Hint = 'Aplicáveis ao longo de todo o experimento'
         Top = 376
         Width = 637
@@ -125,24 +125,26 @@ object FormDesigner: TFormDesigner
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 1
-        ClientHeight = 96
+        ClientHeight = 117
         ClientWidth = 633
         Items.Strings = (
           'Enviar histórico do bate-papo a novos participantes'
           'Gerar participantes automaticamente'
           'Habilitar matrix para o pesquisador jogar'
           'Habilitar bate-papo para o pesquisador'
+          'Habilitar bate-papo'
         )
+        OnClick = CGGlobalClick
         OnItemClick = CGGlobalItemClick
         TabOrder = 3
         Data = {
-          0400000002030202
+          050000000202020202
         }
       end
       object RGPoints: TRadioGroup
         Left = 0
         Height = 59
-        Top = 494
+        Top = 515
         Width = 637
         AutoFill = True
         Caption = 'Tipo de pontuação Individual'
@@ -166,7 +168,7 @@ object FormDesigner: TFormDesigner
       object GBMatrix: TGroupBox
         Left = 0
         Height = 143
-        Top = 558
+        Top = 579
         Width = 637
         Caption = 'Tipo da Matrix'
         ChildSizing.LeftRightSpacing = 5
@@ -247,7 +249,7 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 711
+      ClientHeight = 732
       ClientWidth = 637
       object ComboCurrentCondition: TComboBox
         Left = 0
@@ -652,7 +654,7 @@ object FormDesigner: TFormDesigner
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 1
-      ClientHeight = 711
+      ClientHeight = 732
       ClientWidth = 637
       Enabled = False
       object RGContingencyType: TRadioGroup

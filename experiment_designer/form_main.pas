@@ -134,6 +134,7 @@ type
     procedure BtnReorderCondClick(Sender: TObject);
     procedure BtnReorderContingencyClick(Sender: TObject);
     procedure ButtonPreviewMessageClick(Sender: TObject);
+    procedure CGGlobalClick(Sender: TObject);
     procedure CGGlobalItemClick(Sender: TObject; Index: integer);
     procedure CheckBoxImutableMessageChange(Sender: TObject);
     procedure ChkMatrixTypeClick(Sender: TObject);
@@ -1052,6 +1053,8 @@ begin
     WriteBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED, CGGlobal.Checked[1]);
     WriteBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANPLAY, CGGlobal.Checked[2]);
     WriteBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT, CGGlobal.Checked[3]);
+    WriteBool(SEC_EXPERIMENT, KEY_CHAT_FOR_PLAYERS, CGGlobal.Checked[4]);
+
     case RGPoints.ItemIndex of
       0: WriteBool(SEC_EXPERIMENT, KEY_POINTS_TYPE, True);
       1: WriteBool(SEC_EXPERIMENT, KEY_POINTS_TYPE, False);
@@ -1071,6 +1074,8 @@ begin
       CGGlobal.Checked[1] := ReadBool(SEC_EXPERIMENT, KEY_GEN_PLAYER_AS_NEEDED, False);
       CGGlobal.Checked[2] := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANPLAY, False);
       CGGlobal.Checked[3] := ReadBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT, False);
+      CGGlobal.Checked[4] := ReadBool(SEC_EXPERIMENT, KEY_CHAT_FOR_PLAYERS, False);
+
       if ReadBool(SEC_EXPERIMENT, KEY_POINTS_TYPE, True) then
         RGPoints.ItemIndex := 0
       else
@@ -1891,6 +1896,11 @@ begin
       CreateMessage(i);
 end;
 
+procedure TFormDesigner.CGGlobalClick(Sender: TObject);
+begin
+
+end;
+
 procedure TFormDesigner.CGGlobalItemClick(Sender: TObject; Index: integer);
 begin
   if not FLoading then
@@ -1908,6 +1918,9 @@ begin
 
           if Index = 3 then
             WriteBool(SEC_EXPERIMENT, KEY_RESEARCHER_CANCHAT, CGGlobal.Checked[Index]);
+
+          if Index = 4 then
+            WriteBool(SEC_EXPERIMENT, KEY_CHAT_FOR_PLAYERS, CGGlobal.Checked[Index]);
         end;
 end;
 
