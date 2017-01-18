@@ -97,9 +97,12 @@ end;
 procedure TIntervalarAnnouncer.StartTimer(Sender: TObject);
 var M : array of UTF8String;
 begin
-  M := FMessages[High(FMessages)];
-  NextMessage;
-  if Assigned(FOnStart) then FOnStart(M);
+  if Length(FMessages) > 0 then
+    begin
+      M := FMessages[High(FMessages)];
+      NextMessage;
+      if Assigned(FOnStart) then FOnStart(M);
+    end;
 end;
 
 constructor TIntervalarAnnouncer.Create(AOwner: TComponent);
