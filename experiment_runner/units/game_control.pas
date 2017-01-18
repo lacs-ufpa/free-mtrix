@@ -522,7 +522,7 @@ begin
   LConsequence := TConsequence.Create(nil,S);
   Result := LConsequence.GenerateMessage(ForGroup);
   if ShowPopUp then
-  LConsequence.PresentMessage(FormMatrixGame.GBIndividualAB);
+    LConsequence.PresentMessage(FormMatrixGame.GBIndividualAB);
   case FActor of
     gaPlayer:
       if ForGroup then
@@ -1014,7 +1014,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                 WriteLn('A Prompt consequence should have shown.');
                 {$ENDIF}
               end;
-            ShowPopUp(LQConsequence);
+
+            if LQConsequence <> '' then
+               ShowPopUp(LQConsequence);
           end;
         ResumeNextTurn;
         if AMessage[2] <> #32 then
@@ -1381,15 +1383,19 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
             begin
               LConsequence := TConsequence.Create(nil,ExtractDelimited(i,AReply[6],['+']));
               LConsequence.GenerateMessage(False);
-              if LConsequence.ShouldPublishMessage then
-                //FZMQActor.SendMessage([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
-                LAnnouncer.Append([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
-              else
-                begin
-                  LConsequence.PresentMessage(FormMatrixGame.GBIndividualAB);
-                  LConsequence.PresentPoints(FormMatrixGame.LabelIndACount,FormMatrixGame.LabelIndBCount,
-                    FormMatrixGame.LabelIndCount,FormMatrixGame.LabelGroupCount);
-                end;
+              LAnnouncer.Append([K_MESSAGE,
+                                 Self.ID,
+                                 ExtractDelimited(i,AReply[6],['+']),
+                                 BoolToStr(LConsequence.ShouldPublishMessage)]);
+              //if LConsequence.ShouldPublishMessage then
+              //  //FZMQActor.SendMessage([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
+              //  LAnnouncer.Append([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
+              //else
+              //  begin
+              //    LConsequence.PresentMessage(FormMatrixGame.GBIndividualAB);
+              //    LConsequence.PresentPoints(FormMatrixGame.LabelIndACount,FormMatrixGame.LabelIndBCount,
+              //      FormMatrixGame.LabelIndCount,FormMatrixGame.LabelGroupCount);
+              //  end;
               {$IFDEF DEBUG}
               WriteLn('A consequence should have shown.');
               {$ENDIF}
