@@ -696,7 +696,7 @@ var
   PopUpPos : TPoint;
 begin
   PopUpPos.X := 0;
-  if gscA in FStyle then
+  if (gscA in FStyle) or (gscI in FStyle) then
     PopUpPos.Y := AControl.Top+AControl.Height-20;
 
   if gscB in FStyle then
