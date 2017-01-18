@@ -620,10 +620,12 @@ end;
 procedure TGameControl.EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
 begin
   if FExperiment.PlayerFromID[AID].Turn = ATurn then
-    CleanMatrix(AEnabled);
+    begin
+      CleanMatrix(AEnabled);
 
-  if AEnabled then
-    ShowPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
+      if AEnabled then
+        ShowPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
+    end;
 end;
 
 constructor TGameControl.Create(AOwner: TComponent;AppPath:string);
