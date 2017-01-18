@@ -353,6 +353,8 @@ begin
         if not FGameControl.Experiment.LoadFromFile(OpenDialog.FileName) then
           Exit;
         FGameControl.SetMatrix;
+        GBIndividualAB.Visible:= FGameControl.Experiment.ABPoints;
+        GBIndividual.Visible := not FGameControl.Experiment.ABPoints;
         ButtonExpStart.Enabled := False;
         ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
