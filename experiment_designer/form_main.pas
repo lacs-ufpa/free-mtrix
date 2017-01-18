@@ -153,6 +153,7 @@ type
     procedure EditConditionNameEditingDone(Sender: TObject);
     procedure EditContingencyNameEditingDone(Sender: TObject);
     procedure EditMessDone(Sender: TObject);
+    procedure EditQuestionDblClick(Sender: TObject);
     procedure EditQuestionEditingDone(Sender: TObject);
     procedure EditExperimentEditingDone(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -1598,6 +1599,11 @@ begin
               WriteString(LSection, LContingency + KEY_CONSEQUE_MESSAGE_APPEND_ZERO, EditMessSufixZero.Text);
           end;
     end;
+end;
+
+procedure TFormDesigner.EditQuestionDblClick(Sender: TObject);
+begin
+ TEdit(Sender).Text := 'Um item escolar foi perdido, desejam recuperá-lo gastando pontos do Tipo A?';
 end;
 
 procedure TFormDesigner.ConsequenceMessageEditingDone(Sender: TObject);
