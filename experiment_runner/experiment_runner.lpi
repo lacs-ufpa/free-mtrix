@@ -17,8 +17,10 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="1"/>
+      <RevisionNr Value="2"/>
+      <BuildNr Value="2"/>
       <Language Value="0416"/>
-      <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_runner" ProductName="Free-mtrix" ProductVersion="0.1.0"/>
+      <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_runner" ProductName="Free-mtrix" ProductVersion="0.1.2"/>
     </VersionInfo>
     <BuildModes Count="4">
       <Item1 Name="Linux 64 Debug" Default="True"/>
@@ -30,7 +32,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
             <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
@@ -57,7 +59,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
             <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
@@ -78,7 +80,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
             <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
@@ -191,7 +193,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
+      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
       <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
