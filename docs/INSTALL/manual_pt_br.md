@@ -38,14 +38,16 @@
     3.4 - Utilização.
       3.4.1 - Em um único computador.
       3.4.2 - Em uma rede local.
+
   4 - Problemas conhecidos e soluções.
+
     4.1 - Uma referência foi retornada do servidor.
 
   5 - Referências.
 
 ## 1. Introdução
 
-  Free-mtrix (v1.0.0) é um sistema que permite o planejamento e a apresentação de experimentos sociais baseados em tarefas similares àquelas apresentadas por Vich, Andery e Glenn (2009). Ele é composto por dois programas de computador. O programa `Designer` é usado para o planejamento e o programa `Runner` para a apresentação de experimentos.  
+  Free-mtrix é um sistema que permite o planejamento e a apresentação de experimentos sociais baseados em tarefas similares àquelas utilizadas por Vich, Andery e Glenn (2009). Ele é composto por dois programas de computador. O programa `Designer` é usado para o planejamento e o programa `Runner` para a apresentação de experimentos.  
 
 ## 2. Designer
 
@@ -71,26 +73,25 @@
 
 #### 2.3.2. Sistemas Operacionais Linux
 
-  Nos sistemas operacionais Linux, o programa `Designer` é executado por meio do arquivo `experiment_designer`, localizado na pasta `experiment_designer`. Recomenda-se a execução no Debian 8, 32 ou 64 bits.
+  Nos sistemas operacionais Linux, o programa `Designer` é executado por meio do arquivo `experiment_designer`, localizado na pasta `experiment_designer`. Recomenda-se a execução no Debian 8, 64 bits.
 
 ### 2.4. Utilização
 
-  O programa `Designer` é usado para o planejamento de experimentos sociais por meio do preenchimento de um formulário pelo pesquisador. O formulário é curto (~10 min) e utiliza a terminologia do campo de estudos chamado "Análise do Comportamento", tornando-o intuitivo aos pesquisadores da área. Todo o processo de preenchimento é salvo automaticamente. Ao final, um arquivo de configuração do experimento é disponibilizado para uso, reuso, arquivamento ou edição.
+  O programa `Designer` permite o planejamento de experimentos sociais por meio do preenchimento de um formulário pelo pesquisador. O formulário é curto (~10 min) e utiliza a terminologia do campo de estudos chamado "Análise do Comportamento", tornando-o intuitivo aos pesquisadores da área. Todo o processo de preenchimento é salvo automaticamente. Ao final, um arquivo de configuração do experimento é disponibilizado para uso, reuso, arquivamento ou edição.
 
 ## 3. Runner
 
 ### 3.1 Instalação
 
-  O programa `Runner` é uma aplicação auto-executável e não necessita de instalação. Entretanto, o programa `Runner` depende da instalação da biblioteca `libzmq` (http://zeromq.org/). Uma cópia da biblioteca libzmq é distribuida com o Free-mtrix. Confira a seguir como instalar a biblioteca no seu sistema.
+  O programa `Runner` é uma aplicação auto-executável e não necessita de instalação. Entretanto, o programa `Runner` depende da biblioteca `libzmq` (http://zeromq.org/). Uma cópia da biblioteca libzmq é distribuida com o Free-mtrix, mas ela necessita ser instalada. Confira a seguir como instalar a biblioteca no seu sistema.
 
 #### 3.1.1. libzmq no Windows
 
 Siga os passos a seguir para instalar a biblioteca libzmq no Windows 10.
 
   1. Baixe e instale o `Visual C++ Redistributable for Visual Studio 2015`. Você pode encontrá-lo aqui: https://www.microsoft.com/en-us/download/details.aspx?id=48145
-  2. Copie o arquivo `libzmq.dll` distribuido com este (v3.2.5, 32bits, dinâmica, compilada com o VS 2015).
-    - Alternativamente, você mesmo pode construir a biblioteca seguindo as instruções aqui: http://zeromq.org/intro:get-the-software#toc8.
-  3. Cole o arquivo `libzmq.dll` dentro da pasta `experiment_runner`. A pasta deve conter o arquivo executável `experiment_runner.exe`. 
+  2. O arquivo `libzmq.dll` é distribuido com este programa, localizado na pasta `experiment_runner`, a mesma pasta que contém o arquivo `experiment_runner.exe`. 
+    - Alternativamente, caso não queira usar o arquivo distribuido, você mesmo pode construir a biblioteca `libzmq.dll` seguindo as instruções aqui: http://zeromq.org/intro:get-the-software#toc8. Em seguida, basta copiá-la para o mesmo local do arquivo `experiment_runner.exe`. 
   4. Pronto!
 
 #### 3.1.2. libzmq em Sistemas Operacionais Linux
@@ -126,19 +127,19 @@ Siga os passos a seguir para instalar a biblioteca libzmq em sistemas Linux.
 
 #### 3.3.3. Observações para todos os sistemas
 
-  - Se você possui um firewall ligado, you necessitará criar uma regra adicionando o programa como uma exceção.
+  - Se você possui um firewall ligado, você necessitará criar uma regra adicionando o programa como uma exceção.
 
   - Você necessitará de uma instância do programa sendo executada como Servidor (Pesquisador) antes de executar instâncias como Clientes (Participantes). O programa funciona com no mínimo 2 clientes.
 
 ### 4. Utilização
 
-  Por meio da leitura de arquivos de configuração válidos (gerados pelo programa "Designer" ou não), o programa `Runner` é usado para a apresentação de experimentos aos participantes de uma pesquisa. Um chat integrado ao programa, se habilitado no arquivo de configuração, permite a interação entre os participantes por meio de texto. Os participantes devem ser instruidos a realizar uma tarefa de escolha apresentada pelo programa. O registro das escolhas e da interação é automático e em tempo real. O programa pode ser executado em um único computador, para testes e debug por exemplo, ou pode ser facilmente configurado em uma rede local com múltiplos computadores.
+  O programa `Runner` é usado para a apresentação de experimentos aos participantes de uma pesquisa por meio da leitura de arquivos de configuração válidos, gerados pelo programa "Designer" ou não. Um chat integrado ao programa, se habilitado no arquivo de configuração, permite a interação entre os participantes por meio de texto. Os participantes devem ser instruidos a realizar a tarefa de escolha apresentada pelo programa. O registro das escolhas e da interação é automático e em tempo real. O programa pode ser executado em um único computador, para testes e debug por exemplo, ou pode ser facilmente configurado em uma rede local com múltiplos computadores.
 
-  O programa `Runner` possui seu próprio servidor e cliente embarcados. Veja seguir como executar diferentes instâncias do programa como servidor e cliente.
+  O programa `Runner` possui seu próprio servidor e cliente embarcados. Veja a seguir como executar diferentes instâncias do programa como servidor e cliente.
 
 #### 3.4.1. - Em um único computador
 
-  O exemplo a seguir assume que uma instância do programa será executada como um servidor, e três instâncias como participantes em uma mesma máquina. Também se assume a existência de um arquivo de configuração chamado `experimento_x.ini`, um experimento de nome `Experimento_X` configurado para 3 participantes e feito por um pesquisador de nome `Pesquisador_X`.
+  O exemplo a seguir assume que uma instância do programa será executada como um servidor e três instâncias como participantes em uma mesma máquina. Também se assume a existência de um arquivo de configuração chamado `experimento_x.ini`, um experimento de nome `Experimento_X` configurado para 3 participantes e feito por um pesquisador de nome `Pesquisador_X`.
 
   1. Instale a biblioteca libzmq na máquina alvo.
   2. Copie o executável `experiment_runner` para diferentes pastas (se Windows, também copie a biblioteca `libzmq`). Por exemplo, no Linux a estrutura de arquivos ficaria assim:

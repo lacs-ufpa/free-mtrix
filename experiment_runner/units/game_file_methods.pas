@@ -432,7 +432,7 @@ begin
 
             MI := 0;
             CI := 0;
-            for j := 0 to High(Contingencies) do // write ocntingencies
+            for j := 0 to High(Contingencies) do // write contingencies
               begin
                 if Contingencies[j].Meta then
                   begin

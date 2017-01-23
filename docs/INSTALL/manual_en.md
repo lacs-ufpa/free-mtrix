@@ -42,7 +42,6 @@
 
    1. Install Lazarus RAD IDE (v1.6.2+) Free Pascal compiler and sources (v3.0.0+): http://lazarus-ide.org/.
    2. Compile and install libzmq (v3.2.5) on your system: http://zeromq.org/intro:get-the-software.
-   3. Install epiktimer 
 
    Note: If windows, all sofware must be compiled for 32bits, otherwise, you must write 64bits support yourself.
 
