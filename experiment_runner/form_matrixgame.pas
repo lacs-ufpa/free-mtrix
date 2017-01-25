@@ -333,11 +333,12 @@ begin
   ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
   ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
   FGameControl.Experiment.SaveToFile(OpenDialog.FileName+'.canceled');
-  FGameControl.SendMessage(K_END);
+  FGameControl.Cancel;
 end;
 
 procedure TFormMatrixGame.ButtonExpPauseClick(Sender: TObject);
 begin
+  ShowMessage('Não implementado.');
   //ButtonExpStart.Enabled := True;
   //ButtonExpStart.Caption := CAPTION_RESUME;
   //ButtonExpPause.Enabled := not ButtonExpStart.Enabled;

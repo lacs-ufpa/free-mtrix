@@ -427,8 +427,11 @@ begin
             WriteInteger(LC, KEY_CYCLES_COUNT,Cycles.Count);
             WriteInteger(LC, KEY_CYCLES_VALUE,Cycles.Value);
             WriteInteger(LC, KEY_CYCLES_GEN,Cycles.Generation);
-            WriteString(LC, KEY_PROMPT_MESSAGE, Prompt.Question);
-            WriteString(LC, KEY_PROMPT_STYLE, GetPromptStyleString(Prompt.PromptStyle));
+            if Assigned(Prompt) then
+              begin
+                WriteString(LC, KEY_PROMPT_MESSAGE, Prompt.Question);
+                WriteString(LC, KEY_PROMPT_STYLE, GetPromptStyleString(Prompt.PromptStyle));
+              end;
 
             MI := 0;
             CI := 0;

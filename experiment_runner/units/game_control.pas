@@ -763,7 +763,9 @@ end;
 
 procedure TGameControl.Cancel;
 begin
-
+  FormMatrixGame.StringGridMatrix.Clean;
+  FormMatrixGame.StringGridMatrix.Options := [];
+  FZMQActor.SendMessage(K_END);
 end;
 
 // Here FActor is garanted to be a TZMQPlayer
