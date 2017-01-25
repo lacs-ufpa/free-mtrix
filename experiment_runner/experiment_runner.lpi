@@ -32,7 +32,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
             <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
@@ -47,7 +47,8 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dUseCThreads"/>
+            <CustomOptions Value="-dUseCThreads
+-dZMQ_STATIC_LINK"/>
           </Other>
         </CompilerOptions>
       </Item2>
@@ -59,7 +60,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
             <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
@@ -70,6 +71,10 @@
               </Win32>
             </Options>
           </Linking>
+          <Other>
+            <CustomOptions Value="-dZMQ_STATIC_LINK
+-Fo/home/rafael/Downloads/zeromq-3.2.5/src/"/>
+          </Other>
         </CompilerOptions>
       </Item3>
       <Item4 Name="Win32 Release">
@@ -80,7 +85,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
             <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
@@ -119,69 +124,69 @@
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="form_matrixgame.pas"/>
+        <Filename Value="../sc_split/experiment_runner/form_matrixgame.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FormMatrixGame"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit1>
       <Unit2>
-        <Filename Value="README.md"/>
+        <Filename Value="../sc_split/experiment_runner/README.md"/>
         <IsPartOfProject Value="True"/>
       </Unit2>
       <Unit3>
-        <Filename Value="units/zmq_network.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/zmq_network.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="units/game_zmq_actors.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/game_zmq_actors.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="units/game_actors.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/game_actors.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
-        <Filename Value="units/game_experiment.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/game_experiment.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit6>
       <Unit7>
-        <Filename Value="units/game_file_methods.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/game_file_methods.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="units/game_resources.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/game_resources.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>
-        <Filename Value="units/game_control.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/game_control.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit9>
       <Unit10>
-        <Filename Value="units/string_methods.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/string_methods.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit10>
       <Unit11>
-        <Filename Value="units/game_actors_point.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/game_actors_point.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="units/game_visual_elements.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/game_visual_elements.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
-        <Filename Value="form_chooseactor.pas"/>
+        <Filename Value="../sc_split/experiment_runner/form_chooseactor.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FormChooseActor"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit13>
       <Unit14>
-        <Filename Value="units/csv_writer.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/csv_writer.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
       <Unit15>
-        <Filename Value="units/helpers.pas"/>
+        <Filename Value="../sc_split/experiment_runner/units/helpers.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit15>
     </Units>
@@ -193,7 +198,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
+      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
       <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
@@ -205,7 +210,8 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dUseCThreads"/>
+      <CustomOptions Value="-dUseCThreads
+-dZMQ_STATIC_LINK"/>
     </Other>
   </CompilerOptions>
   <Debugging>
