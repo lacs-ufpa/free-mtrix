@@ -370,7 +370,8 @@ end;
 
 procedure TFormDesigner.RGContingencyStyleExit(Sender: TObject);
 begin
-  SaveContingency(ExtractDelimited(1,ComboCurrentCondition.Text,['|']),ExtractDelimited(1,ComboCurrentContingency.Text,['|']));
+  if ComboCurrentContingency.ItemIndex <> -1 then
+    SaveContingency(ExtractDelimited(1,ComboCurrentCondition.Text,['|']),ExtractDelimited(1,ComboCurrentContingency.Text,['|']));
 end;
 
 
