@@ -1333,14 +1333,14 @@ begin
       SpinEditTurnValue.Value := ReadInteger(ASection, KEY_TURN_VALUE, 2);
       SpinEditCyclesValue.Value := ReadInteger(ASection, KEY_CYCLES_VALUE, 2);
 
-      CheckBoxShouldAskQuestion.Checked := False;
       if ValueExists(ASection, KEY_PROMPT_STYLE) and ValueExists(ASection, KEY_PROMPT_MESSAGE) then
-      begin
-        EditQuestion.Text := ReadString(ASection, KEY_PROMPT_MESSAGE, '');
-        SetCGQuestion(ReadString(ASection, KEY_PROMPT_STYLE, ''));
-        if (EditQuestion.Text <> '') or (ReadString(ASection, KEY_PROMPT_STYLE, '') <> '') then
-          CheckBoxShouldAskQuestion.Checked := True;
-      end;
+        begin
+          EditQuestion.Text := ReadString(ASection, KEY_PROMPT_MESSAGE, '');
+          SetCGQuestion(ReadString(ASection, KEY_PROMPT_STYLE, ''));
+          if (EditQuestion.Text <> '') or (ReadString(ASection, KEY_PROMPT_STYLE, '') <> '') then
+            CheckBoxShouldAskQuestion.Checked := True;
+        end
+      else CheckBoxShouldAskQuestion.Checked := False;
       LabelQuestion.Visible:= CheckBoxShouldAskQuestion.Checked;
       SpinEditOnConditionBeginA.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_A, 0);
       SpinEditOnConditionBeginB.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_B, 0);
@@ -1459,6 +1459,13 @@ begin
       TCheckBox(Sender).Caption := 'Sim';
       CGQuestion.Checked[0] := True;
       CGQuestion.Checked[1] := True;
+      with FExperiment do
+        if ComboCurrentCondition.ItemIndex <> -1 then
+          begin
+            LS := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
+            WriteString(LS, KEY_PROMPT_MESSAGE, EditQuestion.Text);
+            WriteString(LS, KEY_PROMPT_STYLE, GetPromptQuestionStringFromCGQuestion);
+          end;
     end
   else
     begin
@@ -1468,8 +1475,8 @@ begin
           begin
             LS := SEC_CONDITION+IntToStr(ComboCurrentCondition.ItemIndex+1);
             EditQuestion.Text:='';
-            WriteString(LS, KEY_PROMPT_MESSAGE, '');
-            WriteString(LS, KEY_PROMPT_STYLE, '');
+            DeleteKey(LS, KEY_PROMPT_MESSAGE);
+            DeleteKey(LS, KEY_PROMPT_STYLE);
           end;
       CGQuestion.Checked[0] := False;
       CGQuestion.Checked[1] := False;
