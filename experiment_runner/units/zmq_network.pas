@@ -84,9 +84,12 @@ type
     property ID :shortstring read FID;
   end;
 
+resourcestring
+  ERROR_RECV_TIMEOUT = 'O servidor foi solicitado, mas não respondeu. O programa será fechado.';
+
 implementation
 
-uses Forms;
+uses Forms, Dialogs;
 
 var GClientHost : string;
 
@@ -158,9 +161,12 @@ begin
 
   // request from server
   FRequester := FContext.Socket( stReq );
-  //FRequester.Identity := AID;
-  //FRequester.connect(CLocalHost+CPortRouter);
+  FRequester.Identity := AID;
+  FRequester.Linger:=0;
+  FRequester.RcvTimeout:=5000;
   FRequester.connect(GClientHost+CPortReplier);
+
+  //FRequester.connect(CLocalHost+CPortRouter);
 
   // handle income messages
   FPoller := TZMQPoller.Create(True, FContext);
@@ -185,13 +191,27 @@ procedure TZMQClientThread.Request(AMultipartMessage: array of UTF8String);
 var AReply : TStringList;
 begin
   AReply:=TStringList.Create;
+  try
+    // send the real message to trigger the polling routine
+    FPusher_REQ.send( AMultipartMessage );
 
-  FPusher_REQ.send( AMultipartMessage ); // avoid infinite loops inside server pool
-  FRequester.send( '' ); // block client until server recv
-  FRequester.recv( AReply ); // release client
-
-  if Assigned(FOnReplyReceived) then FOnReplyReceived(AReply);
-  AReply.Free;
+    // send empty non blocking message
+    // this fake message is necessary to avoid infinite loops inside the server pool
+    FRequester.send([''], True);
+    if FRequester.recv( AReply ) >= 0 then // reply received
+      begin
+        if FRequester.Identity = AReply[0] then
+          if Assigned(FOnReplyReceived) then
+            FOnReplyReceived(AReply)
+      end
+    else                                  // timeout received
+      begin
+        ShowMessage(ERROR_RECV_TIMEOUT);
+        Halt(1);
+      end;
+  finally
+    AReply.Free;
+  end;
 end;
 
 procedure TZMQClientThread.Push(AMultipartMessage: array of UTF8String);
@@ -289,9 +309,6 @@ begin
   // reply requests from outside
   FPuller_REP  := FContext.Socket( stPull );
   FPuller_REP.bind(CHost+CPortPuller_REP);
-  //FRouter := FContext.Socket( stRouter );
-  //FRouter.Identity:=AID;
-  //FRouter.bind(CHost+CPortRouter);
 
   // blocking server thread for now
   FReplier := FContext.Socket( stRep );
