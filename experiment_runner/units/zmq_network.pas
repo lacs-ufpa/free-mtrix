@@ -11,6 +11,8 @@ unit zmq_network;
 
 {$mode objfpc}{$H+}
 
+// TODO: MsgPack optimization. Compress->send->receive->Decompress.
+
 interface
 
 uses Classes, SysUtils, Process

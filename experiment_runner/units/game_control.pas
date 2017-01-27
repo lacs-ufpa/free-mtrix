@@ -765,10 +765,10 @@ procedure TGameControl.Cancel;
 begin
   FormMatrixGame.StringGridMatrix.Clean;
   FormMatrixGame.StringGridMatrix.Options := [];
-  FZMQActor.SendMessage(K_END);
+  FZMQActor.SendMessage([K_END]);
 end;
 
-// Here FActor is garanted to be a TZMQPlayer
+// Here FActor can be TZMQPlayer or TZMQAdmin
 procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   function MHas(const C : UTF8string) : Boolean;
   begin
@@ -1325,7 +1325,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         // set matrix type/ stringgrid
         FExperiment.MatrixTypeAsString:=AReply[AReply.Count-4];
 
-        // enable chat
+        // setup chat
         if AReply[AReply.Count-3] = '[NOCHAT]' then
           FormMatrixGame.ChatPanel.Visible := False
         else
