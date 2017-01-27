@@ -11,8 +11,6 @@ program experiment_runner;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE DEBUG}
-
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
