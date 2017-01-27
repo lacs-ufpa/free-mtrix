@@ -11,6 +11,8 @@ program experiment_runner;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE DEBUG}
+
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
@@ -30,6 +32,7 @@ uses
 
 var
   ApplicationPath,
+  InitParameter,
   F : string;
 
 const
@@ -103,17 +106,17 @@ begin
   F := ApplicationPath+PathDelim+'id';
   if not GetZMQNetworkID(F) then Exit;
   Application.CreateForm(TFormMatrixGame, FormMatrixGame);
-
-  FormMatrixGame.SetID(F);
+  InitParameter := '';
   if Paramcount > 0 then
     begin
-      if AnsiMatchStr(lowercase(ParamStr(0)), PAdmin) then
-        FormMatrixGame.SetGameActor(gaAdmin);
-      if AnsiMatchStr(lowercase(ParamStr(0)), PPlayer) then
-        FormMatrixGame.SetGameActor(gaPlayer);
-      if AnsiMatchStr(lowercase(ParamStr(0)), PWatcher) then
-        FormMatrixGame.SetGameActor(gaWatcher);
+      if AnsiMatchStr(lowercase(ParamStr(1)), PAdmin) then
+        InitParameter := 'a';
+      if AnsiMatchStr(lowercase(ParamStr(1)), PPlayer) then
+        InitParameter := 'p';
+      if AnsiMatchStr(lowercase(ParamStr(1)), PWatcher) then
+        InitParameter := 'w';
     end;
+  FormMatrixGame.SetID(F, InitParameter);
   Application.Run;
 end.
 

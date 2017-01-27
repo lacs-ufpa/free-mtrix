@@ -77,8 +77,9 @@ type
   private
     FGameControl : TGameControl;
     FID: string;
+    FInitParameter: string;
   public
-    procedure SetID(S : string);
+    procedure SetID(S, P : string);
     procedure SetGameActor(AValue: TGameActor);
     procedure SetFullscreen;
     property ID : string read FID;
@@ -247,6 +248,7 @@ begin
     gaPlayer: SetZMQPlayer;
     gaWatcher: SetZMQWatcher;
   end;
+  FGameControl.SetMatrix;
 end;
 
 procedure TFormMatrixGame.SetFullscreen;
@@ -260,35 +262,40 @@ begin
   WindowState:=wsFullScreen;
 end;
 
-procedure TFormMatrixGame.SetID(S: string);
+procedure TFormMatrixGame.SetID(S, P: string);
 begin
   FID := S;
+  FInitParameter := P
 end;
 
 
 procedure TFormMatrixGame.FormActivate(Sender: TObject);
 begin
   PopupNotifier.Icon.Assign(Application.Icon);
-  if not Assigned(FGameControl) then
-    begin
-      FormChooseActor := TFormChooseActor.Create(Self);
-      FormChooseActor.Style := '.Arrived';
-      try
-        if FormChooseActor.ShowModal = 1 then
-          begin
+  StringGridMatrix.ClearSelections;
+  StringGridMatrix.FocusRectVisible := False;
+
+  case FInitParameter of
+    'a':FormMatrixGame.SetGameActor(gaAdmin);
+    'p': FormMatrixGame.SetGameActor(gaPlayer);
+    'w': FormMatrixGame.SetGameActor(gaWatcher);
+  else
+    if not Assigned(FGameControl) then
+      begin
+        FormChooseActor := TFormChooseActor.Create(Self);
+        FormChooseActor.Style := '.Arrived';
+        try
+          if FormChooseActor.ShowModal = 1 then
             case FormChooseActor.GameActor of
               gaAdmin:FormMatrixGame.SetGameActor(gaAdmin);
               gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
               gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
-            end;
-            StringGridMatrix.ClearSelections;
-            StringGridMatrix.FocusRectVisible := False;
-            FGameControl.SetMatrix;
-          end
-        else Close;
-      finally
-        FormChooseActor.Free;
-      end;
+            end
+          else Close;
+        finally
+          FormChooseActor.Free;
+        end;
+      end
     end;
 end;
 
@@ -360,7 +367,8 @@ begin
         ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
         ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-        ChatPanel.Visible := FGameControl.Experiment.ShowChat;
+        if FGameControl.Experiment.ShowChat then
+          ChatPanel.Visible := FGameControl.Experiment.ResearcherCanChat;
       end;
 
   if ButtonExpStart.Caption = CAPTION_RESUME then
