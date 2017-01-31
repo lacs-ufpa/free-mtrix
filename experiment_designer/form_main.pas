@@ -227,7 +227,7 @@ var
 
 implementation
 
-uses game_resources, game_actors, game_actors_point, string_methods, strutils
+uses game_resources, game_actors, game_actors_point, string_methods, LazFileUtils, strutils
   //{$IFDEF WINDOWS}
   //, Dos
   //{$ENDIF}
@@ -254,6 +254,7 @@ begin
 
       OpenDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
       SaveDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
+      Caption := 'Planejar Experimento' + ' - ' + ExtractFileNameWithoutExt(ExtractFileNameOnly(FExperiment.FileName));
     end;
 end;
 
@@ -274,6 +275,7 @@ begin
       SetPropstorageFilename;
       OpenDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
       SaveDialog.InitialDir:=ExtractFilePath(FExperiment.FileName);
+      Caption := 'Planejar Experimento' + ' - ' + ExtractFileNameWithoutExt(ExtractFileNameOnly(FExperiment.FileName));
     end;
 end;
 
@@ -1659,6 +1661,8 @@ end;
 procedure TFormDesigner.FormActivate(Sender: TObject);
 begin
   FLoading := False;
+  if not (Pos('persistence.',FExperiment.FileName) > 0) then
+    Caption := 'Planejar Experimento' + ' - ' + ExtractFileNameWithoutExt(ExtractFileNameOnly(FExperiment.FileName));
 end;
 
 
