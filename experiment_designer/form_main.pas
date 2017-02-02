@@ -651,10 +651,14 @@ var
   LC: string;
 begin
   LoadSectionExperiment;
+  UpdateConditionsCombo;
+  UpdateConditionsList;
   if ComboCurrentCondition.ItemIndex <> -1 then
     begin
       LS := ExtractDelimited(1,ComboCurrentCondition.Text,['|']);
       LoadSectionCondition(LS);
+      UpdateContingencyCombo(LS);
+      UpdateContingencyList(LS);
       if ComboCurrentContingency.ItemIndex = -1 then
         begin
           LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
@@ -663,8 +667,6 @@ begin
     end
   else
     begin
-      UpdateConditionsCombo;
-      UpdateConditionsList;
       if ComboCurrentCondition.Items.Count > 0 then
         begin
           TabSheetContingencies.Enabled := True;
