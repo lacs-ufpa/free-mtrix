@@ -188,9 +188,10 @@ end;
 
 // Send a blocking Request(identity, ' ', s1, .. sn)
 procedure TZMQClientThread.Request(AMultipartMessage: array of UTF8String);
-var AReply : TStringList;
+var
+  LReply : TStringList;
 begin
-  AReply:=TStringList.Create;
+  LReply:=TStringList.Create;
   try
     // send the real message to trigger the polling routine
     FPusher_REQ.send( AMultipartMessage );
@@ -198,19 +199,17 @@ begin
     // send empty non blocking message
     // this fake message is necessary to avoid infinite loops inside the server pool
     FRequester.send([''], True);
-    if FRequester.recv( AReply ) >= 0 then // reply received
+
+    if FRequester.recv( LReply ) >= 0 then // reply received
       begin
-        if FRequester.Identity = AReply[0] then
-          if Assigned(FOnReplyReceived) then
-            FOnReplyReceived(AReply)
+        if Assigned(FOnReplyReceived) then
+          FOnReplyReceived(LReply);
       end
     else                                  // timeout received
-      begin
-        ShowMessage(ERROR_RECV_TIMEOUT);
-        Halt(1);
-      end;
+      raise Exception.Create(ERROR_RECV_TIMEOUT);
+
   finally
-    AReply.Free;
+    LReply.Free;
   end;
 end;
 
