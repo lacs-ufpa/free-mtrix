@@ -671,7 +671,7 @@ begin
         begin
           LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
           LoadContingency(LS, LC);
-        end;
+        end
     end
   else
     begin
@@ -683,13 +683,13 @@ begin
           LoadSectionCondition(LS);
           UpdateContingencyCombo(LS);
           UpdateContingencyList(LS);
-          if ComboCurrentContingency.Items.Count > 0 then
-            begin
-              ComboCurrentContingency.ItemIndex := 0;
-              LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
-              LoadContingency(LS, LC);
-            end;
         end;
+    end;
+  if ComboCurrentContingency.Items.Count > 0 then
+    begin
+      ComboCurrentContingency.ItemIndex := 0;
+      LC := ExtractDelimited(1, ComboCurrentContingency.Text,['|']);
+      LoadContingency(LS, LC);
     end;
 end;
 
