@@ -164,7 +164,7 @@ type
     procedure MenuItemSaveAsClick(Sender: TObject);
     procedure RGBroadcastMessageClick(Sender: TObject);
     procedure RGContingencyStyleClick(Sender: TObject);
-    procedure RGContingencyStyleExit(Sender: TObject);
+    //procedure RGContingencyStyleExit(Sender: TObject);
 
     procedure RGContingencyTypeClick(Sender: TObject);
     procedure RGEndCriteriaStyleClick(Sender: TObject);
@@ -368,13 +368,21 @@ begin
         end;
       end;
     end;
+
+  if not FLoading then
+    if ComboCurrentContingency.ItemIndex <> -1 then
+      SaveContingency(
+        ExtractDelimited(1,ComboCurrentCondition.Text,['|']),
+        ExtractDelimited(1,ComboCurrentContingency.Text,['|'])
+      );
+
 end;
 
-procedure TFormDesigner.RGContingencyStyleExit(Sender: TObject);
-begin
-  if ComboCurrentContingency.ItemIndex <> -1 then
-    SaveContingency(ExtractDelimited(1,ComboCurrentCondition.Text,['|']),ExtractDelimited(1,ComboCurrentContingency.Text,['|']));
-end;
+//procedure TFormDesigner.RGContingencyStyleExit(Sender: TObject);
+//begin
+//  if ComboCurrentContingency.ItemIndex <> -1 then
+//    SaveContingency(ExtractDelimited(1,ComboCurrentCondition.Text,['|']),ExtractDelimited(1,ComboCurrentContingency.Text,['|']));
+//end;
 
 
 procedure TFormDesigner.RGContingencyTypeClick(Sender: TObject);

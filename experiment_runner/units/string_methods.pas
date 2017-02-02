@@ -296,11 +296,11 @@ begin
     Result.Rows += [GetRowFromString(ExtractDelimited(i,LS,[',']))];
 
    case ExtractDelimited(2,S,['|'])of
-    'NONE':Result.Style:=gtNone;
-    'CORES':Result.Style:=gtColorsOnly;
+    'INDIFERENTE':Result.Style:=gtNone;
     'E':Result.Style:=gtRowsAndColors;
-    'LINHAS':Result.Style:=gtRowsOnly;
     'OU':Result.Style:=gtRowsOrColors;
+    'LINHAS':Result.Style:=gtRowsOnly;
+    'CORES':Result.Style:=gtColorsOnly;
   end;
 
   LS := ExtractDelimited(3,S,['|']);
