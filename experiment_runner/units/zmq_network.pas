@@ -161,9 +161,9 @@ begin
 
   // request from server
   FRequester := FContext.Socket( stReq );
-  FRequester.Identity := AID;
-  FRequester.Linger:=0;
-  FRequester.RcvTimeout:=5000;
+  //FRequester.Identity := AID;
+  //FRequester.Linger:=0;
+  //FRequester.RcvTimeout:=5000;
   FRequester.connect(GClientHost+CPortReplier);
 
   //FRequester.connect(CLocalHost+CPortRouter);
@@ -198,15 +198,19 @@ begin
 
     // send empty non blocking message
     // this fake message is necessary to avoid infinite loops inside the server pool
-    FRequester.send([''], True);
+    FRequester.send('');
+    FRequester.recv( LReply );
+    if Assigned(FOnReplyReceived) then
+      FOnReplyReceived(LReply);
 
-    if FRequester.recv( LReply ) >= 0 then // reply received
-      begin
-        if Assigned(FOnReplyReceived) then
-          FOnReplyReceived(LReply);
-      end
-    else                                  // timeout received
-      raise Exception.Create(ERROR_RECV_TIMEOUT);
+//    FRequester.send([''], True);
+//    if FRequester.recv( LReply ) >= 0 then // reply received
+//      begin
+//        if Assigned(FOnReplyReceived) then
+//          FOnReplyReceived(LReply);
+//      end
+//    else                                  // timeout received
+//      raise Exception.Create(ERROR_RECV_TIMEOUT);
 
   finally
     LReply.Free;
