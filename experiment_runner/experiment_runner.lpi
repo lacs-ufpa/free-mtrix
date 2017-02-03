@@ -17,10 +17,10 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="1"/>
-      <RevisionNr Value="3"/>
+      <RevisionNr Value="4"/>
       <BuildNr Value="1"/>
       <Language Value="0416"/>
-      <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_runner" ProductName="Free-mtrix" ProductVersion="0.1.3"/>
+      <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_runner" ProductName="Free-mtrix" ProductVersion="0.1.4"/>
     </VersionInfo>
     <BuildModes Count="4">
       <Item1 Name="Linux 64 Debug" Default="True"/>
@@ -215,7 +215,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="3">
+    <Exceptions Count="4">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -225,6 +225,9 @@
       <Item3>
         <Name Value="EFOpenError"/>
       </Item3>
+      <Item4>
+        <Name Value="RunError(103)"/>
+      </Item4>
     </Exceptions>
   </Debugging>
 </CONFIG>
