@@ -1388,18 +1388,10 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
               LAnnouncer.Append([K_MESSAGE,
                                  Self.ID,
                                  ExtractDelimited(i,AReply[6],['+']),
+                                 BoolToStr(False),
                                  BoolToStr(LConsequence.ShouldPublishMessage)]);
-              //if LConsequence.ShouldPublishMessage then
-              //  //FZMQActor.SendMessage([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
-              //  LAnnouncer.Append([K_MESSAGE,Self.ID,ExtractDelimited(i,AReply[6],['+']),BoolToStr(False)])
-              //else
-              //  begin
-              //    LConsequence.PresentMessage(FormMatrixGame.GBIndividualAB);
-              //    LConsequence.PresentPoints(FormMatrixGame.LabelIndACount,FormMatrixGame.LabelIndBCount,
-              //      FormMatrixGame.LabelIndCount,FormMatrixGame.LabelGroupCount);
-              //  end;
               {$IFDEF DEBUG}
-              WriteLn('A consequence should have shown.');
+              WriteLn('An individual consequence should have shown.');
               {$ENDIF}
             end;
 
@@ -1415,7 +1407,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
                   //FZMQActor.SendMessage([K_MESSAGE,'',ExtractDelimited(i,AReply[7],['+']),BoolToStr(True)]);
                   LAnnouncer.Append([K_MESSAGE,'',ExtractDelimited(i,AReply[7],['+']),BoolToStr(True)]);
                   {$IFDEF DEBUG}
-                  WriteLn('A metaconsequence should have shown.');
+                  WriteLn('A meta/group consequence should have shown.');
                   {$ENDIF}
                 end;
 
