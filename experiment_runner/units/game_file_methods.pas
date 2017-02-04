@@ -297,6 +297,8 @@ var
             end;
             AExperiment.Condition[AExperiment.AppendCondition]:= C;
             Inc(i);
+            SetLength(C.Contingencies,0);
+            C := C_CONDITION_TEMPLATE;
             LS := SEC_CONDITION+IntToStr(i+1);
         end;
   end;
