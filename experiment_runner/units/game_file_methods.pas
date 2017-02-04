@@ -222,9 +222,9 @@ var
         );
 
         LCriteria := GetCriteriaFromString(ReadString(LS, LCK+KEY_CRITERIA, ''));
+        Result := TContingency.Create(AExperiment,LConsequence,LCriteria,Pos(KEY_METACONTINGENCY,LCK)>0);
+        Result.ContingencyName := ReadString(LS, LCK+KEY_CONT_NAME, LCK);
       end;
-    Result := TContingency.Create(AExperiment,LConsequence,LCriteria,Pos(KEY_METACONTINGENCY,LCK)>0);
-    Result.ContingencyName := ReadString(LS, LCK+KEY_CONT_NAME, '');
   end;
 
   procedure ReadConditions;
