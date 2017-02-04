@@ -270,6 +270,7 @@ begin
       SetContingenciesEvents;
       FReportReader.Clean;
       FReportReader.SetXLastRows(Condition[CurrentCondition].EndCriterium.LastCycles);
+      FRegData.SaveData(LineEnding);
       WriteReportRowNames;
     end
   else
