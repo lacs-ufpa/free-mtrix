@@ -23,7 +23,7 @@ uses
     {$ENDIF}
   {$ENDIF}
   , StrUtils, Forms, Classes, sysutils
-  , form_matrixgame, game_actors
+  , form_matrixgame
   , helpers
   ;
 
