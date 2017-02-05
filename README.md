@@ -12,7 +12,7 @@
 
 **Abstract**
 
-Free-mtrix is free software (GPL3) for scientists of fields like Behavioral Sociology and Behavioral Analysis. You can design and present social behavior experiments that uses choice-based tasks similiar to the ones created by Wiggins (1969), Vichi (2004) and Vichi, Andery & Glenn (2009). Participants can choose elements of a matrix (e.g., a row) and the scientist can determine how individual and social consequences will be presented (e.g., which messages, how many points and reasoning questions).
+Free-mtrix is a set of free softwares (GPL3) for experimentally studying metacontingencies and laboratory micro-cultures. It was designed to be intuitive for researchers from the field of behavioral analysis, but the software may also be useful for behavioral sociologists. One can design and present choice-based tasks similar to the ones reported by Wiggins (1969), Vichi (2004) and Vichi, Andery & Glenn (2009). Participants can choose elements in a matrix (e.g., a row) and the researcher can determine how individual and social consequences will be presented (e.g., custom messages, points and reasoning questions) along different conditions in experiments.
 
 **References**
 
