@@ -78,6 +78,7 @@ type
     function GetConsequenceStringFromChoices:UTF8String;
     procedure CheckNeedForRandomTurns;
     procedure EndExperiment;
+    procedure WriteReportFooter;
     procedure WriteReportHeader;
     procedure WriteReportRowNames;
     procedure WriteReportRow;
@@ -277,6 +278,7 @@ begin
     begin
       EndExperiment;
       State:=xsWaiting;
+      WriteReportFooter;
     end;
 
   {$IFDEF DEBUG}
@@ -453,6 +455,19 @@ end;
 procedure TExperiment.EndExperiment;
 begin
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Self);
+end;
+
+procedure TExperiment.WriteReportFooter;
+var
+  LFooter : string;
+begin
+  if Assigned(FRegData) then
+    begin
+      LFooter := LineEnding +
+                 VAL_END_TIME+':' + #9 + DateTimeToStr(Date) + #9 + TimeToStr(Time) +#9+ LineEnding;
+
+      FRegData.SaveData(LFooter);
+    end;
 end;
 
 procedure TExperiment.SetCondition(I : Integer; AValue: TCondition);

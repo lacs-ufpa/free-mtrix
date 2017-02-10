@@ -91,6 +91,7 @@ resourcestring
   VAL_EXPERIMENT = 'Experimento';
   VAL_INTERLOCKING = 'Entrelaçamento';
   VAL_BEGIN_TIME = 'Começo';
+  VAL_END_TIME = 'Término';
   VAL_RESEARCHERS = 'Pesquisadores';
 
   DEF_END_CRITERIA_STYLE = 'CICLOS';
