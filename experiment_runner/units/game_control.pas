@@ -682,13 +682,16 @@ begin
     begin
       // a b points
       LabelIndA.Visible := FExperiment.ABPoints;
-      LabelIndACount.Visible := FExperiment.ABPoints;
       LabelIndB.Visible := FExperiment.ABPoints;
+      LabelIndACount.Visible := FExperiment.ABPoints;
       LabelIndBCount.Visible := FExperiment.ABPoints;
+      ImageIndA.Visible := FExperiment.ABPoints;
+      ImageIndB.Visible := FExperiment.ABPoints;
 
       // i points
       LabelInd.Visible := not FExperiment.ABPoints;
       LabelIndCount.Visible := not FExperiment.ABPoints;
+      ImageInd.Visible:= not FExperiment.ABPoints;;
     end;
 end;
 

@@ -35,6 +35,10 @@ type
     GBPoints: TGroupBox;
     GBAdmin: TGroupBox;
     GBExperiment: TGroupBox;
+    ImageIndA: TImage;
+    ImageInd: TImage;
+    ImageIndB: TImage;
+    ImageGroup: TImage;
     LabelExpCountCondition: TLabel;
     LabelExpCountTInterlocks: TLabel;
     LabelExpGen: TLabel;
@@ -226,7 +230,6 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
   procedure SetZMQAdmin;
   begin
     FGameControl := TGameControl.Create(TZMQAdmin.Create(Self,FID),ExtractFilePath(Application.ExeName));
-    GBPoints.Enabled:=False;
     GBAdmin.Visible:= True;
   end;
 
@@ -298,6 +301,7 @@ begin
     end;
 end;
 
+
 procedure TFormMatrixGame.PopupNotifierClose(Sender: TObject;
   var CloseAction: TCloseAction);
 begin
@@ -367,7 +371,9 @@ begin
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
         ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
         if FGameControl.Experiment.ShowChat then
-          ChatPanel.Visible := FGameControl.Experiment.ResearcherCanChat;
+          ChatPanel.Visible := FGameControl.Experiment.ResearcherCanChat
+        else
+          ChatPanel.Visible := FGameControl.Experiment.ShowChat;
       end;
 
   if ButtonExpStart.Caption = CAPTION_RESUME then
