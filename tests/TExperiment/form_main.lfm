@@ -1,0 +1,89 @@
+object Form1: TForm1
+  Left = 39
+  Height = 683
+  Top = 29
+  Width = 1190
+  Caption = 'Form1'
+  ClientHeight = 683
+  ClientWidth = 1190
+  OnCreate = FormCreate
+  LCLVersion = '1.6.2.0'
+  object ButtonLogin: TButton
+    Left = 8
+    Height = 25
+    Top = 576
+    Width = 136
+    Caption = 'ButtonLogin'
+    OnClick = ButtonLoginClick
+    TabOrder = 0
+  end
+  object ButtonChoice1: TButton
+    Left = 160
+    Height = 25
+    Top = 576
+    Width = 131
+    Caption = 'ButtonChoice1'
+    OnClick = ButtonChoice1Click
+    TabOrder = 1
+  end
+  object ButtonChoice2: TButton
+    Left = 160
+    Height = 25
+    Top = 608
+    Width = 131
+    Caption = 'ButtonChoice2'
+    OnClick = ButtonChoice1Click
+    TabOrder = 2
+  end
+  object ButtonChoice3: TButton
+    Left = 160
+    Height = 25
+    Top = 640
+    Width = 131
+    Caption = 'ButtonChoice3'
+    OnClick = ButtonChoice1Click
+    TabOrder = 3
+  end
+  object PageControl1: TPageControl
+    Left = 8
+    Height = 560
+    Top = 8
+    Width = 1182
+    ActivePage = TabSheet1
+    Anchors = [akTop, akLeft, akRight]
+    TabIndex = 0
+    TabOrder = 4
+    object TabSheet1: TTabSheet
+      Caption = 'Experiment'
+      ClientHeight = 527
+      ClientWidth = 1176
+      object ListBox1: TListBox
+        Left = 0
+        Height = 527
+        Top = 0
+        Width = 1176
+        Align = alClient
+        ItemHeight = 0
+        ScrollWidth = 1174
+        TabOrder = 0
+        TopIndex = -1
+      end
+    end
+    object TabSheet2: TTabSheet
+      Caption = 'Report'
+      ClientHeight = 527
+      ClientWidth = 1176
+      object ListBox2: TListBox
+        Left = 0
+        Height = 495
+        Top = 0
+        Width = 930
+        Align = alClient
+        ItemHeight = 0
+        ScrollWidth = 928
+        TabOrder = 0
+        TopIndex = -1
+      end
+    end
+  end
+end
