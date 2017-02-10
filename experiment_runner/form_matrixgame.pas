@@ -31,10 +31,8 @@ type
     ButtonExpCancel: TButton;
     ButtonExpPause: TButton;
     ButtonExpStart: TButton;
-    GBIndividual: TGroupBox;
     GBLastChoice: TGroupBox;
-    GBIndividualAB: TGroupBox;
-    GBGrupo: TGroupBox;
+    GBPoints: TGroupBox;
     GBAdmin: TGroupBox;
     GBExperiment: TGroupBox;
     LabelExpCountCondition: TLabel;
@@ -48,11 +46,13 @@ type
     LabelExpCountTurn: TLabel;
     LabelExpInterlocks: TLabel;
     LabelExpCountInterlocks: TLabel;
+    LabelGroup: TLabel;
+    LabelInd: TLabel;
+    LabelGroupCount: TLabel;
     LabelIndCount: TLabel;
     LabelIndACount: TLabel;
     LabelIndBCount: TLabel;
     LabelIndA: TLabel;
-    LabelGroupCount: TLabel;
     LabelIndB: TLabel;
     LabelExpCond: TLabel;
     ChatMemoRecv: TMemo;
@@ -226,8 +226,7 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
   procedure SetZMQAdmin;
   begin
     FGameControl := TGameControl.Create(TZMQAdmin.Create(Self,FID),ExtractFilePath(Application.ExeName));
-    GBIndividual.Visible:=False;
-    GBIndividualAB.Enabled:=False;
+    GBPoints.Enabled:=False;
     GBAdmin.Visible:= True;
   end;
 
@@ -361,8 +360,8 @@ begin
         if not FGameControl.Experiment.LoadFromFile(OpenDialog.FileName) then
           Exit;
         FGameControl.SetMatrix;
-        GBIndividualAB.Visible:= FGameControl.Experiment.ABPoints;
-        GBIndividual.Visible := not FGameControl.Experiment.ABPoints;
+        FGameControl.SetLabels;
+
         ButtonExpStart.Enabled := False;
         ButtonExpStart.Caption := CAPTION_RUNNING;
         ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;

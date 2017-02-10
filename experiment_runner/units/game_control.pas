@@ -78,6 +78,7 @@ type
     constructor Create(AOwner : TComponent;AppPath:string);overload;
     destructor Destroy; override;
     procedure SetMatrix;
+    procedure SetLabels;
     procedure SendRequest(ARequest : UTF8string);
     procedure SendMessage(AMessage : UTF8string);
     procedure Cancel;
@@ -522,7 +523,7 @@ begin
   LConsequence := TConsequence.Create(nil,S);
   Result := LConsequence.GenerateMessage(ForGroup);
   if ShowPopUp then
-    LConsequence.PresentMessage(FormMatrixGame.GBIndividualAB);
+    LConsequence.PresentMessage(FormMatrixGame.ChatPanel);
   case FActor of
     gaPlayer:
       if ForGroup then
@@ -673,6 +674,22 @@ end;
 procedure TGameControl.SetMatrix;
 begin
   SetMatrixType(FormMatrixGame.StringGridMatrix, FExperiment.MatrixType,FRowBase,FMustDrawDots,FMustDrawDotsClear);
+end;
+
+procedure TGameControl.SetLabels;
+begin
+  with FormMatrixGame do
+    begin
+      // a b points
+      LabelIndA.Visible := FExperiment.ABPoints;
+      LabelIndACount.Visible := FExperiment.ABPoints;
+      LabelIndB.Visible := FExperiment.ABPoints;
+      LabelIndBCount.Visible := FExperiment.ABPoints;
+
+      // i points
+      LabelInd.Visible := not FExperiment.ABPoints;
+      LabelIndCount.Visible := not FExperiment.ABPoints;
+    end;
 end;
 
 procedure TGameControl.SendRequest(ARequest: UTF8string);
@@ -1337,8 +1354,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
 
         // set global configs
         FExperiment.ABPoints := StrToBool(AReply[AReply.Count-2]);
-        FormMatrixGame.GBIndividualAB.Visible := FExperiment.ABPoints;
-        FormMatrixGame.GBIndividual.Visible:= not FormMatrixGame.GBIndividualAB.Visible;
+        SetLabels;
 
         // set condition specific configurations
         NextConditionSetup(AReply[AReply.Count-1]);
