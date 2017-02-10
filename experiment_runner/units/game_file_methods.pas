@@ -75,7 +75,7 @@ begin
       ResearcherCanChat:=True;
       SendChatHistoryForNewPlayers:=True;
       GenPlayersAsNeeded:=True;
-      CurrentCondition := 0;
+      CurrentConditionI := 0;
       MatrixType:=[gmRows];
       ABPoints := True;
       //AppendPlayer(C_PLAYER_TEMPLATE);
@@ -180,7 +180,7 @@ var
         AExperiment.MatrixType := GetMatrixTypeFromString(ReadString(SEC_EXPERIMENT,KEY_MATRIX_TYPE,DEF_MATRIX_TYPE));
 
         // used when loading from paused experiments
-        AExperiment.CurrentCondition := ReadInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION,0); //zero based
+        AExperiment.CurrentConditionI := ReadInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION,0); //zero based
       end;
   end;
 
@@ -365,7 +365,7 @@ begin
                   Exit;
                 end;
             Result := True;
-            AExperiment.CurrentCondition:=0;
+            AExperiment.CurrentConditionI:=0;
           end
         else
           ShowMessage(ERROR_SECTION_NOT_FOUND+SEC_EXPERIMENT);
@@ -402,7 +402,7 @@ begin
       WriteBool(SEC_EXPERIMENT, KEY_CHAT_HISTORY_FOR_NEW_PLAYERS, AExperiment.SendChatHistoryForNewPlayers);
       WriteBool(SEC_EXPERIMENT, KEY_POINTS_TYPE, AExperiment.ABPoints);
       WriteString(SEC_EXPERIMENT,KEY_MATRIX_TYPE,GetMatrixTypeString(AExperiment.MatrixType));
-      WriteInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION, AExperiment.CurrentCondition);
+      WriteInteger(SEC_EXPERIMENT, KEY_CURRENT_CONDITION, AExperiment.CurrentConditionI);
     end;
 
   with LIniFile do // write conditions
