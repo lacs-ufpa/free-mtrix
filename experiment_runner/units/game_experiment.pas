@@ -13,10 +13,6 @@ unit game_experiment;
 
 interface
 
-
-  // TODO: REFACTORING. FILE METHODS MUST USE THE SAME METHODS FROM HERE WHEN LOADING CONDITONS, CONTINGENCIES AND SO ON. KEEP IT SIMPLE.
-
-
 uses
   Classes, SysUtils
   , game_actors
@@ -31,7 +27,15 @@ type
   TNotifyOnWriteReport = procedure (S : string) of object;
 
   TExperimentState = (xsNone,xsWaiting,xsRunning,xsPaused,xsCanceled);
+
   TConditions = array of TCondition;
+
+  TCycles = record
+    Global,
+    GenerationCount,
+    GenerationValue,
+    Generations : integer;
+  end;
 
   TExperiment = class(TComponent)
   private
@@ -58,15 +62,14 @@ type
     FConditions : TConditions;
     FState: TExperimentState;
     FTurnsRandom : TStringList;
+    FCycles : TCycles;
     function GetCondition(I : Integer): TCondition;
     function GetConditionsCount: integer;
     function GetContingenciesCount(C: integer): integer;
     function GetContingency(ACondition, I : integer): TContingency;
-    function GetNextTurn: integer;
+    function GetNextTurn(P: TPlayer): TPlayer;
     function GetNextTurnPlayerID: UTF8string;
-    function GetNextCycle:integer;
-    function GetNextCondition:integer;
-    function GetCurrentAbsoluteCycle : integer;
+    function GetNextCondition:string;
     function AliasPlayerAsString(P: TPlayer): UTF8string;
     function AliasPlayerFromString(s : UTF8string): TPlayer;
     function GetPlayer(I : integer): TPlayer; overload;
@@ -97,6 +100,8 @@ type
     procedure SetContingenciesEvents;
     procedure SetPlayersQueue(AValue: string);
   private
+    FConsequenceStringFromChoices: UTF8String;
+    FEndCycle: Boolean;
     FOnConsequence: TNotifyEvent;
     FOnInterlocking: TNotifyEvent;
     FOnEndTurn: TNotifyEvent;
@@ -104,6 +109,10 @@ type
     FOnEndCycle: TNotifyEvent;
     FOnEndExperiment: TNotifyEvent;
     FOnEndGeneration: TNotifyEvent;
+    FOnStartCondition: TNotifyEvent;
+    FOnStartCycle: TNotifyEvent;
+    FOnStartGeneration: TNotifyEvent;
+    FOnStartTurn: TNotifyEvent;
     FOnWriteReport: TNotifyOnWriteReport;
     FOnStartExperiment: TNotifyEvent;
     FOnTargetInterlocking: TNotifyEvent;
@@ -112,6 +121,10 @@ type
     function GetMatrixTypeAsUTF8String: UTF8String;
     procedure Interlocking(Sender : TObject);
     procedure SetMatrixTypeFromUTF8String(AValue: UTF8String);
+    procedure SetOnStartCondition(AValue: TNotifyEvent);
+    procedure SetOnStartCycle(AValue: TNotifyEvent);
+    procedure SetOnStartGeneration(AValue: TNotifyEvent);
+    procedure SetOnStartTurn(AValue: TNotifyEvent);
     procedure SetOnWriteReport(AValue: TNotifyOnWriteReport);
     procedure SetOnStartExperiment(AValue: TNotifyEvent);
     procedure SetOnTargetInterlocking(AValue: TNotifyEvent);
@@ -153,16 +166,16 @@ type
     function AppendPlayer(APlayer : TPlayer) : integer; overload;
     function IsLastCondition: Boolean;
     function TargetIntelockingFired : Boolean;
-    function ShouldAskQuestion : Boolean;
+    function ShouldAskQuestion : string;
     function ShouldStartExperiment : Boolean;
-    function ShouldEndCycle : Boolean;
+    property IsEndCycle : Boolean read FEndCycle;
     property Condition[I : Integer]: TCondition read GetCondition write SetCondition;
     property ConditionsCount : integer read GetConditionsCount;
     property CurrentConditionI : integer read FCurrentCondition write FCurrentCondition;
     property CurrentCondition : TCondition read GetCurrentCondition;
     property Contingency[C, I : integer] : TContingency read GetContingency write SetContingency;
     property ContingenciesCount[C:integer]:integer read GetContingenciesCount;
-    property Cycles : integer read GetCurrentAbsoluteCycle;
+    property Cycles : TCycles read FCycles;
     property InterlockingsInLastCycles:real read GetInterlockingPorcentageInLastCycles;
     property Player[I : integer] : TPlayer read GetPlayer write SetPlayer;
     property Players : TPlayers read FPlayers;
@@ -179,23 +192,26 @@ type
     procedure Play;
     procedure WriteReportRowPrompt;
     procedure WriteChatLn(ALn : string);
-    property ConsequenceStringFromChoice[P:Tplayer]:UTF8String read GetConsequenceStringFromChoice;
-    property ConsequenceStringFromChoices: UTF8String read GetConsequenceStringFromChoices;
+    property ConsequenceStringFromChoice[P:TPlayer]:UTF8String read GetConsequenceStringFromChoice;
+    property ConsequenceStringFromChoices: UTF8String read FConsequenceStringFromChoices;
     property NextTurnPlayerID : UTF8string read GetNextTurnPlayerID;
-    property NextTurn : integer read GetNextTurn;
-    property NextCycle : integer read GetNextCycle;
-    property NextCondition : integer read GetNextCondition;
+    property NextTurn[P : TPlayer] : TPlayer read GetNextTurn;
+    property NextCondition : string read GetNextCondition;
     property NextGeneration: string read GetPlayerToKick write SetPlayersQueue;
     property State : TExperimentState read FState write SetState;
   public // events
-    property OnStartExperiment : TNotifyEvent read FOnStartExperiment write SetOnStartExperiment;
-    property OnEndTurn : TNotifyEvent read FOnEndTurn write SetOnEndTurn;
-    property OnEndCycle : TNotifyEvent read FOnEndCycle write SetOnEndCycle;
-    property OnEndGeneration : TNotifyEvent read FOnEndGeneration write SetOnEndGeneration;
-    property OnEndCondition : TNotifyEvent read FOnEndCondition write SetOnEndCondition;
-    property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
     property OnConsequence : TNotifyEvent read FOnConsequence write SetOnConsequence;
+    property OnEndCondition : TNotifyEvent read FOnEndCondition write SetOnEndCondition;
+    property OnEndCycle : TNotifyEvent read FOnEndCycle write SetOnEndCycle;
+    property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
+    property OnEndGeneration : TNotifyEvent read FOnEndGeneration write SetOnEndGeneration;
+    property OnEndTurn : TNotifyEvent read FOnEndTurn write SetOnEndTurn;
     property OnInterlocking : TNotifyEvent read FOnInterlocking write SetOnInterlocking;
+    property OnStartCondition : TNotifyEvent read FOnStartCondition write SetOnStartCondition;
+    property OnStartCycle : TNotifyEvent read FOnStartCycle write SetOnStartCycle;
+    property OnStartExperiment : TNotifyEvent read FOnStartExperiment write SetOnStartExperiment;
+    property OnStartGeneration : TNotifyEvent read FOnStartGeneration write SetOnStartGeneration;
+    property OnStartTurn : TNotifyEvent read FOnStartTurn write SetOnStartTurn;
     property OnTargetInterlocking : TNotifyEvent read FOnTargetInterlocking write SetOnTargetInterlocking;
     property OnWriteReport : TNotifyOnWriteReport read FOnWriteReport write SetOnWriteReport;
   end;
@@ -229,25 +245,36 @@ begin
   Result := FConditions[ACondition].Contingencies[I];
 end;
 
-function TExperiment.GetNextTurn: integer; // used during player arriving
+function TExperiment.GetNextTurn(P: TPlayer): TPlayer; // used during player arriving
 begin
-  if FConditions[CurrentConditionI].Turn.Random then
-    Result := StrToInt(FTurnsRandom.Names[FConditions[CurrentConditionI].Turn.Count])
-  else
-    Result := FConditions[CurrentConditionI].Turn.Count;
-
   if Assigned(FOnEndTurn) then FOnEndTurn(Self);
 
-  if FConditions[CurrentConditionI].Turn.Count < FConditions[CurrentConditionI].Turn.Value-1 then
-      Inc(FConditions[CurrentConditionI].Turn.Count)
+  // Update turns
+  if CurrentCondition.Turn.Random then
+    P.Turn := StrToInt(FTurnsRandom.Names[CurrentCondition.Turn.Count])
+  else
+    P.Turn := CurrentCondition.Turn.Count;
+  FPlayers[PlayerIndexFromID[P.ID]] := P;
+  Result := P;
+
+  if CurrentCondition.Turn.Count < CurrentCondition.Turn.Value-1 then
+    begin
+      FEndCycle := False;
+      Inc(FConditions[CurrentConditionI].Turn.Count);
+    end
   else
     begin
+      if Assigned(FOnEndCycle) then FOnEndCycle(Self);
+      FEndCycle := True;
+      FConsequenceStringFromChoices := GetConsequenceStringFromChoices;
+      WriteReportRow;
       FConditions[CurrentConditionI].Turn.Count := 0;
-      NextCycle;
+      Inc(FCycles.Global);
+      Inc(FConditions[CurrentConditionI].Cycles.Count);
+      if Assigned(FOnStartCycle) then FOnStartCycle(Self);
     end;
-{$IFDEF DEBUG}
-  WriteLn('TExperiment.GetNextTurn:',Result);
-{$ENDIF}
+
+  if Assigned(FOnStartTurn) then FOnStartTurn(Self);
 end;
 
 function TExperiment.GetNextTurnPlayerID: UTF8string; // used during cycles
@@ -255,59 +282,37 @@ begin
   Result := Player[FConditions[CurrentConditionI].Turn.Count].ID;
 end;
 
-function TExperiment.GetNextCycle: integer;
+{
+  May return:
+    - Fexperiment.CurrentConditionAsString -> next condition parameters
+    - #27 -> end experiment
+    - #32 -> do nothing
+}
+function TExperiment.GetNextCondition: string;
 begin
-  Result := FConditions[CurrentConditionI].Cycles.Count;
-  WriteReportRow;
-  if Assigned(FOnEndCycle) then FOnEndCycle(Self);
-
-  if FConditions[CurrentConditionI].Cycles.Count < FConditions[CurrentConditionI].Cycles.Value-1 then
-    Inc(FConditions[CurrentConditionI].Cycles.Count)
-  else
+  Result := #32;                               // 'do nothing' envelop item
+  if ShouldEndCondition then
     begin
-      FConditions[CurrentConditionI].Cycles.Count := 0;
-      if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
-      Inc(FConditions[CurrentConditionI].Cycles.Generation);
-    end;
-  {$IFDEF DEBUG}
-    WriteLn('TExperiment.GetNextCycle:',Result);
-  {$ENDIF}
-end;
+      if Assigned(FOnEndCondition) then
+        FOnEndCondition(Self);
 
-function TExperiment.GetNextCondition: integer;
-begin
-  Result := CurrentConditionI;
-  if Assigned(FOnEndCondition) then FOnEndCondition(Self);
-  if FCurrentCondition < ConditionsCount-1 then
-    begin
+      if IsLastCondition then
+        begin
+          Result := #27;                      // 'end experiment' envelop item
+          EndExperiment;
+          Exit;
+        end;
       Inc(FCurrentCondition);
+      FCycles.GenerationValue := CurrentCondition.Cycles.Value;
       SetTargetInterlockingEvent;
       SetContingenciesEvents;
       FReportReader.Clean;
       FReportReader.SetXLastRows(Condition[CurrentConditionI].EndCriterium.LastCycles);
       FRegData.SaveData(LineEnding);
       WriteReportRowNames;
-    end
-  else
-    begin
-      EndExperiment;
-      State:=xsWaiting;
-      WriteReportFooter;
+      if Assigned(FOnStartCondition) then FOnStartCondition(Self);
+      Result := CurrentConditionAsString;     // 'end condition' envelop item
     end;
-
-  {$IFDEF DEBUG}
-    WriteLn('TExperiment.GetNextCondition:',Result);
-  {$ENDIF}
-end;
-
-function TExperiment.GetCurrentAbsoluteCycle: integer;
-var c:integer;
-begin
-  c := CurrentConditionI;
-  Result := (Condition[c].Cycles.Value*Condition[c].Cycles.Generation)+Condition[c].Cycles.Count;
-  {$IFDEF DEBUG}
-    WriteLn('TExperiment.GetCurrentAbsoluteCycle:',Result);
-  {$ENDIF}
 end;
 
 function TExperiment.GetPlayer(I : integer): TPlayer;
@@ -374,7 +379,6 @@ begin
   Result:= False;
 end;
 
-
 function TExperiment.GetPlayersCount: integer;
 begin
   Result := Length(FPlayers);
@@ -399,23 +403,19 @@ begin
         Break;
       end;
 
-  i := 0;
   LContingencyResults := FReportReader.ColumnOf[LContingencyName];
+  i := 0;
+  for LRow in LContingencyResults do
+    if LRow = '1' then Inc(i);
+  Result := (i*100)/LContingencyResults.Count;
 
-  // Return 0 if count is different from the specified value
   if LContingencyResults.Count = Condition[c].EndCriterium.LastCycles then
-    begin
+    Exit;
 
-      // count how many interlocks in last X cycles
-      for LRow in LContingencyResults do
-        if LRow = '1' then Inc(i);
-
-      // return result in porcentage
-      Result := (i*100)/LContingencyResults.Count;
-    end;
-  {$IFDEF DEBUG}
-    WriteLn('TExperiment.GetInterlockingPorcentageInLastCycles:',Result);
-  {$ENDIF}
+  if LContingencyResults.Count > Condition[c].EndCriterium.LastCycles then
+    Result := 0
+  else
+    Result *= -1;
 end;
 
 function TExperiment.GetConsequenceStringFromChoice(P: TPlayer): Utf8string;
@@ -468,6 +468,8 @@ end;
 
 procedure TExperiment.EndExperiment;
 begin
+  State:=xsWaiting;
+  WriteReportFooter;
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Self);
 end;
 
@@ -596,6 +598,7 @@ end;
 
 procedure TExperiment.Consequence(Sender: TObject);
 begin
+  // Sender = TContingency
   if Assigned(FOnConsequence) then FOnConsequence(Sender);
 end;
 
@@ -611,6 +614,7 @@ end;
 
 procedure TExperiment.TargetInterlocking(Sender: TObject);
 begin
+  // Sender = TContingency
   if Assigned(FOnTargetInterlocking) then FOnTargetInterlocking(Sender);
 end;
 
@@ -626,23 +630,56 @@ begin
 end;
 
 function TExperiment.GetPlayerToKick: string;
-var c : integer;
 begin
-  c := CurrentConditionI;
-  if Condition[c].Cycles.Count < Condition[c].Cycles.Value -1 then
-    Result := #32
+  if FCycles.GenerationCount < FCycles.GenerationValue -1 then
+    begin
+      Result := #32;
+      Inc(FCycles.GenerationCount);
+    end
   else
-    Result := FPlayers[0].ID;
+    begin
+      if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
+      Result := FPlayers[0].ID;
+      FCycles.GenerationCount := 0;
+      Inc(FCycles.Generations);
+      if Assigned(FOnStartGeneration) then FOnStartGeneration(Self);
+    end;
 end;
 
 procedure TExperiment.Interlocking(Sender: TObject);
 begin
+  // Sender = TContingency
   if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
 end;
+
 
 procedure TExperiment.SetMatrixTypeFromUTF8String(AValue: UTF8String);
 begin
   MatrixType := GetMatrixTypeFromString(AValue);
+end;
+
+procedure TExperiment.SetOnStartCondition(AValue: TNotifyEvent);
+begin
+  if FOnStartCondition=AValue then Exit;
+  FOnStartCondition:=AValue;
+end;
+
+procedure TExperiment.SetOnStartCycle(AValue: TNotifyEvent);
+begin
+  if FOnStartCycle=AValue then Exit;
+  FOnStartCycle:=AValue;
+end;
+
+procedure TExperiment.SetOnStartGeneration(AValue: TNotifyEvent);
+begin
+  if FOnStartGeneration=AValue then Exit;
+  FOnStartGeneration:=AValue;
+end;
+
+procedure TExperiment.SetOnStartTurn(AValue: TNotifyEvent);
+begin
+  if FOnStartTurn=AValue then Exit;
+  FOnStartTurn:=AValue;
 end;
 
 procedure TExperiment.SetOnWriteReport(AValue: TNotifyOnWriteReport);
@@ -764,7 +801,11 @@ begin
     begin
       c:= CurrentConditionI;
 
-      LRow := LineEnding + IntToStr(c+1)+#9+IntToStr(Condition[c].Cycles.Generation+1)+#9+IntToStr(GetCurrentAbsoluteCycle+1)+#9;
+      LRow := LineEnding +
+              IntToStr(c+1)+#9+
+              IntToStr(FCycles.Generations+1)+#9+
+              IntToStr(FCycles.Global+1)+#9;
+
       for i:=0 to Condition[c].Turn.Value-1 do
         begin
         LRow += GetRowString(FPlayers[i].Choice.Row)+#9+GetColorString(FPlayers[i].Choice.Color)+#9;
@@ -826,6 +867,13 @@ constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FTurnsRandom := TStringList.Create;
+  with FCycles do
+    begin
+      Global := 0;
+      Generations := 0;
+      GenerationCount := 0;
+      GenerationValue:=0;
+    end;
   State := xsNone;
 end;
 
@@ -966,9 +1014,17 @@ begin
       end;
 end;
 
-function TExperiment.ShouldAskQuestion: Boolean;
+function TExperiment.ShouldAskQuestion: string;
 begin
-  Result := Assigned(Condition[CurrentConditionI].Prompt) and TargetIntelockingFired;
+  if Assigned(CurrentCondition.Prompt) and TargetIntelockingFired then
+    Result := CurrentCondition.Prompt.Question
+  else
+    begin
+      Result := #32;
+      if Assigned(CurrentCondition.Prompt) then
+        WriteReportRowPrompt; //TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
+      Clean;
+    end;
 end;
 
 function TExperiment.ShouldStartExperiment: Boolean;
@@ -976,36 +1032,31 @@ begin
   Result := PlayersCount = Condition[CurrentConditionI].Turn.Value;
 end;
 
-function TExperiment.ShouldEndCycle: Boolean;
-begin
-  Result := Condition[CurrentConditionI].Turn.Count = Condition[CurrentConditionI].Turn.Value-1;
-end;
-
 function TExperiment.ShouldEndCondition: Boolean;
 var
   LInterlocks: Real;
-  LAbsCycles: Integer;
+  LCyclesInCurrentCondition: Integer;
 begin
   Result := False;
   // interlockings in the last x cycles
   LInterlocks := InterlockingsInLastCycles;
 
   // absolute cycles count
-  LAbsCycles := GetCurrentAbsoluteCycle;
+  LCyclesInCurrentCondition := CurrentCondition.Cycles.Count;
   case FConditions[CurrentConditionI].EndCriterium.Style of
     gecWhichComeFirst:
       begin
-        if (LAbsCycles = FConditions[CurrentConditionI].EndCriterium.AbsoluteCycles) or
-           (LInterlocks >= FConditions[CurrentConditionI].EndCriterium.InterlockingPorcentage) then
+        if (LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCycles) or
+           (LInterlocks >= CurrentCondition.EndCriterium.InterlockingPorcentage) then
           Result := True;
 
       end;
     gecAbsoluteCycles:
-        if LAbsCycles = FConditions[CurrentConditionI].EndCriterium.AbsoluteCycles then
+        if LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCycles then
           Result := True;
 
     gecInterlockingPorcentage:
-        if LInterlocks >= FConditions[CurrentConditionI].EndCriterium.InterlockingPorcentage then
+        if LInterlocks >= CurrentCondition.EndCriterium.InterlockingPorcentage then
           Result := True;
   end;
 end;
@@ -1037,10 +1088,7 @@ procedure TExperiment.SaveToFile;
 begin
   if FFilename <> '' then
     SaveExperimentToFile(Self,FFilename)
-  else
-{$IFDEF DEBUG}
-  WriteLn(WARN_CANNOT_SAVE)
-{$ENDIF};
+  else;
 end;
 
 procedure TExperiment.Clean;
@@ -1063,11 +1111,9 @@ end;
 
 procedure TExperiment.Play;
 begin
-  //for i := 0 to Condition[CurrentConditionI].Turn.Value-1 do
-  //  begin
-  //    //TRegData.Save Header;
-  //  end;
+  FCycles.GenerationValue := CurrentCondition.Cycles.Value;
   FState:=xsRunning;
+  if Assigned(FOnStartExperiment) then FOnStartExperiment(Self);
 end;
 
 

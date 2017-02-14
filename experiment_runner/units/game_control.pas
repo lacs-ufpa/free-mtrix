@@ -59,16 +59,30 @@ type
     procedure NextConditionSetup(S : string);
     procedure EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
   private
-    //function ShouldEndGeneration : Boolean;
-    procedure NextTurn(Sender: TObject);
-    procedure NextCycle(Sender: TObject);
-    procedure NextLineage(Sender: TObject);
-    procedure NextCondition(Sender: TObject);
+    FOnEndExperiment: TNotifyEvent;
+    FOnInterlocking: TNotifyEvent;
+    FOnStartCondition: TNotifyEvent;
+    FOnStartCycle: TNotifyEvent;
+    FOnStartExperiment: TNotifyEvent;
+    FOnStartGeneration: TNotifyEvent;
+    FOnStartTurn: TNotifyEvent;
+    FOnTargetInterlocking: TNotifyEvent;
     procedure Interlocking(Sender: TObject);
+    procedure SetOnEndExperiment(AValue: TNotifyEvent);
+    procedure SetOnInterlocking(AValue: TNotifyEvent);
+    procedure SetOnStartCondition(AValue: TNotifyEvent);
+    procedure SetOnStartCycle(AValue: TNotifyEvent);
+    procedure SetOnStartExperiment(AValue: TNotifyEvent);
+    procedure SetOnStartGeneration(AValue: TNotifyEvent);
+    procedure SetOnStartTurn(AValue: TNotifyEvent);
+    procedure SetOnTargetInterlocking(AValue: TNotifyEvent);
+    procedure EndExperiment(Sender : TObject);
+    procedure StartCondition(Sender: TObject);
+    procedure StartCycle(Sender: TObject);
+    procedure StartExperiment(Sender: TObject);
+    procedure StartGeneration(Sender: TObject);
+    procedure StartTurn(Sender: TObject);
     procedure TargetInterlocking(Sender: TObject);
-    procedure Consequence(Sender: TObject);
-    procedure EndExperiment(Sender: TObject);
-    procedure StartExperiment;
   public
     constructor Create(AOwner : TComponent;AppPath:string);overload;
     destructor Destroy; override;
@@ -86,6 +100,15 @@ type
     property RowBase : integer read FRowBase write SetRowBase;
     property MustDrawDots: Boolean read FMustDrawDots write SetMustDrawDots;
     property MustDrawDotsClear:Boolean read FMustDrawDotsClear write SetMustDrawDotsClear;
+  public
+    property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
+    property OnInterlocking : TNotifyEvent read FOnInterlocking write SetOnInterlocking;
+    property OnStartCondition : TNotifyEvent read FOnStartCondition write SetOnStartCondition;
+    property OnStartCycle : TNotifyEvent read FOnStartCycle write SetOnStartCycle;
+    property OnStartExperiment : TNotifyEvent read FOnStartExperiment write SetOnStartExperiment;
+    property OnStartGeneration : TNotifyEvent read FOnStartGeneration write SetOnStartGeneration;
+    property OnStartTurn : TNotifyEvent read FOnStartTurn write SetOnStartTurn;
+    property OnTargetInterlocking : TNotifyEvent read FOnTargetInterlocking write SetOnTargetInterlocking;
   end;
 
   function GetRowColor(ARow : integer;ARowBase:integer) : TColor;
@@ -157,95 +180,102 @@ end;
 procedure TGameControl.EndExperiment(Sender: TObject);
 begin
   ShowPopUp('O Experimento terminou.');
+  if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
 
-procedure TGameControl.NextTurn(Sender: TObject);
+procedure TGameControl.StartTurn(Sender: TObject);
 begin
-  // update admin view
-  FormMatrixGame.LabelExpCountTurn.Caption:=IntToStr(FExperiment.CurrentCondition.Turn.Count+1);
-
+  if Assigned(FOnStartTurn) then FOnStartTurn(Sender);
 end;
 
-procedure TGameControl.NextCycle(Sender: TObject);
+procedure TGameControl.StartCycle(Sender: TObject);
 begin
-  FormMatrixGame.LabelExpCountCycle.Caption:= IntToStr(FExperiment.Cycles+1);
-  {$IFDEF DEBUG}
-  WriteLn('cycle:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-  {$ENDIF}
+  if Assigned(FOnStartCycle) then FOnStartCycle(Sender);
 end;
 
-procedure TGameControl.NextLineage(Sender: TObject);
+procedure TGameControl.StartGeneration(Sender: TObject);
 begin
-  // pause, kick older player, wait for new player, resume
-  FormMatrixGame.LabelExpCountGeneration.Caption:=IntToStr(FExperiment.CurrentCondition.Cycles.Generation+1);
+  if Assigned(FOnStartGeneration) then FOnStartGeneration(Sender);
 end;
 
-procedure TGameControl.NextCondition(Sender: TObject);
+procedure TGameControl.StartCondition(Sender: TObject);
 begin
-  FormMatrixGame.LabelExpCountCondition.Caption:= FExperiment.CurrentCondition.ConditionName;
-
-  // append OnStart data
-  NextConditionSetup(FExperiment.CurrentConditionAsString);
+  if Assigned(FOnStartCondition) then FOnStartCondition(Sender);
 end;
 
 procedure TGameControl.Interlocking(Sender: TObject);
-var i : integer;
 begin
-  i := StrToInt(FormMatrixGame.LabelExpCountInterlocks.Caption);
-  FormMatrixGame.LabelExpCountInterlocks.Caption:= IntToStr(i+1);
+  //i := StrToInt(FormMatrixGame.LabelExpCountInterlocks.Caption);
+  //FormMatrixGame.LabelExpCountInterlocks.Caption:= IntToStr(i+1);
+  if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
 end;
 
 procedure TGameControl.TargetInterlocking(Sender: TObject);
-var i : integer;
 begin
-  i := StrToInt(FormMatrixGame.LabelExpCountTInterlocks.Caption);
-  FormMatrixGame.LabelExpCounTtInterlocks.Caption:= IntToStr(i+1);
+  if Assigned(FOnTargetInterlocking) then FOnTargetInterlocking(Sender);
 end;
 
-procedure TGameControl.Consequence(Sender: TObject);
+//procedure TGameControl.Consequence(Sender: TObject);
+//begin
+//  if Assigned(FOnConsequence) then FOnConsequence(Sender);
+//end;
+
+procedure TGameControl.StartExperiment(Sender: TObject);
 begin
-{$IFDEF DEBUG}
-  if Sender is TConsequence then
-    FormMatrixGame.ChatMemoRecv.Lines.Append(('['+TConsequence(Sender).PlayerNicname+']: ')+TConsequence(Sender).AsString(''));
-{$ENDIF}
-end;
-
-procedure TGameControl.StartExperiment;
-begin
-  // all players arrived, lets begin
-  FExperiment.Play;
-
-  // wait some time, we just sent a message earlier
-  Sleep(5);
-
   // gui setup
   // enable matrix grid for the first player
   FZMQActor.SendMessage([K_START]);
 
-  // points
-  //FormMatrixGame.GBIndividualAB.Visible := FExperiment.ABPoints;
-  //FormMatrixGame.GBIndividual.Visible:= not FormMatrixGame.GBIndividualAB.Visible;
-
-  // turns
-  FormMatrixGame.LabelExpCountTurn.Caption:=IntToStr(FExperiment.CurrentCondition.Turn.Count+1);
-
-  // cycle
-  FormMatrixGame.LabelExpCountCycle.Caption := IntToStr(FExperiment.Cycles+1);
-
-  // generation
-  FormMatrixGame.LabelExpCountGeneration.Caption:=IntToStr(FExperiment.CurrentCondition.Cycles.Generation+1);
-
-  // condition
-  FormMatrixGame.LabelExpCountCondition.Caption:= FExperiment.CurrentCondition.ConditionName;
-
-  // interlocks
-  FormMatrixGame.LabelExpCountInterlocks.Caption:= '0';
-
-  // target interlocks
-  FormMatrixGame.LabelExpCountTInterlocks.Caption:= '0';
-
-  // wait for players
+  if Assigned(FOnStartExperiment) then FOnStartExperiment(Sender);
 end;
+procedure TGameControl.SetOnEndExperiment(AValue: TNotifyEvent);
+begin
+  if FOnEndExperiment=AValue then Exit;
+  FOnEndExperiment:=AValue;
+end;
+
+procedure TGameControl.SetOnInterlocking(AValue: TNotifyEvent);
+begin
+  if FOnInterlocking=AValue then Exit;
+  FOnInterlocking:=AValue;
+end;
+
+procedure TGameControl.SetOnStartCondition(AValue: TNotifyEvent);
+begin
+  if FOnStartCondition=AValue then Exit;
+  FOnStartCondition:=AValue;
+end;
+
+procedure TGameControl.SetOnStartCycle(AValue: TNotifyEvent);
+begin
+  if FOnStartCycle=AValue then Exit;
+  FOnStartCycle:=AValue;
+end;
+
+procedure TGameControl.SetOnStartExperiment(AValue: TNotifyEvent);
+begin
+  if FOnStartExperiment=AValue then Exit;
+  FOnStartExperiment:=AValue;
+end;
+
+procedure TGameControl.SetOnStartGeneration(AValue: TNotifyEvent);
+begin
+  if FOnStartGeneration=AValue then Exit;
+  FOnStartGeneration:=AValue;
+end;
+
+procedure TGameControl.SetOnStartTurn(AValue: TNotifyEvent);
+begin
+  if FOnStartTurn=AValue then Exit;
+  FOnStartTurn:=AValue;
+end;
+
+procedure TGameControl.SetOnTargetInterlocking(AValue: TNotifyEvent);
+begin
+  if FOnTargetInterlocking=AValue then Exit;
+  FOnTargetInterlocking:=AValue;
+end;
+
 
 procedure TGameControl.Start;
 begin
@@ -493,7 +523,7 @@ begin
   LConsequence := TConsequence.Create(nil,S);
   Result := LConsequence.GenerateMessage(ForGroup);
   if ShowPopUp then
-    LConsequence.PresentMessage(FormMatrixGame.ChatPanel);
+    LConsequence.PresentMessage(FormMatrixGame.GBPoints);
   case FActor of
     gaPlayer:
       if ForGroup then
@@ -624,14 +654,20 @@ begin
     gaPlayer:FExperiment := TExperiment.Create(FZMQActor.Owner);
     gaWatcher:FExperiment := TExperiment.Create(FZMQActor.Owner);
   end;
-  FExperiment.OnEndTurn := @NextTurn;
-  FExperiment.OnEndCycle := @NextCycle;
-  FExperiment.OnEndCondition:= @NextCondition;
-  FExperiment.OnEndGeneration:=@NextLineage;
+  FExperiment.OnStartTurn:=@StartTurn;
+  FExperiment.OnStartCondition:=@StartCondition;
+  FExperiment.OnStartCycle:=@StartCycle;
+  FExperiment.OnStartExperiment:=@StartExperiment;
+  FExperiment.OnStartGeneration:=@StartGeneration;
   FExperiment.OnEndExperiment:= @EndExperiment;
   FExperiment.OnInterlocking:=@Interlocking;
-  FExperiment.OnConsequence:=@Consequence;
   FExperiment.OnTargetInterlocking:=@TargetInterlocking;
+
+  //FExperiment.OnEndTurn := @NextTurn;
+  //FExperiment.OnEndCycle := @NextCycle;
+  //FExperiment.OnEndCondition:= @NextCondition;
+  //FExperiment.OnEndGeneration:=@NextLineage;
+  //FExperiment.OnConsequence:=@Consequence;
 
   SendRequest(K_LOGIN); // admin cannot send requests
 end;
@@ -1125,7 +1161,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
             // start Experiment
             if FExperiment.ShouldStartExperiment then
-              StartExperiment;
+              FExperiment.Play;
 
           end
         else
@@ -1149,65 +1185,37 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     LEndGeneration: string;
   begin
     LConsequences := '';
-    {$IFDEF DEBUG}
-    WriteLn('Count:',FExperiment.CurrentCondition.Turn.Count, '<', FExperiment.CurrentCondition.Turn.Value);
-    {$ENDIF}
-    P := FExperiment.PlayerFromID[ARequest[0]];
-    P.Choice.Row:= GetRowFromString(ARequest[3]); // row
-    P.Choice.Color:= GetGameColorFromString(ARequest[4]); // color
-    ARequest[2] := K_CHOICE+K_ARRIVED;
+    P := FExperiment.PlayerFromID[ARequest[0]];                    // 0 = ID, 1 = #32
+    P.Choice.Row:= GetRowFromString(ARequest[3]);                  // 3 row
+    P.Choice.Color:= GetGameColorFromString(ARequest[4]);          // 4 color
+    ARequest[2] := K_CHOICE+K_ARRIVED;                             // 2 message topic
 
-    //individual consequences
+    // generate individual consequences
     S := FExperiment.ConsequenceStringFromChoice[P];
-    {$IFDEF DEBUG}
-    WriteLn('ValidateChoice:',s);
-    {$ENDIF}
-
     if Pos('$NICNAME',S) > 0 then
       S := ReplaceStr(S,'$NICNAME',P.Nicname);
 
-    // "NextGeneration" and "ShouldEndCycle" methods must be called before Experiment.NextTurn
-    LEndCycle := FExperiment.ShouldEndCycle;
-    LEndGeneration := FExperiment.NextGeneration;
-    if LEndCycle then
-      LConsequences := FExperiment.ConsequenceStringFromChoices;
-
     // update turn
-    P.Turn := FExperiment.NextTurn;
-    FExperiment.Player[FExperiment.PlayerIndexFromID[P.ID]] := P;
+    P := FExperiment.NextTurn[P];
 
     // append results
-    ARequest.Append(IntToStr(P.Turn)); //5
-    ARequest.Append(S);                //6
-    if LEndCycle then // >7 = EndCycle
+    ARequest.Append(IntToStr(P.Turn));                             // 5
+
+    // individual consequences
+    ARequest.Append(S);                                            // 6
+    if FExperiment.IsEndCycle then
       begin
-        ARequest.Append(LConsequences); //7
+        // group consequences from choices of all players
+        ARequest.Append(FExperiment.ConsequenceStringFromChoices); // 7
 
-        if FExperiment.ShouldAskQuestion then  // DONE: prompt only when an odd row was selected
-           ARequest.Append(FExperiment.CurrentCondition.Prompt.Question) //8
-        else
-          begin
-            ARequest.Append(#32); // 8
-            if Assigned(FExperiment.CurrentCondition.Prompt) then
-              FExperiment.WriteReportRowPrompt; //TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
-            FExperiment.Clean;
-          end;
+        // prompt question if an odd row was selected
+        ARequest.Append(FExperiment.ShouldAskQuestion);            // 8
 
-        ARequest.Append(LEndGeneration); // 9, #32 resume, else NextGeneration = PlayerToKick AID
-        LEndCondition := FExperiment.ShouldEndCondition;
-        if FExperiment.IsLastCondition and LEndCondition then // 10
-          // end experiment envelop item
-          ARequest.Append(#27)
-        else
-          if LEndCondition then
-            begin
-              FExperiment.NextCondition;
-              // end condition envelop item
-              ARequest.Append(FExperiment.CurrentConditionAsString);
-            end
-          else
-            // do nothing envelop item
-            ARequest.Append(#32);
+        // #32 resume else NextGeneration = PlayerToKick AID
+        ARequest.Append(FExperiment.NextGeneration);               // 9
+
+        // Check if we need to end the current condition
+        ARequest.Append(FExperiment.NextCondition);                // 10
       end;
   end;
 
