@@ -315,28 +315,35 @@ var i : integer;
     R : TGameRow;
     Len : Byte;
 
+    // brute-force
     function AllColorsEqual:Boolean;
-    var i : integer;
+    var
+      i : integer;
+      j : integer;
     begin
       Result := not (gcNot in Criteria.Colors);
       for i := 0 to Len-2 do
-        if Cs[i] <> Cs[i+1] then
-          begin
-            Result := not Result;
-            Break;
-          end;
+        for j := i to Len-1 do
+          if (Cs[i] <> Cs[j]) and (i <> j) then
+            begin
+              Result := not Result;
+              Exit;
+            end;
     end;
 
+    // brute-force
     function AllColorsDiff:Boolean;
     var i : integer;
+        j : integer;
     begin
       Result := not (gcNot in Criteria.Colors);
-      for i := 0 to Len-2 do
-        if Cs[i] = Cs[i+1] then
-          begin
-            Result := not Result;
-            Break;
-          end;
+      for i := 0 to Len-1 do
+        for j := i to Len-1 do
+          if (Cs[i] = Cs[j]) and (i <> j) then
+            begin
+              Result := not Result;
+              Exit;
+            end;
     end;
 
     function AllRowsOdd: Boolean;
