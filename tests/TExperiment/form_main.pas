@@ -15,7 +15,9 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ComCtrls, game_experiment
+  ComCtrls
+  , game_experiment
+  , game_visual_experiment
   ;
 
 type
@@ -25,6 +27,7 @@ type
   TForm1 = class(TForm)
     ButtonChoice1: TButton;
     ButtonChoice3: TButton;
+    ButtonChoice4: TButton;
     ButtonLogin: TButton;
     ButtonChoice2: TButton;
     ListBox1: TListBox;
@@ -35,17 +38,9 @@ type
     procedure ButtonChoice1Click(Sender: TObject);
     procedure ButtonLoginClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure Consequence(Sender: TObject);
   private
     FExperiment : TExperiment;
-    procedure EndCondition(Sender: TObject);
-    procedure EndCycle(Sender: TObject);
-    procedure EndExperiment(Sender: TObject);
-    procedure EndGeneration(Sender: TObject);
-    procedure EndTurn(Sender: TObject);
-    procedure Interlocking(Sender: TObject);
-    procedure StartExperiment(Sender: TObject);
-    procedure TargetInterlocking(Sender: TObject);
+    FExperimentBox : TExperimentBox;
     procedure WriteReport(S: string);
   public
     { public declarations }
@@ -59,8 +54,9 @@ implementation
 uses
   game_actors
   , game_resources
-  , helpers
+  , string_methods
   , strutils
+  , helpers
   ;
 
 {$R *.lfm}
@@ -69,20 +65,23 @@ uses
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  FExperimentBox := TExperimentBox.Create(Self);
+  FExperimentBox.Left := 926;
+  FExperimentBox.Top := 16;
+  FExperimentBox.Parent := Self;
+
   FExperiment := TExperiment.Create(Self);
-  FExperiment.OnConsequence:=@Consequence;
-  FExperiment.OnEndCondition:=@EndCondition;
-  FExperiment.OnEndCycle:=@EndCycle;
-  FExperiment.OnEndExperiment:=@EndExperiment;
-  FExperiment.OnEndGeneration:=@EndGeneration;
-  FExperiment.OnEndTurn:=@EndTurn;
-  FExperiment.OnInterlocking:=@Interlocking;
-  FExperiment.OnTargetInterlocking:=@TargetInterlocking;
-  FExperiment.OnStartExperiment:=@StartExperiment;
+  FExperiment.OnInterlocking := @FExperimentBox.Interlocking;
+  FExperiment.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;
+  FExperiment.OnStartExperiment := @FExperimentBox.StartExperiment;
+  FExperiment.OnStartTurn := @FExperimentBox.StartTurn;
+  FExperiment.OnStartCycle := @FExperimentBox.StartCycle;
+  FExperiment.OnStartGeneration:= @FExperimentBox.StartGeneration;
+  FExperiment.OnStartCondition:= @FExperimentBox.StartCondition;
+  FExperiment.OnEndExperiment :=@FExperimentBox.EndExperiment;
+
   FExperiment.OnWriteReport:=@WriteReport;
-
   FExperiment.LoadFromFile('/home/rafael/git/free-mtrix/experiment_runner/Pesquisadores/Thais/Teste 1.Estudo 1.MC1.ini');
-
 end;
 
 procedure TForm1.ButtonLoginClick(Sender: TObject);
@@ -182,17 +181,11 @@ end;
 
 procedure TForm1.ButtonChoice1Click(Sender: TObject);
 var
-  LConsequences : string;
   P : TPlayer;
   S : string;
-  LEndCondition,
-  LEndCycle : Boolean;
-  LEndGeneration: string;
 begin
-  LConsequences := '';
 
   P := FExperiment.PlayerFromID[FExperiment.Player[FExperiment.CurrentCondition.Turn.Count].ID];
-  ListBox1.Items.Append('Player:'+P.Nicname);
   if Sender = ButtonChoice1 then
     begin
       P.Choice.Row := grTwo;
@@ -211,67 +204,41 @@ begin
       P.Choice.Color := gcRed;
     end;
 
-  //individual consequences
+  if Sender = ButtonChoice4 then
+    begin
+      P.Choice.Row := grSix;
+      P.Choice.Color := gcYellow;
+    end;
+
+  ListBox1.Items.Append('Player:'+P.Nicname +' : ' + GetRowString(P.Choice.Row)+' : '+GetColorString(P.Choice.Color));
+
+  // individual consequences from player choice
   S := FExperiment.ConsequenceStringFromChoice[P];
   if Pos('$NICNAME',S) > 0 then
     S := ReplaceStr(S,'$NICNAME',P.Nicname);
 
-
-  // "NextGeneration" and "ShouldEndCycle" methods must be called before Experiment.NextTurn
-  LEndCycle := FExperiment.ShouldEndCycle;
-  LEndGeneration := FExperiment.NextGeneration;
-  if LEndCycle then
-    LConsequences := FExperiment.ConsequenceStringFromChoices;
-
   // update turn
-  P.Turn := FExperiment.NextTurn;
-  FExperiment.Player[FExperiment.PlayerIndexFromID[P.ID]] := P;
+  P := FExperiment.NextTurn[P];
 
   // append results
-  ListBox1.Items.Append('UpdateTurn:'+IntToStr(P.Turn));            //5
-  ListBox1.Items.Append('IndividualConsequences:'+S);                //6
-  if LEndCycle then // >7 = EndCycle
+  ListBox1.Items.Append('UpdatedTurn:'+IntToStr(P.Turn)); // 5
+  ListBox1.Items.Append('IndividualConsequences:'+S);    // 6
+  if FExperiment.IsEndCycle then // >7 = EndCycle
     begin
-      ListBox1.Items.Append('GroupConsequences:'+LConsequences); //7
+      // group consequences from choices of all players
+      ListBox1.Items.Append('GroupConsequences:'+FExperiment.ConsequenceStringFromChoices); // 7
 
-      if FExperiment.ShouldAskQuestion then  // DONE: prompt only when an odd row was selected
-         ListBox1.Items.Append('ShouldAskQuestion:'+FExperiment.CurrentCondition.Prompt.Question) //8
-      else
-        begin
-          ListBox1.Items.Append('ShouldAskQuestion:'+#32); // 8
-          if Assigned(FExperiment.CurrentCondition.Prompt) then
-            FExperiment.WriteReportRowPrompt; //TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
-          FExperiment.Clean;
-        end;
+      // prompt question if an odd row was selected
+      ListBox1.Items.Append('ShouldAskQuestion:'+FExperiment.ShouldAskQuestion);            // 8
 
-      ListBox1.Items.Append('Generation:'+LEndGeneration); // 9, #32 resume, else NextGeneration = PlayerToKick AID
-      LEndCondition := FExperiment.ShouldEndCondition;
-      if FExperiment.IsLastCondition and LEndCondition then // 10
-        // end experiment envelop item
-        ListBox1.Items.Append('LastCondition:'+#27)
-      else
-        if LEndCondition then
-          begin
-            FExperiment.NextCondition;
-            // end condition envelop item
-            ListBox1.Items.Append('EndConditionTrue:'+FExperiment.CurrentConditionAsString);
-          end
-        else
-          // do nothing envelop item
-          ListBox1.Items.Append('EndConditionFalse:'+#32);
+      // #32 resume else NextGeneration = PlayerToKick AID
+      ListBox1.Items.Append('Generation:'+FExperiment.NextGeneration);                      // 9
+
+      // Check if we need to end the current condition
+      ListBox1.Items.Append(FExperiment.NextCondition);                                     // 10
     end;
   ListBox1.Items.Append('');
   ListBox1.Selected[ListBox1.Count-1];
-end;
-
-procedure TForm1.Consequence(Sender: TObject);
-begin
-  ListBox1.Items.Append('Consequence >>');
-end;
-
-procedure TForm1.TargetInterlocking(Sender: TObject);
-begin
-  ListBox1.Items.Append('TargetInterlocking  >>');
 end;
 
 procedure TForm1.WriteReport(S: string);
@@ -279,40 +246,6 @@ begin
   ListBox2.Items.Append(S);
 end;
 
-procedure TForm1.Interlocking(Sender: TObject);
-begin
-  ListBox1.Items.Append('Interlocking >>');
-end;
-
-procedure TForm1.StartExperiment(Sender: TObject);
-begin
-  ListBox1.Items.Append('StartExperiment >>');
-end;
-
-procedure TForm1.EndTurn(Sender: TObject);
-begin
-  ListBox1.Items.Append('EndTurn >>');
-end;
-
-procedure TForm1.EndGeneration(Sender: TObject);
-begin
-  ListBox1.Items.Append('EndGeneration >>');
-end;
-
-procedure TForm1.EndExperiment(Sender: TObject);
-begin
-  ListBox1.Items.Append('EndExperiment >>');
-end;
-
-procedure TForm1.EndCycle(Sender: TObject);
-begin
-  ListBox1.Items.Append('EndCycle >>');
-end;
-
-procedure TForm1.EndCondition(Sender: TObject);
-begin
-  ListBox1.Items.Append('EndCondition >>');
-end;
 
 end.
 
