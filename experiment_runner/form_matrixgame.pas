@@ -20,6 +20,7 @@ uses
   , game_zmq_actors
   , game_actors
   , game_control
+  , game_visual_experiment
   ;
 
 type
@@ -34,22 +35,10 @@ type
     GBLastChoice: TGroupBox;
     GBPoints: TGroupBox;
     GBAdmin: TGroupBox;
-    GBExperiment: TGroupBox;
     ImageIndA: TImage;
     ImageInd: TImage;
     ImageIndB: TImage;
     ImageGroup: TImage;
-    LabelExpCountCondition: TLabel;
-    LabelExpCountTInterlocks: TLabel;
-    LabelExpGen: TLabel;
-    LabelExpCountGeneration: TLabel;
-    LabelExpCycle: TLabel;
-    LabelExpCountCycle: TLabel;
-    LabelExpTInterlocks: TLabel;
-    LabelExpTurn: TLabel;
-    LabelExpCountTurn: TLabel;
-    LabelExpInterlocks: TLabel;
-    LabelExpCountInterlocks: TLabel;
     LabelGroup: TLabel;
     LabelInd: TLabel;
     LabelGroupCount: TLabel;
@@ -58,7 +47,6 @@ type
     LabelIndBCount: TLabel;
     LabelIndA: TLabel;
     LabelIndB: TLabel;
-    LabelExpCond: TLabel;
     ChatMemoRecv: TMemo;
     ChatMemoSend: TMemo;
     ChatPanel: TPanel;
@@ -73,6 +61,7 @@ type
     procedure ButtonExpStartClick(Sender: TObject);
     procedure ChatMemoSendKeyPress(Sender: TObject; var Key: char);
     procedure FormActivate(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
     procedure PopupNotifierClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure StringGridMatrixClick(Sender: TObject);
     procedure StringGridMatrixDrawCell(Sender: TObject; aCol, aRow: integer;
@@ -80,6 +69,7 @@ type
     procedure TimerTimer(Sender: TObject);
   private
     FGameControl : TGameControl;
+    FExperimentBox : TExperimentBox;
     FID: string;
     FInitParameter: string;
   public
@@ -251,6 +241,14 @@ begin
     gaWatcher: SetZMQWatcher;
   end;
   FGameControl.SetMatrix;
+  FGameControl.OnInterlocking := @FExperimentBox.Interlocking;
+  FGameControl.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;
+  FGameControl.OnStartExperiment := @FExperimentBox.StartExperiment;
+  FGameControl.OnStartTurn := @FExperimentBox.StartTurn;
+  FGameControl.OnStartCycle := @FExperimentBox.StartCycle;
+  FGameControl.OnStartGeneration:= @FExperimentBox.StartGeneration;
+  FGameControl.OnStartCondition:= @FExperimentBox.StartCondition;
+  FGameControl.OnEndExperiment :=@FExperimentBox.EndExperiment;
 end;
 
 procedure TFormMatrixGame.SetFullscreen;
@@ -299,6 +297,12 @@ begin
         end;
       end
     end;
+end;
+
+procedure TFormMatrixGame.FormCreate(Sender: TObject);
+begin
+  FExperimentBox := TExperimentBox.Create(GBAdmin);
+  FExperimentBox.Parent := GBAdmin;
 end;
 
 

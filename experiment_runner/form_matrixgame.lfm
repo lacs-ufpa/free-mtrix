@@ -1,16 +1,17 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 2
+  Left = 0
   Height = 670
   Top = 31
-  Width = 1452
-  HorzScrollBar.Page = 1452
+  Width = 1278
+  HorzScrollBar.Page = 1278
   VertScrollBar.Page = 542
   AutoScroll = True
   Caption = 'Matrix'
   ClientHeight = 660
-  ClientWidth = 1452
+  ClientWidth = 1278
   Font.Name = 'Monospace'
   OnActivate = FormActivate
+  OnCreate = FormCreate
   LCLVersion = '1.6.2.0'
   object StringGridMatrix: TStringGrid
     AnchorSideLeft.Control = Owner
@@ -4003,120 +4004,6 @@ object FormMatrixGame: TFormMatrixGame
     ClientWidth = 468
     TabOrder = 3
     Visible = False
-    object GBExperiment: TGroupBox
-      Left = 16
-      Height = 197
-      Top = 60
-      Width = 228
-      AutoSize = True
-      Caption = 'Experimento'
-      ChildSizing.LeftRightSpacing = 10
-      ChildSizing.TopBottomSpacing = 20
-      ChildSizing.HorizontalSpacing = 20
-      ChildSizing.VerticalSpacing = 10
-      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 2
-      ClientHeight = 180
-      ClientWidth = 224
-      TabOrder = 0
-      object LabelExpCond: TLabel
-        Left = 10
-        Height = 15
-        Top = 20
-        Width = 168
-        Caption = 'Condição:'
-        ParentColor = False
-      end
-      object LabelExpCountCondition: TLabel
-        Left = 198
-        Height = 15
-        Top = 20
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-      object LabelExpGen: TLabel
-        Left = 10
-        Height = 15
-        Top = 45
-        Width = 168
-        Caption = 'Geração:'
-        ParentColor = False
-      end
-      object LabelExpCountGeneration: TLabel
-        Left = 198
-        Height = 15
-        Top = 45
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-      object LabelExpCycle: TLabel
-        Left = 10
-        Height = 15
-        Top = 70
-        Width = 168
-        Caption = 'Ciclo:'
-        ParentColor = False
-      end
-      object LabelExpCountCycle: TLabel
-        Left = 198
-        Height = 15
-        Top = 70
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-      object LabelExpTurn: TLabel
-        Left = 10
-        Height = 15
-        Top = 95
-        Width = 168
-        Caption = 'Turno:'
-        ParentColor = False
-      end
-      object LabelExpCountTurn: TLabel
-        Left = 198
-        Height = 15
-        Top = 95
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-      object LabelExpInterlocks: TLabel
-        Left = 10
-        Height = 15
-        Top = 120
-        Width = 168
-        Caption = 'Entrelaçamentos:'
-        ParentColor = False
-      end
-      object LabelExpCountInterlocks: TLabel
-        Left = 198
-        Height = 15
-        Top = 120
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-      object LabelExpTInterlocks: TLabel
-        Left = 10
-        Height = 15
-        Top = 145
-        Width = 168
-        Caption = 'Entrelaçamentos Alvo:'
-        ParentColor = False
-      end
-      object LabelExpCountTInterlocks: TLabel
-        Left = 198
-        Height = 15
-        Top = 145
-        Width = 16
-        Caption = 'NA'
-        ParentColor = False
-      end
-    end
     object ButtonExpStart: TButton
       Left = 16
       Height = 25
@@ -4124,7 +4011,7 @@ object FormMatrixGame: TFormMatrixGame
       Width = 128
       Caption = 'Começar'
       OnClick = ButtonExpStartClick
-      TabOrder = 1
+      TabOrder = 0
     end
     object ButtonExpPause: TButton
       Left = 168
@@ -4134,7 +4021,7 @@ object FormMatrixGame: TFormMatrixGame
       Caption = 'Pausar'
       Enabled = False
       OnClick = ButtonExpPauseClick
-      TabOrder = 2
+      TabOrder = 1
     end
     object ButtonExpCancel: TButton
       Left = 320
@@ -4144,7 +4031,7 @@ object FormMatrixGame: TFormMatrixGame
       Caption = 'Cancelar'
       Enabled = False
       OnClick = ButtonExpCancelClick
-      TabOrder = 3
+      TabOrder = 2
     end
   end
   object btnConfirmRow: TButton
@@ -4175,7 +4062,7 @@ object FormMatrixGame: TFormMatrixGame
     object ChatMemoRecv: TMemo
       AnchorSideBottom.Control = ChatSplitter
       Left = 6
-      Height = 174
+      Height = 173
       Top = 6
       Width = 385
       Align = alTop
