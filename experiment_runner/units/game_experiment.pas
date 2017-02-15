@@ -404,18 +404,21 @@ begin
       end;
 
   LContingencyResults := FReportReader.ColumnOf[LContingencyName];
-  i := 0;
-  for LRow in LContingencyResults do
-    if LRow = '1' then Inc(i);
-  Result := (i*100)/LContingencyResults.Count;
+  if LContingencyResults.Count > 0 then
+    begin
+      i := 0;
+      for LRow in LContingencyResults do
+        if LRow = '1' then Inc(i);
+      Result := (i*100)/LContingencyResults.Count;
 
-  if LContingencyResults.Count = Condition[c].EndCriterium.LastCycles then
-    Exit;
+      if LContingencyResults.Count = Condition[c].EndCriterium.LastCycles then
+        Exit;
 
-  if LContingencyResults.Count > Condition[c].EndCriterium.LastCycles then
-    Result := 0
-  else
-    Result *= -1;
+      if LContingencyResults.Count > Condition[c].EndCriterium.LastCycles then
+        Result := 0
+      else
+        Result *= -1;
+    end;
 end;
 
 function TExperiment.GetConsequenceStringFromChoice(P: TPlayer): Utf8string;
