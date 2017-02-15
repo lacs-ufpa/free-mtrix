@@ -39,3 +39,4 @@ experiment_runner/lib/x86_64-linux/*.lfm
 experiment_runner/lib/i386-win32/*.lfm
 *.data
 *.chat
+experiment_runner/ZMQVERSION
