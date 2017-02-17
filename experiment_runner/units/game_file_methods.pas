@@ -453,6 +453,7 @@ begin
 
                 with Contingencies[j] do
                   begin
+                    WriteString(LC,LCK+KEY_CONT_NAME, ContingencyName);
                     WriteString(LC,LCK+KEY_CONSEQUE,Consequence.CsqString);
                     WriteString(LC,LCK+KEY_CONSEQUE_MESSAGE_PREPEND,Consequence.Prepend);
                     WriteString(LC,LCK+KEY_CONSEQUE_MESSAGE_PREPEND_LOSS,Consequence.PrependLoss);
