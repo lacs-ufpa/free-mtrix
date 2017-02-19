@@ -96,7 +96,7 @@ const
 
 begin
   ApplicationPath := ExtractFilePath(Application.ExeName);
-  PrintZmqVersion(ApplicationPath);
+  PrintVersions(ApplicationPath);
   {$IFDEF DEBUG}
   if not CreateDebugFoldersForPlayers then Exit;
   {$ENDIF}
