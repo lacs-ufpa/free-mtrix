@@ -14,10 +14,24 @@ unit helpers;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils
+  , fileinfo         // reads exe resources as long as you register the appropriate units
+  {$IFDEF WINDOWS}
+  , winpeimagereader // need this for reading exe info
+  {$ENDIF}
+
+  {$IFDEF LINUX}
+  , elfreader        // needed for reading ELF executables
+  {$ENDIF}
+
+  {$IFDEF DARWIN}
+  , machoreader      // needed for reading MACH-O executables}
+  {$ENDIF}
+
+  ;
 
 function RandomString(ALength : Integer): Utf8String;
-procedure PrintZmqVersion(AAplicationPath:string);
+procedure PrintVersions(AAplicationPath:string);
 
 
 implementation
@@ -35,21 +49,44 @@ begin
     Result := Result + Chars[Random(Length(Chars)) + 1];
 end;
 
-procedure PrintZmqVersion(AAplicationPath : string);
+procedure PrintVersions(AAplicationPath : string);
 var
   LPatch, LMinor, LMajor: Integer;
   S : TStringList;
+  LVERSION : string;
+
+  function FreeMtrixVersion : string;
+  var
+    FileVerInfo: TFileVersionInfo;
+  begin
+    FileVerInfo:=TFileVersionInfo.Create(nil);
+    try
+      FileVerInfo.FileName:=ParamStr(0);
+      FileVerInfo.ReadFileInfo;
+      Result := FileVerInfo.VersionStrings.Values['ProductName']+ #32;
+      Result += FileVerInfo.VersionStrings.Values['FileVersion']+ ' - ';
+      Result += FileVerInfo.VersionStrings.Values['FileDescription']+LineEnding;
+      Result += FileVerInfo.VersionStrings.Values['LegalCopyright']+LineEnding;
+      //Result += FileVerInfo.VersionStrings.Values['CompanyName']+LineEnding;
+      //Result += 'Internal name      :'+FileVerInfo.VersionStrings.Values['InternalName']+LineEnding;
+      //Result += 'Original filename  :'+FileVerInfo.VersionStrings.Values['OriginalFilename']+LineEnding;
+      //Result += FileVerInfo.VersionStrings.Values['ProductVersion']+LineEnding;
+    finally
+      FileVerInfo.Free;
+    end;
+  end;
 begin
   LMajor := 0; LMinor := 0; LPatch := 0;
   zmq_version(LMajor,LMinor,LPatch);
+  LVERSION := FreeMtrixVersion + 'ZMQ v'+IntToStr(LMajor)+'.'+IntToStr(LMinor)+'.'+IntToStr(LPatch);
   try
-    WriteLn('ZMQVERSION:',LMajor,'.',LMinor,'.',LPatch);
+    WriteLn(LVERSION);
   except
     on E : Exception do
       begin
          S := TStringList.Create;
-         S.Append(IntToStr(LMajor)+IntToStr(LMinor)+IntToStr(LPatch));
-         S.SaveToFile(AAplicationPath+PathDelim+'ZMQVERSION');
+         S.Append(LVERSION);
+         S.SaveToFile(AAplicationPath+PathDelim+'version_info.txt');
          S.Free;
       end;
   end;
