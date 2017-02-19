@@ -430,6 +430,7 @@ begin
           end;
         1:
           begin
+            CreateChkBox('ChkNot', 'TUDO EXCETO', GBContingencyRows);
             CreateChkBox('ChkEven', 'PARES', GBContingencyRows);
             CreateChkBox('ChkOdd', 'IMPARES', GBContingencyRows);
 
@@ -823,6 +824,7 @@ var
         'Chk10': TCheckBox(GBContingencyRows.Components[i]).Checked := grTen in GR;
         'ChkEven': TCheckBox(GBContingencyRows.Components[i]).Checked := grEven in GR;
         'ChkOdd': TCheckBox(GBContingencyRows.Components[i]).Checked := grOdd in GR;
+        'ChkNot': TCheckBox(GBContingencyRows.Components[i]).Checked := grNot in GR;
       end;
   end;
 
@@ -1285,6 +1287,7 @@ var
         'Chk10': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grTen];
         'ChkEven': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grEven];
         'ChkOdd': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grOdd];
+        'ChkNot': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [grNot];
       end;
   end;
 
@@ -1988,17 +1991,31 @@ begin
       LabelCsq3.Caption := 'Texto no início da mensagem';
       if not FLoading then
         begin
-          case RGContingencyType.ItemIndex of
-            0:EditMessPrefix.Text := '$NICNAME';
-            1:EditMessPrefix.Text := 'Vocês';
+          case RGContingencyStyle.ItemIndex of
+            0:
+              begin
+                EditMessPrefix.Text := '$NICNAME';
+                EditMessPrefixLoss.Text := 'perdeu';
+                EditMessSufixLossSingular.Text := 'ficha.';
+                EditMessSufixLossPlural.Text := 'fichas.';
+                EditMessPrefixEarn.Text := 'ganhou';
+                EditMessSufixEarnSingular.Text := 'ficha.';
+                EditMessSufixEarnPlural.Text := 'fichas.';
+                EditMessSufixZero.Text := 'não perdeu nem ganhou fichas.';
+              end;
+            1:
+              begin
+                EditMessPrefix.Text := 'Vocês';
+                EditMessPrefixLoss.Text := 'retiraram';
+                EditMessSufixLossSingular.Text := 'item escolar de uma escola pública.';
+                EditMessSufixLossPlural.Text := 'itens escolares de uma escola pública.';
+                EditMessPrefixEarn.Text := 'doaram';
+                EditMessSufixEarnSingular.Text := 'item escolar a uma escola pública.';
+                EditMessSufixEarnPlural.Text := 'itens escolares a uma escola pública.';
+                EditMessSufixZero.Text := 'não doaram nem retiram itens escolares.';
+              end;
+
           end;
-          EditMessPrefixLoss.Text := 'retiraram';
-          EditMessSufixLossSingular.Text := 'item escolar de uma escola pública.';
-          EditMessSufixLossPlural.Text := 'itens escolares de uma escola pública.';
-          EditMessPrefixEarn.Text := 'doaram';
-          EditMessSufixEarnSingular.Text := 'item escolar a uma escola pública.';
-          EditMessSufixEarnPlural.Text := 'itens escolares a uma escola pública.';
-          EditMessSufixZero.Text := 'não doaram nem retiram itens escolares.';
           ButtonPreviewMessage.Caption:= 'Ver como a mensagem poderá ser apresentada';
         end;
     end;
