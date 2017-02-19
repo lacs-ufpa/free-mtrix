@@ -42,6 +42,7 @@ type
     function MessageHas(const A_CONST : UTF8string; AMessage : TStringList; I:ShortInt=0): Boolean;
     procedure CreatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
     procedure DeletePlayerBox(AID : string);
+    procedure MovePlayerBox(AID : string);
     procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType;
       var ARowBase:integer; var ADrawDots, ADrawClear : Boolean);
     procedure ReceiveMessage(AMessage : TStringList);
@@ -84,8 +85,9 @@ type
     procedure StartTurn(Sender: TObject);
     procedure TargetInterlocking(Sender: TObject);
   public
-    constructor Create(AOwner : TComponent;AppPath:string);overload;
+    constructor Create(AOwner : TComponent;AppPath:string = '');overload;
     destructor Destroy; override;
+    function LoadFromFile(AFilename : string):Boolean;
     procedure SetMatrix;
     procedure SetLabels;
     procedure SendRequest(ARequest : UTF8string);
@@ -120,6 +122,7 @@ const
   K_CHAT_M   = '.ChatM';
   K_CHOICE   = '.Choice';
   K_MESSAGE  = '.Message';
+  K_GMESSAGE = '.GMessage';
   K_START    = '.Start';
   K_RESUME   = '.Resume';
   K_LOGIN    = '.Login';
@@ -141,8 +144,8 @@ implementation
 
 uses ButtonPanel,Controls,ExtCtrls,StdCtrls,LazUTF8, Forms, Dialogs, strutils
      , form_matrixgame
-     , presentation_classes
      , form_chooseactor
+     , presentation_classes
      , game_resources
      , game_actors_helpers
      , string_methods
@@ -370,6 +373,19 @@ begin
         end;
 end;
 
+procedure TGameControl.MovePlayerBox(AID: string);
+var i : integer;
+begin
+  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount -1 do
+    if FormMatrixGame.GBLastChoice.Components[i] is TPlayerBox then
+      if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
+        begin
+          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).Parent := FormMatrixGame.GBOldPlayers;
+          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).InvisibleLineRow;
+          Break;
+        end;
+end;
+
 procedure TGameControl.SetMatrixType(AStringGrid: TStringGrid;
   AMatrixType: TGameMatrixType; var ARowBase: integer; var ADrawDots,
   ADrawClear: Boolean);
@@ -501,13 +517,32 @@ begin
 end;
 
 procedure TGameControl.ShowPopUp(AText: string; AInterval: integer);
-var PopUpPos : TPoint;
+var
+
+  PopUpPos : TPoint;
+
+  // temporary hack
+  L : TLabel;
+  r: TRect;
+  w:integer;
 begin
+  FormMatrixGame.PopupNotifier.vNotifierForm.AutoSize:=True;
+  L := TLabel(FormMatrixGame.PopupNotifier.vNotifierForm.FindComponent('UglyHack'));
+  L.Caption := AText;
+  FormMatrixGame.PopupNotifier.Show;
+  w := L.Width;
+  FormMatrixGame.PopupNotifier.Hide;
+  FormMatrixGame.PopupNotifier.vNotifierForm.AutoSize:=False;
+  r:=FormMatrixGame.PopupNotifier.vNotifierForm.CalcHintRect(w, AText, nil);
+  FormMatrixGame.PopupNotifier.vNotifierForm.HintRect:=r;
+  FormMatrixGame.PopupNotifier.vNotifierForm.Width:=r.Right-r.Left + 52;
+  FormMatrixGame.PopupNotifier.vNotifierForm.Height:=r.Bottom-r.Top + 52;
+
   PopUpPos.X := (FormMatrixGame.StringGridMatrix.Width div 2) - (FormMatrixGame.PopupNotifier.vNotifierForm.Width div 2);
   PopUpPos.Y := (FormMatrixGame.StringGridMatrix.Height div 2) - (FormMatrixGame.PopupNotifier.vNotifierForm.Height div 2);
   PopUpPos := FormMatrixGame.ClientToScreen(PopUpPos);
-  FormMatrixGame.PopupNotifier.Title:='';
-  FormMatrixGame.PopupNotifier.Text:=AText;
+
+  //FormMatrixGame.PopupNotifier.Text:=AText;
   FormMatrixGame.PopupNotifier.ShowAtPos(PopUpPos.X,PopUpPos.Y);
   FormMatrixGame.Timer.OnTimer:=@FormMatrixGame.TimerTimer;
   FormMatrixGame.Timer.Interval:=AInterval;
@@ -522,8 +557,6 @@ begin
   Result := '';
   LConsequence := TConsequence.Create(nil,S);
   Result := LConsequence.GenerateMessage(ForGroup);
-  if ShowPopUp then
-    LConsequence.PresentMessage(FormMatrixGame.GBPoints);
   case FActor of
     gaPlayer:
       if ForGroup then
@@ -536,14 +569,16 @@ begin
 
     gaAdmin:
       begin
-        {$IFDEF DEBUG}
-        WriteLn(S);
-        {$ENDIF}
         // player box is ignored for group points
         // LabelGroupCount is ignored for player points
         LConsequence.PresentPoints(GetPlayerBox(AID), FormMatrixGame.LabelGroupCount);
       end;
   end;
+
+  if ShowPopUp then
+    LConsequence.PresentMessage(FormMatrixGame.GBPoints)
+  else
+    LConsequence.Free;
 end;
 
 procedure TGameControl.DisableConfirmationButton;
@@ -675,6 +710,19 @@ end;
 destructor TGameControl.Destroy;
 begin
   inherited Destroy;
+end;
+
+function TGameControl.LoadFromFile(AFilename: string): Boolean;
+begin
+  Result := FExperiment.LoadFromFile(AFilename);
+  if not Result then Exit;
+
+  SetMatrix;
+  SetLabels;
+  if Experiment.ShowChat then
+    FormMatrixGame.ChatPanel.Visible := Experiment.ResearcherCanChat
+  else
+    FormMatrixGame.ChatPanel.Visible := Experiment.ShowChat;
 end;
 
 procedure TGameControl.SetMatrix;
@@ -1005,7 +1053,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             begin
               if AMessage[1] <> #32 then
                 begin
-                  DeletePlayerBox(AMessage[1]); // old player
+                  MovePlayerBox(AMessage[1]); // old player
                   ShowPopUp(
                           'O participante '+
                           FExperiment.PlayerFromID[AMessage[1]].Nicname+
@@ -1035,12 +1083,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             LQConsequence := '';
             for i := 3 to AMessage.Count -1 do
               begin
-                MID := ExtractDelimited(1,AMessage[i],['+']);
-                LQConsequence += ShowConsequence(MID, ExtractDelimited(2,AMessage[i],['+']),MID = 'M',False)+' ';
-
-                {$IFDEF DEBUG}
-                WriteLn('A Prompt consequence should have shown.');
-                {$ENDIF}
+                MID := ExtractDelimited(1,AMessage[i],['#']);
+                LQConsequence += ShowConsequence(MID, ExtractDelimited(2,AMessage[i],['#']),MID = 'M',False)+' ';
               end;
 
             if LQConsequence <> '' then
@@ -1053,11 +1097,38 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     else EndExperimentMessage;
   end;
 
+  procedure ShowGroupedMessage(AMessage:string);
+  var
+    LCount,
+    LTime,
+    i : integer;
+    MID : string;
+    LConsequence : string;
+    LGConsequence : string;
+  begin
+    // present only one popup with all messages
+    LConsequence := '';
+    LGConsequence := '';
+    LCount := WordCount(AMessage,['+']);
+    LTime := 5000*LCount;
+    if LCount > 0 then
+      for i := 1 to LCount do
+        begin
+          LConsequence := ExtractDelimited(i,AMessage,['+']);
+          MID := ExtractDelimited(1,LConsequence,['#']);
+          LGConsequence += ShowConsequence(MID, ExtractDelimited(2,LConsequence,['#']),MID = 'M',False)+LineEnding;
+        end;
+
+    if LGConsequence <> '' then
+       ShowPopUp(LGConsequence,LTime);
+  end;
+
 begin
   if MHas(K_ARRIVED) then ReceiveActor;
   if MHas(K_CHAT_M)  then ReceiveChat;
   if MHas(K_CHOICE)  then ReceiveChoice;
   if MHas(K_MESSAGE) then ShowConsequence(AMessage[1],AMessage[2],StrToBool(AMessage[3]));
+  if MHas(K_GMESSAGE) then ShowGroupedMessage(AMessage[1]);
   if MHas(K_START) then NotifyPlayers;
   if MHas(K_QUESTION) then ShowQuestion;
   if MHas(K_MOVQUEUE) then MovePlayerQueue;
@@ -1177,14 +1248,9 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
   procedure ValidateChoice;
   var
-    LConsequences : string;
     P : TPlayer;
     S : string;
-    LEndCondition,
-    LEndCycle : Boolean;
-    LEndGeneration: string;
   begin
-    LConsequences := '';
     P := FExperiment.PlayerFromID[ARequest[0]];                    // 0 = ID, 1 = #32
     P.Choice.Row:= GetRowFromString(ARequest[3]);                  // 3 row
     P.Choice.Color:= GetGameColorFromString(ARequest[4]);          // 4 color
@@ -1192,8 +1258,6 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
     // generate individual consequences
     S := FExperiment.ConsequenceStringFromChoice[P];
-    if Pos('$NICNAME',S) > 0 then
-      S := ReplaceStr(S,'$NICNAME',P.Nicname);
 
     // update turn
     P := FExperiment.NextTurn[P];
@@ -1203,6 +1267,8 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
     // individual consequences
     ARequest.Append(S);                                            // 6
+
+    // if all participants played
     if FExperiment.IsEndCycle then
       begin
         // group consequences from choices of all players
@@ -1244,15 +1310,14 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
         if LPromptConsequences.Count > 0 then
           begin
             for i := 0 to LPromptConsequences.Count-1 do
-              if Pos('$NICNAME',LPromptConsequences[i]) > 0 then
-                begin
-                  P := FExperiment.PlayerFromID[ExtractDelimited(1,LPromptConsequences[i],['+'])];
-                  LPromptConsequences[i] := ReplaceStr(LPromptConsequences[i],'$NICNAME', P.Nicname);
-                end;
+              begin
+                P := FExperiment.PlayerFromID[ExtractDelimited(1,LPromptConsequences[i],['+'])];
+                LPromptConsequences[i] := DeduceNicname(LPromptConsequences[i],P);
+              end;
+
             for i := 0 to LPromptConsequences.Count -1 do
               M[i+3] := LPromptConsequences[i]; // messages envelop
-          end
-        else;
+          end;
 
         // send identified messages; each player takes only its own message and ignore the rest
         FZMQActor.SendMessage(M);
@@ -1358,15 +1423,9 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
     LCount,
     i : integer;
     LAnnouncer : TIntervalarAnnouncer;
-    //P : TPlayer;
   begin
     if Self.ID = AReply[0] then
       begin
-        //P := FExperiment.PlayerFromID[Self.ID];
-        {$IFDEF DEBUG}
-        WriteLn('LCount:',LCount);
-        {$ENDIF}
-
         // inform other players about self.id choice
         FZMQActor.SendMessage([K_CHOICE,AReply[0],AReply[3],AReply[4],AReply[5]]);
 
@@ -1374,39 +1433,27 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         LAnnouncer := TIntervalarAnnouncer.Create(nil);
         LAnnouncer.OnStart := @FZMQActor.SendMessage;
         LAnnouncer.Interval := 5000;
-        LCount := WordCount(AReply[6],['+']);
 
         // individual consequences
+        LCount := WordCount(AReply[6],['+']);
         if LCount > 0 then
           for i := 1 to LCount do
             begin
               LConsequence := TConsequence.Create(nil,ExtractDelimited(i,AReply[6],['+']));
-              LConsequence.GenerateMessage(False);
               LAnnouncer.Append([K_MESSAGE,
                                  Self.ID,
                                  ExtractDelimited(i,AReply[6],['+']),
                                  BoolToStr(False),
                                  BoolToStr(LConsequence.ShouldPublishMessage)]);
-              {$IFDEF DEBUG}
-              WriteLn('An individual consequence should have shown.');
-              {$ENDIF}
             end;
+        LConsequence.Free;
 
-        // group consequence
         if AReply.Count > 7 then
           begin
+            // meta/ group consequence
             LCount := WordCount(AReply[7],['+']);
             if LCount > 0 then
-              for i := 1 to LCount do
-                begin
-                  LConsequence := TConsequence.Create(nil,ExtractDelimited(i,AReply[7],['+']));
-                  LConsequence.GenerateMessage(True);
-                  //FZMQActor.SendMessage([K_MESSAGE,'',ExtractDelimited(i,AReply[7],['+']),BoolToStr(True)]);
-                  LAnnouncer.Append([K_MESSAGE,'',ExtractDelimited(i,AReply[7],['+']),BoolToStr(True)]);
-                  {$IFDEF DEBUG}
-                  WriteLn('A meta/group consequence should have shown.');
-                  {$ENDIF}
-                end;
+              LAnnouncer.Append([K_GMESSAGE,AReply[7]]);
 
             // should ask question or just resume (going to the next turn)?
             if AReply[8] <> #32 then

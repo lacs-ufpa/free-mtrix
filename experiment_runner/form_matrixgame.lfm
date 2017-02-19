@@ -1,14 +1,14 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 0
-  Height = 670
-  Top = 31
-  Width = 1278
-  HorzScrollBar.Page = 1278
+  Left = 26
+  Height = 682
+  Top = 38
+  Width = 1234
+  HorzScrollBar.Page = 1234
   VertScrollBar.Page = 542
   AutoScroll = True
   Caption = 'Matrix'
-  ClientHeight = 660
-  ClientWidth = 1278
+  ClientHeight = 672
+  ClientWidth = 1234
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   OnCreate = FormCreate
@@ -3980,8 +3980,8 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 0
     Height = 17
-    Top = 643
-    Width = 1680
+    Top = 655
+    Width = 1636
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
     Caption = 'Escolhas na última jogada'
@@ -3994,29 +3994,29 @@ object FormMatrixGame: TFormMatrixGame
   end
   object GBAdmin: TGroupBox
     AnchorSideLeft.Side = asrBottom
-    Left = 1208
-    Height = 486
-    Top = 0
-    Width = 472
+    Left = 1200
+    Height = 518
+    Top = 8
+    Width = 436
     BorderSpacing.Left = 10
     Caption = 'Pesquisador'
-    ClientHeight = 469
-    ClientWidth = 468
+    ClientHeight = 501
+    ClientWidth = 432
     TabOrder = 3
     Visible = False
     object ButtonExpStart: TButton
-      Left = 16
+      Left = 0
       Height = 25
-      Top = 16
+      Top = 0
       Width = 128
       Caption = 'Começar'
       OnClick = ButtonExpStartClick
       TabOrder = 0
     end
     object ButtonExpPause: TButton
-      Left = 168
+      Left = 152
       Height = 25
-      Top = 16
+      Top = 0
       Width = 128
       Caption = 'Pausar'
       Enabled = False
@@ -4024,14 +4024,29 @@ object FormMatrixGame: TFormMatrixGame
       TabOrder = 1
     end
     object ButtonExpCancel: TButton
-      Left = 320
+      Left = 304
       Height = 25
-      Top = 16
+      Top = 0
       Width = 128
       Caption = 'Cancelar'
       Enabled = False
       OnClick = ButtonExpCancelClick
       TabOrder = 2
+    end
+    object GBOldPlayers: TGroupBox
+      Left = 0
+      Height = 17
+      Top = 484
+      Width = 432
+      Align = alBottom
+      AutoSize = True
+      Caption = 'Jogadores Antigos'
+      ChildSizing.LeftRightSpacing = 10
+      ChildSizing.TopBottomSpacing = 5
+      ChildSizing.HorizontalSpacing = 10
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 6
+      TabOrder = 3
     end
   end
   object btnConfirmRow: TButton

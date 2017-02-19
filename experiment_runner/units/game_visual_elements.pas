@@ -31,6 +31,7 @@ type
     FID: string;
   public
     constructor Create(AOwner: TComponent;AID:string;Admin:Boolean=False); reintroduce;
+    procedure InvisibleLineRow;
     property ID : string read FID write FID;
   end;
 
@@ -89,6 +90,14 @@ begin
       LabelPointsCount.Parent := Self;
     end;
   //LabelLastRow.AutoSize := False;
+end;
+
+procedure TPlayerBox.InvisibleLineRow;
+begin
+  LabelLastColor.Visible:=False;
+  PanelLastColor.Visible:=False;
+  LabelLastRow.Visible:=False;
+  LabelLastRowCount.Visible:=False;
 end;
 
 end.

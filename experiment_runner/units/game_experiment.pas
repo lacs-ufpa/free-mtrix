@@ -221,7 +221,7 @@ resourcestring
 
 implementation
 
-uses game_file_methods, game_resources, string_methods;
+uses game_actors_helpers, game_file_methods, game_resources, string_methods;
 
 { TExperiment }
 
@@ -432,20 +432,39 @@ begin
   for i :=0 to ContingenciesCount[c] -1 do
     if not Contingency[c,i].Meta then
       if Contingency[c,i].ResponseMeetsCriteriaI(P.Choice.Row,P.Choice.Color) then
-        Result += Contingency[c,i].Consequence.AsString(P.ID);
+        Result += DeduceNicname(Contingency[c,i].Consequence.AsString(P.ID), P)+'+';
 end;
 
 function TExperiment.GetConsequenceStringFromChoices: UTF8String;
 var
   i : integer;
+  j : integer;
   c : integer;
+  LMessages : TStringList;
+  P : TPlayer;
 begin
   c := CurrentConditionI;
   Result:= '';
   for i :=0 to ContingenciesCount[c] -1 do
     if Contingency[c,i].Meta then
       if Contingency[c,i].ResponseMeetsCriteriaG(FPlayers) then
-        Result += Contingency[c,i].Consequence.AsString(IntToStr(i));
+        begin
+
+          WriteLn(GetPromptStyleString(Contingency[c,i].Style));
+        if Contingency[c,i].Style = [] then
+          Result += 'M#'+Contingency[c,i].Consequence.AsString('M')+'+'
+        else
+          begin
+            Contingency[c,i].Consequence.AsString('M');
+            LMessages := GetMessagesFromPromptStyle(Contingency[c,i].Style,CurrentCondition.Contingencies);
+            for j := 0 to LMessages.Count -1 do
+              begin
+                P := PlayerFromID[FirstDelimitedString(LMessages[j])];
+                Result += DeduceNicname(LMessages[j],P)+'+';
+              end;
+          end;
+
+        end;
 end;
 
 procedure TExperiment.CheckNeedForRandomTurns;

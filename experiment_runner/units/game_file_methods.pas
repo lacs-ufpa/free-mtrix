@@ -224,6 +224,7 @@ var
         LCriteria := GetCriteriaFromString(ReadString(LS, LCK+KEY_CRITERIA, ''));
         Result := TContingency.Create(AExperiment,LConsequence,LCriteria,Pos(KEY_METACONTINGENCY,LCK)>0);
         Result.ContingencyName := ReadString(LS, LCK+KEY_CONT_NAME, LCK);
+        Result.Style:= GetPromptStyleFromString(ReadString(LS,LCK+KEY_STYLE,''));
       end;
   end;
 
@@ -464,6 +465,7 @@ begin
                     WriteString(LC,LCK+KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,Consequence.AppendiceEarnPlural);
                     WriteString(LC,LCK+KEY_CONSEQUE_MESSAGE_APPEND_ZERO, Consequence.AppendiceZero);
                     WriteString(LC,LCK+KEY_CRITERIA,CriteriaString);
+                    WriteString(LC,LCK+KEY_STYLE, GetPromptStyleString(Style));
                   end;
               end;
           end;

@@ -143,31 +143,28 @@ function TGamePoint.PointMessage(APrepend,
   end;
 
 begin
-  if (APrependLoss = '') and (AAppendiceLossSingular = '') and (AAppendiceLossPlural = '') and
-     (APrependEarn = '') and (AAppendiceEarnSingular = '') and (AAppendiceEarnPlural = '') and
-     (AAppendiceZero = '') and (APrepend <> '') then
+  if (APrepend <> '') then
     begin
-      Result := APrepend;
-      Exit;
-    end;
-
-    if (APrependLoss <> '') and (AAppendiceLossSingular <> '') and (AAppendiceLossPlural <> '') and
-     (APrependEarn <> '') and (AAppendiceEarnSingular <> '') and (AAppendiceEarnPlural <> '') and
-     (AAppendiceZero <> '') and (APrepend <> '') then
-    begin
+      if (APrependLoss = '') and (AAppendiceLossSingular = '') and (AAppendiceLossPlural = '') and
+         (APrependEarn = '') and (AAppendiceEarnSingular = '') and (AAppendiceEarnPlural = '') and
+         (AAppendiceZero = '') then
+        begin
+          Result := APrepend;
+          Exit;
+        end;
       ReadCustomMessage;
       Exit;
     end;
 
-    if (APrependLoss = '') and (AAppendiceLossSingular = '') and (AAppendiceLossPlural = '') and
-       (APrependEarn = '') and (AAppendiceEarnSingular = '') and (AAppendiceEarnPlural = '') and
-       (AAppendiceZero = '') and (APrepend = '') then
-      begin
-        if IsGroupPoint then
-          ReadBuiltInGroupMessage
-        else
-          ReadBuiltInIndividualMessage;
-      end;
+  if (APrependLoss = '') and (AAppendiceLossSingular = '') and (AAppendiceLossPlural = '') and
+     (APrependEarn = '') and (AAppendiceEarnSingular = '') and (AAppendiceEarnPlural = '') and
+     (AAppendiceZero = '') and (APrepend = '') then
+    begin
+      if IsGroupPoint then
+        ReadBuiltInGroupMessage
+      else
+        ReadBuiltInIndividualMessage;
+    end;
 end;
 
 

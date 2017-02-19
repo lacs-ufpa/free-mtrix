@@ -33,6 +33,7 @@ type
     ButtonExpPause: TButton;
     ButtonExpStart: TButton;
     GBLastChoice: TGroupBox;
+    GBOldPlayers: TGroupBox;
     GBPoints: TGroupBox;
     GBAdmin: TGroupBox;
     ImageIndA: TImage;
@@ -73,9 +74,11 @@ type
     FID: string;
     FInitParameter: string;
   public
+    procedure LoadFromFile(FFilename : string);
     procedure SetID(S, P : string);
     procedure SetGameActor(AValue: TGameActor);
     procedure SetFullscreen;
+    property Game : TGameControl read FGameControl;
     property ID : string read FID;
   end;
 
@@ -215,6 +218,17 @@ begin
   PopupNotifier.Visible:=False;
 end;
 
+procedure TFormMatrixGame.LoadFromFile(FFilename: string);
+begin
+  if not FGameControl.LoadFromFile(FFilename) then
+    Exit;
+
+  ButtonExpStart.Enabled := False;
+  ButtonExpStart.Caption := CAPTION_RUNNING;
+  ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
+  ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
+end;
+
 procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
 
   procedure SetZMQAdmin;
@@ -225,7 +239,7 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
 
   procedure SetZMQPlayer;
   begin
-    FGameControl := TGameControl.Create(TZMQPlayer.Create(Self,FID),ExtractFilePath(Application.ExeName));
+    FGameControl := TGameControl.Create(TZMQPlayer.Create(Self,FID));
     //StringGridMatrix.Enabled := True;
   end;
 
@@ -271,7 +285,6 @@ end;
 
 procedure TFormMatrixGame.FormActivate(Sender: TObject);
 begin
-  PopupNotifier.Icon.Assign(Application.Icon);
   StringGridMatrix.ClearSelections;
   StringGridMatrix.FocusRectVisible := False;
 
@@ -300,9 +313,27 @@ begin
 end;
 
 procedure TFormMatrixGame.FormCreate(Sender: TObject);
+var
+  L : TLabel;
 begin
   FExperimentBox := TExperimentBox.Create(GBAdmin);
   FExperimentBox.Parent := GBAdmin;
+  PopupNotifier.Icon.Assign(Application.Icon);
+  PopupNotifier.Title:='';
+  PopupNotifier.Text:='';
+  L := TLabel.Create(FormMatrixGame.PopupNotifier.vNotifierForm);
+  L.Name:='UglyHack';
+  L.Align:=alClient;
+  L.Anchors := [akLeft,akRight];
+  L.Alignment := taCenter;
+  L.AutoSize:=True;
+  L.Layout := tlCenter;
+  L.WordWrap := False;
+  L.BorderSpacing.Top:=26;
+  L.BorderSpacing.Left:=26;
+  L.BorderSpacing.Right:=26;
+  L.BorderSpacing.Bottom:=26;
+  L.Parent := FormMatrixGame.PopupNotifier.vNotifierForm;
 end;
 
 
@@ -364,21 +395,7 @@ begin
   OpenDialog.InitialDir:=ExtractFilePath(Application.ExeName)+VAL_RESEARCHERS;
   if ButtonExpStart.Caption = CAPTION_START then
     if OpenDialog.Execute then
-      begin
-        if not FGameControl.Experiment.LoadFromFile(OpenDialog.FileName) then
-          Exit;
-        FGameControl.SetMatrix;
-        FGameControl.SetLabels;
-
-        ButtonExpStart.Enabled := False;
-        ButtonExpStart.Caption := CAPTION_RUNNING;
-        ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
-        ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-        if FGameControl.Experiment.ShowChat then
-          ChatPanel.Visible := FGameControl.Experiment.ResearcherCanChat
-        else
-          ChatPanel.Visible := FGameControl.Experiment.ShowChat;
-      end;
+      LoadFromFile(OpenDialog.FileName);
 
   if ButtonExpStart.Caption = CAPTION_RESUME then
       begin

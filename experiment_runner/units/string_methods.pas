@@ -153,6 +153,7 @@ begin
     grTen : Result := '10';
     grEven : Result := 'PAR';
     grOdd : Result := 'IMPAR';
+    grNot : Result := 'EXCETO';
   end;
 end;
 
@@ -172,6 +173,7 @@ begin
     '10', 'DEZ', 'TEN'    : Result := grTen;
     'PAR', 'EVEN'         : Result := grEven;
     'IMPAR', 'ODD'        : Result := grOdd;
+    'EXCETO'              : Result := grNot;
   end;
 end;
 
@@ -210,14 +212,15 @@ end;
 function GetGamePromptStyleFromString(S: string): TGamePromptStyle;
 begin
   case UpperCase(S) of
-    //'NENHUM','NONE': Result:=[gsNone];
     'TODOS', 'ALL' : Result := gsAll;
     'SIM', 'YES','S','Y': Result := gsYes;
     'NÃO','NAO','N' : Result := gsNo;
     'CONTINGÊNCIA','CONTINGENCIA','CONTINGENCY','OPERANTE', 'OPERANT': Result := gsContingency;
     'METACONTINGÊNCIA','METACONTINGENCIA','METACONTINGENCY','META': Result := gsMetacontingency;
-    'REVERTER','RECUPERA','RECUPERAR','RECUPERAR PONTOS','RECOVER','RESETAR', 'RESET': Result := gsRevertPoints;
+    'REVERTER': Result := gsRevertPoints;
     'TIRAR DE A AO INVES DE B','TIRAR DE A AO INVÉS DE B', 'B as A','B->A' : Result := gsBasA;
+    'REVERTER META' : Result := gsRevertMetaPoints;
+    'REVERTER INDI' : Result := gsRevertIndiPoints;
   end;
 end;
 
@@ -227,7 +230,6 @@ begin
   Result:='';
   for Style in AStyle do
     case Style of
-      //gsNone: Result:= Result+'nenhum'+VV_SEP;
       gsAll: Result += 'TODOS'+VV_SEP;
       gsYes: Result += 'SIM'+VV_SEP;
       gsNo: Result += 'NÃO'+VV_SEP;
@@ -235,6 +237,8 @@ begin
       gsMetacontingency: Result += 'META'+VV_SEP;
       gsRevertPoints: Result += 'REVERTER'+VV_SEP;
       gsBasA: Result += 'B->A'+VV_SEP;
+      gsRevertMetaPoints : Result += 'REVERTER META'+VV_SEP;
+      gsRevertIndiPoints : Result += 'REVERTER INDI'+VV_SEP;
     end;
 end;
 

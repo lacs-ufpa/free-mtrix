@@ -77,6 +77,7 @@ resourcestring
   KEY_CONT_NAME = '.Nome';
   KEY_CRITERIA = '.Resposta';
   KEY_CONSEQUE = '.Consequência'; // A,B,G,CSQCODE
+  KEY_STYLE = '.Estilo';
   KEY_CONSEQUE_MESSAGE_PREPEND = '.Consequência.Mensagem.Prefixo';
   KEY_CONSEQUE_MESSAGE_PREPEND_LOSS = '.Consequência.Mensagem.Prefixo_ao_perder';
   KEY_CONSEQUE_MESSAGE_APPEND_LOSS_S = '.Consequência.Mensagem.Sufixo_ao_perder.Singular';

@@ -27,16 +27,53 @@ type
 
   TGameMatrixType = set of TGameMatrix;
 
-  TGameRow = (grNone,
-              grOne,grTwo,grThree,grFour,grFive,grSix,grSeven,grEight,grNine,grTen,  // 10 rows
-              grEven,grOdd,
-              grDiff,grEqual,grAll,grNot,grSome); //meta only
+  TGameRow = (
+    grNone,
+
+    // For contingencies only. It means 'a participant choosen a row'.
+    grOne,grTwo,grThree,grFour,grFive,grSix,grSeven,grEight,grNine,grTen,  // 10 rows
+
+    // For metacontingencies it means 'all participants choosen an even row'.
+    // For contingencies it means 'a participant choosen an even row'.
+    grEven,
+
+    // For metacontingencies it means 'all participants choosen an odd row'.
+    // For contingencies it means 'a participant choosen an odd row'.
+    grOdd,
+
+    // Todo:For metacontingencies only. It means 'all choosen rows are different from each other'.
+    grDiff,
+
+    // Todo:For metacontingencies only. It means 'all choosen rows are equal to each other'.
+    grEqual,
+
+    // For metacontingencies only. Has the following meanings:
+    // 1) Todo:With grDiff:  Everything except different rows.
+    // 2) Todo:With grEqual: Everything except equal equal.
+    // 3) With grEven: Some odd row was choosen.
+    // 4) With grOdd: Some even row was choosen.
+    grNot
+  );
 
   TGameRows = set of TGameRow;
 
-  TGameColor = (gcNone,
-                gcYellow,gcRed,gcGreen,gcBlue,gcMagenta, // 5 colors
-                gcDiff,gcEqual,gcAll,gcNot,gcSome); //meta only
+  TGameColor = (
+    gcNone,
+
+    // For contingencies only. It means 'a participant choosen a color'.
+    gcYellow,gcRed,gcGreen,gcBlue,gcMagenta, // 5 colors
+
+    // For metacontingencies only. It means 'all choosen rows are different from each other'.
+    gcDiff,
+
+    // For metacontingencies only. It means 'all choosen rows are different from each other'.
+    gcEqual,
+
+    // For metacontingencies only. Has the following meanings:
+    // 1) With grDiff:  Everything except different colors.
+    // 2) With grEqual: Everything except equal colors.
+    gcNot
+  );
 
   TGameColors = set of TGameColor;
 
@@ -47,7 +84,9 @@ type
   TGameConsequenceStyle = (gscNone, gscMessage, gscBroadcastMessage, gscPoints, gscVariablePoints, gscA, gscB,gscG,gscI);
   TConsequenceStyle = set of TGameConsequenceStyle;
 
-  TGamePromptStyle = (gsYes, gsNo, gsAll, gsMetacontingency, gsContingency, gsBasA, gsRevertPoints);
+  TGamePromptStyle = (gsNone, gsYes, gsNo, gsAll,
+                      gsMetacontingency, gsContingency,
+                      gsBasA, gsRevertPoints,gsRevertMetaPoints,gsRevertIndiPoints);
 
   TPromptStyle = set of TGamePromptStyle;
 
@@ -131,7 +170,7 @@ type
      property PrependEarn : string read FPrependEarn;
      property CsqString : string read GetCsqString;
      property Style : TConsequenceStyle read FStyle;
-     property ConsequenseByPlayerID : TStringList read FConsequenceByPlayerID;
+     property ByPlayerID : TStringList read FConsequenceByPlayerID;
    end;
 
   { TContingency }
@@ -145,8 +184,10 @@ type
     FName: string;
     FOnCriteria: TNotifyEvent;
     FOnTargetCriteria : TNotifyEvent;
+    FStyle: TPromptStyle;
     function RowMod(R:TGameRow):TGameRow;
     procedure CriteriaEvent;
+    procedure SetStyle(AValue: TPromptStyle);
   public
     constructor Create(AOwner:TComponent;AConsequence:TConsequence;ACriteria:TCriteria;IsMeta:Boolean);overload;
     function CriteriaString : string;
@@ -154,13 +195,14 @@ type
     function ResponseMeetsCriteriaG(Players : TPlayers):Boolean;
     function ConsequenceFromPlayerID(AID:string):string;
     procedure Clean;
+    property Consequence : TConsequence read FConsequence;
+    property ContingencyName : string read FName write FName;
+    property Criteria : TCriteria read FCriteria;
+    property Fired : Boolean read FFired;
+    property Meta : Boolean read FMeta;
     property OnCriteria : TNotifyEvent read FOnCriteria write FOncriteria;
     property OnTargetCriteria : TNotifyEvent read FOnTargetCriteria write FOnTargetCriteria;
-    property Fired : Boolean read FFired;
-    property Consequence : TConsequence read FConsequence;
-    property Criteria : TCriteria read FCriteria;
-    property Meta : Boolean read FMeta;
-    property ContingencyName : string read FName write FName;
+    property Style : TPromptStyle read FStyle write SetStyle;
   end;
 
   { TContingencies }
@@ -231,7 +273,7 @@ type
 
 implementation
 
-uses Graphics,strutils, string_methods;
+uses Graphics,strutils, string_methods, game_actors_helpers;
 
 { TContingency }
 
@@ -255,6 +297,12 @@ begin
   FFired:=True;
   if Assigned(FOnCriteria) then FOnCriteria(Self);
   if Assigned(FOnTargetCriteria) then FOnTargetCriteria(Self);
+end;
+
+procedure TContingency.SetStyle(AValue: TPromptStyle);
+begin
+  if FStyle=AValue then Exit;
+  FStyle:=AValue;
 end;
 
 constructor TContingency.Create(AOwner:TComponent;AConsequence:TConsequence;ACriteria:TCriteria;IsMeta:Boolean);
@@ -307,6 +355,7 @@ begin
     CriteriaEvent;
 end;
 
+
 function TContingency.ResponseMeetsCriteriaG(Players: TPlayers): Boolean; // must be for admin only
 var i : integer;
     Cs : array of TGameColor;
@@ -315,6 +364,19 @@ var i : integer;
     R : TGameRow;
     Len : Byte;
 
+    {
+      without gcNot/grNot returns
+      1) true if all colors are diff  // brute-force
+      2) true if all colors are equal // brute-force
+      3) true if all rows are even    // pick first
+      4) true if all rows are odd     // pick first
+
+      with gcNot/grNot returns
+      1) true if everything except different colors,
+      2) true if everything except equal colors,
+      3) true if some odd row
+      4) trus if some even row
+    }
     // brute-force
     function AllColorsEqual:Boolean;
     var
@@ -346,6 +408,7 @@ var i : integer;
             end;
     end;
 
+    // pick first
     function AllRowsOdd: Boolean;
     begin
       Result := not (grNot in Criteria.Rows);
@@ -357,6 +420,7 @@ var i : integer;
           end;
     end;
 
+    // pick first
     function AllRowsEven: Boolean;
     begin
       Result := not (grNot in Criteria.Rows);
@@ -368,7 +432,7 @@ var i : integer;
           end;
     end;
 
-begin // All -> (Diff,Equal,Even, Odd) or not all
+begin
   Result := False;
   Len := Length(Players);
   SetLength(Cs,Len);
@@ -435,7 +499,7 @@ end;
 
 function TContingency.ConsequenceFromPlayerID(AID: string): string;
 begin
-  Result := Consequence.ConsequenseByPlayerID.Values[AID];
+  Result := Consequence.ByPlayerID.Values[AID];
 end;
 
 procedure TContingency.Clean;
@@ -484,110 +548,20 @@ begin
 end;
 
 function TPrompt.AsString: TStringList;
-var
-  j,i : integer;
-  LPrependLoss,LPrependEarn,
-  LAppendiceLossSingular,LAppendiceLossPlural,
-  LAppendiceEarnSingular,LAppendiceEarnPlural,
-  LAppendiceZero,
-  LConsequence,
-  LID : string;
-  LCsqStyle : TConsequenceStyle;
-  Pts : integer;
-
   function AllPlayersClickedYes: Boolean;
   var i : integer;
   begin
     Result := True;
     for i := 0 to Length(FResponses)-1 do
       if ExtractDelimited(2,FResponses[i],['|']) = 'N' then
-        begin
-          Result := False;
-        end;
+        Result := False;
   end;
 
-  procedure ApplyPointsConditions(IsMeta:Boolean);
-  var
-    i : integer;
-    //LI,LS,LP,
-    S : string;
-  begin
-    Pts := StrToInt(ExtractDelimited(1,LConsequence, ['|']));
-    if gsRevertPoints in FPromptStyle then
-      Pts := Pts*-1;
-
-    if (gscB in LCsqStyle) and (gsBasA in FPromptStyle) then
-      begin
-        LCsqStyle += [gscA];
-        LCsqStyle -= [gscB];
-
-        for i := 0 to Length(FPromptTargets) -1 do
-          if not FPromptTargets[i].Meta then
-            if gscA in FPromptTargets[i].Consequence.Style then
-              begin
-                LPrependLoss := FPromptTargets[i].Consequence.PrependLoss;
-                LAppendiceLossSingular := FPromptTargets[i].Consequence.AppendiceLossSingular;
-                LAppendiceLossPlural := FPromptTargets[i].Consequence.AppendiceLossPlural;
-                LPrependEarn := FPromptTargets[i].Consequence.PrependEarn;
-                LAppendiceEarnSingular := FPromptTargets[i].Consequence.AppendiceEarnSingular;
-                LAppendiceEarnPlural := FPromptTargets[i].Consequence.AppendiceEarnPlural;
-                LAppendiceZero := FPromptTargets[i].Consequence.AppendiceZero;
-                Break;
-              end;
-      end;
-
-    if IsMeta then
-      S := 'M'
-    else
-      S := LID;
-
-    LConsequence := S + '+' +
-      IntToStr(Pts) +'|'+
-      GetConsequenceStyleString(LCsqStyle) +'|'+
-      ExtractDelimited(3,LConsequence, ['|']) +'|'+
-      LPrependLoss +'|'+
-      LAppendiceLossSingular +'|'+
-      LAppendiceLossPlural +'|'+
-      LPrependEarn  +'|'+
-      LAppendiceEarnSingular +'|'+
-      LAppendiceEarnPlural +'|'+
-      LAppendiceZero;
-  end;
 begin
   Result := TStringList.Create;
-  // todo: sanitize FPromptStyle first
-  Pts:= 0;
   if (gsAll in FPromptStyle) and (gsYes in FPromptStyle) then
     if AllPlayersClickedYes then
-      for i := 0 to Length(FPromptTargets)-1 do
-        for j := 0 to FPromptTargets[i].Consequence.ConsequenseByPlayerID.Count-1 do
-          begin
-            LID := FPromptTargets[i].Consequence.ConsequenseByPlayerID.Names[j];
-            LConsequence := FPromptTargets[i].Consequence.ConsequenseByPlayerID.Values[LID];
-            LCsqStyle := GetConsequenceStyleFromString(ExtractDelimited(2,LConsequence, ['|']));
-
-            // BasA must revert message variables
-            LPrependLoss := ExtractDelimited(4,LConsequence, ['|']);
-            LAppendiceLossSingular := ExtractDelimited(5,LConsequence, ['|']);
-            LAppendiceLossPlural := ExtractDelimited(6,LConsequence, ['|']);
-            LPrependEarn := ExtractDelimited(7,LConsequence, ['|']);
-            LAppendiceEarnSingular := ExtractDelimited(8,LConsequence, ['|']);
-            LAppendiceEarnPlural := ExtractDelimited(9,LConsequence, ['|']);
-            LAppendiceZero := ExtractDelimited(10,LConsequence, ['|']);
-
-            if gsContingency in FPromptStyle then
-              if (FPromptTargets[i].Fired) and (not FPromptTargets[i].Meta) then
-                if (gscA in LCsqStyle) or (gscB in LCsqStyle) then
-                  ApplyPointsConditions(False);
-
-            if gsMetacontingency in FPromptStyle then
-              if (FPromptTargets[i].Fired) and FPromptTargets[i].Meta then
-                if gscG in LCsqStyle then
-                  ApplyPointsConditions(True);
-
-            Result.Add(LConsequence);
-          end;
-
+      Result := GetMessagesFromPromptStyle(FPromptStyle,FPromptTargets);
 end;
 
 { TConsequence }
