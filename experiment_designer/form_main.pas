@@ -1287,7 +1287,7 @@ var
         'Chk10': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grTen];
         'ChkEven': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grEven];
         'ChkOdd': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grOdd];
-        'ChkNot': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [grNot];
+        'ChkNot': if TCheckBox(GBContingencyRows.Components[i]).Checked then Result += [grNot];
       end;
   end;
 
@@ -2119,6 +2119,14 @@ begin
       if TCheckBox(Sender).Name = 'ChkDiff' then
         if TCheckBox(Sender).Checked then
           UncheckBox('ChkEqual');
+
+      if TCheckBox(Sender).Name = 'ChkEven' then
+        if TCheckBox(Sender).Checked then
+          UncheckBox('ChkOdd');
+
+      if TCheckBox(Sender).Name = 'ChkOdd' then
+        if TCheckBox(Sender).Checked then
+          UncheckBox('ChkEven');
     end;
 end;
 
