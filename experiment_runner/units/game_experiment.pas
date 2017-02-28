@@ -167,6 +167,7 @@ type
     function IsLastCondition: Boolean;
     function TargetIntelockingFired : Boolean;
     function ShouldAskQuestion : string;
+    function ContingencyFired(AContingencyName : string):Boolean;
     function ShouldStartExperiment : Boolean;
     property IsEndCycle : Boolean read FEndCycle;
     property Condition[I : Integer]: TCondition read GetCondition write SetCondition;
@@ -449,7 +450,7 @@ begin
     if Contingency[c,i].Meta then
       if Contingency[c,i].ResponseMeetsCriteriaG(FPlayers) then
         begin
-          //WriteLn(GetPromptStyleString(Contingency[c,i].Style));
+          // WriteLn(GetPromptStyleString(Contingency[c,i].Style));
           if Contingency[c,i].Style = [] then
             Result += 'M#'+Contingency[c,i].Consequence.AsString('M')+'+'
           else
@@ -1036,7 +1037,8 @@ end;
 
 function TExperiment.ShouldAskQuestion: string;
 begin
-  if Assigned(CurrentCondition.Prompt) and TargetIntelockingFired then
+  if Assigned(CurrentCondition.Prompt) and
+    ContingencyFired(CurrentCondition.Prompt.TargetMetacontingencyName) then
     Result := CurrentCondition.Prompt.Question
   else
     begin
@@ -1045,6 +1047,19 @@ begin
         WriteReportRowPrompt; //TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
       Clean;
     end;
+end;
+
+function TExperiment.ContingencyFired(AContingencyName: string): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i:= 0 to ContingenciesCount[CurrentConditionI]-1 do
+    if Condition[CurrentConditionI].Contingencies[i].ContingencyName = AContingencyName then
+      begin
+        Result := Condition[CurrentConditionI].Contingencies[i].Fired;
+        Break;
+      end;
 end;
 
 function TExperiment.ShouldStartExperiment: Boolean;

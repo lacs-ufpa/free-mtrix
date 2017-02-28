@@ -151,9 +151,14 @@ begin
     grEight : Result := '8';
     grNine : Result := '9';
     grTen : Result := '10';
+
     grEven : Result := 'PAR';
     grOdd : Result := 'IMPAR';
-    grNot : Result := 'EXCETO';
+    grNot_EVEN_ODD : Result := 'EXCETO';
+
+    grEqual : Result := 'IGUAIS';
+    grDiff : Result := 'DIFERENTES';
+    grNot_DIFF_EQUAL : Result := 'EXCETO_';
   end;
 end;
 
@@ -171,9 +176,14 @@ begin
     '08', '8', 'OITO', 'EIGHT'  : Result := grEight;
     '09', '9', 'NOVE', 'NINE'   : Result := grNine;
     '10', 'DEZ', 'TEN'    : Result := grTen;
+
     'PAR', 'EVEN'         : Result := grEven;
     'IMPAR', 'ODD'        : Result := grOdd;
-    'EXCETO'              : Result := grNot;
+    'EXCETO'              : Result := grNot_EVEN_ODD;
+
+    'IGUAIS'              : Result := grEqual;
+    'DIFERENTES'          : Result := grDiff;
+    'EXCETO_'             : Result := grNot_DIFF_EQUAL;
   end;
 end;
 
@@ -509,6 +519,8 @@ var
       grEight : Result := '8';
       grNine : Result := '9';
       grTen : Result := '0';
+      grEqual : Result := 'E';
+      grDiff : Result := 'D';
     end;
   end;
 
@@ -562,7 +574,7 @@ end;
 
 function GetMatrixTypeString(AMatrixType: TGameMatrixType): string;
 var
-  LCount: Integer;
+  // LCount: Integer;
   LType : TGameMatrix;
 begin
   Result := '';
@@ -593,6 +605,8 @@ function GetPlayerFromString(s: string): TPlayer;
       '8' : Result := grEight;
       '9' : Result := grNine;
       '0' : Result := grTen;
+      'E' : Result := grEqual;
+      'D' : Result := grDiff;
     end;
   end;
 

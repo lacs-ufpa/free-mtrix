@@ -50,9 +50,13 @@ type
     // For metacontingencies only. Has the following meanings:
     // 1) Todo:With grDiff:  Everything except different rows.
     // 2) Todo:With grEqual: Everything except equal equal.
-    // 3) With grEven: Some odd row was choosen.
-    // 4) With grOdd: Some even row was choosen.
-    grNot
+    grNot_DIFF_EQUAL,
+
+    // todo: implement for contingencies also.
+    // For metacontingencies only. Has the following meanings:
+    // 1) With grEven: Some odd row was choosen.
+    // 2) With grOdd: Some even row was choosen.
+    grNot_EVEN_ODD
   );
 
   TGameRows = set of TGameRow;
@@ -218,9 +222,11 @@ type
     FPromptTargets : TContingencies; // need to test this
     FPromptStyle : TPromptStyle;
     FPromptMessage : string;
+    FTarget : string;
     procedure ClearResponses;
   public
-    constructor Create(AOwner:TComponent; APStyle:TPromptStyle; APTarget : TContingencies; AMessage:string);reintroduce;
+    constructor Create(AOwner:TComponent; APStyle:TPromptStyle;
+      APTarget : TContingencies; AMessage:string; ATarget: string);reintroduce;
     function ResponsesCount : integer;
     function Response(I:integer):string;
     function AsString: TStringList; overload;
@@ -229,6 +235,7 @@ type
     property Question: string read FPromptMessage;
     property PromptResult:string read FResult;
     property PromptStyle : TPromptStyle read FPromptStyle;
+    property TargetMetacontingencyName : string read FTarget;
 
   end;
 
@@ -365,25 +372,20 @@ var i : integer;
     Len : Byte;
 
     {
-      without gcNot/grNot returns
-      1) true if all colors are diff  // brute-force
-      2) true if all colors are equal // brute-force
-      3) true if all rows are even    // pick first
-      4) true if all rows are odd     // pick first
-
-      with gcNot/grNot returns
-      1) true if everything except different colors,
-      2) true if everything except equal colors,
-      3) true if some odd row
-      4) trus if some even row
+      Uses brute-force.
+      if IsInverted then returns
+         true, all colors are equal
+         false, there is some different color
+      else
+         true, there is some different color
+         false, all colors are equal
     }
-    // brute-force
-    function AllColorsEqual:Boolean;
+    function AllColorsEqual(IsInverted:Boolean = False):Boolean;
     var
       i : integer;
       j : integer;
     begin
-      Result := not (gcNot in Criteria.Colors);
+      Result := IsInverted;
       for i := 0 to Len-2 do
         for j := i to Len-1 do
           if (Cs[i] <> Cs[j]) and (i <> j) then
@@ -393,12 +395,20 @@ var i : integer;
             end;
     end;
 
-    // brute-force
-    function AllColorsDiff:Boolean;
+    {
+      Uses brute-force.
+      if IsInverted then returns
+         true, all colors are different
+         false, there is some equal color
+      else
+         true, there is some equal color
+         false, all colors are different
+    }
+    function AllColorsDiff(IsInverted:Boolean = False):Boolean;
     var i : integer;
         j : integer;
     begin
-      Result := not (gcNot in Criteria.Colors);
+      Result := IsInverted;
       for i := 0 to Len-1 do
         for j := i to Len-1 do
           if (Cs[i] = Cs[j]) and (i <> j) then
@@ -408,10 +418,64 @@ var i : integer;
             end;
     end;
 
-    // pick first
-    function AllRowsOdd: Boolean;
+    {
+      Uses brute-force.
+      if IsInverted then returns
+         true, all rows are different
+         false, there is some equal row
+      else
+         true, there is some equal row
+         false, all rows are different
+    }
+    function AllRowsDiff(IsInverted:Boolean = False):Boolean;
+    var i : integer;
+        j : integer;
     begin
-      Result := not (grNot in Criteria.Rows);
+      Result := IsInverted;
+      for i := 0 to Len-1 do
+        for j := i to Len-1 do
+          if (Rs[i] = Rs[j]) and (i <> j) then
+            begin
+              Result := not Result;
+              Exit;
+            end;
+    end;
+
+    {
+      Uses brute-force.
+      if IsInverted then returns
+         true, all rows are equal
+         false, there is some different row
+      else
+         true, there is some different row
+         false, all rows are equal
+    }
+    function AllRowsEqual(IsInverted:Boolean = False):Boolean;
+    var
+      i : integer;
+      j : integer;
+    begin
+      Result := IsInverted;
+      for i := 0 to Len-2 do
+        for j := i to Len-1 do
+          if (Rs[i] <> Rs[j]) and (i <> j) then
+            begin
+              Result := not Result;
+              Exit;
+            end;
+    end;
+
+    {
+      if IsInverted then returns
+         true, all rows are odd
+         false, there is some even row
+      else
+         true, there is some even row
+         false, all rows are odd
+    }
+    function AllRowsOdd(IsInverted:Boolean = False): Boolean;
+    begin
+      Result := IsInverted;
       for R in Rs do
         if RowMod(R) = grEven then
           begin
@@ -420,16 +484,86 @@ var i : integer;
           end;
     end;
 
-    // pick first
-    function AllRowsEven: Boolean;
+    {
+      Uses brute-force.
+      if IsInverted then returns
+         true, all rows are even
+         false, there is some odd row
+      else
+         true, there is some odd row
+         false, all rows are even
+    }
+    function AllRowsEven(IsInverted:Boolean = False): Boolean;
     begin
-      Result := not (grNot in Criteria.Rows);
+      Result := IsInverted;
       for R in Rs do
         if RowMod(R) = grOdd then
           begin
             Result := not Result;
             Break;
           end;
+    end;
+
+    function RowsResult(ForBoth:Boolean=True):Boolean;
+    begin
+      if (grDiff in Criteria.Rows) or (grEqual in Criteria.Rows) then
+        begin
+          if ForBoth then
+            begin
+              if (grDiff in Criteria.Rows) and (grOdd in Criteria.Rows) then
+                Result := AllRowsDiff(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
+                          AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
+
+              if (grEqual in Criteria.Rows) and (grOdd in Criteria.Rows) then
+                Result := AllRowsEqual(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
+                          AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
+
+              if (grDiff in Criteria.Rows) and (grEven in Criteria.Rows) then
+                Result := AllRowsDiff(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
+                          AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
+
+              if (grEqual in Criteria.Rows) and (grEven in Criteria.Rows) then
+                Result := AllRowsEqual(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
+                          AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
+
+            end
+          else
+           begin
+             if (grDiff in Criteria.Rows) or (grOdd in Criteria.Rows) then
+               Result := AllRowsDiff(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
+                         AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
+
+             if (grEqual in Criteria.Rows) or (grOdd in Criteria.Rows) then
+               Result := AllRowsEqual(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
+                         AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
+
+             if (grDiff in Criteria.Rows) or (grEven in Criteria.Rows) then
+               Result := AllRowsDiff(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
+                         AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
+
+             if (grEqual in Criteria.Rows) or (grEven in Criteria.Rows) then
+               Result := AllRowsEqual(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
+                         AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
+
+           end;
+        end
+      else
+        begin
+          if grOdd in Criteria.Rows then
+            Result := AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
+
+          if grEven in Criteria.Rows then
+            Result := AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
+        end;
+    end;
+
+    function ColorsResult: Boolean;
+    begin
+      if gcDiff in Criteria.Colors then
+        Result := AllColorsDiff(not(gcNot in Criteria.Colors));
+
+      if gcEqual in Criteria.Colors then
+        Result := AllColorsEqual(not(gcNot in Criteria.Colors));
     end;
 
 begin
@@ -446,52 +580,10 @@ begin
 
   case Criteria.Style of
     gtNone: Exit;
-    gtColorsOnly:
-      begin
-        if gcDiff in Criteria.Colors then
-          Result := AllColorsDiff;
-
-        if gcEqual in Criteria.Colors then
-          Result := AllColorsEqual;
-      end;
-
-    gtRowsOnly:
-      begin
-        if grOdd in Criteria.Rows then
-          Result := AllRowsOdd;
-
-        if grEven in Criteria.Rows then
-          Result := AllRowsEven;
-      end;
-
-    gtRowsAndColors:
-      begin
-        if (gcDiff in Criteria.Colors) and (grOdd in Criteria.Rows) then
-          Result := AllColorsDiff and AllRowsOdd;
-
-        if (gcDiff in Criteria.Colors) and (grEven in Criteria.Rows) then
-          Result := AllColorsDiff and AllRowsEven;
-
-        if (gcEqual in Criteria.Colors) and (grOdd in Criteria.Rows) then
-          Result := AllColorsEqual and AllRowsOdd;
-
-        if (gcEqual in Criteria.Colors) and (grEven in Criteria.Rows) then
-          Result := AllColorsEqual and AllRowsEven;
-      end;
-    gtRowsOrColors:
-      begin
-        if (gcDiff in Criteria.Colors) and (grOdd in Criteria.Rows) then
-          Result := AllColorsDiff or AllRowsOdd;
-
-        if (gcDiff in Criteria.Colors) and (grEven in Criteria.Rows) then
-          Result := AllColorsDiff or AllRowsEven;
-
-        if (gcEqual in Criteria.Colors) and (grOdd in Criteria.Rows) then
-          Result := AllColorsEqual or AllRowsOdd;
-
-        if (gcEqual in Criteria.Colors) and (grEven in Criteria.Rows) then
-          Result := AllColorsEqual or AllRowsEven;
-      end;
+    gtColorsOnly: Result := ColorsResult;
+    gtRowsOnly: Result := RowsResult;
+    gtRowsAndColors: Result := RowsResult and ColorsResult;
+    gtRowsOrColors: Result := RowsResult or ColorsResult;
   end;
   if Result then
     CriteriaEvent;
@@ -517,12 +609,13 @@ begin
 end;
 
 constructor TPrompt.Create(AOwner: TComponent; APStyle: TPromptStyle;
-  APTarget: TContingencies; AMessage: string);
+  APTarget: TContingencies; AMessage: string; ATarget: string);
 begin
   inherited Create(AOwner);
   FPromptStyle := APStyle;
   FPromptTargets := APTarget;
   FPromptMessage := AMessage;
+  FTarget := ATarget;
 end;
 
 function TPrompt.ResponsesCount: integer;

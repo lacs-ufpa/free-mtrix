@@ -60,7 +60,7 @@ var
 
   LCriteria4 : TCriteria = (
     Style:(gtRowsOrColors);
-    Rows:[grNot,grEven];
+    Rows:[grNot_EVEN_ODD,grEven];
     Colors:[gcNot,gcDiff];
   );
 begin
@@ -139,7 +139,8 @@ begin
             , [gsAll,gsYes,gsMetacontingency,gsContingency,gsRevertPoints,gsBasA]
             , Contingencies
             , 'Um item escolar foi perdido, desejam recuperá-lo gastando pontos do Tipo A?'
-          );
+            , 'MPUN -1G'
+            );
           // (gsYes, gsNo, gsAll, gsMetacontingency, gsContingency, gsBasA, gsRevertPoints);
         end;
 
@@ -230,7 +231,7 @@ var
 
   procedure ReadConditions;
   var
-    s1, LS , LPromptStyle, LPromptMessa: string;
+    s1, LS , LPromptStyle, LPromptMessa,LPromptTarget: string;
     i,j , LContingenciesCount, LMetaContingenCount: integer;
     C :TCondition;
   begin
@@ -287,13 +288,16 @@ var
 
               LPromptStyle := ReadString(LS,KEY_PROMPT_STYLE,'');
               LPromptMessa := ReadString(LS,KEY_PROMPT_MESSAGE,'');
-
-              if (LPromptMessa <> '') and (LPromptStyle <> '') then
+              LPromptTarget := ReadString(LS,KEY_PROMPT_TARGET,'');
+              if (LPromptMessa <> '') and
+                 (LPromptStyle <> '') and
+                 (LPromptTarget <> '') then
                 Prompt := TPrompt.Create(
                   AExperiment
                   , GetPromptStyleFromString(LPromptStyle)
                   , Contingencies
                   , LPromptMessa
+                  , LPromptTarget
                 );
             end;
             AExperiment.Condition[AExperiment.AppendCondition]:= C;

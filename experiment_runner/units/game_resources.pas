@@ -65,6 +65,7 @@ resourcestring
   //KEY_PROMPT_VALUE = 'Questão.Apresentar'; // BOOL,CSQPROMPTCODE
   KEY_PROMPT_STYLE = 'Questão.Estilo'; // string
   KEY_PROMPT_MESSAGE = 'Questão.Mensagem'; // string
+  KEY_PROMPT_TARGET = 'Questão.MetacontingênciaAlvo';
   KEY_ENDCRITERIA = 'Critério_de_Finalização.Estilo'; //2,50,10,30,
   KEY_ENDCRITERIA_CYCLES = 'Critério_de_Finalização.Ciclos'; // 20
   KEY_ENDCRITERIA_PORCENTAGE = 'Critério_de_Finalização.Porcentagem'; // 80|10
