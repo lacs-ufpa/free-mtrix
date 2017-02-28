@@ -449,21 +449,19 @@ begin
     if Contingency[c,i].Meta then
       if Contingency[c,i].ResponseMeetsCriteriaG(FPlayers) then
         begin
-
-          WriteLn(GetPromptStyleString(Contingency[c,i].Style));
-        if Contingency[c,i].Style = [] then
-          Result += 'M#'+Contingency[c,i].Consequence.AsString('M')+'+'
-        else
-          begin
-            Contingency[c,i].Consequence.AsString('M');
-            LMessages := GetMessagesFromPromptStyle(Contingency[c,i].Style,CurrentCondition.Contingencies);
-            for j := 0 to LMessages.Count -1 do
-              begin
-                P := PlayerFromID[FirstDelimitedString(LMessages[j])];
-                Result += DeduceNicname(LMessages[j],P)+'+';
-              end;
-          end;
-
+          //WriteLn(GetPromptStyleString(Contingency[c,i].Style));
+          if Contingency[c,i].Style = [] then
+            Result += 'M#'+Contingency[c,i].Consequence.AsString('M')+'+'
+          else
+            begin
+              Contingency[c,i].Consequence.AsString('M');
+              LMessages := GetMessagesFromPromptStyle(Contingency[c,i].Style,CurrentCondition.Contingencies);
+              for j := 0 to LMessages.Count -1 do
+                begin
+                  P := PlayerFromID[FirstDelimitedString(LMessages[j])];
+                  Result += DeduceNicname(LMessages[j],P)+'+';
+                end;
+            end;
         end;
 end;
 

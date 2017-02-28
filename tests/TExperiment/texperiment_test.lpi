@@ -8,7 +8,6 @@
       <Title Value="texperiment_test"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
-      <Icon Value="0"/>
     </General>
     <i18n>
       <EnableI18N LFM="False"/>
@@ -53,7 +52,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="/home/rafael/git/free-mtrix/experiment_runner/units/;../../dependencies/delphizmq;../../experiment_runner"/>
+      <OtherUnitFiles Value="../../dependencies/delphizmq;../../experiment_runner;../../experiment_runner/units"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
