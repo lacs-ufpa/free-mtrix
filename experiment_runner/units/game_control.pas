@@ -1457,10 +1457,8 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
 
             // should ask question or just resume (going to the next turn)?
             if AReply[8] <> #32 then
-              //FZMQActor.SendMessage([K_QUESTION,AReply[8],AReply[9]])
               LAnnouncer.Append([K_QUESTION,AReply[8],AReply[9],AReply[10]])
             else
-              //FZMQActor.SendMessage([K_RESUME,AReply[9]]);
               LAnnouncer.Append([K_RESUME,AReply[9],AReply[10]]);
 
             // should end experiment or go to the next condition?

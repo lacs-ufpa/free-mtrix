@@ -238,7 +238,7 @@ begin
     LAppendiceEarnSingular +'|'+
     LAppendiceEarnPlural +'|'+
     LAppendiceZero;
-  WriteLn(AConsequenceString);
+  // WriteLn(AConsequenceString);
 end;
 
 function GetMessagesFromPromptStyle(APromptStyle: TPromptStyle;

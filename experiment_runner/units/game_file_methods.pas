@@ -60,7 +60,7 @@ var
 
   LCriteria4 : TCriteria = (
     Style:(gtRowsOrColors);
-    Rows:[grNot_EVEN_ODD,grEven];
+    Rows:[grNot,grEven];
     Colors:[gcNot,gcDiff];
   );
 begin
