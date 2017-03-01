@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 85
+  Left = 60
   Height = 683
-  Top = 58
+  Top = 5
   Width = 1190
   Caption = 'Form1'
   ClientHeight = 683
@@ -12,34 +12,34 @@ object Form1: TForm1
     Left = 8
     Height = 25
     Top = 576
-    Width = 136
+    Width = 96
     Caption = 'ButtonLogin'
     OnClick = ButtonLoginClick
     TabOrder = 0
   end
   object ButtonChoice1: TButton
-    Left = 160
+    Left = 115
     Height = 25
     Top = 576
-    Width = 131
+    Width = 113
     Caption = 'ButtonChoice1'
     OnClick = ButtonChoice1Click
     TabOrder = 1
   end
   object ButtonChoice2: TButton
-    Left = 344
+    Left = 232
     Height = 25
     Top = 576
-    Width = 131
+    Width = 113
     Caption = 'ButtonChoice2'
     OnClick = ButtonChoice1Click
     TabOrder = 2
   end
   object ButtonChoice3: TButton
-    Left = 160
+    Left = 350
     Height = 25
-    Top = 640
-    Width = 131
+    Top = 576
+    Width = 113
     Caption = 'ButtonChoice3'
     OnClick = ButtonChoice1Click
     TabOrder = 3
@@ -55,18 +55,17 @@ object Form1: TForm1
     TabOrder = 4
     object TabSheet1: TTabSheet
       Caption = 'Experiment'
-      ClientHeight = 527
-      ClientWidth = 882
+      ClientHeight = 532
+      ClientWidth = 880
       object ListBox1: TListBox
         Left = 0
-        Height = 527
+        Height = 532
         Top = 0
-        Width = 882
+        Width = 880
         Align = alClient
         ItemHeight = 0
         ScrollWidth = 880
         TabOrder = 0
-        TopIndex = -1
       end
     end
     object TabSheet2: TTabSheet
@@ -82,17 +81,124 @@ object Form1: TForm1
         ItemHeight = 0
         ScrollWidth = 880
         TabOrder = 0
-        TopIndex = -1
       end
     end
   end
   object ButtonChoice4: TButton
-    Left = 160
+    Left = 466
     Height = 25
-    Top = 608
-    Width = 131
+    Top = 576
+    Width = 113
     Caption = 'ButtonChoice4'
     OnClick = ButtonChoice1Click
     TabOrder = 5
+  end
+  object ButtonChoice5: TButton
+    Left = 583
+    Height = 25
+    Top = 576
+    Width = 113
+    Caption = 'ButtonChoice5'
+    OnClick = ButtonChoice1Click
+    TabOrder = 6
+  end
+  object ButtonChoice6: TButton
+    Left = 115
+    Height = 25
+    Top = 604
+    Width = 113
+    Caption = 'ButtonChoice6'
+    OnClick = ButtonChoice1Click
+    TabOrder = 7
+  end
+  object ButtonChoice7: TButton
+    Left = 232
+    Height = 25
+    Top = 604
+    Width = 113
+    Caption = 'ButtonChoice7'
+    OnClick = ButtonChoice1Click
+    TabOrder = 8
+  end
+  object ButtonChoice8: TButton
+    Left = 350
+    Height = 25
+    Top = 604
+    Width = 113
+    Caption = 'ButtonChoice8'
+    OnClick = ButtonChoice1Click
+    TabOrder = 9
+  end
+  object ButtonChoice9: TButton
+    Left = 466
+    Height = 25
+    Top = 604
+    Width = 113
+    Caption = 'ButtonChoice9'
+    OnClick = ButtonChoice1Click
+    TabOrder = 10
+  end
+  object ButtonChoice10: TButton
+    Left = 583
+    Height = 25
+    Top = 604
+    Width = 113
+    Caption = 'ButtonChoice10'
+    OnClick = ButtonChoice1Click
+    TabOrder = 11
+  end
+  object ButtonQY1: TButton
+    Left = 728
+    Height = 25
+    Top = 576
+    Width = 75
+    Caption = 'ButtonQY1'
+    OnClick = ButtonQY1Click
+    TabOrder = 12
+  end
+  object ButtonQY2: TButton
+    Left = 728
+    Height = 25
+    Top = 604
+    Width = 75
+    Caption = 'ButtonQY2'
+    OnClick = ButtonQY1Click
+    TabOrder = 13
+  end
+  object ButtonQY3: TButton
+    Left = 728
+    Height = 25
+    Top = 632
+    Width = 75
+    Caption = 'ButtonQY3'
+    OnClick = ButtonQY1Click
+    TabOrder = 14
+  end
+  object ButtonQN1: TButton
+    Left = 808
+    Height = 25
+    Top = 576
+    Width = 75
+    Caption = 'ButtonQN1'
+    OnClick = ButtonQY1Click
+    TabOrder = 15
+  end
+  object ButtonQN2: TButton
+    Left = 808
+    Height = 25
+    Top = 604
+    Width = 75
+    Caption = 'ButtonQN2'
+    OnClick = ButtonQY1Click
+    TabOrder = 16
+  end
+  object ButtonQN3: TButton
+    Left = 808
+    Height = 25
+    Top = 632
+    Width = 75
+    Caption = 'ButtonQN3'
+    OnClick = ButtonQY1Click
+    TabOrder = 17
   end
 end

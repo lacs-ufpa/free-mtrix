@@ -25,11 +25,23 @@ type
   { TForm1 }
 
   TForm1 = class(TForm)
+    ButtonQY1: TButton;
+    ButtonQY2: TButton;
     ButtonChoice1: TButton;
+    ButtonChoice10: TButton;
     ButtonChoice3: TButton;
     ButtonChoice4: TButton;
+    ButtonChoice5: TButton;
+    ButtonChoice6: TButton;
+    ButtonChoice7: TButton;
+    ButtonChoice8: TButton;
+    ButtonChoice9: TButton;
     ButtonLogin: TButton;
     ButtonChoice2: TButton;
+    ButtonQY3: TButton;
+    ButtonQN1: TButton;
+    ButtonQN2: TButton;
+    ButtonQN3: TButton;
     ListBox1: TListBox;
     ListBox2: TListBox;
     PageControl1: TPageControl;
@@ -37,6 +49,7 @@ type
     TabSheet2: TTabSheet;
     procedure ButtonChoice1Click(Sender: TObject);
     procedure ButtonLoginClick(Sender: TObject);
+    procedure ButtonQY1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
     FExperiment : TExperiment;
@@ -57,6 +70,7 @@ uses
   , string_methods
   , strutils
   , helpers
+  , game_actors_helpers
   ;
 
 {$R *.lfm}
@@ -64,6 +78,9 @@ uses
 { TForm1 }
 
 procedure TForm1.FormCreate(Sender: TObject);
+//var
+//  LCS : TCriteria;
+//  i, j: Integer;
 begin
   FExperimentBox := TExperimentBox.Create(Self);
   FExperimentBox.Left := 926;
@@ -81,7 +98,14 @@ begin
   FExperiment.OnEndExperiment :=@FExperimentBox.EndExperiment;
 
   FExperiment.OnWriteReport:=@WriteReport;
-  FExperiment.LoadFromFile('/home/rafael/git/free-mtrix/experiment_runner/Pesquisadores/Thais/Teste 1.Estudo 1.MC1.ini');
+  FExperiment.LoadFromFile('C:\Users\User\Documents\GitHub\free-mtrix\experiment_runner\Pesquisadores\Pesquisador_X\Teste 2.Estudo 2.MC3.ini');
+
+  //for j := 0 to FExperiment.ConditionsCount-1 do
+  //  for i := 0 to Length(FExperiment.Condition[j].Contingencies)-1 do
+  //    begin
+  //      LCS := FExperiment.Condition[j].Contingencies[i].Criteria;
+  //      ListBox1.Items.Append(FExperiment.Condition[j].Contingencies[i].Consequence.AsString('M'));
+  //    end;
 end;
 
 procedure TForm1.ButtonLoginClick(Sender: TObject);
@@ -179,6 +203,77 @@ begin
     ListBox1.Items.Append('Login Refused Playing');
 end;
 
+procedure TForm1.ButtonQY1Click(Sender: TObject);
+var
+  R : string;
+  P : TPlayer;
+  i : integer;
+  LPromptConsequences : TStringList;
+begin
+  if Sender = ButtonQY1 then
+    begin
+      P := FExperiment.PlayerFromID[FExperiment.Player[0].ID];
+      R := 'Y';
+    end;
+
+  if Sender = ButtonQY2 then
+    begin
+      P := FExperiment.PlayerFromID[FExperiment.Player[1].ID];
+      R := 'Y';
+    end;
+
+  if Sender = ButtonQY3 then
+    begin
+      P := FExperiment.PlayerFromID[FExperiment.Player[2].ID];
+      R := 'Y';
+    end;
+
+  if Sender = ButtonQN1 then
+    begin
+      P := FExperiment.PlayerFromID[FExperiment.Player[0].ID];
+      R := 'N';
+    end;
+
+  if Sender = ButtonQN2 then
+    begin
+      P := FExperiment.PlayerFromID[FExperiment.Player[1].ID];
+      R := 'N';
+    end;
+
+  if Sender = ButtonQN3 then
+    begin
+      P := FExperiment.PlayerFromID[FExperiment.Player[2].ID];
+      R := 'N';
+    end;
+
+  // append response of each player
+  ListBox1.Items.Append('Question Response:'+P.ID+' '+R);
+  FExperiment.CurrentCondition.Prompt.AppendResponse(P.ID,R);
+
+  // return to experiment and present the prompt consequence, if any
+  if FExperiment.CurrentCondition.Prompt.ResponsesCount = FExperiment.PlayersCount then
+    begin
+      // generate messages
+      LPromptConsequences := FExperiment.CurrentCondition.Prompt.AsString;
+
+      if LPromptConsequences.Count > 0 then
+        begin
+          for i := 0 to LPromptConsequences.Count-1 do
+            begin
+              P := FExperiment.PlayerFromID[ExtractDelimited(1,LPromptConsequences[i],['+'])];
+              LPromptConsequences[i] := DeduceNicname(LPromptConsequences[i],P);
+            end;
+          ListBox1.Items.Append('Question Consequences:');
+          ListBox1.Items.Append(LPromptConsequences.Text);
+        end
+      else
+        ListBox1.Items.Append('Question Consequences: empty');;
+
+      FExperiment.WriteReportRowPrompt;
+      FExperiment.Clean;
+    end;
+end;
+
 procedure TForm1.ButtonChoice1Click(Sender: TObject);
 var
   P : TPlayer;
@@ -188,34 +283,67 @@ begin
   P := FExperiment.PlayerFromID[FExperiment.Player[FExperiment.CurrentCondition.Turn.Count].ID];
   if Sender = ButtonChoice1 then
     begin
-      P.Choice.Row := grTwo;
-      P.Choice.Color := gcGreen;
+      P.Choice.Row := grOne;
+      P.Choice.Color := gcYellow;
     end;
 
   if Sender = ButtonChoice2 then
     begin
-      P.Choice.Row := grThree;
-      P.Choice.Color := gcBlue;
+      P.Choice.Row := grTwo;
+      P.Choice.Color := gcRed;
     end;
 
   if Sender = ButtonChoice3 then
     begin
-      P.Choice.Row := grFour;
-      P.Choice.Color := gcRed;
+      P.Choice.Row := grThree;
+      P.Choice.Color := gcGreen;
     end;
 
   if Sender = ButtonChoice4 then
     begin
+      P.Choice.Row := grFour;
+      P.Choice.Color := gcBlue;
+    end;
+  if Sender = ButtonChoice5 then
+    begin
+      P.Choice.Row := grFive;
+      P.Choice.Color := gcMagenta;
+    end;
+
+  if Sender = ButtonChoice6 then
+    begin
       P.Choice.Row := grSix;
       P.Choice.Color := gcYellow;
+    end;
+
+  if Sender = ButtonChoice7 then
+    begin
+      P.Choice.Row := grSeven;
+      P.Choice.Color := gcRed;
+    end;
+
+  if Sender = ButtonChoice8 then
+    begin
+      P.Choice.Row := grEight;
+      P.Choice.Color := gcGreen;
+    end;
+
+  if Sender = ButtonChoice9 then
+    begin
+      P.Choice.Row := grNine;
+      P.Choice.Color := gcBlue;
+    end;
+
+  if Sender = ButtonChoice10 then
+    begin
+      P.Choice.Row := grTen;
+      P.Choice.Color := gcMagenta;
     end;
 
   ListBox1.Items.Append('Player:'+P.Nicname +' : ' + GetRowString(P.Choice.Row)+' : '+GetColorString(P.Choice.Color));
 
   // individual consequences from player choice
   S := FExperiment.ConsequenceStringFromChoice[P];
-  if Pos('$NICNAME',S) > 0 then
-    S := ReplaceStr(S,'$NICNAME',P.Nicname);
 
   // update turn
   P := FExperiment.NextTurn[P];
@@ -238,7 +366,8 @@ begin
       ListBox1.Items.Append(FExperiment.NextCondition);                                     // 10
     end;
   ListBox1.Items.Append('');
-  ListBox1.Selected[ListBox1.Count-1];
+  ListBox1.ItemIndex:=ListBox1.Items.Count-1;
+  ListBox1.MakeCurrentVisible;
 end;
 
 procedure TForm1.WriteReport(S: string);
