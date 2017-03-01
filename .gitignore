@@ -40,3 +40,4 @@ experiment_runner/lib/i386-win32/*.lfm
 *.data
 *.chat
 experiment_runner/ZMQVERSION
+experiment_runner/version_info.txt
