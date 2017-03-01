@@ -151,14 +151,15 @@ begin
     grEight : Result := '8';
     grNine : Result := '9';
     grTen : Result := '10';
+    grNot : Result := 'EXCETO';
 
     grEven : Result := 'PAR';
     grOdd : Result := 'IMPAR';
-    grNot_EVEN_ODD : Result := 'EXCETO';
+    grNot_EVEN_ODD_ONLY : Result := 'EXCETO_PAR_IMP';
 
     grEqual : Result := 'IGUAIS';
     grDiff : Result := 'DIFERENTES';
-    grNot_DIFF_EQUAL : Result := 'EXCETO_';
+    grNot_DIFF_EQUAL_ONLY : Result := 'EXCETO_IGL_DIF';
   end;
 end;
 
@@ -176,14 +177,15 @@ begin
     '08', '8', 'OITO', 'EIGHT'  : Result := grEight;
     '09', '9', 'NOVE', 'NINE'   : Result := grNine;
     '10', 'DEZ', 'TEN'    : Result := grTen;
+    'EXCETO'              : Result := grNot;
 
     'PAR', 'EVEN'         : Result := grEven;
     'IMPAR', 'ODD'        : Result := grOdd;
-    'EXCETO'              : Result := grNot_EVEN_ODD;
+    'EXCETO_PAR_IMP'      : Result := grNot_EVEN_ODD_ONLY;
 
     'IGUAIS'              : Result := grEqual;
     'DIFERENTES'          : Result := grDiff;
-    'EXCETO_'             : Result := grNot_DIFF_EQUAL;
+    'EXCETO_IGL_DIF'      : Result := grNot_DIFF_EQUAL_ONLY;
   end;
 end;
 

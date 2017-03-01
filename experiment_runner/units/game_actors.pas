@@ -41,22 +41,20 @@ type
     // For contingencies it means 'a participant choosen an odd row'.
     grOdd,
 
-    // Todo:For metacontingencies only. It means 'all choosen rows are different from each other'.
+    // For metacontingencies only. It means 'all choosen rows are different from each other'.
     grDiff,
 
-    // Todo:For metacontingencies only. It means 'all choosen rows are equal to each other'.
+    // For metacontingencies only. It means 'all choosen rows are equal to each other'.
     grEqual,
 
-    // For metacontingencies only. Has the following meanings:
-    // 1) Todo:With grDiff:  Everything except different rows.
-    // 2) Todo:With grEqual: Everything except equal equal.
-    grNot_DIFF_EQUAL,
+    // Negates results.
+    grNot,
 
-    // todo: implement for contingencies also.
-    // For metacontingencies only. Has the following meanings:
-    // 1) With grEven: Some odd row was choosen.
-    // 2) With grOdd: Some even row was choosen.
-    grNot_EVEN_ODD
+    // todo: Negates the result.
+    grNot_DIFF_EQUAL_ONLY,
+
+    // todo: Negates the result.
+    grNot_EVEN_ODD_ONLY
   );
 
   TGameRows = set of TGameRow;
@@ -363,208 +361,236 @@ begin
 end;
 
 
-function TContingency.ResponseMeetsCriteriaG(Players: TPlayers): Boolean; // must be for admin only
-var i : integer;
-    Cs : array of TGameColor;
-    Rs : array of TGameRow;
-    //C : TGameColor;
-    R : TGameRow;
-    Len : Byte;
+function TContingency.ResponseMeetsCriteriaG(Players: TPlayers): Boolean; // must be called from admin only
+var
+  i : integer;
+  Cs : array of TGameColor;
+  Rs : array of TGameRow;
+  //C : TGameColor;
+  R : TGameRow;
+  Len : Byte;
 
-    {
-      Uses brute-force.
-      if IsInverted then returns
-         true, all colors are equal
-         false, there is some different color
-      else
-         true, there is some different color
-         false, all colors are equal
-    }
-    function AllColorsEqual(IsInverted:Boolean = False):Boolean;
-    var
-      i : integer;
-      j : integer;
-    begin
-      Result := IsInverted;
-      for i := 0 to Len-2 do
-        for j := i to Len-1 do
-          if (Cs[i] <> Cs[j]) and (i <> j) then
-            begin
-              Result := not Result;
-              Exit;
-            end;
-    end;
+const
+  LDIFF = 0;
+  LEQUL = 1;
 
-    {
-      Uses brute-force.
-      if IsInverted then returns
-         true, all colors are different
-         false, there is some equal color
-      else
-         true, there is some equal color
-         false, all colors are different
-    }
-    function AllColorsDiff(IsInverted:Boolean = False):Boolean;
-    var i : integer;
-        j : integer;
-    begin
-      Result := IsInverted;
-      for i := 0 to Len-1 do
-        for j := i to Len-1 do
-          if (Cs[i] = Cs[j]) and (i <> j) then
-            begin
-              Result := not Result;
-              Exit;
-            end;
-    end;
-
-    {
-      Uses brute-force.
-      if IsInverted then returns
-         true, all rows are different
-         false, there is some equal row
-      else
-         true, there is some equal row
-         false, all rows are different
-    }
-    function AllRowsDiff(IsInverted:Boolean = False):Boolean;
-    var i : integer;
-        j : integer;
-    begin
-      Result := IsInverted;
-      for i := 0 to Len-1 do
-        for j := i to Len-1 do
-          if (Rs[i] = Rs[j]) and (i <> j) then
-            begin
-              Result := not Result;
-              Exit;
-            end;
-    end;
-
-    {
-      Uses brute-force.
-      if IsInverted then returns
-         true, all rows are equal
-         false, there is some different row
-      else
-         true, there is some different row
-         false, all rows are equal
-    }
-    function AllRowsEqual(IsInverted:Boolean = False):Boolean;
-    var
-      i : integer;
-      j : integer;
-    begin
-      Result := IsInverted;
-      for i := 0 to Len-2 do
-        for j := i to Len-1 do
-          if (Rs[i] <> Rs[j]) and (i <> j) then
-            begin
-              Result := not Result;
-              Exit;
-            end;
-    end;
-
-    {
-      if IsInverted then returns
-         true, all rows are odd
-         false, there is some even row
-      else
-         true, there is some even row
-         false, all rows are odd
-    }
-    function AllRowsOdd(IsInverted:Boolean = False): Boolean;
-    begin
-      Result := IsInverted;
-      for R in Rs do
-        if RowMod(R) = grEven then
-          begin
-            Result := not Result;
-            Break;
-          end;
-    end;
-
-    {
-      Uses brute-force.
-      if IsInverted then returns
-         true, all rows are even
-         false, there is some odd row
-      else
-         true, there is some odd row
-         false, all rows are even
-    }
-    function AllRowsEven(IsInverted:Boolean = False): Boolean;
-    begin
-      Result := IsInverted;
-      for R in Rs do
-        if RowMod(R) = grOdd then
-          begin
-            Result := not Result;
-            Break;
-          end;
-    end;
-
-    function RowsResult(ForBoth:Boolean=True):Boolean;
-    begin
-      if (grDiff in Criteria.Rows) or (grEqual in Criteria.Rows) then
-        begin
-          if ForBoth then
-            begin
-              if (grDiff in Criteria.Rows) and (grOdd in Criteria.Rows) then
-                Result := AllRowsDiff(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
-                          AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
-
-              if (grEqual in Criteria.Rows) and (grOdd in Criteria.Rows) then
-                Result := AllRowsEqual(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
-                          AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
-
-              if (grDiff in Criteria.Rows) and (grEven in Criteria.Rows) then
-                Result := AllRowsDiff(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
-                          AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
-
-              if (grEqual in Criteria.Rows) and (grEven in Criteria.Rows) then
-                Result := AllRowsEqual(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
-                          AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
-
-            end
-          else
-           begin
-             if (grDiff in Criteria.Rows) or (grOdd in Criteria.Rows) then
-               Result := AllRowsDiff(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
-                         AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
-
-             if (grEqual in Criteria.Rows) or (grOdd in Criteria.Rows) then
-               Result := AllRowsEqual(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
-                         AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
-
-             if (grDiff in Criteria.Rows) or (grEven in Criteria.Rows) then
-               Result := AllRowsDiff(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
-                         AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
-
-             if (grEqual in Criteria.Rows) or (grEven in Criteria.Rows) then
-               Result := AllRowsEqual(not(grNot_DIFF_EQUAL in Criteria.Rows)) and
-                         AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
-
-           end;
-        end
-      else
-        begin
-          if grOdd in Criteria.Rows then
-            Result := AllRowsOdd(not(grNot_EVEN_ODD in Criteria.Rows));
-
-          if grEven in Criteria.Rows then
-            Result := AllRowsEven(not(grNot_EVEN_ODD in Criteria.Rows));
+  // AComparisonType = 0, a pair of different items exists
+  // AComparisonType = 1, a pair of equal items exists
+  function ColorRelationExists(AComparisonType:byte;
+    InvertedResult:Boolean=False):Boolean;
+  var
+    i : integer;
+    j : integer;
+  begin
+    Result := InvertedResult;
+    for i := 0 to Len-2 do
+      for j := i to Len-1 do
+        case AComparisonType of
+          0:
+            if (Cs[i] <> Cs[j]) and (i <> j) then
+              begin
+                Result := not Result;
+                Exit;
+              end;
+          1:
+            if (Cs[i] = Cs[j]) and (i <> j) then
+              begin
+                Result := not Result;
+                Exit;
+              end;
         end;
-    end;
+  end;
 
-    function ColorsResult: Boolean;
-    begin
-      if gcDiff in Criteria.Colors then
-        Result := AllColorsDiff(not(gcNot in Criteria.Colors));
+  // AComparisonType = 0, find first pair of different items
+  // AComparisonType = 1, find first pair of equal items
+  function RowRelationExists(AComparisonType:byte;
+    InvertedResult:Boolean=False):Boolean;
+  var
+    i : integer;
+    j : integer;
+  begin
+    Result := InvertedResult;
+    for i := 0 to Len-2 do
+      for j := i to Len-1 do
+        case AComparisonType of
+          0:
+            if (Rs[i] <> Rs[j]) and (i <> j) then
+              begin
+                Result := not Result;
+                Exit;
+              end;
+          1:
+            if (Rs[i] = Rs[j]) and (i <> j) then
+              begin
+                Result := not Result;
+                Exit;
+              end;
+        end;
+  end;
 
-      if gcEqual in Criteria.Colors then
-        Result := AllColorsEqual(not(gcNot in Criteria.Colors));
-    end;
+  // find first row of type AGamerow in player responses
+  function RowExists(AGameRow:TGameRow;InvertedResult:Boolean=False): Boolean;
+  var
+    LGameRow : TGameRow;
+    LRequireMod : byte;
+  begin
+    Result := InvertedResult;
+    if (AGameRow = grEqual) or (AGameRow = grDiff) then
+      raise Exception.Create('Do not apply');
+
+    if (AGameRow = grEven) or (AGameRow = grOdd) then
+      LRequireMod := 0
+    else
+      LRequireMod := 1;
+
+    for R in Rs do
+      begin
+        case LRequireMod of
+          0 :LGameRow := RowMod(R);
+          1 :LGameRow := R;
+        end;
+
+        if LGameRow = AGameRow then
+          begin
+            Result := not Result;
+            Break;
+          end;
+
+      end;
+  end;
+
+  function RowsResult:Boolean;
+  begin
+    Result := False;
+    if (grDiff in Criteria.Rows) xor (grEqual in Criteria.Rows) then
+      begin
+        if (not (grOdd in Criteria.Rows)) and (not (grEven in Criteria.Rows)) then
+          begin
+            if (grDiff in Criteria.Rows) then
+              if grNot in Criteria.Rows then
+                 Result := not RowRelationExists(LEQUL)
+              else
+                 Result := RowRelationExists(LEQUL);
+
+            if (grEqual in Criteria.Rows) then
+              if grNot in Criteria.Rows then
+                Result := not RowRelationExists(LDIFF)
+              else
+                Result := RowRelationExists(LDIFF)
+            Exit;
+          end;
+
+        if (grDiff in Criteria.Rows) and (grOdd in Criteria.Rows) then
+          begin
+            if grNot in Criteria.Rows then
+              begin
+                if RowExists(grEven) then
+                  Result := True
+                else
+                  if RowRelationExists(LEQUL) then
+                    Result := True;
+              end
+            else
+              begin
+                if RowExists(grEven) then
+                  Exit
+                else
+                  if RowRelationExists(LEQUL) then
+                    Exit
+                  else
+                    Result := True;
+            Exit;
+          end;
+
+        if (grEqual in Criteria.Rows) and (grOdd in Criteria.Rows) then
+          begin
+            if grNot in Criteria.Rows then
+              begin
+                if RowExists(grEven) then
+                  Result := True
+                else
+                  if RowRelationExists(LDIFF) then
+                    Result := True;
+              end
+            else
+              begin
+                if RowExists(grEven) then
+                  Exit
+                else
+                  if RowRelationExists(LDIFF) then
+                    Exit
+                  else
+                    Result := True;
+            Exit;
+          end;
+
+        if (grDiff in Criteria.Rows) and (grEven in Criteria.Rows) then
+          begin
+            if grNot in Criteria.Rows then
+              begin
+                if RowExists(grOdd) then
+                  Result := True
+                else
+                  if RowRelationExists(LEQUL) then
+                    Result := True;
+              end
+            else
+              begin
+                if RowExists(grOdd) then
+                  Exit
+                else
+                  if RowRelationExists(LEQUL) then
+                    Exit
+                  else
+                    Result := True;
+              end;
+            Exit;
+          end;
+
+        if (grEqual in Criteria.Rows) and (grEven in Criteria.Rows) then
+          begin
+            if grNot in Criteria.Rows then
+              begin
+                if RowExists(grOdd) then
+                  Result := True
+                else
+                  if RowRelationExists(LDIFF) then
+                    Result := True;
+              end
+            else
+              begin
+                if RowExists(grOdd) then
+                  Exit
+                else
+                  if RowRelationExists(LDIFF) then
+                    Exit
+                  else
+                    Result := True;
+          end;
+      end
+    else
+      begin
+        if grOdd in Criteria.Rows then
+          Result := not RowExists(grEven,grNot in Criteria.Rows);
+
+        if grEven in Criteria.Rows then
+          Result := (not RowExists(grOdd,grNot in Criteria.Rows));
+      end;
+  end;
+
+  //function AllDifferent : Boolean;
+  //begin
+  //  Result := not RelationExists(LEQUL) or RelationExists(LEQUL,True);
+  //end;
+
+  function ColorsResult: Boolean;
+  begin
+    if gcDiff in Criteria.Colors then
+      Result := not ColorRelationExists(LEQUL,gcNot in Criteria.Colors);
+
+    if gcEqual in Criteria.Colors then
+      Result := not ColorRelationExists(LDIFF,gcNot in Criteria.Colors);
+  end;
 
 begin
   Result := False;
