@@ -468,15 +468,16 @@ const
           begin
             if (grDiff in Criteria.Rows) then
               if grNot in Criteria.Rows then
-                 Result := not RowRelationExists(LEQUL)
+                Result := RowRelationExists(LEQUL)
               else
-                 Result := RowRelationExists(LEQUL);
+                Result := not RowRelationExists(LEQUL);
 
             if (grEqual in Criteria.Rows) then
               if grNot in Criteria.Rows then
-                Result := not RowRelationExists(LDIFF)
-              else
                 Result := RowRelationExists(LDIFF)
+              else
+                Result := not RowRelationExists(LDIFF);
+
             Exit;
           end;
 
@@ -499,6 +500,8 @@ const
                     Exit
                   else
                     Result := True;
+
+              end;
             Exit;
           end;
 
@@ -521,6 +524,8 @@ const
                     Exit
                   else
                     Result := True;
+
+              end;
             Exit;
           end;
 
@@ -566,15 +571,23 @@ const
                     Exit
                   else
                     Result := True;
+
+              end;
           end;
       end
     else
       begin
         if grOdd in Criteria.Rows then
-          Result := not RowExists(grEven,grNot in Criteria.Rows);
+          if grNot in Criteria.Rows then
+            Result := RowExists(grEven)
+          else
+            Result := not RowExists(grEven);
 
         if grEven in Criteria.Rows then
-          Result := (not RowExists(grOdd,grNot in Criteria.Rows));
+          if grNot in Criteria.Rows then
+            Result := RowExists(grOdd)
+          else
+            Result := not RowExists(grOdd);
       end;
   end;
 
@@ -586,10 +599,16 @@ const
   function ColorsResult: Boolean;
   begin
     if gcDiff in Criteria.Colors then
-      Result := not ColorRelationExists(LEQUL,gcNot in Criteria.Colors);
+      if gcNot in Criteria.Colors then
+        Result := ColorRelationExists(LEQUL)
+      else
+        Result := not ColorRelationExists(LEQUL);
 
     if gcEqual in Criteria.Colors then
-      Result := not ColorRelationExists(LDIFF,gcNot in Criteria.Colors);
+      if gcNot in Criteria.Colors then
+        Result := ColorRelationExists(LDIFF)
+      else
+        Result := not ColorRelationExists(LDIFF);
   end;
 
 begin
