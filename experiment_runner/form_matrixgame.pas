@@ -33,13 +33,13 @@ type
     ButtonExpPause: TButton;
     ButtonExpStart: TButton;
     GBLastChoice: TGroupBox;
-    GBOldPlayers: TGroupBox;
     GBPoints: TGroupBox;
     GBAdmin: TGroupBox;
     ImageIndA: TImage;
     ImageInd: TImage;
     ImageIndB: TImage;
     ImageGroup: TImage;
+    LabelOldPlayers: TLabel;
     LabelGroup: TLabel;
     LabelInd: TLabel;
     LabelGroupCount: TLabel;
@@ -52,6 +52,7 @@ type
     ChatMemoSend: TMemo;
     ChatPanel: TPanel;
     ChatSplitter: TSplitter;
+    ListBoxOldPlayers: TListBox;
     OpenDialog: TOpenDialog;
     PopupNotifier: TPopupNotifier;
     StringGridMatrix: TStringGrid;

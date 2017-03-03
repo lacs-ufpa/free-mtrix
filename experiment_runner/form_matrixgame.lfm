@@ -4033,20 +4033,28 @@ object FormMatrixGame: TFormMatrixGame
       OnClick = ButtonExpCancelClick
       TabOrder = 2
     end
-    object GBOldPlayers: TGroupBox
-      Left = 0
-      Height = 17
-      Top = 484
-      Width = 432
-      Align = alBottom
-      AutoSize = True
-      Caption = 'Jogadores Antigos'
-      ChildSizing.LeftRightSpacing = 10
-      ChildSizing.TopBottomSpacing = 5
-      ChildSizing.HorizontalSpacing = 10
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 6
+    object ListBoxOldPlayers: TListBox
+      Left = 8
+      Height = 80
+      Top = 417
+      Width = 420
+      ClickOnSelChange = False
+      ExtendedSelect = False
+      ItemHeight = 0
+      ScrollWidth = 418
       TabOrder = 3
+      TabStop = False
+      TopIndex = -1
+    end
+    object LabelOldPlayers: TLabel
+      Left = 8
+      Height = 15
+      Top = 399
+      Width = 136
+      AutoSize = False
+      Caption = 'Jogadores Antigos'
+      Layout = tlCenter
+      ParentColor = False
     end
   end
   object btnConfirmRow: TButton
