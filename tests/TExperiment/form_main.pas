@@ -98,8 +98,8 @@ begin
   FExperiment.OnEndExperiment :=@FExperimentBox.EndExperiment;
 
   FExperiment.OnWriteReport:=@WriteReport;
-  FExperiment.LoadFromFile('C:\Users\User\Documents\GitHub\free-mtrix\experiment_runner\Pesquisadores\Pesquisador_X\Teste 2.Estudo 2.MC3.ini');
-
+  //FExperiment.LoadFromFile('C:\Users\User\Documents\GitHub\free-mtrix\experiment_runner\Pesquisadores\Pesquisador_X\Teste 2.Estudo 2.MC3.ini');
+  FExperiment.LoadFromFile('/home/rafael/git/free-mtrix/experiment_runner/Pesquisadores/Thais/TESTE.ini');
   //for j := 0 to FExperiment.ConditionsCount-1 do
   //  for i := 0 to Length(FExperiment.Condition[j].Contingencies)-1 do
   //    begin
@@ -276,7 +276,8 @@ end;
 
 procedure TForm1.ButtonChoice1Click(Sender: TObject);
 var
-  P : TPlayer;
+  P,PtoKick : TPlayer;
+  G,
   S : string;
 begin
 
@@ -360,7 +361,15 @@ begin
       ListBox1.Items.Append('ShouldAskQuestion:'+FExperiment.ShouldAskQuestion);            // 8
 
       // #32 resume else NextGeneration = PlayerToKick AID
-      ListBox1.Items.Append('Generation:'+FExperiment.NextGeneration);                      // 9
+      G := FExperiment.NextGeneration;
+      ListBox1.Items.Append('Generation:'+G);                                               // 9
+      if G <> #32 then
+        begin
+          PtoKick := FExperiment.PlayerFromID[G];
+          PtoKick.Nicname := GenResourceName(-1);
+          G := FExperiment.PlayerAsString[PtoKick];
+          FExperiment.NextGeneration := G;
+        end;
 
       // Check if we need to end the current condition
       ListBox1.Items.Append(FExperiment.NextCondition);                                     // 10
