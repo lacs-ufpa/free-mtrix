@@ -632,8 +632,8 @@ function GetPlayerFromString(s: string): TPlayer;
 
   function PointsFromString(S:string) : TPlayerPoints;
   begin
-    Result.A := StrToInt(ExtractDelimited(1,S,[',']));
-    Result.B := StrToInt(ExtractDelimited(2,S,[',']));
+    Result.A := StrToIntDef(ExtractDelimited(1,S,[',']),0);
+    Result.B := StrToIntDef(ExtractDelimited(2,S,[',']),0);
   end;
 
   function StatusFromString(S : string): TGamePlayerStatus;

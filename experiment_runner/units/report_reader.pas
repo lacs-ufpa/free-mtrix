@@ -32,6 +32,7 @@ type
     FCols : TStringList;
     FRowRange: TRowRange;
     FUseRange: Boolean;
+    function GetCols: integer;
     function GetColumnOf(AName: string): TStringList;
     procedure RangeAsLastXRows;
   public
@@ -39,6 +40,7 @@ type
     constructor Create;
     destructor Destroy; override;
     function Dump : string;
+    procedure UpdateCols(ACols : string);
     procedure Append(ARow : string);
     procedure Extend(ARowExtention : string);
     procedure Clean;
@@ -46,6 +48,7 @@ type
     property Range : TRowRange read FRowRange;
     property UseRange : Boolean read FUseRange write FUseRange;
     property ColumnOf[AName:string]:TStringList read GetColumnOf;
+    property Cols : integer read GetCols;
   end;
 
 implementation
@@ -65,10 +68,15 @@ begin
   if c > -1 then
     if FUseRange and (FRowRange.Low <= FRowRange.High) and (FRowRange.Low > 0) then
       for i := FRowRange.Low to FRowRange.High do
-        Result.Append(ExtractDelimited(c+2, FRows[i],[#9,#10]))
+        Result.Append(ExtractDelimited(c+1, FRows[i],[#9,#10]))
     else
       for Row in FRows do
-        Result.Append(ExtractDelimited(c+2, Row,[#9,#10]));
+        Result.Append(ExtractDelimited(c+1, Row,[#9,#10]));
+end;
+
+function TReportReader.GetCols: integer;
+begin
+  Result := FCols.Count;
 end;
 
 constructor TReportReader.Create;
@@ -93,15 +101,21 @@ begin
   Result := FCols.Text+LineEnding+FRows.Text;
 end;
 
+procedure TReportReader.UpdateCols(ACols: string);
+var
+  S : string;
+begin
+  S := ACols;
+  while Pos(LineEnding,S) > 0 do
+    Delete(S,Pos(LineEnding,S),Length(LineEnding));
+  FCols.Clear;
+  FCols.DelimitedText := S;
+end;
+
 procedure TReportReader.Append(ARow: string);
 begin
-  if FCols.Count = 0 then
-    FCols.DelimitedText := ARow
-  else
-    begin
-      FRows.Append(ARow);
-      RangeAsLastXRows;
-    end;
+ FRows.Append(ARow);
+ RangeAsLastXRows;
 end;
 
 procedure TReportReader.Extend(ARowExtention: string);

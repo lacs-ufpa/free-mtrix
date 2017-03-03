@@ -73,9 +73,9 @@ var
   N: Integer;
 begin
   Result := '0 %';
-  N := Round(TExperiment(Sender).InterlockingsInLastCycles);
+  N := Abs(Round(TExperiment(Sender).InterlockingsInLastCycles));
   if N > 0 then
-    LabelTargetInterlockCount.Caption := IntToStr(N) + ' %';
+    Result := IntToStr(N) + ' %';
 end;
 
 procedure TExperimentBox.Interlocking(Sender: TObject);
@@ -85,7 +85,6 @@ begin
   S := LabelInterlockCount.Caption;
   LabelInterlockCount.Caption := IntToStr((StrToInt(S)+1));
 
-  TExperiment(TComponent(Sender).Owner).InterlockingsInLastCycles;
   LabelTargetInterlockCount.Caption := GetInterlockString(TComponent(Sender).Owner);
 end;
 
