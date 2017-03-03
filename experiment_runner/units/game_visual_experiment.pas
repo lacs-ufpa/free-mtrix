@@ -20,6 +20,8 @@ type
     LabelGenerationCount,
     LabelCycle,
     LabelCycleCount,
+    LabelConditionCycle,
+    LabelConditionCycleCount,
     LabelTurn,
     LabelTurnCount,
     LabelInterlock,
@@ -55,6 +57,7 @@ resourcestring
   CAP_CONDITION = 'Condição';
   CAP_TURN = 'Turno';
   CAP_GENERATION = 'Geração';
+  CAP_COND_CYCLE = 'Ciclo (Condição)';
   CAP_CYCLES = 'Ciclo';
   HINT_GENERATION_A = 'Em parênteses o número de ciclos a cada mudança de geração';
 
@@ -97,6 +100,7 @@ end;
 procedure TExperimentBox.StartCycle(Sender: TObject);
 begin
   LabelCycleCount.Caption := IntToStr(TExperiment(Sender).Cycles.Global+1);
+  LabelConditionCycleCount.Caption := IntToStr(TExperiment(Sender).CurrentCondition.Cycles.Count+1);
   LabelTargetInterlockCount.Caption := GetInterlockString(Sender);
 end;
 
@@ -134,6 +138,8 @@ begin
   LabelTurnCount.Caption := 'NA';
   LabelInterlockCount.Caption := 'NA';
   LabelTargetInterlockCount.Caption := 'NA';
+  LabelConditionCycle.Caption := 'NA';
+  LabelConditionCycleCount.Caption:= 'NA';
 end;
 
 constructor TExperimentBox.Create(AOwner: TComponent);
@@ -179,6 +185,14 @@ begin
   LabelCycleCount := TLabel.Create(Self);
   LabelCycleCount.Caption := 'NA';
   LabelCycleCount.Parent := Self;
+
+  LabelConditionCycle:= TLabel.Create(Self);
+  LabelConditionCycle.Caption:= CAP_COND_CYCLE;
+  LabelConditionCycle.Parent:=Self;
+
+  LabelConditionCycleCount:= TLabel.Create(Self);
+  LabelConditionCycleCount.Caption:= 'NA';
+  LabelConditionCycleCount.Parent:=Self;
 
   LabelTurn := TLabel.Create(Self);
   LabelTurn.Caption := CAP_TURN;
