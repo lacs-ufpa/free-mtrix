@@ -42,7 +42,7 @@ type
     function MessageHas(const A_CONST : UTF8string; AMessage : TStringList; I:ShortInt=0): Boolean;
     procedure CreatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
     procedure DeletePlayerBox(AID : string);
-    procedure MovePlayerBox(AID : string);
+    //procedure MovePlayerBox(AID : string);
     procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType;
       var ARowBase:integer; var ADrawDots, ADrawClear : Boolean);
     procedure ReceiveMessage(AMessage : TStringList);
@@ -51,10 +51,11 @@ type
     procedure SetMustDrawDots(AValue: Boolean);
     procedure SetMustDrawDotsClear(AValue: Boolean);
     procedure SetRowBase(AValue: integer);
+    procedure MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
   private
     function AskQuestion(AQuestion:string):UTF8string;
     function ShowConsequence(AID,S:string;ForGroup:Boolean;ShowPopUp : Boolean = True) : string;
-    procedure ShowPopUp(AText:string;AInterval : integer = 15000);
+    procedure ShowSystemPopUp(AText:string;AInterval : integer = 15000);
     procedure DisableConfirmationButton;
     procedure CleanMatrix(AEnabled : Boolean);
     procedure NextConditionSetup(S : string);
@@ -143,6 +144,7 @@ const
 implementation
 
 uses ButtonPanel,Controls,ExtCtrls,StdCtrls,LazUTF8, Forms, Dialogs, strutils
+     , popup_hack
      , form_matrixgame
      , form_chooseactor
      , presentation_classes
@@ -182,7 +184,7 @@ end;
 
 procedure TGameControl.EndExperiment(Sender: TObject);
 begin
-  ShowPopUp('O Experimento terminou.');
+  ShowSystemPopUp('O Experimento terminou.');
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
 
@@ -373,18 +375,18 @@ begin
         end;
 end;
 
-procedure TGameControl.MovePlayerBox(AID: string);
-var i : integer;
-begin
-  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount -1 do
-    if FormMatrixGame.GBLastChoice.Components[i] is TPlayerBox then
-      if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
-        begin
-          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).Parent := FormMatrixGame.GBOldPlayers;
-          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).InvisibleLineRow;
-          Break;
-        end;
-end;
+//procedure TGameControl.MovePlayerBox(AID: string);
+//var i : integer;
+//begin
+//  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount -1 do
+//    if FormMatrixGame.GBLastChoice.Components[i] is TPlayerBox then
+//      if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
+//        begin
+//          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).Parent := FormMatrixGame.GBOldPlayers;
+//          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).InvisibleLineRow;
+//          Break;
+//        end;
+//end;
 
 procedure TGameControl.SetMatrixType(AStringGrid: TStringGrid;
   AMatrixType: TGameMatrixType; var ARowBase: integer; var ADrawDots,
@@ -466,6 +468,24 @@ begin
   FRowBase:=AValue;
 end;
 
+procedure TGameControl.MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
+var
+  P : TPlayer;
+begin
+  P := FExperiment.PlayerFromString[ANewPlayerString]; // new
+  CreatePlayerBox(P,Self.ID = P.ID, FActor=gaAdmin);
+  if FExperiment.ConditionMustBeUpdated <> '' then
+    begin
+      NextConditionSetup(FExperiment.ConditionMustBeUpdated);
+      FExperiment.ConditionMustBeUpdated := '';
+    end;
+
+  if FActor=gaPlayer then
+    begin
+      FExperiment.Player[FExperiment.PlayerIndexFromID[AOldPlayerID]] := P;
+      EnablePlayerMatrix(Self.ID,0, True);
+    end;
+end;
 // many thanks to howardpc for this:
 // http://forum.lazarus.freepascal.org/index.php/topic,34559.msg227585.html#msg227585
 function TGameControl.AskQuestion(AQuestion: string): UTF8string;
@@ -516,11 +536,9 @@ begin
   end;
 end;
 
-procedure TGameControl.ShowPopUp(AText: string; AInterval: integer);
+procedure TGameControl.ShowSystemPopUp(AText: string; AInterval: integer);
 var
-
   PopUpPos : TPoint;
-
   // temporary hack
   L : TLabel;
   r: TRect;
@@ -660,7 +678,7 @@ begin
       CleanMatrix(AEnabled);
 
       if AEnabled then
-        ShowPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
+        ShowSystemPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
     end;
 end;
 
@@ -939,7 +957,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           if FExperiment.PlayerFromID[Self.ID].Turn = 0 then
               EnablePlayerMatrix(Self.ID, 0, True)
           else
-              ShowPopUp('Começou! Aguarde sua vez.');
+              ShowSystemPopUp('Começou! Aguarde sua vez.');
 
     end;
   end;
@@ -954,58 +972,46 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       FExperiment.WriteChatLn(ALn);
   end;
 
-  procedure MovePlayerQueue;
-  var
-    P : TPlayer;
-  begin
-    P := FExperiment.PlayerFromString[AMessage[1]]; // new
-    CreatePlayerBox(P,Self.ID = P.ID, FActor=gaAdmin);
-    if FActor=gaPlayer then
-      begin
-        FExperiment.Player[FExperiment.PlayerIndexFromID[AMessage[2]]] := P;
-        EnablePlayerMatrix(Self.ID,0, True);
-      end;
-  end;
-
   procedure SayGoodBye(AID:string);
   var Pts : string;
   begin
-    DeletePlayerBox(AID); // old player
     case FActor of
-      gaPlayer:begin
-        if Self.ID = AID then
-          begin
-            if FExperiment.ABPoints then
-              begin
-                Pts := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption)+StrToInt(FormMatrixGame.LabelIndBCount.Caption));
-                FormMatrixGame.LabelIndACount.Caption := '0';
-                FormMatrixGame.LabelIndBCount.Caption := '0';
-              end
-            else
-              begin
-                Pts := FormMatrixGame.LabelIndCount.Caption;
-                FormMatrixGame.LabelIndCount.Caption := '0';
-              end;
+      gaPlayer:
+        begin
+          DeletePlayerBox(AID); // old player
+          if Self.ID = AID then
+            begin
+              if FExperiment.ABPoints then
+                begin
+                  Pts := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption)+StrToInt(FormMatrixGame.LabelIndBCount.Caption));
+                  FormMatrixGame.LabelIndACount.Caption := '0';
+                  FormMatrixGame.LabelIndBCount.Caption := '0';
+                end
+              else
+                begin
+                  Pts := FormMatrixGame.LabelIndCount.Caption;
+                  FormMatrixGame.LabelIndCount.Caption := '0';
+                end;
 
-            FormMatrixGame.Visible := False;
-            FormChooseActor := TFormChooseActor.Create(nil);
-            FormChooseActor.Style := K_LEFT;
-            FormChooseActor.ShowPoints(
-            'A tarefa terminou, obrigado por sua participação! Você produziu ' +
-            Pts + ' pontos e ' +
-            FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados!');
+              FormMatrixGame.Visible := False;
+              FormChooseActor := TFormChooseActor.Create(nil);
+              FormChooseActor.Style := K_LEFT;
+              FormChooseActor.ShowPoints(
+              'A tarefa terminou, obrigado por sua participação! Você produziu ' +
+              Pts + ' pontos e ' +
+              FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados.');
 
-            if FormChooseActor.ShowModal = 1 then
-              begin
-                FZMQActor.Request([AID,' ',K_RESUME]);
-                FormMatrixGame.Visible := True;
-              end
-            else;
-            FormChooseActor.Free;
-          end
-        else
-          ShowPopUp(FExperiment.PlayerFromID[AID].Nicname+ ' saiu. Por favor, aguarde a chegada de alguém para ocupar o lugar.');
-      end;
+              if FormChooseActor.ShowModal = 1 then
+                begin
+                  FormMatrixGame.Visible := True;
+                  FZMQActor.Request([AID,' ',K_RESUME]);
+                end
+              else;
+              FormChooseActor.Free;
+            end
+          else
+            ShowSystemPopUp(FExperiment.PlayerFromID[AID].Nicname+ ' saiu. Por favor, aguarde a chegada de alguém para ocupar o lugar.');
+        end;
     end;
   end;
 
@@ -1037,6 +1043,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   end;
 
   procedure ResumeNextTurn;
+  var
+    LPlayerBox : TPlayerBox;
   begin
     if AMessage[2] <> #27 then
       begin
@@ -1053,8 +1061,11 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             begin
               if AMessage[1] <> #32 then
                 begin
-                  MovePlayerBox(AMessage[1]); // old player
-                  ShowPopUp(
+                  LPlayerBox := GetPlayerBox(AMessage[1]);
+                  FormMatrixGame.ListBoxOldPlayers.Items.Append(
+                    LPlayerBox.Caption+','+LPlayerBox.LabelPointsCount.Caption);
+                  DeletePlayerBox(AMessage[1]);
+                  ShowSystemPopUp(
                           'O participante '+
                           FExperiment.PlayerFromID[AMessage[1]].Nicname+
                           ' saiu. Aguardando a entrada do próximo participante.'
@@ -1063,8 +1074,14 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             end;
 
         end;
-        if AMessage[2] <> #32 then
-          NextConditionSetup(AMessage[2]);
+        if AMessage[1] = #32 then
+          begin
+            if AMessage[2] <> #32 then
+              NextConditionSetup(AMessage[2]);
+          end
+        else
+          if AMessage[2] <> #32 then
+            FExperiment.ConditionMustBeUpdated := AMessage[2];
       end
     else EndExperimentMessage;
   end;
@@ -1074,6 +1091,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     i : integer;
     MID : string;
     LQConsequence : string;
+    LPopUpHack : TPopupNotifierHack;
   begin
     if AMessage[2] <> #27 then
       begin
@@ -1088,11 +1106,16 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               end;
 
             if LQConsequence <> '' then
-               ShowPopUp(LQConsequence);
+              begin
+                begin
+                  LPopUpHack := TPopupNotifierHack.Create(nil);
+                  LPopUpHack.ShowAndAutoDestroy(LQConsequence,FormMatrixGame,AMessage.Count*5000);
+                end;
+              end;
           end;
         ResumeNextTurn;
-        if AMessage[2] <> #32 then
-          NextConditionSetup(AMessage[2]);
+        //if AMessage[2] <> #32 then
+        //  NextConditionSetup(AMessage[2]);
       end
     else EndExperimentMessage;
   end;
@@ -1105,12 +1128,13 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     MID : string;
     LConsequence : string;
     LGConsequence : string;
+    LPopUpHack : TPopupNotifierHack;
   begin
     // present only one popup with all messages
     LConsequence := '';
     LGConsequence := '';
     LCount := WordCount(AMessage,['+']);
-    LTime := 5000*LCount;
+    LTime := 6000*LCount;
     if LCount > 0 then
       for i := 1 to LCount do
         begin
@@ -1120,7 +1144,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
         end;
 
     if LGConsequence <> '' then
-       ShowPopUp(LGConsequence,LTime);
+      begin
+        LPopUpHack := TPopupNotifierHack.Create(nil);
+        LPopUpHack.ShowAndAutoDestroy(LGConsequence,FormMatrixGame,LTime);
+      end;
   end;
 
 begin
@@ -1131,7 +1158,10 @@ begin
   if MHas(K_GMESSAGE) then ShowGroupedMessage(AMessage[1]);
   if MHas(K_START) then NotifyPlayers;
   if MHas(K_QUESTION) then ShowQuestion;
-  if MHas(K_MOVQUEUE) then MovePlayerQueue;
+  if MHas(K_MOVQUEUE) then
+    if FActor = gaPlayer then
+      MovePlayerQueue(AMessage[1],AMessage[2]);
+
   if MHas(K_QMESSAGE) then QuestionMessages;
   if MHas(K_RESUME) then ResumeNextTurn;
   if MHas(K_NXTCND) then NextConditionSetup(AMessage[1]);
@@ -1344,8 +1374,9 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
         );
 
     S := FExperiment.PlayerAsString[P];
-    ARequest.Append(S); // 3
     FExperiment.NextGeneration := S;
+    MovePlayerQueue(S,ARequest[0]);
+    ARequest.Append(S); // 3
   end;
 
 begin
