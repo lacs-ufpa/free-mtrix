@@ -621,6 +621,7 @@ var
   P : TPlayer;
   PB : TPlayerBox;
 begin
+  A := 0; B := 0; G := 0;
   if FExperiment.ABPoints then
     begin
       A := StrToInt(ExtractDelimited(1,S,['|']));
@@ -898,15 +899,15 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   procedure ReceiveChoice;
   var
     P : TPlayer;
+    FPlayerBox : TPlayerBox;
   begin
     P := FExperiment.PlayerFromID[AMessage[1]];
     // add last responses to player box
-    with GetPlayerBox(P.ID) do
-      begin
-        LabelLastRowCount.Caption := AMessage[2];
-        PanelLastColor.Color := GetColorFromString(AMessage[3]);
-        PanelLastColor.Caption:='';
-      end;
+    FPlayerBox := GetPlayerBox(P.ID);
+    FPlayerBox.LabelLastRowCount.Caption := AMessage[2];
+    FPlayerBox.PanelLastColor.Color := GetColorFromString(AMessage[3]);
+    FPlayerBox.PanelLastColor.Caption:='';
+    FPlayerBox.Invalidate;
 
     case FActor of
       gaPlayer:begin
@@ -1088,6 +1089,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
   procedure QuestionMessages;
   var
+    P : TPlayer;
     i : integer;
     MID : string;
     LQConsequence : string;
@@ -1102,7 +1104,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             for i := 3 to AMessage.Count -1 do
               begin
                 MID := ExtractDelimited(1,AMessage[i],['#']);
-                LQConsequence += ShowConsequence(MID, ExtractDelimited(2,AMessage[i],['#']),MID = 'M',False)+' ';
+                P := FExperiment.PlayerFromID[MID];
+                LQConsequence += DeduceNicname(ShowConsequence(MID, ExtractDelimited(2,AMessage[i],['#']),MID = 'M',False),P)+LineEnding;
               end;
 
             if LQConsequence <> '' then
@@ -1134,7 +1137,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     LConsequence := '';
     LGConsequence := '';
     LCount := WordCount(AMessage,['+']);
-    LTime := 6000*LCount;
+    LTime := 5000*LCount;
     if LCount > 0 then
       for i := 1 to LCount do
         begin
