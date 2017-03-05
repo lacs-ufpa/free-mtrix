@@ -256,7 +256,7 @@ begin
 
   // Update turns
   if CurrentCondition.Turn.Random then
-    P.Turn := StrToInt(FTurnsRandom.Names[CurrentCondition.Turn.Count])
+    P.Turn := StrToInt(FTurnsRandom.Strings[CurrentCondition.Turn.Count])
   else
     P.Turn := CurrentCondition.Turn.Count;
   FPlayers[PlayerIndexFromID[P.ID]] := P;
@@ -480,7 +480,7 @@ begin
     begin
       FTurnsRandom.Clear;
       for i:= 0 to Condition[CurrentConditionI].Turn.Value-1 do
-        FTurnsRandom.Add(IntToStr(i));
+        FTurnsRandom.Append(IntToStr(i));
 
       c := FTurnsRandom.Count - 1;
       for i := 0 to c do
@@ -851,7 +851,11 @@ begin
           else
             LRow += '0'+#9;
 
-      LRow += LineEnding;
+      if Assigned(FRegData) and Assigned(CurrentCondition.Prompt) then
+        // do nothing
+      else
+        LRow += LineEnding;
+
       FRegData.SaveData(LRow);
       FReportReader.Append(LRow);
       if Assigned(FOnWriteReport) then FOnWriteReport(LRow);
@@ -875,7 +879,7 @@ begin
       else
         for i:=0 to Condition[c].Turn.Value-1 do
           LRow += 'NA'+#9;
-
+      LRow += LineEnding;
       FRegData.SaveData(LRow);
       FReportReader.Extend(LRow);  // Write, i.e, extend last row
       if Assigned(FOnWriteReport) then FOnWriteReport(LRow);
