@@ -34,11 +34,11 @@ type
     FTimer : TTimer;
     FOnStart: TAnnouncerStartEvent;
     function GetEnabled: Boolean;
-    function GetInterval: integer;
+    function GetInterval: LongWord;
     procedure NextMessage;
     procedure SetEnabled(AValue: Boolean);
     procedure SelfDestroy(Sender: TObject);
-    procedure SetInterval(AValue: integer);
+    procedure SetInterval(AValue: LongWord);
     procedure StartTimer(Sender:TObject);
   public
     constructor Create(AOwner : TComponent); override;
@@ -46,7 +46,7 @@ type
     procedure Reversed;
     property Messages : TAnnoucerMessages read FMessages write FMessages;
     property OnStart : TAnnouncerStartEvent read FOnStart write FOnStart;
-    property Interval : integer read GetInterval write SetInterval;
+    property Interval : LongWord read GetInterval write SetInterval;
     property Enabled : Boolean read GetEnabled write SetEnabled;
   end;
 
@@ -65,7 +65,7 @@ begin
   Result := FTimer.Enabled;
 end;
 
-function TIntervalarAnnouncer.GetInterval: integer;
+function TIntervalarAnnouncer.GetInterval: LongWord;
 begin
   Result := FTimer.Interval;
 end;
@@ -88,7 +88,7 @@ begin
   Free;
 end;
 
-procedure TIntervalarAnnouncer.SetInterval(AValue: integer);
+procedure TIntervalarAnnouncer.SetInterval(AValue: LongWord);
 begin
   if FTimer.Interval=AValue then Exit;
   FTimer.Interval:= AValue;
