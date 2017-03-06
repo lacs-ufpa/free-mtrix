@@ -158,10 +158,5 @@ begin
 
 end;
 
-
-initialization
-
-  Randomize;
-
 end.
 

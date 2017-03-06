@@ -11,6 +11,8 @@ program experiment_runner;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE DEBUG}
+
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
@@ -95,6 +97,7 @@ const
   end;
 
 begin
+  Randomize;
   ApplicationPath := ExtractFilePath(Application.ExeName);
   PrintVersions(ApplicationPath);
   {$IFDEF DEBUG}
