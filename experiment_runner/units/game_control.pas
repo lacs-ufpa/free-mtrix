@@ -910,43 +910,44 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     FPlayerBox.Invalidate;
 
     case FActor of
-      gaPlayer:begin
-
-       // last turn// end cycle
-       if P.Turn = FExperiment.PlayersCount-1  then
+      gaPlayer:
         begin
-          // update next turn
+          // last turn// end cycle
+          if FExperiment.PlayerTurn = FExperiment.PlayersCount-1  then
+            begin
+              // update next turn
+              if Self.ID = P.ID then
+                begin
+                  P.Turn := StrToInt(AMessage[4]);
+                  FExperiment.Player[Self.ID] := P;
+                end;
+
+              CleanMatrix(False);
+
+
+              // no wait turns
+              // if should continue then
+              //if StrToBool(AMessage[6]) then
+              //EnablePlayerMatrix(Self.ID,0, True)
+
+
+              // wait for server
+              FExperiment.PlayerTurn := 0;
+              Exit;
+            end;
+          Inc(FExperiment.PlayerTurn);
+
           if Self.ID = P.ID then
-           begin
-             P.Turn := StrToInt(AMessage[4]);
-             FExperiment.Player[Self.ID] := P;
-           end;
+            begin
+              // update confirmation button
+              DisableConfirmationButton;
 
-          CleanMatrix(False);
-
-
-          // no wait turns
-          // if should continue then
-          //if StrToBool(AMessage[6]) then
-          //EnablePlayerMatrix(Self.ID,0, True)
-
-
-          // wait for server
-          Exit;
-        end;
-
-        // else
-        if Self.ID = P.ID then
-          begin
-            // update confirmation button
-            DisableConfirmationButton;
-
-            // update next turn
-            P.Turn := StrToInt(AMessage[4]);
-            FExperiment.Player[Self.ID] := P;
-          end
-        else
-          EnablePlayerMatrix(Self.ID,P.Turn+1, True);
+              // update next turn
+              P.Turn := StrToInt(AMessage[4]);
+              FExperiment.Player[Self.ID] := P;
+            end
+          else
+            EnablePlayerMatrix(Self.ID,FExperiment.PlayerTurn, True);
       end;
     end;
   end;
@@ -1216,8 +1217,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
                 P.Status:=gpsPlaying;
                 P.Choice.Color:=gcNone;
                 P.Choice.Row:=grNone;
-                // first turn always by entrance order
-                P.Turn := i;
+                P.Turn := FExperiment.FirstTurn[i];
                 FExperiment.Player[i] := P;
               end;
 

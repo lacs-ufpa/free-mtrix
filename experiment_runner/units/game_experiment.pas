@@ -62,7 +62,7 @@ type
     FCurrentCondition : integer;
     FConditions : TConditions;
     FState: TExperimentState;
-    FTurnsRandom : TStringList;
+    FRandomTurns : TStringList;
     FCycles : TCycles;
     function GetCondition(I : Integer): TCondition;
     function GetConditionsCount: integer;
@@ -120,6 +120,7 @@ type
     FOnTargetInterlocking: TNotifyEvent;
     procedure Consequence(Sender : TObject);
     function GetCurrentCondition: TCondition;
+    function GetFirstTurn(AValue:integer): integer;
     function GetMatrixTypeAsUTF8String: UTF8String;
     procedure Interlocking(Sender : TObject);
     procedure SetMatrixTypeFromUTF8String(AValue: UTF8String);
@@ -160,6 +161,7 @@ type
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
     property MatrixTypeAsString : UTF8String read GetMatrixTypeAsUTF8String write SetMatrixTypeFromUTF8String;
   public // manipulation/ self awareness
+    PlayerTurn : integer;
     function AppendCondition : integer; overload;
     function AppendCondition(ACondition : TCondition) : integer;overload;
     function AppendContingency(ACondition : integer) : integer;overload;
@@ -189,6 +191,7 @@ type
     property PlayerIndexFromID[s : UTF8string]: integer read GetPlayerIndexFromID;
     property PlayerAsString[P:TPlayer]: UTF8string read AliasPlayerAsString;
     property PlayerFromString[s : UTF8string]: TPlayer read AliasPlayerFromString;
+    property FirstTurn[i:integer] : integer read GetFirstTurn;
   public // standard control
     function ShouldEndCondition:Boolean;
     function CurrentConditionAsString:UTF8String;
@@ -256,7 +259,7 @@ begin
 
   // Update turns
   if CurrentCondition.Turn.Random then
-    P.Turn := StrToInt(FTurnsRandom.Strings[CurrentCondition.Turn.Count])
+    P.Turn := StrToInt(FRandomTurns[CurrentCondition.Turn.Count])
   else
     P.Turn := CurrentCondition.Turn.Count;
   FPlayers[PlayerIndexFromID[P.ID]] := P;
@@ -274,6 +277,8 @@ begin
       FConsequenceStringFromChoices := GetConsequenceStringFromChoices;
       WriteReportRow;
       FConditions[CurrentConditionI].Turn.Count := 0;
+      if CurrentCondition.Turn.Random then
+        CheckNeedForRandomTurns;
       Inc(FCycles.Global);
       Inc(FConditions[CurrentConditionI].Cycles.Count);
       if Assigned(FOnStartCycle) then FOnStartCycle(Self);
@@ -472,23 +477,32 @@ begin
 end;
 
 procedure TExperiment.CheckNeedForRandomTurns;
-var c ,
-    i,
-    r : integer;
+var
+  c ,
+  i,
+  r : integer;
+  LNewRandomTurns : TStringList;
 begin
-  if Condition[CurrentConditionI].Turn.Random then
+  if CurrentCondition.Turn.Random then
     begin
-      FTurnsRandom.Clear;
-      for i:= 0 to Condition[CurrentConditionI].Turn.Value-1 do
-        FTurnsRandom.Append(IntToStr(i));
+      LNewRandomTurns := TStringList.Create;
+      try
+        for i:= 0 to CurrentCondition.Turn.Value-1 do
+          LNewRandomTurns.Append(IntToStr(i));
 
-      c := FTurnsRandom.Count - 1;
-      for i := 0 to c do
-        begin
-          r := Random(c);
-          while r = i do r := Random(c);
-          FTurnsRandom.Exchange(r,i);
-        end;
+        repeat
+          c := LNewRandomTurns.Count - 1;
+          for i := 0 to c do
+            begin
+              r := Random(c);
+              while r = i do r := Random(c);
+              LNewRandomTurns.Exchange(r,i);
+            end;
+        until FRandomTurns.Text <> LNewRandomTurns.Text;
+        FRandomTurns.Text := LNewRandomTurns.Text;
+      finally
+        LNewRandomTurns.Free;
+      end;
     end;
 end;
 
@@ -631,6 +645,14 @@ end;
 function TExperiment.GetCurrentCondition: TCondition;
 begin
   Result := FConditions[CurrentConditionI];
+end;
+
+function TExperiment.GetFirstTurn(AValue: integer): integer;
+begin
+  if CurrentCondition.Turn.Random then
+    Result := StrToInt(FRandomTurns[AValue])
+  else
+    Result := AValue;
 end;
 
 function TExperiment.GetMatrixTypeAsUTF8String: UTF8String;
@@ -898,7 +920,7 @@ end;
 constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FTurnsRandom := TStringList.Create;
+  FRandomTurns := TStringList.Create;
   with FCycles do
     begin
       Global := 0;
@@ -907,51 +929,35 @@ begin
       GenerationValue:=0;
     end;
   State := xsNone;
+  PlayerTurn := 0;
 end;
 
 constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
-//var LDataPath : string;
 begin
   inherited Create(AOwner);
   FExperimentPath := AppPath;
-  FTurnsRandom := TStringList.Create;
+  FRandomTurns := TStringList.Create;
   State := xsNone;
-  //LoadExperimentFromResource(Self);
-  //LDataPath := AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim;
-  //
-  // TODO: Allow custom target interlocking. Now just taking the first meta, as usual in the lab.
-  //SetTargetInterlockingEvent;
-  //SetContingenciesEvents;
-  //
-  //CheckNeedForRandomTurns;
-  //
-  //FReportReader := TReportReader.Create;
-  //FReportReader.UseRange:=True;
-  //FReportReader.SetXLastRows(Condition[CurrentConditionI].EndCriterium.LastCycles);
-  //
-  //FRegData := TRegData.Create(Self, LDataPath+'000.dat');
-  //FRegChat := TRegData.Create(Self, LDataPath+'000.chat');
-  //WriteReportHeader;
+  PlayerTurn := 0;
 end;
 
 constructor TExperiment.Create(AOwner:TComponent;AFilename,AppPath:string);
 begin
   inherited Create(AOwner);
-  FTurnsRandom := TStringList.Create;
+  FRandomTurns := TStringList.Create;
   if LoadExperimentFromFile(Self,AFilename) then
     begin
       FExperimentPath := AppPath;
       CheckNeedForRandomTurns;
       State := xsWaiting;
     end;
-  //FReportReader := TReportReader.Create;
-  //FRegData := TRegData.Create(Self, AppPath+VAL_RESEARCHER+'es'+PathDelim+Researcher+PathDelim+ExperimentName+PathDelim+'000.dat');
+  PlayerTurn := 0;
 end;
 
 destructor TExperiment.Destroy;
 begin
   FReportReader.Free;
-  FTurnsRandom.Free;
+  FRandomTurns.Free;
   inherited Destroy;
 end;
 
