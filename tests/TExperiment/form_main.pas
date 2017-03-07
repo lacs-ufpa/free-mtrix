@@ -278,7 +278,8 @@ procedure TForm1.ButtonChoice1Click(Sender: TObject);
 var
   P,PtoKick : TPlayer;
   G,
-  S : string;
+  T, S , LIDTurn: string;
+  LCount, i: Integer;
 begin
 
   P := FExperiment.PlayerFromID[FExperiment.Player[FExperiment.CurrentCondition.Turn.Count].ID];
@@ -346,11 +347,24 @@ begin
   // individual consequences from player choice
   S := FExperiment.ConsequenceStringFromChoice[P];
 
-  // update turn
-  P := FExperiment.NextTurn[P];
+  // update turns
+  T := FExperiment.NextTurn;
 
-  // append results
-  ListBox1.Items.Append('UpdatedTurn:'+IntToStr(P.Turn)); // 5
+  // update next turn if necessary
+  if T <> #32 then
+    begin
+      LCount := WordCount(T,['+']);
+      if LCount > 0 then
+        for i := 1 to LCount do
+          begin
+            LIDTurn := ExtractDelimited(i,T,['+']);
+            ListBox1.Items.Append('UpdatedTurnA:'+ExtractDelimited(1,LIDTurn,['|']));
+            ListBox1.Items.Append('UpdatedTurnB:'+ExtractDelimited(2,LIDTurn,['|']));
+          end;
+    end
+  else
+    ListBox1.Items.Append('UpdatedTurn:'+T); // 5
+
   ListBox1.Items.Append('IndividualConsequences:'+S);    // 6
   if FExperiment.IsEndCycle then // >7 = EndCycle
     begin
