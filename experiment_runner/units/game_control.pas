@@ -682,7 +682,10 @@ begin
       CleanMatrix(AEnabled);
 
       if AEnabled then
-        ShowSystemPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
+        begin
+          ShowSystemPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
+          FormMatrixGame.BringToFront;
+        end;
     end;
 end;
 
