@@ -334,6 +334,7 @@ begin
   L.BorderSpacing.Left:=26;
   L.BorderSpacing.Right:=26;
   L.BorderSpacing.Bottom:=26;
+  L.OnClick := FormMatrixGame.PopupNotifier.vNotifierForm.OnClick;
   L.Parent := FormMatrixGame.PopupNotifier.vNotifierForm;
 end;
 

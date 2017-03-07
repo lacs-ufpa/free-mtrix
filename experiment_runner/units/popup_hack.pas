@@ -32,7 +32,8 @@ implementation
 
 procedure TPopupNotifierHack.AutoDestroy(Sender: TObject);
 begin
-  Free;
+  if Assigned(Self) then
+    Free;
 end;
 
 constructor TPopupNotifierHack.Create(AOwner: TComponent);
@@ -54,6 +55,7 @@ begin
   FLabel.BorderSpacing.Left:=26;
   FLabel.BorderSpacing.Right:=26;
   FLabel.BorderSpacing.Bottom:=26;
+  FLabel.OnClick := vNotifierForm.OnClick;
   FLabel.Parent := vNotifierForm;
   vNotifierForm.AutoSize:=True;
   Color:=clTeal;
