@@ -68,7 +68,7 @@ type
     function GetConditionsCount: integer;
     function GetContingenciesCount(C: integer): integer;
     function GetContingency(ACondition, I : integer): TContingency;
-    function GetNextTurn(P: TPlayer): TPlayer;
+    function GetNextTurn : UTF8string;
     function GetNextTurnPlayerID: UTF8string;
     function GetNextCondition:string;
     function AliasPlayerAsString(P: TPlayer): UTF8string;
@@ -202,7 +202,7 @@ type
     property ConsequenceStringFromChoice[P:TPlayer]:UTF8String read GetConsequenceStringFromChoice;
     property ConsequenceStringFromChoices: UTF8String read FConsequenceStringFromChoices;
     property NextTurnPlayerID : UTF8string read GetNextTurnPlayerID;
-    property NextTurn[P : TPlayer] : TPlayer read GetNextTurn;
+    property NextTurn : UTF8string read GetNextTurn;
     property NextCondition : string read GetNextCondition;
     property NextGeneration: string read GetPlayerToKick write SetPlayersQueue;
     property ConditionMustBeUpdated : string read FConditionMustBeUpdated write FConditionMustBeUpdated;
@@ -253,17 +253,12 @@ begin
   Result := FConditions[ACondition].Contingencies[I];
 end;
 
-function TExperiment.GetNextTurn(P: TPlayer): TPlayer; // used during player arriving
+function TExperiment.GetNextTurn: UTF8string; // used during player arriving
+var
+  i : integer;
 begin
   if Assigned(FOnEndTurn) then FOnEndTurn(Self);
-
-  // Update turns
-  if CurrentCondition.Turn.Random then
-    P.Turn := StrToInt(FRandomTurns[CurrentCondition.Turn.Count])
-  else
-    P.Turn := CurrentCondition.Turn.Count;
-  FPlayers[PlayerIndexFromID[P.ID]] := P;
-  Result := P;
+  Result := #32;
 
   if CurrentCondition.Turn.Count < CurrentCondition.Turn.Value-1 then
     begin
@@ -277,10 +272,16 @@ begin
       FConsequenceStringFromChoices := GetConsequenceStringFromChoices;
       WriteReportRow;
       FConditions[CurrentConditionI].Turn.Count := 0;
-      if CurrentCondition.Turn.Random then
-        CheckNeedForRandomTurns;
       Inc(FCycles.Global);
       Inc(FConditions[CurrentConditionI].Cycles.Count);
+
+      if CurrentCondition.Turn.Random then
+        begin
+          CheckNeedForRandomTurns;
+          Result := '';
+          for i:= 0 to FRandomTurns.Count-1 do
+            Result += FRandomTurns[i]+'+';
+        end;
       if Assigned(FOnStartCycle) then FOnStartCycle(Self);
     end;
 
@@ -488,7 +489,10 @@ begin
       LNewRandomTurns := TStringList.Create;
       try
         for i:= 0 to CurrentCondition.Turn.Value-1 do
-          LNewRandomTurns.Append(IntToStr(i));
+          if Length(FPlayers) = CurrentCondition.Turn.Value then
+            LNewRandomTurns.Append(FPlayers[i].ID+'|'+IntToStr(i))
+          else
+            LNewRandomTurns.Append('fisrt_turn_doesnt_matter'+'|'+IntToStr(i));
 
         repeat
           c := LNewRandomTurns.Count - 1;
@@ -650,7 +654,7 @@ end;
 function TExperiment.GetFirstTurn(AValue: integer): integer;
 begin
   if CurrentCondition.Turn.Random then
-    Result := StrToInt(FRandomTurns[AValue])
+    Result := StrToInt(Delimited(2,FRandomTurns[AValue]))
   else
     Result := AValue;
 end;

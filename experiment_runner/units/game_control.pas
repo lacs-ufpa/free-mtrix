@@ -482,7 +482,8 @@ begin
 
   if FActor=gaPlayer then
     begin
-      FExperiment.Player[FExperiment.PlayerIndexFromID[AOldPlayerID]] := P;
+      P.Turn := FExperiment.Player[AOldPlayerID].Turn;
+      FExperiment.Player[AOldPlayerID] := P;
       EnablePlayerMatrix(Self.ID,0, True);
     end;
 end;
@@ -902,6 +903,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   var
     P : TPlayer;
     FPlayerBox : TPlayerBox;
+    LIDTurn: String;
+    LCount, i: Integer;
   begin
     P := FExperiment.PlayerFromID[AMessage[1]];
     // add last responses to player box
@@ -914,24 +917,31 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     case FActor of
       gaPlayer:
         begin
-          // last turn// end cycle
-          if FExperiment.PlayerTurn = FExperiment.PlayersCount-1  then
+          // last turn // end cycle
+          if FExperiment.PlayerTurn = FExperiment.PlayersCount-1 then
             begin
-              // update next turn
-              if Self.ID = P.ID then
+              // update next turn if necessary
+              if AMessage[4] <> #32 then
                 begin
-                  P.Turn := StrToInt(AMessage[4]);
-                  FExperiment.Player[Self.ID] := P;
+                  LCount := WordCount(AMessage[4],['+']);
+                  if LCount > 0 then
+                    for i := 1 to LCount do
+                      begin
+                        LIDTurn := ExtractDelimited(i,AMessage[4],['+']);
+                        if Self.ID = ExtractDelimited(1,LIDTurn,['|']) then
+                          begin
+                            P := FExperiment.PlayerFromID[Self.ID];
+                            P.Turn := StrToInt(ExtractDelimited(2,LIDTurn,['|']));
+                            FExperiment.PlayerFromID[Self.ID] := P;
+                          end;
+                      end;
                 end;
-
               CleanMatrix(False);
 
-
-              // no wait turns
+              // do not wait for server
               // if should continue then
-              //if StrToBool(AMessage[6]) then
-              //EnablePlayerMatrix(Self.ID,0, True)
-
+              // if StrToBool(AMessage[6]) then
+              // EnablePlayerMatrix(Self.ID,0, True)
 
               // wait for server
               FExperiment.PlayerTurn := 0;
@@ -940,14 +950,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           Inc(FExperiment.PlayerTurn);
 
           if Self.ID = P.ID then
-            begin
-              // update confirmation button
-              DisableConfirmationButton;
-
-              // update next turn
-              P.Turn := StrToInt(AMessage[4]);
-              FExperiment.Player[Self.ID] := P;
-            end
+            DisableConfirmationButton
           else
             EnablePlayerMatrix(Self.ID,FExperiment.PlayerTurn, True);
       end;
@@ -1291,14 +1294,11 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     P.Choice.Color:= GetGameColorFromString(ARequest[4]);          // 4 color
     ARequest[2] := K_CHOICE+K_ARRIVED;                             // 2 message topic
 
-    // generate individual consequences
+    // generate individual consequences and update player
     S := FExperiment.ConsequenceStringFromChoice[P];
 
     // update turn
-    P := FExperiment.NextTurn[P];
-
-    // append results
-    ARequest.Append(IntToStr(P.Turn));                             // 5
+    ARequest.Append(FExperiment.NextTurn);                         // 5
 
     // individual consequences
     ARequest.Append(S);                                            // 6
