@@ -350,6 +350,7 @@ begin
   if goRowSelect in StringGridMatrix.Options then Exit;
   StringGridMatrix.Options := StringGridMatrix.Options+[goRowSelect];
   btnConfirmRow.Visible := True;
+  PopupNotifier.Visible:= False;
 end;
 
 procedure TFormMatrixGame.ChatMemoSendKeyPress(Sender: TObject; var Key: char);
