@@ -624,15 +624,14 @@ begin
   A := 0; B := 0; G := 0;
   if FExperiment.ABPoints then
     begin
-      A := StrToInt(ExtractDelimited(1,S,['|']));
-      B := StrToInt(ExtractDelimited(2,S,['|']));
       G := StrToInt(ExtractDelimited(3,S,['|']));
-
       G += StrToInt(FormMatrixGame.LabelGroupCount.Caption);
       FormMatrixGame.LabelGroupCount.Caption := IntToStr(G);
       case FActor of
         gaPlayer:
           begin
+            A := StrToInt(ExtractDelimited(1,S,['|']));
+            B := StrToInt(ExtractDelimited(2,S,['|']));
             A += StrToInt(FormMatrixGame.LabelIndACount.Caption);
             B += StrToInt(FormMatrixGame.LabelIndBCount.Caption);
 
@@ -643,6 +642,8 @@ begin
          for P in FExperiment.Players do
           begin
             PB := GetPlayerBox(P.ID);
+            A := StrToInt(ExtractDelimited(1,S,['|']));
+            B := StrToInt(ExtractDelimited(2,S,['|']));
             A += StrToInt(PB.LabelPointsCount.Caption) + B;
             PB.LabelPointsCount.Caption := IntToStr(A);
           end;
@@ -650,13 +651,13 @@ begin
     end
   else
     begin
-      A := StrToInt(ExtractDelimited(1,S,['|']));
       G := StrToInt(ExtractDelimited(2,S,['|']));
       G += StrToInt(FormMatrixGame.LabelGroupCount.Caption);
       FormMatrixGame.LabelGroupCount.Caption := IntToStr(G);
       case FActor of
         gaPlayer:
           begin
+            A := StrToInt(ExtractDelimited(1,S,['|']));
             A += StrToInt(FormMatrixGame.LabelIndACount.Caption);
             FormMatrixGame.LabelIndCount.Caption := IntToStr(A);
           end;
@@ -665,6 +666,7 @@ begin
          for P in FExperiment.Players do
           begin
             PB := GetPlayerBox(P.ID);
+            A := StrToInt(ExtractDelimited(1,S,['|']));
             A += StrToInt(PB.LabelPointsCount.Caption);
             PB.LabelPointsCount.Caption := IntToStr(A);
           end;
