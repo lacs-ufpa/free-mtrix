@@ -18,7 +18,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="2"/>
-      <BuildNr Value="4"/>
+      <BuildNr Value="5"/>
       <Language Value="0416"/>
       <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_runner" ProductName="Free-mtrix" ProductVersion="0.2.0"/>
     </VersionInfo>
@@ -118,7 +118,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="16">
+    <Units Count="17">
       <Unit0>
         <Filename Value="experiment_runner.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -189,6 +189,10 @@
         <Filename Value="../sc_split/experiment_runner/units/helpers.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit15>
+      <Unit16>
+        <Filename Value="units/popup_hack.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit16>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
