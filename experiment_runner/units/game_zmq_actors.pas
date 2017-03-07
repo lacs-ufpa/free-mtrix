@@ -167,7 +167,9 @@ end;
 { TZMQActor }
 
 procedure TZMQActor.MessageReceived(AMultipartMessage: TStringList);
+{$IFDEF DEBUG}
 var i : integer;
+{$ENDIF}
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'ReceivedAMessage');
@@ -178,7 +180,9 @@ begin
 end;
 
 procedure TZMQActor.ReplyReceived(AMultipartMessage: TStringList);
+{$IFDEF DEBUG}
 var i : integer;
+{$ENDIF}
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'ReceivedAReply');
@@ -189,7 +193,9 @@ begin
 end;
 
 procedure TZMQActor.RequestReceived(var AMultipartMessage: TStringList);
+{$IFDEF DEBUG}
 var i : integer;
+{$ENDIF}
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'ReceivedARequest');
@@ -212,7 +218,9 @@ begin
 end;
 
 procedure TZMQActor.SendMessage(AMessage: array of UTF8string);
+{$IFDEF DEBUG}
 var i : integer;
+{$ENDIF}
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'SendingMessage:'+AMessage[1]);
@@ -222,7 +230,9 @@ begin
 end;
 
 procedure TZMQActor.Request(ARequest: array of UTF8string);
+{$IFDEF DEBUG}
 var i : integer;
+{$ENDIF}
 begin
   {$IFDEF DEBUG}
   WriteLn(ClassType.ClassName+':'+'SendingRequest:'+ARequest[2]);
