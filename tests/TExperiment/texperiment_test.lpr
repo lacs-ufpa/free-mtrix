@@ -22,6 +22,7 @@ uses
 {$R *.res}
 
 begin
+  Randomize;
   RequireDerivedFormResource:=True;
   Application.Initialize;
   Application.CreateForm(TForm1, Form1);
