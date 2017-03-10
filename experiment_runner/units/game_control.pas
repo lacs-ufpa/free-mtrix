@@ -352,7 +352,7 @@ begin
         Caption := P.Nicname+SysToUtf8(' (Você)' )
       else
         Caption := P.Nicname;
-      i1 := Integer(P.Choice.Row);
+      i1 := Ord(P.Choice.Row);
       if i1 > 0 then
         LabelLastRowCount.Caption := Format('%-*.*d', [1,2,i1])
       else
