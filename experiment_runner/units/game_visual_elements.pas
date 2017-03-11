@@ -79,15 +79,21 @@ begin
   LabelLastRowCount.Parent := Self;
   Enabled:= False;
 
+  LabelPoints:= TLabel.Create(Self);
+  LabelPoints.Caption:=CAP_POINTS;
+  LabelPoints.Parent := Self;
+  LabelPointsCount:= TLabel.Create(Self);
+  LabelPointsCount.Caption:='0';
+  LabelPointsCount.Parent := Self;
   if Admin then
     begin
-      LabelPoints:= TLabel.Create(Self);
-      LabelPoints.Caption:=CAP_POINTS;
-      LabelPoints.Parent := Self;
-
-      LabelPointsCount:= TLabel.Create(Self);
-      LabelPointsCount.Caption:='0';
-      LabelPointsCount.Parent := Self;
+      LabelPoints.Visible := True;
+      LabelPointsCount.Visible := True;
+    end
+  else
+    begin
+      LabelPoints.Visible := False;
+      LabelPointsCount.Visible := False;
     end;
   //LabelLastRow.AutoSize := False;
 end;

@@ -41,7 +41,8 @@ type
     function GetSelectedRowF(AStringGrid : TStringGrid) : UTF8string;
     function MessageHas(const A_CONST : UTF8string; AMessage : TStringList; I:ShortInt=0): Boolean;
     procedure CreatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
-    procedure DeletePlayerBox(AID : string);
+    procedure UpdatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
+    //procedure DeletePlayerBox(AID : string);
     //procedure MovePlayerBox(AID : string);
     procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType;
       var ARowBase:integer; var ADrawDots, ADrawClear : Boolean);
@@ -352,7 +353,7 @@ begin
         Caption := P.Nicname+SysToUtf8(' (Você)' )
       else
         Caption := P.Nicname;
-      i1 := Ord(P.Choice.Row);
+      i1 := PtrInt(P.Choice.Row);
       if i1 > 0 then
         LabelLastRowCount.Caption := Format('%-*.*d', [1,2,i1])
       else
@@ -363,17 +364,37 @@ begin
     end;
 end;
 
-procedure TGameControl.DeletePlayerBox(AID: string);
-var i : integer;
+procedure TGameControl.UpdatePlayerBox(P: TPlayer; Me: Boolean; Admin: Boolean);
 begin
-  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount -1 do
-    if FormMatrixGame.GBLastChoice.Components[i] is TPlayerBox then
-      if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
+  with GetPlayerBox(P.ID) do
+    begin
+      if Me then
+        Caption := P.Nicname+SysToUtf8(' (Você)' )
+      else
+        Caption := P.Nicname;
+      if Admin then
         begin
-          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).Free;
-          Break;
+          LabelPointsCount.Caption := '0';
+        end
+      else
+        begin;
+          LabelLastRowCount.Caption := 'NA';
+          PanelLastColor.Color := GetColorFromCode(P.Choice.Color);
         end;
+    end;
 end;
+
+//procedure TGameControl.DeletePlayerBox(AID: string);
+//var i : integer;
+//begin
+//  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount -1 do
+//    if FormMatrixGame.GBLastChoice.Components[i] is TPlayerBox then
+//      if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
+//        begin
+//          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).Free;
+//          Break;
+//        end;
+//end;
 
 //procedure TGameControl.MovePlayerBox(AID: string);
 //var i : integer;
@@ -473,7 +494,7 @@ var
   P : TPlayer;
 begin
   P := FExperiment.PlayerFromString[ANewPlayerString]; // new
-  CreatePlayerBox(P,Self.ID = P.ID, FActor=gaAdmin);
+  UpdatePlayerBox(P,Self.ID = P.ID, FActor=gaAdmin);
   if FExperiment.ConditionMustBeUpdated <> '' then
     begin
       NextConditionSetup(FExperiment.ConditionMustBeUpdated);
@@ -988,7 +1009,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     case FActor of
       gaPlayer:
         begin
-          DeletePlayerBox(AID); // old player
+          //DeletePlayerBox(AID); // old player
           if Self.ID = AID then
             begin
               if FExperiment.ABPoints then
@@ -1074,7 +1095,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                   LPlayerBox := GetPlayerBox(AMessage[1]);
                   FormMatrixGame.ListBoxOldPlayers.Items.Append(
                     LPlayerBox.Caption+','+LPlayerBox.LabelPointsCount.Caption);
-                  DeletePlayerBox(AMessage[1]);
+                  //DeletePlayerBox(AMessage[1]);
                   ShowSystemPopUp(
                           'O participante '+
                           FExperiment.PlayerFromID[AMessage[1]].Nicname+
@@ -1419,6 +1440,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
       begin
         for i:= 3 to AReply.Count -5 do
           begin
+            // load already logged in players
             P := FExperiment.PlayerFromString[AReply[i]];
             FExperiment.AppendPlayer(P);
             CreatePlayerBox(P, False);
