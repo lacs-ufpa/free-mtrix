@@ -412,6 +412,10 @@ end;
 procedure TGameControl.SetMatrixType(AStringGrid: TStringGrid;
   AMatrixType: TGameMatrixType; var ARowBase: integer; var ADrawDots,
   ADrawClear: Boolean);
+var
+  LGridHeight,
+  i: integer;
+  LTextStyle:TTextStyle;
 
   procedure WriteGridFixedNames(ASGrid: TStringGrid; WriteCols: boolean);
   var
@@ -428,12 +432,16 @@ procedure TGameControl.SetMatrixType(AStringGrid: TStringGrid;
 
 begin
   AStringGrid.Clean;
+  LTextStyle := AStringGrid.DefaultTextStyle;
+  LTextStyle.Alignment:=taCenter;
+  AStringGrid.DefaultTextStyle := LTextStyle;
+
+  LGridHeight := 0;
   if gmRows in AMatrixType then
     begin
       ARowBase := 0;
       AStringGrid.FixedRows := 0;
       AStringGrid.RowCount := 10;
-      AStringGrid.Height:=305;
       AStringGrid.Options := [goFixedHorzLine, goHorzLine];
       WriteGridFixedNames(AStringGrid, False);
     end;
@@ -444,11 +452,16 @@ begin
       AStringGrid.Clean;
       AStringGrid.FixedRows := 1;
       AStringGrid.RowCount := 11;
-      AStringGrid.Height:=335;
       AStringGrid.Options := [goFixedHorzLine, goHorzLine, goVertLine];
       WriteGridFixedNames(AStringGrid, True);
     end;
 
+  for i := 0 to AStringGrid.RowCount -1 do
+    begin
+      AStringGrid.RowHeights[i] := AStringGrid.RowHeights[i] + 5;
+      LGridHeight += AStringGrid.RowHeights[i];
+    end;
+  AStringGrid.Height := LGridHeight+5;
   ADrawDots := gmDots in AMatrixType;
   ADrawClear:= gmClearDots in AMatrixType;
 end;

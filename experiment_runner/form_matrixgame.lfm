@@ -1,10 +1,10 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 26
+  Left = 20
   Height = 682
-  Top = 38
+  Top = 39
   Width = 1234
   HorzScrollBar.Page = 1234
-  VertScrollBar.Page = 542
+  VertScrollBar.Page = 526
   AutoScroll = True
   Caption = 'Matrix'
   ClientHeight = 672
@@ -21,7 +21,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 345
+    Height = 304
     Top = 0
     Width = 709
     AutoEdit = False
@@ -31,7 +31,10 @@ object FormMatrixGame: TFormMatrixGame
     DefaultRowHeight = 30
     Enabled = False
     FixedRows = 0
+    Font.Height = -20
+    Font.Name = 'Monospace'
     Options = []
+    ParentFont = False
     RowCount = 10
     TabOrder = 0
     TitleFont.Name = 'Monospace'
