@@ -1142,7 +1142,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               begin
                 begin
                   LPopUpHack := TPopupNotifierHack.Create(nil);
-                  LPopUpHack.ShowAndAutoDestroy(LQConsequence,FormMatrixGame,AMessage.Count*5000);
+                  LPopUpHack.ShowAndAutoDestroy(LQConsequence,FormMatrixGame,AMessage.Count*2500);
                 end;
               end;
           end;
