@@ -479,33 +479,45 @@ end;
 
 procedure TExperiment.CheckNeedForRandomTurns;
 var
-  c ,
+  LNumberOfPlayers,
   i,
   r : integer;
-  LNewRandomTurns : TStringList;
+  LOldRandomOrder , LNewRandomOrder: TStringList;
+
 begin
   if CurrentCondition.Turn.Random then
     begin
-      LNewRandomTurns := TStringList.Create;
+      LNumberOfPlayers := CurrentCondition.Turn.Value;
+      LNewRandomOrder := TStringList.Create;
+      LOldRandomOrder := TStringList.Create;
       try
-        for i:= 0 to CurrentCondition.Turn.Value-1 do
-          if Length(FPlayers) = CurrentCondition.Turn.Value then
-            LNewRandomTurns.Append(FPlayers[i].ID+'|'+IntToStr(i))
-          else
-            LNewRandomTurns.Append('fisrt_turn_doesnt_matter'+'|'+IntToStr(i));
+        for i:= 0 to LNumberOfPlayers-1 do
+          begin
+            if Length(FPlayers) = LNumberOfPlayers then
+              LOldRandomOrder.Append(Delimited(2,FRandomTurns[i]))
+            else
+              LOldRandomOrder.Append(IntToStr(i));
+            LNewRandomOrder.Append(IntToStr(i));
+          end;
 
         repeat
-          c := LNewRandomTurns.Count - 1;
-          for i := 0 to c do
+          for i := 0 to LNewRandomOrder.Count - 1 do
             begin
-              r := Random(c);
-              while r = i do r := Random(c);
-              LNewRandomTurns.Exchange(r,i);
+              r := Random(LNumberOfPlayers);
+              while r = i do r := Random(LNumberOfPlayers);
+              LNewRandomOrder.Exchange(r,i);
             end;
-        until FRandomTurns.Text <> LNewRandomTurns.Text;
-        FRandomTurns.Text := LNewRandomTurns.Text;
+        until LNewRandomOrder.Text <> LOldRandomOrder.Text;
+
+        for i:= 0 to LNumberOfPlayers-1 do
+          if Length(FPlayers) = LNumberOfPlayers then
+            FRandomTurns.Append(FPlayers[i].ID+'|'+LNewRandomOrder[i])
+          else
+            FRandomTurns.Append('fisrt_turn_doesnt_matter'+'|'+LNewRandomOrder[i]);
+
       finally
-        LNewRandomTurns.Free;
+        LOldRandomOrder.Free;
+        LNewRandomOrder.Free;
       end;
     end;
 end;
