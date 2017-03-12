@@ -11,6 +11,8 @@ unit game_zmq_actors;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE DEBUG}
+
 interface
 
 uses
@@ -48,7 +50,8 @@ type
 
   TZMQPlayer = class(TZMQActor)
   private
-    FZMQClient : TZMQClientThread;
+    FZMQMessages : TZMQMessagesThread;
+    FZMQRequests  : TZMQRequestsThread;
   public
     constructor Create(AOwner : TComponent; AID : UTF8String); override;
     destructor Destroy; override;
@@ -132,7 +135,7 @@ begin
   {$IFDEF DEBUG}
   inherited SendMessage(AMessage);
   {$ENDIF}
-  FZMQClient.Push(AMessage);
+  FZMQMessages.Push(AMessage);
 end;
 
 procedure TZMQPlayer.Request(ARequest: array of UTF8string);
@@ -140,28 +143,32 @@ begin
   {$IFDEF DEBUG}
   inherited Request(ARequest);
   {$ENDIF}
-  FZMQClient.Request(ARequest);
+  FZMQRequests.Request(ARequest);
 end;
 
 constructor TZMQPlayer.Create(AOwner: TComponent; AID: UTF8String);
 begin
   inherited Create(AOwner);
   FID:=AID;
-  FZMQClient := TZMQClientThread.Create(AID);
-  FZMQClient.OnMessageReceived:=@MessageReceived;
-  FZMQClient.OnReplyReceived:=@ReplyReceived;
+  FZMQMessages := TZMQMessagesThread.Create(AID);
+  FZMQMessages.OnMessageReceived:=@MessageReceived;
+
+  FZMQRequests := TZMQRequestsThread.Create(FZMQMessages.Context);
+  FZMQRequests.OnReplyReceived:=@ReplyReceived;
 end;
 
 destructor TZMQPlayer.Destroy;
 begin
-  FZMQClient.Terminate;
+  FZMQMessages.Terminate;
+  FZMQRequests.Terminate;
   inherited Destroy;
 end;
 
 procedure TZMQPlayer.Start;
 begin
   inherited Start;
-  FZMQClient.Start;
+  FZMQMessages.Start;
+  FZMQRequests.Start;
 end;
 
 { TZMQActor }
