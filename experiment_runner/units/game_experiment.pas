@@ -514,7 +514,6 @@ begin
             FRandomTurns.Append(FPlayers[i].ID+'|'+LNewRandomOrder[i])
           else
             FRandomTurns.Append('fisrt_turn_doesnt_matter'+'|'+LNewRandomOrder[i]);
-
       finally
         LOldRandomOrder.Free;
         LNewRandomOrder.Free;

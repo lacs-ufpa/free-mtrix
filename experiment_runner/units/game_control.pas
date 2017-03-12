@@ -56,7 +56,7 @@ type
   private
     function AskQuestion(AQuestion:string):UTF8string;
     function ShowConsequence(AID,S:string;ForGroup:Boolean;ShowPopUp : Boolean = True) : string;
-    procedure ShowSystemPopUp(AText:string;AInterval : integer = 15000);
+    procedure ShowSystemPopUp(AText:string;AInterval : integer);
     procedure DisableConfirmationButton;
     procedure CleanMatrix(AEnabled : Boolean);
     procedure NextConditionSetup(S : string);
@@ -185,7 +185,7 @@ end;
 
 procedure TGameControl.EndExperiment(Sender: TObject);
 begin
-  ShowSystemPopUp('O Experimento terminou.');
+  ShowSystemPopUp('O Experimento terminou.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
 
@@ -717,7 +717,10 @@ begin
 
       if AEnabled then
         begin
-          ShowSystemPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
+          ShowSystemPopUp(
+            'É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.',
+            GLOBAL_SYSTEM_MESSAGE_INTERVAL
+          );
           {$IFDEF DEBUG}
             {$IFDEF WINDOWS}
               // todo:
@@ -1007,7 +1010,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           if FExperiment.PlayerFromID[Self.ID].Turn = 0 then
               EnablePlayerMatrix(Self.ID, 0, True)
           else
-              ShowSystemPopUp('Começou! Aguarde sua vez.');
+              ShowSystemPopUp('Começou! Aguarde sua vez.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
 
     end;
   end;
@@ -1047,9 +1050,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor := TFormChooseActor.Create(nil);
               FormChooseActor.Style := K_LEFT;
               FormChooseActor.ShowPoints(
-              'A tarefa terminou, obrigado por sua participação! Você produziu ' +
-              Pts + ' pontos e ' +
-              FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados.');
+                'A tarefa terminou, obrigado por sua participação! Você produziu ' +
+                Pts + ' pontos e ' +
+                FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados.'
+              );
 
               if FormChooseActor.ShowModal = 1 then
                 begin
@@ -1060,7 +1064,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor.Free;
             end
           else
-            ShowSystemPopUp(FExperiment.PlayerFromID[AID].Nicname+ ' saiu. Por favor, aguarde a chegada de alguém para ocupar o lugar.');
+            ShowSystemPopUp(
+              FExperiment.PlayerFromID[AID].Nicname+ ' saiu. Por favor, aguarde a chegada de alguém para ocupar o lugar.',
+              GLOBAL_SYSTEM_MESSAGE_INTERVAL
+            );
         end;
     end;
   end;
@@ -1083,7 +1090,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor.ShowPoints(
           'A tarefa terminou, obrigado por sua participação! Você produziu ' +
           Pts + ' pontos e ' +
-          FormMatrixGame.LabelGroupCount.Caption + 'itens escolares serão doados! Parabéns!');
+          FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados! Parabéns!');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
           FormMatrixGame.Close;
@@ -1118,7 +1125,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                   ShowSystemPopUp(
                           'O participante '+
                           FExperiment.PlayerFromID[AMessage[1]].Nicname+
-                          ' saiu. Aguardando a entrada do próximo participante.'
+                          ' saiu. Aguardando a entrada do próximo participante.',
+                          GLOBAL_SYSTEM_MESSAGE_INTERVAL
                         );
                 end;
             end;
@@ -1143,6 +1151,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     MID : string;
     LQConsequence : string;
     LPopUpHack : TPopupNotifierHack;
+    LTime : integer;
   begin
     if AMessage[2] <> #27 then
       begin
@@ -1160,8 +1169,13 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             if LQConsequence <> '' then
               begin
                 begin
+                  if AMessage.Count > 1 then
+                    LTime := GLOBAL_MESSAGES_INTERVAL
+                  else
+                    LTime:= GLOBAL_MESSAGE_INTERVAL;
+
                   LPopUpHack := TPopupNotifierHack.Create(nil);
-                  LPopUpHack.ShowAndAutoDestroy(LQConsequence,FormMatrixGame,AMessage.Count*2500);
+                  LPopUpHack.ShowAndAutoDestroy(LQConsequence,FormMatrixGame,AMessage.Count*GLOBAL_MESSAGES_INTERVAL);
                 end;
               end;
           end;
@@ -1186,7 +1200,11 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     LConsequence := '';
     LGConsequence := '';
     LCount := WordCount(AMessage,['+']);
-    LTime := 5000*LCount;
+    if LCount > 1 then
+      LTime := GLOBAL_MESSAGES_INTERVAL*LCount
+    else
+      LTime:= GLOBAL_MESSAGE_INTERVAL;
+
     if LCount > 0 then
       for i := 1 to LCount do
         begin
@@ -1513,7 +1531,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         // The Announcer sends a message, waits interval time until all messages have been sent and then destroys itself.
         LAnnouncer := TIntervalarAnnouncer.Create(nil);
         LAnnouncer.OnStart := @FZMQActor.SendMessage;
-        LAnnouncer.Interval := 5000;
+        LAnnouncer.Interval := GLOBAL_MESSAGE_INTERVAL;
 
         // individual consequences
         LCount := WordCount(AReply[6],['+']);

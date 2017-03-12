@@ -114,6 +114,10 @@ const
   ccBlue = $0000FF;
   ccMagenta = $8B008B;
 
+  GLOBAL_MESSAGE_INTERVAL = 3000;
+  GLOBAL_SYSTEM_MESSAGE_INTERVAL = 5000;
+  GLOBAL_MESSAGES_INTERVAL = 1200;
+
 const
 
   CPlayerNamesMale : array [0..49] of string =

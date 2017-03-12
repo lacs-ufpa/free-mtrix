@@ -278,7 +278,7 @@ type
 
 implementation
 
-uses Graphics,strutils, string_methods, game_actors_helpers;
+uses Graphics,strutils, string_methods, game_actors_helpers, game_resources;
 
 { TContingency }
 
@@ -771,7 +771,7 @@ begin
   FMessage := TPopupNotifier.Create(Self);
   FTimer := TTimer.Create(Self);
   FTimer.Enabled:=False;
-  FTimer.Interval:=5000;
+  FTimer.Interval:=GLOBAL_MESSAGE_INTERVAL;
   FTimer.OnTimer:=@SelfDestroy;
   FConsequenceByPlayerID := TStringList.Create;
 end;
