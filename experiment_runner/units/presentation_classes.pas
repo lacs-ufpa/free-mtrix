@@ -81,6 +81,7 @@ begin
   if Length(FMessages) > 0 then
     begin
       LAnnouncer := TIntervalarAnnouncer.Create(nil);
+      LAnnouncer.Interval:= Interval;
       LAnnouncer.Messages := FMessages;
       LAnnouncer.OnStart:= FOnStart;
       LAnnouncer.Enabled:=True;
