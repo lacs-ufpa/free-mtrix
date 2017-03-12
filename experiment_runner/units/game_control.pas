@@ -718,7 +718,13 @@ begin
       if AEnabled then
         begin
           ShowSystemPopUp('É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.');
-          FormMatrixGame.BringToFront;
+          {$IFDEF DEBUG}
+            {$IFDEF WINDOWS}
+              // todo:
+            {$ELSE}
+              FormMatrixGame.BringToFront;
+            {$ENDIF}
+          {$ENDIF}
         end;
     end;
 end;
@@ -1481,6 +1487,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
 
         // set fullscreen
         FormMatrixGame.SetFullscreen;
+        SetMatrix;
       end
     else
       begin
