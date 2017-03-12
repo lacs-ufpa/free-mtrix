@@ -255,7 +255,6 @@ begin
     gaPlayer: SetZMQPlayer;
     gaWatcher: SetZMQWatcher;
   end;
-  FGameControl.SetMatrix;
   FGameControl.OnInterlocking := @FExperimentBox.Interlocking;
   FGameControl.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;
   FGameControl.OnStartExperiment := @FExperimentBox.StartExperiment;
