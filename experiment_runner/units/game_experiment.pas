@@ -499,7 +499,7 @@ begin
               LOldRandomOrder.Append(IntToStr(i));
             LNewRandomOrder.Append(IntToStr(i));
           end;
-
+        FRandomTurns.Clear;
         repeat
           for i := 0 to LNewRandomOrder.Count - 1 do
             begin
