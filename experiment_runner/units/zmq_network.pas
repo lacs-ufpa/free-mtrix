@@ -13,8 +13,6 @@ unit zmq_network;
 
 // TODO: MsgPack optimization. Compress->send->receive->Decompress.
 
-{$DEFINE DEBUG}
-
 interface
 
 uses Classes, SysUtils, Process
