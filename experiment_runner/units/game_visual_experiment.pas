@@ -91,6 +91,7 @@ end;
 procedure TExperimentBox.StartCondition(Sender: TObject);
 begin
   LabelConditionCount.Caption := TExperiment(Sender).CurrentCondition.ConditionName;
+  LabelConditionCycleCount.Caption := IntToStr(TExperiment(Sender).CurrentCondition.Cycles.Count+1);
   LabelGeneration.Caption := CAP_GENERATION + ' ('+IntToStr(TExperiment(Sender).Cycles.GenerationValue)+')';
   LabelTargetInterlockCount.Caption := '0 %';
   LabelInterlockCount.Caption := '0';
@@ -106,6 +107,7 @@ end;
 procedure TExperimentBox.StartExperiment(Sender: TObject);
 begin
   LabelConditionCount.Caption := TExperiment(Sender).CurrentCondition.ConditionName;
+  LabelConditionCycleCount.Caption := IntToStr(TExperiment(Sender).CurrentCondition.Cycles.Count+1);
   LabelCycleCount.Caption := IntToStr(TExperiment(Sender).Cycles.Global+1);
   LabelGeneration.Caption :=  CAP_GENERATION + ' ('+IntToStr(TExperiment(Sender).Cycles.GenerationValue)+')';
   LabelGenerationCount.Caption := IntToStr(TExperiment(Sender).Cycles.Generations+1);
