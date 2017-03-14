@@ -14,7 +14,7 @@ unit game_visual_elements;
 interface
 
 uses
-  Classes, SysUtils, Controls, StdCtrls, ExtCtrls;
+  Classes, SysUtils, Controls, StdCtrls, ExtCtrls,Graphics;
 
 type
 
@@ -52,6 +52,7 @@ begin
   FID := AID;
   AutoSize := True;
   Caption := CAP_WAINTING_FOR_PLAYER;
+  Font.Size := 12;
   with ChildSizing do
     begin
   	  ControlsPerLine := 2;
@@ -62,29 +63,64 @@ begin
   	  TopBottomSpacing := 20;
   	  VerticalSpacing := 10;
     end;
+
   LabelLastColor := TLabel.Create(Self);
-  LabelLastColor.Caption := CAP_COLOR;
-  LabelLastColor.Parent := Self;
+  with LabelLastColor do
+    begin
+      Caption := CAP_COLOR;
+      Alignment:=taLeftJustify;
+      Layout:=tlCenter;
+      Parent := Self;
+    end;
 
   PanelLastColor := TPanel.Create(Self);
-  PanelLastColor.Caption:=CAP_NA;
-  //PanelLastColor.Color:= $0;
-  PanelLastColor.Parent:= Self;
+  with PanelLastColor do
+    begin
+      //Caption:=CAP_NA;
+      Constraints.MinHeight:=30;
+      Constraints.MinWidth:=30;
+      //Color:= $0;
+      Parent:= Self;
+    end;
+
   LabelLastRow:= TLabel.Create(Self);
-  LabelLastRow.Caption:=CAP_ROW;
-  LabelLastRow.Parent := Self;
+  with LabelLastRow do
+    begin
+      Caption:=CAP_ROW;
+      Alignment:=taLeftJustify;
+      Layout:=tlCenter;
+      Parent := Self;
+    end;
+
 
   LabelLastRowCount:= TLabel.Create(Self);
-  LabelLastRowCount.Caption:=CAP_NA;
-  LabelLastRowCount.Parent := Self;
+  with LabelLastRowCount do
+    begin
+      Caption:=CAP_NA;
+      Alignment:=taCenter;
+      Layout:=tlCenter;
+      Parent := Self;
+    end;
   Enabled:= False;
 
   LabelPoints:= TLabel.Create(Self);
-  LabelPoints.Caption:=CAP_POINTS;
-  LabelPoints.Parent := Self;
+  with LabelPoints do
+    begin
+      Caption:=CAP_POINTS;
+      Alignment:=taLeftJustify;
+      Layout:=tlCenter;
+      Parent := Self;
+    end;
+
   LabelPointsCount:= TLabel.Create(Self);
-  LabelPointsCount.Caption:='0';
-  LabelPointsCount.Parent := Self;
+  with LabelPointsCount do
+    begin
+      Alignment:=taCenter;
+      Layout:=tlCenter;
+      Caption:='0';
+      Parent := Self;
+    end;
+
   if Admin then
     begin
       LabelPoints.Visible := True;

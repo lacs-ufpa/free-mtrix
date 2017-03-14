@@ -45,7 +45,7 @@ type
     //procedure DeletePlayerBox(AID : string);
     //procedure MovePlayerBox(AID : string);
     procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType;
-      var ARowBase:integer; var ADrawDots, ADrawClear : Boolean);
+      ARowBase:integer; ADrawDots, ADrawClear : Boolean);
     procedure ReceiveMessage(AMessage : TStringList);
     procedure ReceiveRequest(var ARequest : TStringList);
     procedure ReceiveReply(AReply : TStringList);
@@ -145,6 +145,7 @@ const
 implementation
 
 uses ButtonPanel,Controls,ExtCtrls,StdCtrls,LazUTF8, Forms, Dialogs, strutils
+     , game_visual_matrix_a
      , popup_hack
      , form_matrixgame
      , form_chooseactor
@@ -168,9 +169,9 @@ begin
   else LRow := aRow;
 
   case LRow of
-    0,5 :Result := ccYellow;
+    0,7 :Result := ccYellow;
     1,6 :Result := ccGreen;
-    2,7 :Result := ccRed;
+    2,5 :Result := ccRed;
     3,8 :Result := ccBlue;
     4,9 :Result := ccMagenta;
   end;
@@ -410,60 +411,18 @@ end;
 //end;
 
 procedure TGameControl.SetMatrixType(AStringGrid: TStringGrid;
-  AMatrixType: TGameMatrixType; var ARowBase: integer; var ADrawDots,
+  AMatrixType: TGameMatrixType; ARowBase: integer; ADrawDots,
   ADrawClear: Boolean);
-var
-  LGridHeight,
-  i: integer;
-  LTextStyle:TTextStyle;
-
-  procedure WriteGridFixedNames(ASGrid: TStringGrid; WriteCols: boolean);
-  var
-    i: integer;
-  begin
-    with ASGrid do
-      for i := 0 to 9 do
-      begin
-        Cells[0, i + ARowBase] := IntToStr(i + 1);
-        if WriteCols then
-          Cells[i + 1, 0] := chr(65 + i);
-      end;
-  end;
-
 begin
-  AStringGrid.Clean;
-  LTextStyle := AStringGrid.DefaultTextStyle;
-  LTextStyle.Alignment:=taCenter;
-  AStringGrid.DefaultTextStyle := LTextStyle;
-
-  LGridHeight := 0;
   if gmRows in AMatrixType then
-    begin
-      ARowBase := 0;
-      AStringGrid.FixedRows := 0;
-      AStringGrid.RowCount := 10;
-      AStringGrid.Options := [goFixedHorzLine, goHorzLine];
-      WriteGridFixedNames(AStringGrid, False);
-    end;
+    TStringGridA(AStringGrid).HasRows:=True;
 
   if gmColumns in AMatrixType then
-    begin
-      ARowBase := 1;
-      AStringGrid.Clean;
-      AStringGrid.FixedRows := 1;
-      AStringGrid.RowCount := 11;
-      AStringGrid.Options := [goFixedHorzLine, goHorzLine, goVertLine];
-      WriteGridFixedNames(AStringGrid, True);
-    end;
+    TStringGridA(AStringGrid).HasCols:=True;
 
-  for i := 0 to AStringGrid.RowCount -1 do
-    begin
-      AStringGrid.RowHeights[i] := AStringGrid.RowHeights[i] + 5;
-      LGridHeight += AStringGrid.RowHeights[i];
-    end;
-  AStringGrid.Height := LGridHeight+5;
-  ADrawDots := gmDots in AMatrixType;
-  ADrawClear:= gmClearDots in AMatrixType;
+  TStringGridA(AStringGrid).DrawFilledDots := gmDots in AMatrixType;
+  TStringGridA(AStringGrid).DrawClearDots := gmClearDots in AMatrixType;
+  TStringGridA(AStringGrid).UpdateSizeAndNames;
 end;
 
 function TGameControl.GetSelectedColorF(AStringGrid: TStringGrid): UTF8string;

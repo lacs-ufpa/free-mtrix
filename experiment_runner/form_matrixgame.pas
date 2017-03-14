@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
-  StdCtrls, DBGrids, ExtCtrls, PopupNotifier
+  StdCtrls, ExtCtrls, PopupNotifier
 
   , game_zmq_actors
   , game_actors
@@ -55,7 +55,6 @@ type
     ListBoxOldPlayers: TListBox;
     OpenDialog: TOpenDialog;
     PopupNotifier: TPopupNotifier;
-    StringGridMatrix: TStringGrid;
     Timer: TTimer;
     procedure btnConfirmRowClick(Sender: TObject);
     procedure ButtonExpCancelClick(Sender: TObject);
@@ -65,9 +64,6 @@ type
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure PopupNotifierClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure StringGridMatrixClick(Sender: TObject);
-    procedure StringGridMatrixDrawCell(Sender: TObject; aCol, aRow: integer;
-      aRect: TRect; aState: TGridDrawState);
     procedure TimerTimer(Sender: TObject);
   private
     FGameControl : TGameControl;
@@ -75,6 +71,7 @@ type
     FID: string;
     FInitParameter: string;
   public
+    StringGridMatrix: TStringGrid;
     procedure LoadFromFile(FFilename : string);
     procedure SetID(S, P : string);
     procedure SetGameActor(AValue: TGameActor);
@@ -93,126 +90,13 @@ resourcestring
 
 implementation
 
-uses form_chooseactor, game_resources;
+uses form_chooseactor, game_resources, game_visual_matrix_a, game_visual_elements;
 
 // uses datamodule;
 
 {$R *.lfm}
 
 { TFormMatrixGame }
-
-procedure TFormMatrixGame.StringGridMatrixDrawCell(Sender: TObject; aCol, aRow: integer;
-  aRect: TRect; aState: TGridDrawState);
-var
-  OldCanvas: TCanvas;
-
-  procedure SaveOldCanvas;
-  begin
-    OldCanvas := TCanvas.Create;
-    OldCanvas.Brush.Style := TStringGrid(Sender).Canvas.Brush.Style;
-    OldCanvas.Brush.Color := TStringGrid(Sender).Canvas.Brush.Color;
-    OldCanvas.Pen.Width := TStringGrid(Sender).Canvas.Pen.Width;
-    OldCanvas.Pen.Color := TStringGrid(Sender).Canvas.Pen.Color;
-    OldCanvas.Pen.Mode := TStringGrid(Sender).Canvas.Pen.Mode;
-  end;
-
-  procedure LoadOldCanvas;
-  begin
-    TStringGrid(Sender).Canvas.Brush.Style := OldCanvas.Brush.Style;
-    TStringGrid(Sender).Canvas.Brush.Color := OldCanvas.Brush.Color;
-    TStringGrid(Sender).Canvas.Pen.Width := OldCanvas.Pen.Width;
-    TStringGrid(Sender).Canvas.Pen.Color := OldCanvas.Pen.Color;
-    TStringGrid(Sender).Canvas.Pen.Mode := OldCanvas.Pen.Mode;
-  end;
-
-  procedure DrawLines(Color: TColor);
-  //function HalfDarker(Color : TColor) : TColor;
-  //begin
-  //  Result := ((Blue(Color) and $7F) shl 16) or ((Green(Color) and $7F) shl 8 ) or (Red(Color) and $7F)
-  //end;
-
-    procedure DrawDots;
-    var
-      LFix, LLeft, LRight, LHSize, LVSize: longint;
-    begin
-      LFix := 2;
-      LVSize := ((aRect.Bottom - aRect.Top) div 2);
-      LHSize := aRect.Left + (aRect.Right - aRect.Left) div 2;
-      LLeft := LHSize - LVSize;
-      LRight := LHSize + LVSize;
-      TStringGrid(Sender).Canvas.Brush.Style := bsClear;
-      TStringGrid(Sender).Canvas.Brush.Color := clBlack;
-      TStringGrid(Sender).Canvas.Pen.Color := clBlack;
-      TStringGrid(Sender).Canvas.Ellipse(LLeft + LFix, aRect.Top + LFix,
-        LRight - LFix, aRect.Bottom - LFix);
-    end;
-
-  begin
-    TStringGrid(Sender).Canvas.Brush.Style := bsSolid;
-    TStringGrid(Sender).Canvas.Pen.Width := 1;
-    TStringGrid(Sender).Canvas.Brush.Color := Color;
-    TStringGrid(Sender).Canvas.Pen.Color := Color;
-    TStringGrid(Sender).Canvas.Rectangle(aRect);
-    if Assigned(FGameControl) then
-      if FGameControl.MustDrawDots then
-        if (Odd(aRow + FGameControl.RowBase) and not Odd(aCol)) or
-          (not Odd(aRow + FGameControl.RowBase) and Odd(aCol)) then
-          DrawDots;
-  end;
-  //function GetTextX(S : String): Longint;
-  //begin
-  //  Result := aRect.Left+((aRect.Right-aRect.Left)div 2) - ((Length(S)*7)div 2);
-  //end;
-
-begin
-  if not Assigned(FGameControl) then Exit;
-  SaveOldCanvas;
-  try
-    //if (aRow >= RowBase) and (aCol = 10) then
-    //  DrawLines(clWhite);
-    if (aCol <> 0) and (aRow > (FGameControl.RowBase-1)) then
-      begin
-        DrawLines(GetRowColor(aRow,FGameControl.RowBase));
-
-        if (gdSelected in aState) and (goRowSelect in TStringGrid(Sender).Options)then
-          begin
-            TStringGrid(Sender).Canvas.Pen.Width := 10;
-            TStringGrid(Sender).Canvas.Pen.Color := clWhite;
-            if (aRow = TStringGrid(Sender).Selection.Top) and (aCol = TStringGrid(Sender).Selection.Left) then
-              begin
-                TStringGrid(Sender).Canvas.PenPos := aRect.TopLeft;
-                TStringGrid(Sender).Canvas.LineTo(Point(aRect.Left,aRect.Bottom));
-              end;
-            TStringGrid(Sender).Canvas.PenPos := aRect.BottomRight;
-            TStringGrid(Sender).Canvas.LineTo(Point(aRect.Left,aRect.Bottom));
-            TStringGrid(Sender).Canvas.PenPos := aRect.TopLeft;
-            TStringGrid(Sender).Canvas.LineTo(Point(aRect.Right,aRect.Top));
-
-            if (aRow = TStringGrid(Sender).Selection.Top) and (aCol = TStringGrid(Sender).Selection.Right) then
-              begin
-                TStringGrid(Sender).Canvas.PenPos := aRect.BottomRight;
-                TStringGrid(Sender).Canvas.LineTo(Point(aRect.Right,aRect.Top));
-              end;
-          end;
-      end;
-
-    TStringGrid(Sender).Canvas.Pen.Width := 2;
-    TStringGrid(Sender).Canvas.Font.Size := 10;
-    TStringGrid(Sender).Canvas.Font.Color := clBlack;
-    TStringGrid(Sender).Canvas.Brush.Style := bsClear;
-
-    if (aCol = 10) and (gdSelected in aState) and (goRowSelect in TStringGrid(Sender).Options) then
-      if (aRow = TStringGrid(Sender).Selection.Top) and (aCol = TStringGrid(Sender).Selection.Right) then
-        begin
-          btnConfirmRow.Top := aRect.Top+4;
-          btnConfirmRow.Left := aRect.Right+8;
-        end;
-
-  finally
-    LoadOldCanvas;
-    OldCanvas.Free;
-  end;
-end;
 
 procedure TFormMatrixGame.TimerTimer(Sender: TObject);
 begin
@@ -263,6 +147,7 @@ begin
   FGameControl.OnStartGeneration:= @FExperimentBox.StartGeneration;
   FGameControl.OnStartCondition:= @FExperimentBox.StartCondition;
   FGameControl.OnEndExperiment :=@FExperimentBox.EndExperiment;
+  TStringGridA(StringGridMatrix).GameControl:=FGameControl;
 end;
 
 procedure TFormMatrixGame.SetFullscreen;
@@ -287,7 +172,7 @@ procedure TFormMatrixGame.FormActivate(Sender: TObject);
 begin
   StringGridMatrix.ClearSelections;
   StringGridMatrix.FocusRectVisible := False;
-
+  btnConfirmRow.Visible := False;
   case FInitParameter of
     'a':FormMatrixGame.SetGameActor(gaAdmin);
     'p': FormMatrixGame.SetGameActor(gaPlayer);
@@ -315,7 +200,30 @@ end;
 procedure TFormMatrixGame.FormCreate(Sender: TObject);
 var
   L : TLabel;
+  LLeft : integer;
 begin
+  StringGridMatrix := TStringGridA.Create(Self);
+  TStringGridA(StringGridMatrix).PopUpNotifier := PopupNotifier;
+  TStringGridA(StringGridMatrix).ConfirmationButton := btnConfirmRow;
+  StringGridMatrix.Parent := Self;
+  LLeft := StringGridMatrix.Width+btnConfirmRow.Width+GBPoints.Width+10;
+  LLeft := LLeft div 2;
+  LLeft := (Screen.Width div 2)-LLeft;
+  StringGridMatrix.Left:=LLeft;
+
+  btnConfirmRow.AnchorSideLeft.Control := StringGridMatrix;
+  btnConfirmRow.AnchorSideLeft.Side := asrRight;
+  btnConfirmRow.BorderSpacing.Left := 5;
+  btnConfirmRow.Top := StringGridMatrix.Top;
+  btnConfirmRow.Left := StringGridMatrix.BoundsRect.Right+5;
+  GBPoints.Left := btnConfirmRow.Left+btnConfirmRow.Width+10;
+  GBAdmin.Left := GBPoints.Left+GBPoints.Width+5;
+
+  {$IFDEF DEBUG}
+  with TPlayerBox.Create(GBLastChoice,'test') do
+    Parent := GBLastChoice;
+  {$ENDIF}
+
   FExperimentBox := TExperimentBox.Create(GBAdmin);
   FExperimentBox.Parent := GBAdmin;
   PopupNotifier.Icon.Assign(Application.Icon);
@@ -342,14 +250,6 @@ procedure TFormMatrixGame.PopupNotifierClose(Sender: TObject;
   var CloseAction: TCloseAction);
 begin
   Timer.Enabled := False;
-end;
-
-procedure TFormMatrixGame.StringGridMatrixClick(Sender: TObject);
-begin
-  if goRowSelect in StringGridMatrix.Options then Exit;
-  StringGridMatrix.Options := StringGridMatrix.Options+[goRowSelect];
-  btnConfirmRow.Visible := True;
-  PopupNotifier.Visible:= False;
 end;
 
 procedure TFormMatrixGame.ChatMemoSendKeyPress(Sender: TObject; var Key: char);

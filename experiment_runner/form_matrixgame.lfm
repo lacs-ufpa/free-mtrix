@@ -4,7 +4,7 @@ object FormMatrixGame: TFormMatrixGame
   Top = 39
   Width = 1234
   HorzScrollBar.Page = 1234
-  VertScrollBar.Page = 526
+  VertScrollBar.Page = 508
   AutoScroll = True
   Caption = 'Matrix'
   ClientHeight = 672
@@ -13,60 +13,40 @@ object FormMatrixGame: TFormMatrixGame
   OnActivate = FormActivate
   OnCreate = FormCreate
   LCLVersion = '1.6.2.0'
-  object StringGridMatrix: TStringGrid
-    AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = Owner
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = Owner
-    AnchorSideBottom.Side = asrBottom
-    Left = 0
-    Height = 304
-    Top = 0
-    Width = 709
-    AutoEdit = False
-    BorderSpacing.Right = 150
-    BorderSpacing.Bottom = 197
-    ColCount = 11
-    DefaultRowHeight = 30
-    Enabled = False
-    FixedRows = 0
-    Font.Height = -20
-    Font.Name = 'Monospace'
-    Options = []
-    ParentFont = False
-    RowCount = 10
-    TabOrder = 0
-    TitleFont.Name = 'Monospace'
-    OnClick = StringGridMatrixClick
-    OnDrawCell = StringGridMatrixDrawCell
-  end
   object GBPoints: TGroupBox
-    Left = 800
-    Height = 227
+    AnchorSideLeft.Side = asrBottom
+    Left = 768
+    Height = 316
     Top = 8
-    Width = 397
+    Width = 417
     AutoSize = True
     Caption = 'Total de:'
     ChildSizing.LeftRightSpacing = 10
     ChildSizing.TopBottomSpacing = 10
     ChildSizing.HorizontalSpacing = 20
     ChildSizing.VerticalSpacing = 10
-    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+    ChildSizing.ShrinkHorizontal = crsHomogenousChildResize
+    ChildSizing.ShrinkVertical = crsHomogenousChildResize
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 3
-    ClientHeight = 210
-    ClientWidth = 393
-    TabOrder = 1
+    ClientHeight = 290
+    ClientWidth = 413
+    Font.Height = -20
+    Font.Name = 'Monospace'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 0
     object ImageIndA: TImage
       Left = 10
-      Height = 40
+      Height = 60
       Top = 10
-      Width = 40
-      Constraints.MaxHeight = 40
-      Constraints.MaxWidth = 40
-      Constraints.MinHeight = 40
-      Constraints.MinWidth = 40
+      Width = 60
+      Constraints.MaxHeight = 60
+      Constraints.MaxWidth = 60
+      Constraints.MinHeight = 60
+      Constraints.MinWidth = 60
       Picture.Data = {
         07544269746D617066750000424D667500000000000036000000280000006400
         000064000000010018000000000030750000C40E0000C40E0000000000000000
@@ -1012,8 +992,8 @@ object FormMatrixGame: TFormMatrixGame
       Stretch = True
     end
     object LabelIndA: TLabel
-      Left = 70
-      Height = 40
+      Left = 90
+      Height = 60
       Top = 10
       Width = 243
       Alignment = taCenter
@@ -1028,8 +1008,8 @@ object FormMatrixGame: TFormMatrixGame
       Transparent = False
     end
     object LabelIndACount: TLabel
-      Left = 333
-      Height = 40
+      Left = 353
+      Height = 60
       Top = 10
       Width = 50
       Alignment = taCenter
@@ -1037,19 +1017,22 @@ object FormMatrixGame: TFormMatrixGame
       Caption = '0'
       Color = clDefault
       Constraints.MinWidth = 50
+      Font.Height = -20
+      Font.Name = 'Monospace'
       Layout = tlCenter
       ParentColor = False
+      ParentFont = False
       Transparent = False
     end
     object ImageIndB: TImage
       Left = 10
-      Height = 40
-      Top = 60
-      Width = 40
-      Constraints.MaxHeight = 40
-      Constraints.MaxWidth = 40
-      Constraints.MinHeight = 40
-      Constraints.MinWidth = 40
+      Height = 60
+      Top = 80
+      Width = 60
+      Constraints.MaxHeight = 60
+      Constraints.MaxWidth = 60
+      Constraints.MinHeight = 60
+      Constraints.MinWidth = 60
       Picture.Data = {
         07544269746D6170D6730000424DD67300000000000036000000280000006200
         0000640000000100180000000000A0730000C40E0000C40E0000000000000000
@@ -1983,9 +1966,9 @@ object FormMatrixGame: TFormMatrixGame
       Stretch = True
     end
     object LabelIndB: TLabel
-      Left = 70
-      Height = 40
-      Top = 60
+      Left = 90
+      Height = 60
+      Top = 80
       Width = 243
       Alignment = taCenter
       AutoSize = False
@@ -1999,28 +1982,31 @@ object FormMatrixGame: TFormMatrixGame
       Transparent = False
     end
     object LabelIndBCount: TLabel
-      Left = 333
-      Height = 40
-      Top = 60
+      Left = 353
+      Height = 60
+      Top = 80
       Width = 50
       Alignment = taCenter
       AutoSize = False
       Caption = '0'
       Color = clDefault
       Constraints.MinWidth = 50
+      Font.Height = -20
+      Font.Name = 'Monospace'
       Layout = tlCenter
       ParentColor = False
+      ParentFont = False
       Transparent = False
     end
     object ImageInd: TImage
       Left = 10
-      Height = 40
-      Top = 110
-      Width = 40
-      Constraints.MaxHeight = 40
-      Constraints.MaxWidth = 40
-      Constraints.MinHeight = 40
-      Constraints.MinWidth = 40
+      Height = 60
+      Top = 150
+      Width = 60
+      Constraints.MaxHeight = 60
+      Constraints.MaxWidth = 60
+      Constraints.MinHeight = 60
+      Constraints.MinWidth = 60
       Picture.Data = {
         07544269746D61703A740000424D3A7400000000000036000000280000006400
         000063000000010018000000000004740000C40E0000C40E0000000000000000
@@ -2958,9 +2944,9 @@ object FormMatrixGame: TFormMatrixGame
       Visible = False
     end
     object LabelInd: TLabel
-      Left = 70
-      Height = 40
-      Top = 110
+      Left = 90
+      Height = 60
+      Top = 150
       Width = 243
       Alignment = taCenter
       AutoSize = False
@@ -2975,29 +2961,32 @@ object FormMatrixGame: TFormMatrixGame
       Visible = False
     end
     object LabelIndCount: TLabel
-      Left = 333
-      Height = 40
-      Top = 110
+      Left = 353
+      Height = 60
+      Top = 150
       Width = 50
       Alignment = taCenter
       AutoSize = False
       Caption = '0'
       Color = clDefault
       Constraints.MinWidth = 50
+      Font.Height = -20
+      Font.Name = 'Monospace'
       Layout = tlCenter
       ParentColor = False
+      ParentFont = False
       Transparent = False
       Visible = False
     end
     object ImageGroup: TImage
       Left = 10
-      Height = 40
-      Top = 160
-      Width = 40
-      Constraints.MaxHeight = 40
-      Constraints.MaxWidth = 40
-      Constraints.MinHeight = 40
-      Constraints.MinWidth = 40
+      Height = 60
+      Top = 220
+      Width = 60
+      Constraints.MaxHeight = 60
+      Constraints.MaxWidth = 60
+      Constraints.MinHeight = 60
+      Constraints.MinWidth = 60
       Picture.Data = {
         07544269746D6170AA750000424DAA750000000000007A0000006C0000006400
         0000640000000100180000000000307500001217000012170000000000000000
@@ -3945,9 +3934,9 @@ object FormMatrixGame: TFormMatrixGame
       Stretch = True
     end
     object LabelGroup: TLabel
-      Left = 70
-      Height = 40
-      Top = 160
+      Left = 90
+      Height = 60
+      Top = 220
       Width = 243
       Alignment = taCenter
       AutoSize = False
@@ -3961,17 +3950,20 @@ object FormMatrixGame: TFormMatrixGame
       Transparent = False
     end
     object LabelGroupCount: TLabel
-      Left = 333
-      Height = 40
-      Top = 160
+      Left = 353
+      Height = 60
+      Top = 220
       Width = 50
       Alignment = taCenter
       AutoSize = False
       Caption = '0'
       Color = clDefault
       Constraints.MinWidth = 50
+      Font.Height = -20
+      Font.Name = 'Monospace'
       Layout = tlCenter
       ParentColor = False
+      ParentFont = False
       Transparent = False
     end
   end
@@ -3982,8 +3974,8 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 0
-    Height = 17
-    Top = 655
+    Height = 150
+    Top = 522
     Width = 1636
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
@@ -3991,21 +3983,28 @@ object FormMatrixGame: TFormMatrixGame
     ChildSizing.LeftRightSpacing = 10
     ChildSizing.TopBottomSpacing = 5
     ChildSizing.HorizontalSpacing = 10
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 6
-    TabOrder = 2
+    Constraints.MaxHeight = 150
+    Constraints.MinHeight = 150
+    Font.Height = -20
+    Font.Name = 'Monospace'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 1
   end
   object GBAdmin: TGroupBox
     AnchorSideLeft.Side = asrBottom
     Left = 1200
-    Height = 518
-    Top = 8
+    Height = 448
+    Top = 16
     Width = 436
     BorderSpacing.Left = 10
     Caption = 'Pesquisador'
-    ClientHeight = 501
+    ClientHeight = 431
     ClientWidth = 432
-    TabOrder = 3
+    TabOrder = 2
     Visible = False
     object ButtonExpStart: TButton
       Left = 0
@@ -4039,7 +4038,7 @@ object FormMatrixGame: TFormMatrixGame
     object ListBoxOldPlayers: TListBox
       Left = 8
       Height = 80
-      Top = 417
+      Top = 352
       Width = 420
       ClickOnSelChange = False
       ExtendedSelect = False
@@ -4052,7 +4051,7 @@ object FormMatrixGame: TFormMatrixGame
     object LabelOldPlayers: TLabel
       Left = 8
       Height = 15
-      Top = 399
+      Top = 328
       Width = 136
       AutoSize = False
       Caption = 'Jogadores Antigos'
@@ -4061,14 +4060,13 @@ object FormMatrixGame: TFormMatrixGame
     end
   end
   object btnConfirmRow: TButton
-    Left = 712
-    Height = 26
-    Top = 152
-    Width = 86
+    Left = 584
+    Height = 40
+    Top = 8
+    Width = 115
     Caption = 'Confirmar'
     OnClick = btnConfirmRowClick
-    TabOrder = 4
-    Visible = False
+    TabOrder = 3
   end
   object ChatPanel: TPanel
     AnchorSideLeft.Control = GBPoints
@@ -4076,21 +4074,21 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = GBPoints
     AnchorSideRight.Side = asrBottom
-    Left = 800
-    Height = 281
-    Top = 245
-    Width = 397
+    Left = 768
+    Height = 174
+    Top = 334
+    Width = 417
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Top = 10
-    ClientHeight = 281
-    ClientWidth = 397
-    TabOrder = 5
+    ClientHeight = 174
+    ClientWidth = 417
+    TabOrder = 4
     object ChatMemoRecv: TMemo
       AnchorSideBottom.Control = ChatSplitter
       Left = 6
-      Height = 173
+      Height = 100
       Top = 6
-      Width = 385
+      Width = 405
       Align = alTop
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Left = 5
@@ -4109,9 +4107,9 @@ object FormMatrixGame: TFormMatrixGame
     object ChatSplitter: TSplitter
       Cursor = crVSplit
       Left = 0
-      Height = 5
-      Top = 184
-      Width = 395
+      Height = 8
+      Top = 104
+      Width = 415
       Align = alNone
       Anchors = [akLeft, akRight]
       ResizeAnchor = akTop
@@ -4120,9 +4118,9 @@ object FormMatrixGame: TFormMatrixGame
       AnchorSideTop.Control = ChatSplitter
       AnchorSideTop.Side = asrBottom
       Left = 6
-      Height = 81
-      Top = 194
-      Width = 385
+      Height = 51
+      Top = 117
+      Width = 405
       Align = alBottom
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Around = 5
