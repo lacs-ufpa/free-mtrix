@@ -109,9 +109,9 @@ resourcestring
 const
   // grid colors
   ccYellow = $00FFFF;
-  ccRed = $FF0018;
+  ccRed = $0000FF;
   ccGreen = $006400;
-  ccBlue = $0000FF;
+  ccBlue = $FF0018;
   ccMagenta = $8B008B;
 
   GLOBAL_MESSAGE_INTERVAL = 3000;

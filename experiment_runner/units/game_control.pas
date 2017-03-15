@@ -165,8 +165,8 @@ var LRow : integer;
 begin
   Result := 0;
   if ARowBase = 1 then
-    LRow := aRow -1
-  else LRow := aRow;
+    LRow := ARow -1
+  else LRow := ARow;
 
   case LRow of
     0,7 :Result := ccYellow;
