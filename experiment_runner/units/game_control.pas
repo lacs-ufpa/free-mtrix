@@ -1009,9 +1009,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor := TFormChooseActor.Create(nil);
               FormChooseActor.Style := K_LEFT;
               FormChooseActor.ShowPoints(
-                'A tarefa terminou, obrigado por sua participação! Você produziu ' +
-                Pts + ' pontos e ' +
-                FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados.'
+                'A tarefa terminou, obrigado por sua participação!'+LineEnding+
+                'Você produziu ' + Pts + ' fichas e ' +
+                FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados a uma escola pública.'
               );
 
               if FormChooseActor.ShowModal = 1 then
@@ -1047,9 +1047,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             Pts := FormMatrixGame.LabelIndCount.Caption;
 
           FormChooseActor.ShowPoints(
-          'A tarefa terminou, obrigado por sua participação! Você produziu ' +
-          Pts + ' pontos e ' +
-          FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados! Parabéns!');
+          'A tarefa terminou, obrigado por sua participação!'+LineEnding+
+          'Você produziu ' + Pts + ' fichas e ' +
+          FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados a uma escola pública.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
           FormMatrixGame.Close;
