@@ -116,8 +116,6 @@ type
     property OnTargetInterlocking : TNotifyEvent read FOnTargetInterlocking write SetOnTargetInterlocking;
   end;
 
-  function GetRowColor(ARow : integer;ARowBase:integer) : TColor;
-
 // TODO: PUT NORMAL STRING MESSAGES IN RESOURCESTRING INSTEAD
 
 const
@@ -160,23 +158,6 @@ const
   GA_ADMIN = 'Admin';
   GA_PLAYER = 'Player';
   //GA_WATCHER = 'Watcher';
-
-function GetRowColor(ARow: integer; ARowBase:integer): TColor;
-var LRow : integer;
-begin
-  Result := 0;
-  if ARowBase = 1 then
-    LRow := ARow -1
-  else LRow := ARow;
-
-  case LRow of
-    0,7 :Result := ccYellow;
-    1,6 :Result := ccGreen;
-    2,5 :Result := ccRed;
-    3,8 :Result := ccBlue;
-    4,9 :Result := ccMagenta;
-  end;
-end;
 
 { TGameControl }
 

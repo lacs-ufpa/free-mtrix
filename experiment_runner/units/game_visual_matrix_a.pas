@@ -5,9 +5,7 @@ unit game_visual_matrix_a;
 interface
 
 uses
-  Classes, SysUtils, StdCtrls, Grids, PopupNotifier, Graphics
-  , game_control
-  ;
+  Classes, SysUtils, StdCtrls, Grids, PopupNotifier, Graphics;
 
 type
 
@@ -17,7 +15,6 @@ type
   private
     FDrawClearDots: Boolean;
     FDrawDots: Boolean;
-    FGameControl : TGameControl;
     FConfirmationButton: TButton;
     FHasCols: Boolean;
     FHasRows: Boolean;
@@ -29,7 +26,6 @@ type
     procedure SetConfirmationButton(AValue: TButton);
     procedure SetDrawClearDots(AValue: Boolean);
     procedure SetDrawDots(AValue: Boolean);
-    procedure SetGameControl(AValue: TGameControl);
     procedure SetHasCols(AValue: Boolean);
     procedure SetHasRowsOnly(AValue: Boolean);
     procedure SetPopUpNotifier(AValue: TPopupNotifier);
@@ -41,14 +37,34 @@ type
     procedure UpdateSizeAndNames;
     property ConfirmationButton : TButton read FConfirmationButton write SetConfirmationButton;
     property PopUpNotifier : TPopupNotifier read FPopUpNotifier write SetPopUpNotifier;
-    property GameControl : TGameControl read FGameControl write SetGameControl;
     property DrawFilledDots : Boolean read FDrawDots write SetDrawDots;
     property DrawClearDots : Boolean read FDrawClearDots write SetDrawClearDots;
     property HasRows : Boolean read FHasRows write SetHasRowsOnly;
     property HasCols : Boolean read FHasCols write SetHasCols;
   end;
 
+  function GetRowColor(ARow : integer;ARowBase:integer) : TColor;
+
 implementation
+
+uses game_resources;
+
+function GetRowColor(ARow: integer; ARowBase:integer): TColor;
+var LRow : integer;
+begin
+  Result := 0;
+  if ARowBase = 1 then
+    LRow := ARow -1
+  else LRow := ARow;
+
+  case LRow of
+    0,7 :Result := ccYellow;
+    1,6 :Result := ccGreen;
+    2,5 :Result := ccRed;
+    3,8 :Result := ccBlue;
+    4,9 :Result := ccMagenta;
+  end;
+end;
 
 { TStringGridA }
 
@@ -249,12 +265,6 @@ procedure TStringGridA.SetDrawDots(AValue: Boolean);
 begin
   if FDrawDots=AValue then Exit;
   FDrawDots:=AValue;
-end;
-
-procedure TStringGridA.SetGameControl(AValue: TGameControl);
-begin
-  if FGameControl=AValue then Exit;
-  FGameControl:=AValue;
 end;
 
 procedure TStringGridA.SetHasCols(AValue: Boolean);
