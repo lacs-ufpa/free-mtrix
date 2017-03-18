@@ -90,9 +90,7 @@ resourcestring
 
 implementation
 
-uses form_chooseactor, game_resources, game_visual_matrix_a, game_visual_elements;
-
-// uses datamodule;
+uses form_chooseactor, game_resources, game_visual_matrix_a;
 
 {$R *.lfm}
 
@@ -147,7 +145,6 @@ begin
   FGameControl.OnStartGeneration:= @FExperimentBox.StartGeneration;
   FGameControl.OnStartCondition:= @FExperimentBox.StartCondition;
   FGameControl.OnEndExperiment :=@FExperimentBox.EndExperiment;
-  TStringGridA(StringGridMatrix).GameControl:=FGameControl;
 end;
 
 procedure TFormMatrixGame.SetFullscreen;
@@ -174,27 +171,29 @@ begin
   StringGridMatrix.FocusRectVisible := False;
   btnConfirmRow.Visible := False;
   case FInitParameter of
-    'a':FormMatrixGame.SetGameActor(gaAdmin);
+    'a': FormMatrixGame.SetGameActor(gaAdmin);
     'p': FormMatrixGame.SetGameActor(gaPlayer);
     'w': FormMatrixGame.SetGameActor(gaWatcher);
-  else
-    if not Assigned(FGameControl) then
-      begin
-        FormChooseActor := TFormChooseActor.Create(Self);
-        FormChooseActor.Style := '.Arrived';
-        try
-          if FormChooseActor.ShowModal = 1 then
-            case FormChooseActor.GameActor of
-              gaAdmin:FormMatrixGame.SetGameActor(gaAdmin);
-              gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
-              gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
-            end
-          else Close;
-        finally
-          FormChooseActor.Free;
-        end;
-      end
-    end;
+    else
+      if not Assigned(FGameControl) then
+        begin
+          FormChooseActor := TFormChooseActor.Create(Self);
+          FormChooseActor.Style := '.Arrived';
+          try
+            if FormChooseActor.ShowModal = 1 then
+              case FormChooseActor.GameActor of
+                gaAdmin: FormMatrixGame.SetGameActor(gaAdmin);
+                gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
+                gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
+              end
+            else
+              Close;
+          finally
+            FormChooseActor.Free;
+          end;
+        end
+  end;
+  OnActivate:=nil;
 end;
 
 procedure TFormMatrixGame.FormCreate(Sender: TObject);
@@ -300,13 +299,13 @@ begin
       LoadFromFile(OpenDialog.FileName);
 
   if ButtonExpStart.Caption = CAPTION_RESUME then
-      begin
-        ButtonExpStart.Enabled := False;
-        ButtonExpStart.Caption := CAPTION_RUNNING;
-        ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
-        ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-        FGameControl.Resume;
-      end;
+    begin
+      ButtonExpStart.Enabled := False;
+      ButtonExpStart.Caption := CAPTION_RUNNING;
+      ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
+      ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
+      FGameControl.Resume;
+    end;
 end;
 
 end.
