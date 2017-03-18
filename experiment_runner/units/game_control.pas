@@ -471,10 +471,9 @@ begin
   if FExperiment.ConditionMustBeUpdated <> '' then
     begin
       NextConditionSetup(FExperiment.ConditionMustBeUpdated);
-      NextGenerationSetup(P.ID);
       FExperiment.ConditionMustBeUpdated := '';
     end;
-
+  NextGenerationSetup(P.ID);
   if FActor=gaPlayer then
     begin
       P.Turn := FExperiment.Player[AOldPlayerID].Turn;
