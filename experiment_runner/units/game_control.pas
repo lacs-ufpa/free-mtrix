@@ -59,7 +59,8 @@ type
     procedure ShowSystemPopUp(AText:string;AInterval : integer);
     procedure DisableConfirmationButton;
     procedure CleanMatrix(AEnabled : Boolean);
-    procedure NextConditionSetup(S : string);
+    procedure NextConditionSetup(S : string; IsFirstCondition:Boolean=False);
+    procedure NextGenerationSetup(AID : string);
     procedure EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
   private
     FOnEndExperiment: TNotifyEvent;
@@ -470,6 +471,7 @@ begin
   if FExperiment.ConditionMustBeUpdated <> '' then
     begin
       NextConditionSetup(FExperiment.ConditionMustBeUpdated);
+      NextGenerationSetup(P.ID);
       FExperiment.ConditionMustBeUpdated := '';
     end;
 
@@ -609,63 +611,113 @@ begin
   FormMatrixGame.btnConfirmRow.Visible := False;
 end;
 
-procedure TGameControl.NextConditionSetup(S: string);
+procedure TGameControl.NextConditionSetup(S: string; IsFirstCondition: Boolean);
 var
   A, B, G : integer;
+  LNewA, LNewB : integer;
   P : TPlayer;
   PB : TPlayerBox;
 begin
-  A := 0; B := 0; G := 0;
+  LNewA := 0; LNewB := 0;
   if FExperiment.ABPoints then
     begin
+      A := StrToInt(ExtractDelimited(1,S,['|']));
+      B := StrToInt(ExtractDelimited(2,S,['|']));
       G := StrToInt(ExtractDelimited(3,S,['|']));
-      G += StrToInt(FormMatrixGame.LabelGroupCount.Caption);
-      FormMatrixGame.LabelGroupCount.Caption := IntToStr(G);
-      case FActor of
-        gaPlayer:
-          begin
-            A := StrToInt(ExtractDelimited(1,S,['|']));
-            B := StrToInt(ExtractDelimited(2,S,['|']));
-            A += StrToInt(FormMatrixGame.LabelIndACount.Caption);
-            B += StrToInt(FormMatrixGame.LabelIndBCount.Caption);
-
-            FormMatrixGame.LabelIndACount.Caption := IntToStr(A);
-            FormMatrixGame.LabelIndBCount.Caption := IntToStr(B);
-          end;
-       gaAdmin:
-         for P in FExperiment.Players do
-          begin
-            PB := GetPlayerBox(P.ID);
-            A := StrToInt(ExtractDelimited(1,S,['|']));
-            B := StrToInt(ExtractDelimited(2,S,['|']));
-            A += StrToInt(PB.LabelPointsCount.Caption) + B;
-            PB.LabelPointsCount.Caption := IntToStr(A);
-          end;
-      end;
     end
   else
     begin
+      A := StrToInt(ExtractDelimited(1,S,['|']));
       G := StrToInt(ExtractDelimited(2,S,['|']));
-      G += StrToInt(FormMatrixGame.LabelGroupCount.Caption);
-      FormMatrixGame.LabelGroupCount.Caption := IntToStr(G);
-      case FActor of
-        gaPlayer:
+    end;
+
+  G += StrToInt(FormMatrixGame.LabelGroupCount.Caption);
+  FormMatrixGame.LabelGroupCount.Caption := IntToStr(G);
+  case FActor of
+    gaPlayer:
+      begin
+        LNewA := A;
+        LNewB := B;
+        with FExperiment.CurrentCondition.Points do
           begin
-            A := StrToInt(ExtractDelimited(1,S,['|']));
-            A += StrToInt(FormMatrixGame.LabelIndACount.Caption);
-            FormMatrixGame.LabelIndCount.Caption := IntToStr(A);
+            OnStart.A := A;
+            OnStart.B := B;
           end;
 
-       gaAdmin:
-         for P in FExperiment.Players do
+        if IsFirstCondition then
+          if FExperiment.ABPoints then
+            begin
+              LNewA += StrToInt(FormMatrixGame.LabelIndACount.Caption);
+              LNewB += StrToInt(FormMatrixGame.LabelIndBCount.Caption);
+              FormMatrixGame.LabelIndACount.Caption := IntToStr(LNewA);
+              FormMatrixGame.LabelIndBCount.Caption := IntToStr(LNewB);
+            end
+          else
+            begin
+              LNewA += StrToInt(FormMatrixGame.LabelIndACount.Caption);
+              FormMatrixGame.LabelIndCount.Caption := IntToStr(LNewA);
+            end;
+      end;
+
+    gaAdmin:
+      if IsFirstCondition then
+        for P in FExperiment.Players do
           begin
             PB := GetPlayerBox(P.ID);
-            A := StrToInt(ExtractDelimited(1,S,['|']));
-            A += StrToInt(PB.LabelPointsCount.Caption);
-            PB.LabelPointsCount.Caption := IntToStr(A);
+            LNewA := A;
+            LNewB := B;
+            if FExperiment.ABPoints then
+              LNewA += StrToInt(PB.LabelPointsCount.Caption) + LNewB
+            else
+              LNewA += StrToInt(PB.LabelPointsCount.Caption);
+            PB.LabelPointsCount.Caption := IntToStr(LNewA);
           end;
-       end;
+  end;
+end;
+
+procedure TGameControl.NextGenerationSetup(AID: string);
+var
+  A : integer;
+  B : integer;
+  LNewA : integer;
+  LNewB : integer;
+  PB : TPlayerBox;
+begin
+  LNewA :=0; LNewB := 0;
+  with FExperiment.CurrentCondition.Points do
+    begin
+      A := OnStart.A;
+      B := OnStart.B;
+      LNewA := A;
+      LNewB := B;
     end;
+
+  case FActor of
+    gaPlayer:
+      if Self.ID = AID then
+        if FExperiment.ABPoints then
+          begin
+            LNewA += StrToInt(FormMatrixGame.LabelIndACount.Caption);
+            LNewB += StrToInt(FormMatrixGame.LabelIndBCount.Caption);
+            FormMatrixGame.LabelIndACount.Caption := IntToStr(LNewA);
+            FormMatrixGame.LabelIndBCount.Caption := IntToStr(LNewB);
+          end
+        else
+          begin
+            LNewA += StrToInt(FormMatrixGame.LabelIndACount.Caption);
+            FormMatrixGame.LabelIndCount.Caption := IntToStr(LNewA);
+          end;
+
+    gaAdmin:
+      begin
+        PB := GetPlayerBox(AID);
+        LNewA := A;
+        LNewB := B;
+        if FExperiment.ABPoints then
+          LNewA += LNewB;
+        PB.LabelPointsCount.Caption := IntToStr(LNewA);
+      end;
+  end;
 end;
 
 procedure TGameControl.EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
@@ -677,7 +729,7 @@ begin
       if AEnabled then
         begin
           ShowSystemPopUp(
-            'É sua vez! Clique sobre uma linha da matrix e confirme sua escolha.',
+            'É sua vez! Clique sobre uma linha da matriz e confirme sua escolha.',
             GLOBAL_SYSTEM_MESSAGE_INTERVAL
           );
           {$IFDEF DEBUG}
@@ -1434,9 +1486,9 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
   begin
     if Self.ID = AReply[0] then
       begin
+        // lets load already logged in players, if any
         for i:= 3 to AReply.Count -5 do
           begin
-            // load already logged in players
             P := FExperiment.PlayerFromString[AReply[i]];
             FExperiment.AppendPlayer(P);
             CreatePlayerBox(P, False);
@@ -1459,8 +1511,11 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         FExperiment.ABPoints := StrToBool(AReply[AReply.Count-2]);
         SetLabels;
 
+        // we need a valid fake condition in memory for player internals (on start, on generation points).
+        FExperiment.AppendCondition(C_CONDITION_TEMPLATE);
+
         // set condition specific configurations
-        NextConditionSetup(AReply[AReply.Count-1]);
+        NextConditionSetup(AReply[AReply.Count-1], True);
 
         // set fullscreen
         FormMatrixGame.SetFullscreen;
