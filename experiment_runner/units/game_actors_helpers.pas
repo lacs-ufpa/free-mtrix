@@ -14,14 +14,14 @@ unit game_actors_helpers;
 interface
 
 uses
-  Classes, SysUtils, Graphics, game_actors;
+  Classes, SysUtils, Graphics, StdCtrls, game_actors;
 
 function DeduceNicname(S : string; P : TPlayer) : string;
 function GetColorFromCode(ACode : TGameColor) : TColor;
 function GetMessagesFromPromptStyle(APromptStyle : TPromptStyle;
   AContingencies : TContingencies) : TStringList;
 function FirstDelimitedString(S : string):string;
-
+procedure SetLabel(ALabel : TLabel; AValue:integer=0);
 
 const
 
@@ -272,6 +272,23 @@ end;
 function FirstDelimitedString(S: string): string;
 begin
   Result := ExtractDelimited(1,S,['#'])
+end;
+
+procedure SetLabel(ALabel: TLabel; AValue:integer);
+var
+  C : integer;
+begin
+  C := StrToInt(ALabel.Caption);
+  case AValue of
+    -MaxInt..-1: Dec(C,AValue);
+              0: Exit;
+    1..MaxInt  : Inc(C,AValue);
+  end;
+
+  if C > 0 then
+    ALabel.Caption := IntToStr(C)
+  else
+    ALabel.Caption := '0';
 end;
 
 end.

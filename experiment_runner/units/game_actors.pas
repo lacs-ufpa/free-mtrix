@@ -835,26 +835,26 @@ procedure TConsequence.PresentPoints(A, B, I, G : TLabel);
 begin
   //is gscPoints in FStyle then just in case...
   if gscI in FStyle then
-    I.Caption := IntToStr(StrToInt(I.Caption) + FP.ResultAsInteger);
+    SetLabel(I,FP.ResultAsInteger);
 
   if gscA in FStyle then
-    A.Caption := IntToStr(StrToInt(A.Caption) + FP.ResultAsInteger);
+    SetLabel(A,FP.ResultAsInteger);
 
   if gscB in FStyle then
-    B.Caption := IntToStr(StrToInt(B.Caption) + FP.ResultAsInteger);
+    SetLabel(B,FP.ResultAsInteger);
 
   if gscG in FStyle then
-    G.Caption:= IntToStr(StrToInt(G.Caption) + FP.ResultAsInteger);
+    SetLabel(G,FP.ResultAsInteger);
 end;
 
 procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G: TLabel);
 begin
   if gscG in FStyle then
-    G.Caption:= IntToStr(StrToInt(G.Caption) + FP.ResultAsInteger);
+    SetLabel(G,FP.ResultAsInteger);
 
   if (gscI in FStyle) or (gscA in FStyle) or (gscB in FStyle) then
     if Assigned(APlayerBox) then
-      APlayerBox.LabelPointsCount.Caption := IntToStr(StrToInt(APlayerBox.LabelPointsCount.Caption) + FP.ResultAsInteger);
+      SetLabel(APlayerBox.LabelPointsCount,FP.ResultAsInteger);
 end;
 
 function TConsequence.GetShouldPublishMessage: Boolean; // for players only
