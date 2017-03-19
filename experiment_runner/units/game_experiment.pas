@@ -315,6 +315,8 @@ begin
         end;
       Inc(FCurrentCondition);
       FCycles.GenerationValue := CurrentCondition.Cycles.Value;
+      // may the generation count be reseted?
+      //FCycles.GenerationCount:=0;
       SetTargetInterlockingEvent;
       SetContingenciesEvents;
       FReportReader.Clean;
