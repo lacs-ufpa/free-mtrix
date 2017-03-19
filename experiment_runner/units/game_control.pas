@@ -29,9 +29,6 @@ type
   TGameControl = class(TComponent)
   private
     FID: UTF8string;
-    FMustDrawDots: Boolean;
-    FMustDrawDotsClear: Boolean;
-    FRowBase : integer;
     FActor : TGameActor;
     FZMQActor : TZMQActor;
     FExperiment : TExperiment;
@@ -44,14 +41,10 @@ type
     procedure UpdatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
     //procedure DeletePlayerBox(AID : string);
     //procedure MovePlayerBox(AID : string);
-    procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType;
-      ARowBase:integer; ADrawDots, ADrawClear : Boolean);
+    procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType);
     procedure ReceiveMessage(AMessage : TStringList);
     procedure ReceiveRequest(var ARequest : TStringList);
     procedure ReceiveReply(AReply : TStringList);
-    procedure SetMustDrawDots(AValue: Boolean);
-    procedure SetMustDrawDotsClear(AValue: Boolean);
-    procedure SetRowBase(AValue: integer);
     procedure MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
   private
     function AskQuestion(AQuestion:string):UTF8string;
@@ -59,7 +52,7 @@ type
     procedure ShowSystemPopUp(AText:string;AInterval : integer);
     procedure DisableConfirmationButton;
     procedure CleanMatrix(AEnabled : Boolean);
-    procedure NextConditionSetup(S : string; IsFirstCondition:Boolean=False);
+    procedure NextConditionSetup(S : string; IsConditionStart:Boolean=False);
     procedure NextGenerationSetup(AID : string);
     procedure EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
   private
@@ -102,9 +95,6 @@ type
     procedure Stop;
     property Experiment : TExperiment read FExperiment write FExperiment;
     property ID : UTF8string read FID;
-    property RowBase : integer read FRowBase write SetRowBase;
-    property MustDrawDots: Boolean read FMustDrawDots write SetMustDrawDots;
-    property MustDrawDotsClear:Boolean read FMustDrawDotsClear write SetMustDrawDotsClear;
   public
     property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
     property OnInterlocking : TNotifyEvent read FOnInterlocking write SetOnInterlocking;
@@ -393,8 +383,7 @@ end;
 //end;
 
 procedure TGameControl.SetMatrixType(AStringGrid: TStringGrid;
-  AMatrixType: TGameMatrixType; ARowBase: integer; ADrawDots,
-  ADrawClear: Boolean);
+  AMatrixType: TGameMatrixType);
 begin
   if gmRows in AMatrixType then
     TStringGridA(AStringGrid).HasRows:=True;
@@ -409,38 +398,12 @@ end;
 
 function TGameControl.GetSelectedColorF(AStringGrid: TStringGrid): UTF8string;
 begin
-  Result := GetColorString(GetRowColor(AStringGrid.Selection.Top,RowBase));
+  Result := GetColorString(TStringGridA(AStringGrid).GetSelectedColor);
 end;
 
 function TGameControl.GetSelectedRowF(AStringGrid: TStringGrid): UTF8string;
-var i : integer;
 begin
-  i := AStringGrid.Selection.Top;
-  if RowBase = 0 then
-    Inc(i);
-  Result := Format('%-*.*d', [1,2,i]);
-end;
-
-procedure TGameControl.SetMustDrawDots(AValue: Boolean);
-begin
-  if FMustDrawDots=AValue then Exit;
-  FMustDrawDots:=AValue;
-end;
-
-procedure TGameControl.SetMustDrawDotsClear(AValue: Boolean);
-begin
-  if FMustDrawDotsClear=AValue then Exit;
-  FMustDrawDotsClear:=AValue;
-end;
-
-procedure TGameControl.SetRowBase(AValue: integer);
-begin
-  if FRowBase=AValue then Exit;
-  case AValue of
-    0 : FExperiment.MatrixType := [gmRows];
-    1 : FExperiment.MatrixType := [gmRows,gmColumns];
-  end;
-  FRowBase:=AValue;
+  Result := Format('%-*.*d', [1,2,TStringGridA(AStringGrid).GetSelectedRow]);
 end;
 
 procedure TGameControl.MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
@@ -591,12 +554,13 @@ begin
   FormMatrixGame.btnConfirmRow.Visible := False;
 end;
 
-procedure TGameControl.NextConditionSetup(S: string; IsFirstCondition: Boolean);
+procedure TGameControl.NextConditionSetup(S: string; IsConditionStart: Boolean);
 var
   A, B, G : integer;
   LNewA, LNewB : integer;
   P : TPlayer;
   PB : TPlayerBox;
+  C : TCondition;
 begin
   LNewA := 0; LNewB := 0;
   if FExperiment.ABPoints then
@@ -610,47 +574,47 @@ begin
       A := StrToInt(ExtractDelimited(1,S,['|']));
       G := StrToInt(ExtractDelimited(2,S,['|']));
     end;
+  SetLabel(FormMatrixGame.LabelGroupCount,G);
 
-  G += StrToInt(FormMatrixGame.LabelGroupCount.Caption);
-  FormMatrixGame.LabelGroupCount.Caption := IntToStr(G);
   case FActor of
     gaPlayer:
       begin
         LNewA := A;
         LNewB := B;
-        with FExperiment.CurrentCondition.Points do
+        C := FExperiment.Condition[0];
+        with C.Points do
           begin
             OnStart.A := A;
             OnStart.B := B;
           end;
-
-        if IsFirstCondition then
+        FExperiment.Condition[0] := C;
+        {$IFDEF DEBUG}
+        FormMatrixGame.ChatMemoRecv.Append(IntToStr(FExperiment.CurrentCondition.Points.OnStart.A));
+        {$ENDIF}
+        if IsConditionStart then
           if FExperiment.ABPoints then
             begin
-              LNewA += StrToInt(FormMatrixGame.LabelIndACount.Caption);
-              LNewB += StrToInt(FormMatrixGame.LabelIndBCount.Caption);
-              FormMatrixGame.LabelIndACount.Caption := IntToStr(LNewA);
-              FormMatrixGame.LabelIndBCount.Caption := IntToStr(LNewB);
+              SetLabel(FormMatrixGame.LabelIndACount,A);
+              SetLabel(FormMatrixGame.LabelIndBCount,B);
             end
           else
-            begin
-              LNewA += StrToInt(FormMatrixGame.LabelIndACount.Caption);
-              FormMatrixGame.LabelIndCount.Caption := IntToStr(LNewA);
-            end;
+            SetLabel(FormMatrixGame.LabelIndACount,A);
       end;
 
     gaAdmin:
-      if IsFirstCondition then
+      if IsConditionStart then
         for P in FExperiment.Players do
           begin
             PB := GetPlayerBox(P.ID);
             LNewA := A;
             LNewB := B;
             if FExperiment.ABPoints then
-              LNewA += StrToInt(PB.LabelPointsCount.Caption) + LNewB
+              begin
+                LNewA += LNewB;
+                SetLabel(PB.LabelPointsCount,LNewA);
+              end
             else
-              LNewA += StrToInt(PB.LabelPointsCount.Caption);
-            PB.LabelPointsCount.Caption := IntToStr(LNewA);
+              SetLabel(PB.LabelPointsCount,LNewA);
           end;
   end;
 end;
@@ -677,16 +641,11 @@ begin
       if Self.ID = AID then
         if FExperiment.ABPoints then
           begin
-            LNewA += StrToInt(FormMatrixGame.LabelIndACount.Caption);
-            LNewB += StrToInt(FormMatrixGame.LabelIndBCount.Caption);
-            FormMatrixGame.LabelIndACount.Caption := IntToStr(LNewA);
-            FormMatrixGame.LabelIndBCount.Caption := IntToStr(LNewB);
+            SetLabel(FormMatrixGame.LabelIndACount,A);
+            SetLabel(FormMatrixGame.LabelIndBCount,B);
           end
         else
-          begin
-            LNewA += StrToInt(FormMatrixGame.LabelIndACount.Caption);
-            FormMatrixGame.LabelIndCount.Caption := IntToStr(LNewA);
-          end;
+          SetLabel(FormMatrixGame.LabelIndACount,A);
 
     gaAdmin:
       begin
@@ -695,7 +654,7 @@ begin
         LNewB := B;
         if FExperiment.ABPoints then
           LNewA += LNewB;
-        PB.LabelPointsCount.Caption := IntToStr(LNewA);
+        SetLAbel(PB.LabelPointsCount,LNewA);
       end;
   end;
 end;
@@ -740,9 +699,6 @@ begin
   if FZMQActor.ClassType = TZMQWatcher then
     FActor := gaWatcher;
 
-  RowBase:= 0;
-  MustDrawDots:=False;
-  MustDrawDotsClear:=False;
   case FActor of
     gaAdmin:FExperiment := TExperiment.Create(FZMQActor.Owner,AppPath);
     gaPlayer:FExperiment := TExperiment.Create(FZMQActor.Owner);
@@ -786,7 +742,7 @@ end;
 
 procedure TGameControl.SetMatrix;
 begin
-  SetMatrixType(FormMatrixGame.StringGridMatrix, FExperiment.MatrixType,FRowBase,FMustDrawDots,FMustDrawDotsClear);
+  SetMatrixType(FormMatrixGame.StringGridMatrix, FExperiment.MatrixType);
 end;
 
 procedure TGameControl.SetLabels;
@@ -1003,6 +959,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           else
               ShowSystemPopUp('Começou! Aguarde sua vez.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
 
+      gaAdmin:
+        NextConditionSetup(FExperiment.CurrentConditionAsString,True);
+
     end;
   end;
 
@@ -1124,10 +1083,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
         end;
         if AMessage[1] = #32 then
-          begin
-            if AMessage[2] <> #32 then
-              NextConditionSetup(AMessage[2]);
-          end
+          //begin
+          //  if AMessage[2] <> #32 then
+          //    NextConditionSetup(AMessage[2]);
+          //end
         else
           if AMessage[2] <> #32 then
             FExperiment.ConditionMustBeUpdated := AMessage[2];
@@ -1225,7 +1184,7 @@ begin
 
   if MHas(K_QMESSAGE) then QuestionMessages;
   if MHas(K_RESUME) then ResumeNextTurn;
-  if MHas(K_NXTCND) then NextConditionSetup(AMessage[1]);
+  if MHas(K_NXTCND) then NextConditionSetup(AMessage[1],True);
   if MHAs(K_END) then EndExperimentMessage;
 end;
 
