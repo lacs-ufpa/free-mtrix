@@ -20,6 +20,7 @@ type
     FHasRows: Boolean;
     FPopUpNotifier: TPopupNotifier;
     FRowBase: integer;
+    function GetRowColor(ARow: integer): TColor;
     procedure GridDrawCell(Sender: TObject; aCol, aRow: integer;
       aRect: TRect; aState: TGridDrawState);
     procedure GridClick(Sender: TObject);
@@ -34,6 +35,8 @@ type
     procedure WriteGridFixedNames;
   public
     constructor Create(AOwner:TComponent);override;
+    function GetSelectedRow : integer;
+    function GetSelectedColor : TColor;
     procedure UpdateSizeAndNames;
     property ConfirmationButton : TButton read FConfirmationButton write SetConfirmationButton;
     property PopUpNotifier : TPopupNotifier read FPopUpNotifier write SetPopUpNotifier;
@@ -43,28 +46,11 @@ type
     property HasCols : Boolean read FHasCols write SetHasCols;
   end;
 
-  function GetRowColor(ARow : integer;ARowBase:integer) : TColor;
+  //GetRowColor(AStringGrid.Selection.Top,RowBase)
 
 implementation
 
 uses game_resources;
-
-function GetRowColor(ARow: integer; ARowBase:integer): TColor;
-var LRow : integer;
-begin
-  Result := 0;
-  if ARowBase = 1 then
-    LRow := ARow -1
-  else LRow := ARow;
-
-  case LRow of
-    0,7 :Result := ccYellow;
-    1,6 :Result := ccGreen;
-    2,5 :Result := ccRed;
-    3,8 :Result := ccBlue;
-    4,9 :Result := ccMagenta;
-  end;
-end;
 
 { TStringGridA }
 
@@ -96,11 +82,43 @@ begin
   UpdateSizeAndNames;
 end;
 
+function TStringGridA.GetSelectedRow: integer;
+begin
+  if FRowBase = 0 then
+    Result := Selection.Top + 1
+  else
+    Result := Selection.Top;
+end;
+
+function TStringGridA.GetSelectedColor: TColor;
+begin
+  Result := GetRowColor(Selection.Top);
+end;
+
 procedure TStringGridA.UpdateSizeAndNames;
 begin
   UpdateWidth;
   UpdateHeight;
   WriteGridFixedNames;
+end;
+
+function TStringGridA.GetRowColor(ARow: integer): TColor;
+var LRow : integer;
+begin
+  if FRowBase = 1 then
+    LRow := ARow -1
+  else
+    LRow := ARow;
+
+  case LRow of
+    0,7 :Result := ccYellow;
+    1,6 :Result := ccGreen;
+    2,5 :Result := ccRed;
+    3,8 :Result := ccBlue;
+    4,9 :Result := ccMagenta;
+    else
+      Result := 0;
+  end;
 end;
 
 procedure TStringGridA.GridDrawCell(Sender: TObject; aCol, aRow: integer;
@@ -195,7 +213,7 @@ begin
     //  DrawLines(clWhite);
     if (aCol <> 0) and (aRow > (FRowBase-1)) then
       begin
-        DrawLines(GetRowColor(aRow,FRowBase));
+        DrawLines(GetRowColor(aRow));
 
         if (gdSelected in aState) and (goRowSelect in Options)then
           begin
