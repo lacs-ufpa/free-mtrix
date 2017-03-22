@@ -279,12 +279,7 @@ var
   C : integer;
 begin
   C := StrToInt(ALabel.Caption);
-  case AValue of
-    -MaxInt..-1: Dec(C,AValue);
-              0: Exit;
-    1..MaxInt  : Inc(C,AValue);
-  end;
-
+  C += AValue;
   if C > 0 then
     ALabel.Caption := IntToStr(C)
   else
