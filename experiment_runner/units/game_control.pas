@@ -497,7 +497,7 @@ begin
 
   PopUpPos.X := (FormMatrixGame.StringGridMatrix.Width div 2) - (FormMatrixGame.PopupNotifier.vNotifierForm.Width div 2);
   PopUpPos.Y := (FormMatrixGame.StringGridMatrix.Height div 2) - (FormMatrixGame.PopupNotifier.vNotifierForm.Height div 2);
-  PopUpPos := FormMatrixGame.ClientToScreen(PopUpPos);
+  PopUpPos := FormMatrixGame.StringGridMatrix.ClientToScreen(PopUpPos);
 
   //FormMatrixGame.PopupNotifier.Text:=AText;
   FormMatrixGame.PopupNotifier.ShowAtPos(PopUpPos.X,PopUpPos.Y);

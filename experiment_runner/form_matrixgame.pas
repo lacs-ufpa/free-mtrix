@@ -228,6 +228,7 @@ begin
   PopupNotifier.Icon.Assign(Application.Icon);
   PopupNotifier.Title:='';
   PopupNotifier.Text:='';
+  PopupNotifier.vNotifierForm.Font.Size:=12;
   L := TLabel.Create(FormMatrixGame.PopupNotifier.vNotifierForm);
   L.Name:='UglyHack';
   L.Align:=alClient;

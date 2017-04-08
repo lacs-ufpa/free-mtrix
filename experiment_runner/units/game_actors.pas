@@ -800,6 +800,7 @@ end;
 
 function TConsequence.GenerateMessage(ForGroup: Boolean): string;
 begin
+  FMessage.vNotifierForm.Font.Size:=12;
   Result := FP.PointMessage(FPrepend,FPrependLoss,FAppendiceLossSingular,FAppendiceLossPlural,
     FPrependEarn,FAppendiceEarnSingular,FAppendiceEarnPlural,FAppendiceZero, ForGroup);
   FMessage.Text := Result;
