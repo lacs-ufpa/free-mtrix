@@ -18,7 +18,7 @@ type
     FConfirmationButton: TButton;
     FHasCols: Boolean;
     FHasRows: Boolean;
-    FPopUpNotifier: TPopupNotifier;
+    //FPopUpNotifier: TPopupNotifier;
     FRowBase: integer;
     function GetRowColor(ARow: integer): TColor;
     procedure GridDrawCell(Sender: TObject; aCol, aRow: integer;
@@ -29,17 +29,17 @@ type
     procedure SetDrawDots(AValue: Boolean);
     procedure SetHasCols(AValue: Boolean);
     procedure SetHasRowsOnly(AValue: Boolean);
-    procedure SetPopUpNotifier(AValue: TPopupNotifier);
+    //procedure SetPopUpNotifier(AValue: TPopupNotifier);
     procedure UpdateHeight;
     procedure UpdateWidth;
     procedure WriteGridFixedNames;
   public
     constructor Create(AOwner:TComponent);override;
     function GetSelectedRow : integer;
-    function GetSelectedColor : TColor;
+    function GetSelectedMatrixColor : TColor;
     procedure UpdateSizeAndNames;
     property ConfirmationButton : TButton read FConfirmationButton write SetConfirmationButton;
-    property PopUpNotifier : TPopupNotifier read FPopUpNotifier write SetPopUpNotifier;
+    // property PopUpNotifier : TPopupNotifier read FPopUpNotifier write SetPopUpNotifier;
     property DrawFilledDots : Boolean read FDrawDots write SetDrawDots;
     property DrawClearDots : Boolean read FDrawClearDots write SetDrawClearDots;
     property HasRows : Boolean read FHasRows write SetHasRowsOnly;
@@ -60,7 +60,7 @@ var
 begin
   inherited Create(AOwner);
   FConfirmationButton := nil;
-  FPopUpNotifier := nil;
+  //FPopUpNotifier := nil;
   Top := 50;
   Left := 100;
   AutoEdit:=False;
@@ -90,7 +90,7 @@ begin
     Result := Selection.Top;
 end;
 
-function TStringGridA.GetSelectedColor: TColor;
+function TStringGridA.GetSelectedMatrixColor: TColor;
 begin
   Result := GetRowColor(Selection.Top);
 end;
@@ -264,7 +264,7 @@ begin
   if goRowSelect in TStringGrid(Sender).Options then Exit;
   TStringGrid(Sender).Options := TStringGrid(Sender).Options+[goRowSelect];
   FConfirmationButton.Visible := True;
-  FPopupNotifier.Visible:= False;
+  //FPopupNotifier.Visible:= False;
 end;
 
 procedure TStringGridA.SetConfirmationButton(AValue: TButton);
@@ -307,11 +307,11 @@ begin
   Options := [goFixedHorzLine, goHorzLine];
 end;
 
-procedure TStringGridA.SetPopUpNotifier(AValue: TPopupNotifier);
-begin
-  if FPopUpNotifier=AValue then Exit;
-  FPopUpNotifier:=AValue;
-end;
+//procedure TStringGridA.SetPopUpNotifier(AValue: TPopupNotifier);
+//begin
+//  if FPopUpNotifier=AValue then Exit;
+//  FPopUpNotifier:=AValue;
+//end;
 
 procedure TStringGridA.UpdateHeight;
 var
@@ -350,8 +350,12 @@ begin
       Cells[0, i + FRowBase] := IntToStr(i + 1);
 
   if FHasCols then
+    begin
+    Cells[0,0] := '';
     for i := 0 to ColCount-2 do
       Cells[i+1, 0] := chr(65 + i);
+
+    end;
 end;
 
 end.

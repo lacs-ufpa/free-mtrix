@@ -49,7 +49,7 @@ type
   private
     function AskQuestion(AQuestion:string):UTF8string;
     function ShowConsequence(AID,S:string;ForGroup:Boolean;ShowPopUp : Boolean = True) : string;
-    procedure ShowSystemPopUp(AText:string;AInterval : integer);
+
     procedure DisableConfirmationButton;
     procedure CleanMatrix(AEnabled : Boolean);
     procedure NextConditionSetup(S : string; IsConditionStart:Boolean=False);
@@ -96,6 +96,7 @@ type
     property Experiment : TExperiment read FExperiment write FExperiment;
     property ID : UTF8string read FID;
   public
+    procedure ShowSystemPopUp(AText:string;AInterval : integer);
     property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
     property OnInterlocking : TNotifyEvent read FOnInterlocking write SetOnInterlocking;
     property OnStartCondition : TNotifyEvent read FOnStartCondition write SetOnStartCondition;
@@ -398,7 +399,7 @@ end;
 
 function TGameControl.GetSelectedColorF(AStringGrid: TStringGrid): UTF8string;
 begin
-  Result := GetColorString(TStringGridA(AStringGrid).GetSelectedColor);
+  Result := GetColorString(TStringGridA(AStringGrid).GetSelectedMatrixColor);
 end;
 
 function TGameControl.GetSelectedRowF(AStringGrid: TStringGrid): UTF8string;

@@ -98,6 +98,7 @@ uses form_chooseactor, game_resources, game_visual_matrix_a;
 
 procedure TFormMatrixGame.TimerTimer(Sender: TObject);
 begin
+  Timer.Enabled:=False;
   PopupNotifier.Visible:=False;
 end;
 
@@ -202,7 +203,7 @@ var
   LLeft : integer;
 begin
   StringGridMatrix := TStringGridA.Create(Self);
-  TStringGridA(StringGridMatrix).PopUpNotifier := PopupNotifier;
+  // TStringGridA(StringGridMatrix).PopUpNotifier := PopupNotifier;
   TStringGridA(StringGridMatrix).ConfirmationButton := btnConfirmRow;
   StringGridMatrix.Parent := Self;
   LLeft := StringGridMatrix.Width+btnConfirmRow.Width+GBPoints.Width+10;
@@ -228,7 +229,7 @@ begin
   PopupNotifier.Icon.Assign(Application.Icon);
   PopupNotifier.Title:='';
   PopupNotifier.Text:='';
-  PopupNotifier.vNotifierForm.Font.Size:=12;
+  // PopupNotifier.vNotifierForm.Font.Size:=12;
   L := TLabel.Create(FormMatrixGame.PopupNotifier.vNotifierForm);
   L.Name:='UglyHack';
   L.Align:=alClient;
@@ -298,7 +299,7 @@ begin
   if ButtonExpStart.Caption = CAPTION_START then
     if OpenDialog.Execute then
       LoadFromFile(OpenDialog.FileName);
-
+  //FGameControl.ShowSystemPopUp('É sua vez! Clique sobre uma linha da matriz e confirme sua escolha.',5000);
   if ButtonExpStart.Caption = CAPTION_RESUME then
     begin
       ButtonExpStart.Enabled := False;
