@@ -1322,13 +1322,17 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
         ARequest.Append(FExperiment.ConsequenceStringFromChoices); // 7
 
         // prompt question if an odd row was selected
-        ARequest.Append(FExperiment.ShouldAskQuestion);            // 8
+        S := FExperiment.ShouldAskQuestion;
+        ARequest.Append(S);                                        // 8
 
         // #32 resume else NextGeneration = PlayerToKick AID
         ARequest.Append(FExperiment.NextGeneration);               // 9
 
         // Check if we need to end the current condition
-        ARequest.Append(FExperiment.NextCondition);                // 10
+        if S <> #32 then
+          ARequest.Append(#32)// ValidateQuestionResponse
+        else
+          ARequest.Append(FExperiment.NextCondition);              // 10
       end;
   end;
 
@@ -1353,7 +1357,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
         SetLength(M, 3+LPromptConsequences.Count);
         M[0] := K_QMESSAGE;
         M[1] := ARequest[4]; // generation envelop
-        M[2] := ARequest[5]; // conditions
+        M[2] := FExperiment.NextCondition;
         if LPromptConsequences.Count > 0 then
           begin
             for i := 0 to LPromptConsequences.Count-1 do
