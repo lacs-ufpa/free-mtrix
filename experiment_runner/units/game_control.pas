@@ -1354,10 +1354,12 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
       begin
         // generate messages
         LPromptConsequences := FExperiment.CurrentCondition.Prompt.AsString;
+        FExperiment.WriteReportRowPrompt;
         SetLength(M, 3+LPromptConsequences.Count);
         M[0] := K_QMESSAGE;
         M[1] := ARequest[4]; // generation envelop
         M[2] := FExperiment.NextCondition;
+
         if LPromptConsequences.Count > 0 then
           begin
             for i := 0 to LPromptConsequences.Count-1 do
@@ -1369,11 +1371,9 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
             for i := 0 to LPromptConsequences.Count -1 do
               M[i+3] := LPromptConsequences[i]; // messages envelop
           end;
-
+        FExperiment.Clean;
         // send identified messages; each player takes only its own message and ignore the rest
         FZMQActor.SendMessage(M);
-        FExperiment.WriteReportRowPrompt;
-        FExperiment.Clean;
       end;
   end;
 
