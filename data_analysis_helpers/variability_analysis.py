@@ -56,7 +56,7 @@ def analyse_condition(session, c):
     print(unique_count/total_count*100,'%% unique')
     print('')
 
-def count_combinations(session, c, print_each_combination=False):
+def count_combinations(session, c, print_each_combination=False,offset=0):
     color_set = deepcopy(COLOR_SET)
     all_data = zip(session['LAC'][c[0]:c[1]], session['LBC'][c[0]:c[1]],session['LCC'][c[0]:c[1]])
     i = 0
@@ -64,17 +64,16 @@ def count_combinations(session, c, print_each_combination=False):
     for a, b, c in all_data:
         i += 1
         # print(i)
-        if last_a:
-            if a != last_a:
-                for key, value in color_set.items():
-                    if a != b != c != a:
-                        if a.decode() in value[0]:
-                            if b.decode() in value[0]:
-                                if c.decode() in value[0]: 
-                                    color_set[key][1] += 1
-                                    # print(a,b,c)
-                                    if print_each_combination:
-                                        print(str(i)+'\t'+key+'\t'+str(color_set[key][1]))
+        if a != last_a:
+            for key, value in color_set.items():
+                if a != b != c != a:
+                    if a.decode() in value[0]:
+                        if b.decode() in value[0]:
+                            if c.decode() in value[0]: 
+                                color_set[key][1] += 1
+                                # print(a,b,c)
+                                if print_each_combination:
+                                    print(str(i+offset)+'\t'+key+'\t'+str(color_set[key][1]))
         # else:
         # for key, value in color_set.items():
         #     if a != b != c != a:
@@ -83,7 +82,7 @@ def count_combinations(session, c, print_each_combination=False):
         #                 if c.decode() in value[0]: 
         #                     color_set[key][1] += 1
         last_a = a      
-    return color_set
+    return color_set, i+offset
 
 
     # unique = set(all_data)
@@ -133,15 +132,16 @@ if __name__ == "__main__":
     for session_name in session_names:
         print(session_name)
         session = load_file(session_name, 0, 0)
+        offset = 0
         for i, condition in enumerate(conditions):
             print('Condition ', i + 1)
 
             # contagem das combinações
-            color_set = count_combinations(session,condition)
+            color_set, _ = count_combinations(session,condition)
             for key, value in color_set.items():
                 print(key,'\t',value[1])
 
             # contagem por ciclo
             print('Condition ', i + 1, ' por ciclo')
-            _ = count_combinations(session,condition,True)
+            _, offset = count_combinations(session,condition,True, offset)
             
