@@ -1,16 +1,22 @@
+# -*- coding: utf-8 -*-
 import os
 from math import factorial as f
 
+import numpy as np
+from entropy_analysis import entropy
 from porcentagem_movel import load_file
 from copy import deepcopy
 
 
+# lines
 # amarelo = [1,8]
 # verde = [2,7]
 # vermelho = [3,6]
 # azul = [4,9]
 # roxo = [5,10]
 # preto = [0]
+
+# color names
 amarelo = 'amarela '
 verde = 'verde '
 vermelho = 'vermelha '
@@ -19,27 +25,27 @@ roxo = 'rosa '
 preto = 'preto '
 
 COLOR_SET = {
-    '01': [azul + verde + amarelo, 0],
-    '02': [azul + verde + vermelho, 0],
-    '03': [azul + verde + roxo, 0],
-    '04': [azul + amarelo + vermelho, 0],
-    '05': [azul + amarelo + roxo, 0],
-    '06': [azul + vermelho + roxo, 0],
-    '07': [amarelo + verde + vermelho, 0],
-    '08': [amarelo + verde + roxo, 0],
-    '09': [amarelo + roxo + vermelho, 0],
-    '10': [vermelho + verde + roxo, 0],
-    '11': [preto + azul + amarelo, 0],
-    '12': [preto + azul + vermelho, 0],
-    '13': [preto + azul + verde, 0],
-    '14': [preto + azul + roxo, 0],
-    '15': [preto + amarelo + vermelho, 0],
-    '16': [preto + amarelo + verde, 0],
-    '17': [preto + amarelo + roxo, 0],
-    '18': [preto + vermelho + verde, 0],
-    '19': [preto + vermelho + roxo, 0],
-    '20': [preto + verde + roxo, 0]
-}
+    1: [azul + verde + amarelo, 0],
+    2: [azul + verde + vermelho, 0],
+    3: [azul + verde + roxo, 0],
+    4: [azul + amarelo + vermelho, 0],
+    5: [azul + amarelo + roxo, 0],
+    6: [azul + vermelho + roxo, 0],
+    7: [amarelo + verde + vermelho, 0],
+    8: [amarelo + verde + roxo, 0],
+    9: [amarelo + roxo + vermelho, 0],
+    10: [vermelho + verde + roxo, 0],
+    11: [preto + azul + amarelo, 0],
+    12: [preto + azul + vermelho, 0],
+    13: [preto + azul + verde, 0],
+    14: [preto + azul + roxo, 0],
+    15: [preto + amarelo + vermelho, 0],
+    16: [preto + amarelo + verde, 0],
+    17: [preto + amarelo + roxo, 0],
+    18: [preto + vermelho + verde, 0],
+    19: [preto + vermelho + roxo, 0],
+    20: [preto + verde + roxo, 0]
+    }
 
 def analyse_condition(session, c):
     print(len(session['LA']))
@@ -48,22 +54,21 @@ def analyse_condition(session, c):
     print('All combinations in condition:', total_count)
     unique = set(all_data)
     unique =     sorted(list(unique))
-    # for line in unique:
-    #     print(line)
-
     unique_count = len(unique)
     print('Unique combinations in condition:', unique_count)
     print(unique_count/total_count*100,'%% unique')
     print('')
 
 def count_combinations(session, c, print_each_combination=False,offset=0):
+    """
+    Count combinations from color names
+    """
     color_set = deepcopy(COLOR_SET)
     all_data = zip(session['LAC'][c[0]:c[1]], session['LBC'][c[0]:c[1]],session['LCC'][c[0]:c[1]])
     i = 0
     last_a = None
     for a, b, c in all_data:
         i += 1
-        # print(i)
         if a != last_a:
             for key, value in color_set.items():
                 if a != b != c != a:
@@ -71,42 +76,41 @@ def count_combinations(session, c, print_each_combination=False,offset=0):
                         if b.decode() in value[0]:
                             if c.decode() in value[0]: 
                                 color_set[key][1] += 1
-                                # print(a,b,c)
                                 if print_each_combination:
-                                    print(str(i+offset)+'\t'+key+'\t'+str(color_set[key][1]))
-        # else:
-        # for key, value in color_set.items():
-        #     if a != b != c != a:
-        #         if a.decode() in value[0]:
-        #             if b.decode() in value[0]:
-        #                 if c.decode() in value[0]: 
-        #                     color_set[key][1] += 1
+                                    print(str(i+offset)+'\t'+str(key)+'\t'+str(color_set[key][1]))
         last_a = a      
     return color_set, i+offset
 
-
-    # unique = set(all_data)
-    # unique = sorted(list(unique))
-    # for line in unique:
-    #     print(line)
-
-    # unique_count = len(unique)
-    # print('Unique combinations in condition:', unique_count)
-    # print(unique_count/total_count*100,'% unique')
-    # print('')
-
 if __name__ == "__main__":
-    #root_path = os.path.dirname(os.path.abspath(__file__))
     session_names = [
-        'variability_data_mc4.txt'
+        'variability_data_mc3.txt'
         ]
 
     conditions = [
-        (0,98),
-        (98,195),
-        (195,295),
-        (295,362)
-    ]
+            (0,100),
+            (100,150),
+            (150,250),
+            (250,350)
+        ]
+
+    for session_name in session_names:
+            print(session_name)
+            session = load_file(session_name, 0, 0)
+            offset = 0
+            for i, condition in enumerate(conditions):
+                # contagem cumulativa por ciclo
+                print('Condition ', i + 1, ' cumulative count per cycle')
+                color_set, offset = count_combinations(session, condition, True, offset)
+
+            print('\n''Condition ', i + 1, 'bins')
+                        dtypes = [] 
+                        entropy_input = []
+                        for key, value in color_set.items():
+                            print(key,'\t',value[1])
+                            entropy_input.append(value[1])
+
+            # entropia relativa das combinações
+            print('Entropy:', entropy(entropy_input[0:10],conditions[i][1]-conditions[i][0]),'\n')
 
     # max = 220 :
     # print(f(11+3-1)/(f(3)*f(11-1)))
@@ -128,20 +132,3 @@ if __name__ == "__main__":
     #     print('Unique combinations in session:', unique_count)
     #     print(unique_count/total_count*100,'% unique')
     #     print('')
-
-    for session_name in session_names:
-        print(session_name)
-        session = load_file(session_name, 0, 0)
-        offset = 0
-        for i, condition in enumerate(conditions):
-            print('Condition ', i + 1)
-
-            # contagem das combinações
-            color_set, _ = count_combinations(session,condition)
-            for key, value in color_set.items():
-                print(key,'\t',value[1])
-
-            # contagem por ciclo
-            print('Condition ', i + 1, ' por ciclo')
-            _, offset = count_combinations(session,condition,True, offset)
-            
