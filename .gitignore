@@ -33,11 +33,14 @@ __history
 *backup*
 id
 .persistence
-experiment_runner/experiment_runner
+deployment/*
+!deployment/*.py
+experiment_designer/experiment_designer_linux_64bits
+experiment_runner/experiment_runner_linux_64bits
 experiment_runner/Pesquisadores/*
 experiment_runner/Participant*/*
-experiment_runner/lib/x86_64-linux/*.lfm
-experiment_runner/lib/i386-win32/*.lfm
+experiment_runner/lib/x86_64-linux-gtk2/*.lfm
+experiment_runner/lib/i386-win32-win32/*.lfm
 *.data
 *.chat
 experiment_runner/ZMQVERSION

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="9"/>
+    <Version Value="10"/>
     <PathDelim Value="\"/>
     <General>
       <SessionStorage Value="InProjectDir"/>
@@ -23,22 +23,26 @@
       <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_designer" ProductName="Free-mtrix" ProductVersion="0.2.0"/>
     </VersionInfo>
     <BuildModes Count="4">
-      <Item1 Name="Linux 64 Debug" Default="True"/>
-      <Item2 Name="Linux 64 Release">
+      <Item1 Name="linux_64bits_debug" Default="True"/>
+      <Item2 Name="linux_64bits">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="experiment_designer"/>
+            <Filename Value="experiment_designer_$(BuildMode)"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
             <OtherUnitFiles Value="../experiment_runner/units"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="linux"/>
+          </CodeGeneration>
           <Linking>
             <Debugging>
-              <GenerateDebugInfo Value="False"/>
               <StripSymbols Value="True"/>
+              <UseExternalDbgSyms Value="True"/>
             </Debugging>
             <Options>
               <Win32>
@@ -48,17 +52,21 @@
           </Linking>
         </CompilerOptions>
       </Item2>
-      <Item3 Name="Win32 Debug">
+      <Item3 Name="windows_32bits_debug">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="experiment_designer"/>
+            <Filename Value="experiment_designer_$(BuildMode)"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
             <OtherUnitFiles Value="../experiment_runner/units"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="win32"/>
+          </CodeGeneration>
           <Linking>
             <Debugging>
               <UseHeaptrc Value="True"/>
@@ -71,21 +79,25 @@
           </Linking>
         </CompilerOptions>
       </Item3>
-      <Item4 Name="Win32 Release">
+      <Item4 Name="windows_32bits">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="experiment_designer"/>
+            <Filename Value="experiment_designer_$(BuildMode)"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
             <OtherUnitFiles Value="../experiment_runner/units"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="win32"/>
+          </CodeGeneration>
           <Linking>
             <Debugging>
-              <GenerateDebugInfo Value="False"/>
               <StripSymbols Value="True"/>
+              <UseExternalDbgSyms Value="True"/>
             </Debugging>
             <Options>
               <Win32>
@@ -134,14 +146,21 @@
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="experiment_designer"/>
+      <Filename Value="experiment_designer_$(BuildMode)"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
       <OtherUnitFiles Value="../experiment_runner/units"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
+    <CodeGeneration>
+      <TargetCPU Value="x86_64"/>
+      <TargetOS Value="linux"/>
+    </CodeGeneration>
     <Linking>
+      <Debugging>
+        <UseHeaptrc Value="True"/>
+      </Debugging>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>

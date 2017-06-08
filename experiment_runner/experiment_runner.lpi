@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="9"/>
+    <Version Value="10"/>
     <General>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
@@ -23,19 +23,23 @@
       <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_runner" ProductName="Free-mtrix" ProductVersion="0.2.0"/>
     </VersionInfo>
     <BuildModes Count="4">
-      <Item1 Name="Linux 64 Debug" Default="True"/>
-      <Item2 Name="Linux 64 Release">
+      <Item1 Name="linux_64bits_debug" Default="True"/>
+      <Item2 Name="linux_64bits">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="experiment_runner"/>
+            <Filename Value="experiment_runner_$(BuildMode)"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
             <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
-            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="linux"/>
+          </CodeGeneration>
           <Linking>
             <Debugging>
               <UseExternalDbgSyms Value="True"/>
@@ -52,18 +56,21 @@
           </Other>
         </CompilerOptions>
       </Item2>
-      <Item3 Name="Win32 Debug">
+      <Item3 Name="windows_32bits_debug">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="experiment_runner"/>
+            <Filename Value="experiment_runner_$(BuildMode)"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
             <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
-            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="win32"/>
+          </CodeGeneration>
           <Linking>
             <Options>
               <Win32>
@@ -77,18 +84,21 @@
           </Other>
         </CompilerOptions>
       </Item3>
-      <Item4 Name="Win32 Release">
+      <Item4 Name="windows_32bits">
         <CompilerOptions>
           <Version Value="11"/>
           <Target>
-            <Filename Value="experiment_runner"/>
+            <Filename Value="experiment_runner_$(BuildMode)"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
             <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
-            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="i386"/>
+            <TargetOS Value="win32"/>
+          </CodeGeneration>
           <Linking>
             <Debugging>
               <UseExternalDbgSyms Value="True"/>
@@ -202,14 +212,17 @@
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="experiment_runner"/>
+      <Filename Value="experiment_runner_$(BuildMode)"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
+      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
       <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
-      <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
     </SearchPaths>
+    <CodeGeneration>
+      <TargetOS Value="linux"/>
+    </CodeGeneration>
     <Linking>
       <Options>
         <Win32>
