@@ -63,7 +63,7 @@ type
     FOnEndExperiment: TNotifyEvent;
     FOnInterlocking: TNotifyEvent;
     FOnPlayerExit: TPlayerEvent;
-    FOnStartChoice: TNotifyEvent;
+    // FOnStartChoice: TNotifyEvent;
     FOnStartCondition: TNotifyEvent;
     FOnStartCycle: TNotifyEvent;
     FOnStartExperiment: TNotifyEvent;
