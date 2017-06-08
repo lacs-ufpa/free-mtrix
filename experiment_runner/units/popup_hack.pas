@@ -90,10 +90,14 @@ begin
   vNotifierForm.HintRect:=r;
   vNotifierForm.Width:=r.Right-r.Left + 52;
   vNotifierForm.Height:=r.Bottom-r.Top + 52;
-
-  PopUpPos.X := (AControl.Width div 2) - (vNotifierForm.Width div 2);
-  PopUpPos.Y := (AControl.Height div 2) - (vNotifierForm.Height div 2);
-  ShowAtPos(PopUpPos.X, PopUpPos.Y);
+  if Assigned(AControl) then
+    begin
+      PopUpPos.X := (AControl.Width div 2) - (vNotifierForm.Width div 2);
+      PopUpPos.Y := (AControl.Height div 2) - (vNotifierForm.Height div 2);
+      ShowAtPos(PopUpPos.X, PopUpPos.Y);
+    end
+  else
+    ShowAtPos(0, 0);
   AutoDestroyIn(AInterval);
 end;
 

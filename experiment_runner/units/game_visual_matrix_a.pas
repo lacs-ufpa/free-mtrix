@@ -36,7 +36,9 @@ type
   public
     constructor Create(AOwner:TComponent);override;
     function GetSelectedRow : integer;
+    function GetSelectedRowF : UTF8string;
     function GetSelectedMatrixColor : TColor;
+    function GetSelectedMatrixColorF: UTF8string;
     procedure UpdateSizeAndNames;
     property ConfirmationButton : TButton read FConfirmationButton write SetConfirmationButton;
     // property PopUpNotifier : TPopupNotifier read FPopUpNotifier write SetPopUpNotifier;
@@ -50,7 +52,7 @@ type
 
 implementation
 
-uses game_resources;
+uses game_resources, string_methods;
 
 { TStringGridA }
 
@@ -90,9 +92,19 @@ begin
     Result := Selection.Top;
 end;
 
+function TStringGridA.GetSelectedRowF: UTF8string;
+begin
+  Result := Format('%-*.*d', [1,2,GetSelectedRow]);
+end;
+
 function TStringGridA.GetSelectedMatrixColor: TColor;
 begin
   Result := GetRowColor(Selection.Top);
+end;
+
+function TStringGridA.GetSelectedMatrixColorF: UTF8string;
+begin
+  Result := GetColorString(GetSelectedMatrixColor);
 end;
 
 procedure TStringGridA.UpdateSizeAndNames;

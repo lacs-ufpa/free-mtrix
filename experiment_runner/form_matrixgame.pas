@@ -70,6 +70,10 @@ type
     FExperimentBox : TExperimentBox;
     FID: string;
     FInitParameter: string;
+    procedure DisableConfirmationButton(Sender : TObject);
+    procedure CleanMatrix(Sender: TObject; AEnabled : Boolean);
+    procedure PlayerExit(P : TPlayer; AMessage : string);
+
   public
     StringGridMatrix: TStringGrid;
     procedure LoadFromFile(FFilename : string);
@@ -100,6 +104,27 @@ procedure TFormMatrixGame.TimerTimer(Sender: TObject);
 begin
   Timer.Enabled:=False;
   PopupNotifier.Visible:=False;
+end;
+
+procedure TFormMatrixGame.DisableConfirmationButton(Sender: TObject);
+begin
+  StringGridMatrix.Enabled:= False;
+  btnConfirmRow.Enabled:=False;
+  btnConfirmRow.Caption:='OK';
+end;
+
+procedure TFormMatrixGame.CleanMatrix(Sender: TObject; AEnabled: Boolean);
+begin
+  StringGridMatrix.Enabled:=AEnabled;
+  StringGridMatrix.Options := FormMatrixGame.StringGridMatrix.Options-[goRowSelect];
+  btnConfirmRow.Enabled:=True;
+  btnConfirmRow.Caption:='Confirmar';
+  btnConfirmRow.Visible := False;
+end;
+
+procedure TFormMatrixGame.PlayerExit(P: TPlayer; AMessage: string);
+begin
+  ListBoxOldPlayers.Items.Append(AMessage);
 end;
 
 procedure TFormMatrixGame.LoadFromFile(FFilename: string);
@@ -138,6 +163,15 @@ begin
     gaPlayer: SetZMQPlayer;
     gaWatcher: SetZMQWatcher;
   end;
+  FGameControl.OnPlayerExit:=@PlayerExit;
+  FGameControl.OnEndChoice:=@DisableConfirmationButton;
+  FGameControl.OnCleanEvent:=@CleanMatrix;
+  FGameControl.SystemPopUp := PopupNotifier;
+  FGameControl.LabelGroup := LabelGroupCount;
+  FGameControl.LabelPointA := LabelIndACount;
+  FGameControl.LabelPointB := LabelIndBCount;
+  FGameControl.LabelPointI := LabelIndCount;
+  FGameControl.GroupBoxPlayers := GBLastChoice;
   FGameControl.OnInterlocking := @FExperimentBox.Interlocking;
   FGameControl.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;
   FGameControl.OnStartExperiment := @FExperimentBox.StartExperiment;
@@ -242,8 +276,8 @@ begin
   L.BorderSpacing.Left:=26;
   L.BorderSpacing.Right:=26;
   L.BorderSpacing.Bottom:=26;
-  L.OnClick := FormMatrixGame.PopupNotifier.vNotifierForm.OnClick;
-  L.Parent := FormMatrixGame.PopupNotifier.vNotifierForm;
+  L.OnClick := PopupNotifier.vNotifierForm.OnClick;
+  L.Parent := PopupNotifier.vNotifierForm;
 end;
 
 
@@ -257,7 +291,7 @@ procedure TFormMatrixGame.ChatMemoSendKeyPress(Sender: TObject; var Key: char);
 begin
   if Key = Char(13) then
     begin
-      FGameControl.SendMessage(K_CHAT_M);
+      FGameControl.SendMessage(K_CHAT_M, [ChatMemoSend.Lines.Text]);
       with ChatMemoSend do
         begin
           Clear;
@@ -270,8 +304,11 @@ begin
 end;
 
 procedure TFormMatrixGame.btnConfirmRowClick(Sender: TObject);
+var
+  S : TStringGridA;
 begin
-  FGameControl.SendRequest(K_CHOICE);
+  S := TStringGridA(StringGridMatrix);
+  FGameControl.SendRequest(K_CHOICE, [S.GetSelectedRowF, S.GetSelectedMatrixColorF]);
 end;
 
 procedure TFormMatrixGame.ButtonExpCancelClick(Sender: TObject);
@@ -281,6 +318,8 @@ begin
   ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
   ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
   FGameControl.Experiment.SaveToFile(OpenDialog.FileName+'.canceled');
+  StringGridMatrix.Clean;
+  StringGridMatrix.Options := [];
   FGameControl.Cancel;
 end;
 

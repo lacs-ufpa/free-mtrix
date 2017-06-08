@@ -21,7 +21,7 @@ function GetColorFromCode(ACode : TGameColor) : TColor;
 function GetMessagesFromPromptStyle(APromptStyle : TPromptStyle;
   AContingencies : TContingencies) : TStringList;
 function FirstDelimitedString(S : string):string;
-procedure SetLabel(ALabel : TLabel; AValue:integer=0);
+procedure IncLabel(ALabel : TLabel; AValue:integer=0);
 
 const
 
@@ -274,7 +274,7 @@ begin
   Result := ExtractDelimited(1,S,['#'])
 end;
 
-procedure SetLabel(ALabel: TLabel; AValue:integer);
+procedure IncLabel(ALabel: TLabel; AValue:integer);
 var
   C : integer;
 begin

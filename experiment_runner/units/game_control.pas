@@ -14,7 +14,7 @@ unit game_control;
 interface
 
 uses
-  Classes, SysUtils, Graphics, Grids
+  Classes, SysUtils, Graphics, StdCtrls, PopupNotifier, Grids
   , game_zmq_actors
   , game_experiment
   , game_actors
@@ -23,6 +23,7 @@ uses
 
 type
 
+  TCleanEvent = procedure (Sender:TObject; B : Boolean) of object;
 
   { TGameControl }
 
@@ -34,8 +35,6 @@ type
     FExperiment : TExperiment;
     function GetPlayerBox(AID:UTF8string) : TPlayerBox;
     function GetActorNicname(AID:UTF8string) : UTF8string;
-    function GetSelectedColorF(AStringGrid : TStringGrid) : UTF8string;
-    function GetSelectedRowF(AStringGrid : TStringGrid) : UTF8string;
     function MessageHas(const A_CONST : UTF8string; AMessage : TStringList; I:ShortInt=0): Boolean;
     procedure CreatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
     procedure UpdatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
@@ -50,23 +49,39 @@ type
     function AskQuestion(AQuestion:string):UTF8string;
     function ShowConsequence(AID,S:string;ForGroup:Boolean;ShowPopUp : Boolean = True) : string;
 
-    procedure DisableConfirmationButton;
-    procedure CleanMatrix(AEnabled : Boolean);
     procedure NextConditionSetup(S : string; IsConditionStart:Boolean=False);
     procedure NextGenerationSetup(AID : string);
     procedure EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
   private
+    FGroupBoxPlayers: TGroupBox;
+    FLabelGroup: TLabel;
+    FLabelPointA: TLabel;
+    FLabelPointB: TLabel;
+    FLabelPointI: TLabel;
+    FOnCleanEvent: TCleanEvent;
+    FOnEndChoice: TNotifyEvent;
     FOnEndExperiment: TNotifyEvent;
     FOnInterlocking: TNotifyEvent;
+    FOnPlayerExit: TPlayerEvent;
+    FOnStartChoice: TNotifyEvent;
     FOnStartCondition: TNotifyEvent;
     FOnStartCycle: TNotifyEvent;
     FOnStartExperiment: TNotifyEvent;
     FOnStartGeneration: TNotifyEvent;
     FOnStartTurn: TNotifyEvent;
     FOnTargetInterlocking: TNotifyEvent;
+    FSystemPopUp: TPopupNotifier;
     procedure Interlocking(Sender: TObject);
+    procedure SetGroupBoxPlayers(AValue: TGroupBox);
+    procedure SetLabelGroup(AValue: TLabel);
+    procedure SetLabelPointA(AValue: TLabel);
+    procedure SetLabelPointB(AValue: TLabel);
+    procedure SetLabelPointI(AValue: TLabel);
+    procedure SetOnCleanEvent(AValue: TCleanEvent);
+    procedure SetOnEndChoice(AValue: TNotifyEvent);
     procedure SetOnEndExperiment(AValue: TNotifyEvent);
     procedure SetOnInterlocking(AValue: TNotifyEvent);
+    procedure SetOnPlayerExit(AValue: TPlayerEvent);
     procedure SetOnStartCondition(AValue: TNotifyEvent);
     procedure SetOnStartCycle(AValue: TNotifyEvent);
     procedure SetOnStartExperiment(AValue: TNotifyEvent);
@@ -74,6 +89,7 @@ type
     procedure SetOnStartTurn(AValue: TNotifyEvent);
     procedure SetOnTargetInterlocking(AValue: TNotifyEvent);
     procedure EndExperiment(Sender : TObject);
+    procedure SetSystemPopUp(AValue: TPopupNotifier);
     procedure StartCondition(Sender: TObject);
     procedure StartCycle(Sender: TObject);
     procedure StartExperiment(Sender: TObject);
@@ -86,8 +102,8 @@ type
     function LoadFromFile(AFilename : string):Boolean;
     procedure SetMatrix;
     procedure SetLabels;
-    procedure SendRequest(ARequest : UTF8string);
-    procedure SendMessage(AMessage : UTF8string);
+    procedure SendRequest(ARequest : UTF8string; AInputData : array of UTF8String);
+    procedure SendMessage(AMessage : UTF8string; AInputData : array of UTF8String);
     procedure Cancel;
     procedure Start;
     procedure Pause;
@@ -97,6 +113,12 @@ type
     property ID : UTF8string read FID;
   public
     procedure ShowSystemPopUp(AText:string;AInterval : integer);
+    property SystemPopUp : TPopupNotifier read FSystemPopUp write SetSystemPopUp;
+    property LabelGroup : TLabel read FLabelGroup write SetLabelGroup;
+    property LabelPointA : TLabel read FLabelPointA write SetLabelPointA;
+    property LabelPointB : TLabel read FLabelPointB write SetLabelPointB;
+    property LabelPointI : TLabel read FLabelPointI write SetLabelPointI;
+    property GroupBoxPlayers : TGroupBox read FGroupBoxPlayers write SetGroupBoxPlayers;
     property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
     property OnInterlocking : TNotifyEvent read FOnInterlocking write SetOnInterlocking;
     property OnStartCondition : TNotifyEvent read FOnStartCondition write SetOnStartCondition;
@@ -105,6 +127,9 @@ type
     property OnStartGeneration : TNotifyEvent read FOnStartGeneration write SetOnStartGeneration;
     property OnStartTurn : TNotifyEvent read FOnStartTurn write SetOnStartTurn;
     property OnTargetInterlocking : TNotifyEvent read FOnTargetInterlocking write SetOnTargetInterlocking;
+    property OnEndChoice : TNotifyEvent read FOnEndChoice write SetOnEndChoice;
+    property OnCleanEvent : TCleanEvent read FOnCleanEvent write SetOnCleanEvent;
+    property OnPlayerExit : TPlayerEvent read FOnPlayerExit write SetOnPlayerExit;
   end;
 
 // TODO: PUT NORMAL STRING MESSAGES IN RESOURCESTRING INSTEAD
@@ -134,7 +159,7 @@ const
 
 implementation
 
-uses ButtonPanel,Controls,ExtCtrls,StdCtrls,LazUTF8, Forms, Dialogs, strutils
+uses ButtonPanel,Controls,ExtCtrls, LazUTF8, Forms, Dialogs, strutils
      , game_visual_matrix_a
      , popup_hack
      , form_matrixgame
@@ -163,6 +188,12 @@ begin
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
 
+procedure TGameControl.SetSystemPopUp(AValue: TPopupNotifier);
+begin
+  if FSystemPopUp=AValue then Exit;
+  FSystemPopUp:=AValue;
+end;
+
 procedure TGameControl.StartTurn(Sender: TObject);
 begin
   if Assigned(FOnStartTurn) then FOnStartTurn(Sender);
@@ -188,6 +219,48 @@ begin
   //i := StrToInt(FormMatrixGame.LabelExpCountInterlocks.Caption);
   //FormMatrixGame.LabelExpCountInterlocks.Caption:= IntToStr(i+1);
   if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
+end;
+
+procedure TGameControl.SetGroupBoxPlayers(AValue: TGroupBox);
+begin
+  if FGroupBoxPlayers=AValue then Exit;
+  FGroupBoxPlayers:=AValue;
+end;
+
+procedure TGameControl.SetLabelGroup(AValue: TLabel);
+begin
+  if FLabelGroup=AValue then Exit;
+  FLabelGroup:=AValue;
+end;
+
+procedure TGameControl.SetLabelPointA(AValue: TLabel);
+begin
+  if FLabelPointA=AValue then Exit;
+  FLabelPointA:=AValue;
+end;
+
+procedure TGameControl.SetLabelPointB(AValue: TLabel);
+begin
+  if FLabelPointB=AValue then Exit;
+  FLabelPointB:=AValue;
+end;
+
+procedure TGameControl.SetLabelPointI(AValue: TLabel);
+begin
+  if FLabelPointI=AValue then Exit;
+  FLabelPointI:=AValue;
+end;
+
+procedure TGameControl.SetOnCleanEvent(AValue: TCleanEvent);
+begin
+  if FOnCleanEvent=AValue then Exit;
+  FOnCleanEvent:=AValue;
+end;
+
+procedure TGameControl.SetOnEndChoice(AValue: TNotifyEvent);
+begin
+  if FOnEndChoice=AValue then Exit;
+  FOnEndChoice:=AValue;
 end;
 
 procedure TGameControl.TargetInterlocking(Sender: TObject);
@@ -218,6 +291,12 @@ procedure TGameControl.SetOnInterlocking(AValue: TNotifyEvent);
 begin
   if FOnInterlocking=AValue then Exit;
   FOnInterlocking:=AValue;
+end;
+
+procedure TGameControl.SetOnPlayerExit(AValue: TPlayerEvent);
+begin
+  if FOnPlayerExit=AValue then Exit;
+  FOnPlayerExit:=AValue;
 end;
 
 procedure TGameControl.SetOnStartCondition(AValue: TNotifyEvent);
@@ -288,10 +367,10 @@ function TGameControl.GetPlayerBox(AID: UTF8string): TPlayerBox;
 var i : integer;
 begin
   Result := nil;
-  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount-1 do
-    if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
+  for i := 0 to GroupBoxPlayers.ComponentCount-1 do
+    if TPlayerBox(GroupBoxPlayers.Components[i]).ID = AID then
       begin
-        Result := TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]);
+        Result := TPlayerBox(GroupBoxPlayers.Components[i]);
         Break;
       end;
 end;
@@ -310,6 +389,7 @@ begin
   end;
 end;
 
+
 function TGameControl.MessageHas(const A_CONST: UTF8string; AMessage: TStringList;
   I: ShortInt): Boolean;
 begin
@@ -321,7 +401,7 @@ end;
 procedure TGameControl.CreatePlayerBox(P: TPlayer; Me: Boolean; Admin: Boolean);
 var i1 : integer;
 begin
-  with TPlayerBox.Create(FormMatrixGame.GBLastChoice,P.ID,Admin) do
+  with TPlayerBox.Create(GroupBoxPlayers,P.ID,Admin) do
     begin
       if Me then
         Caption := P.Nicname+SysToUtf8(' (Você)' )
@@ -334,7 +414,7 @@ begin
         LabelLastRowCount.Caption := 'NA';
       PanelLastColor.Color := GetColorFromCode(P.Choice.Color);
       Enabled := True;
-      Parent := FormMatrixGame.GBLastChoice;
+      Parent := GroupBoxPlayers;
     end;
 end;
 
@@ -361,11 +441,11 @@ end;
 //procedure TGameControl.DeletePlayerBox(AID: string);
 //var i : integer;
 //begin
-//  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount -1 do
-//    if FormMatrixGame.GBLastChoice.Components[i] is TPlayerBox then
-//      if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
+//  for i := 0 to GroupBoxPlayers.ComponentCount -1 do
+//    if GroupBoxPlayers.Components[i] is TPlayerBox then
+//      if TPlayerBox(GroupBoxPlayers.Components[i]).ID = AID then
 //        begin
-//          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).Free;
+//          TPlayerBox(GroupBoxPlayers.Components[i]).Free;
 //          Break;
 //        end;
 //end;
@@ -373,12 +453,12 @@ end;
 //procedure TGameControl.MovePlayerBox(AID: string);
 //var i : integer;
 //begin
-//  for i := 0 to FormMatrixGame.GBLastChoice.ComponentCount -1 do
-//    if FormMatrixGame.GBLastChoice.Components[i] is TPlayerBox then
-//      if TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).ID = AID then
+//  for i := 0 to GroupBoxPlayers.ComponentCount -1 do
+//    if GroupBoxPlayers.Components[i] is TPlayerBox then
+//      if TPlayerBox(GroupBoxPlayers.Components[i]).ID = AID then
 //        begin
-//          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).Parent := FormMatrixGame.GBOldPlayers;
-//          TPlayerBox(FormMatrixGame.GBLastChoice.Components[i]).InvisibleLineRow;
+//          TPlayerBox(GroupBoxPlayers.Components[i]).Parent := FormMatrixGame.GBOldPlayers;
+//          TPlayerBox(GroupBoxPlayers.Components[i]).InvisibleLineRow;
 //          Break;
 //        end;
 //end;
@@ -395,16 +475,6 @@ begin
   TStringGridA(AStringGrid).DrawFilledDots := gmDots in AMatrixType;
   TStringGridA(AStringGrid).DrawClearDots := gmClearDots in AMatrixType;
   TStringGridA(AStringGrid).UpdateSizeAndNames;
-end;
-
-function TGameControl.GetSelectedColorF(AStringGrid: TStringGrid): UTF8string;
-begin
-  Result := GetColorString(TStringGridA(AStringGrid).GetSelectedMatrixColor);
-end;
-
-function TGameControl.GetSelectedRowF(AStringGrid: TStringGrid): UTF8string;
-begin
-  Result := Format('%-*.*d', [1,2,TStringGridA(AStringGrid).GetSelectedRow]);
 end;
 
 procedure TGameControl.MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
@@ -484,27 +554,32 @@ var
   r: TRect;
   w:integer;
 begin
-  FormMatrixGame.PopupNotifier.vNotifierForm.AutoSize:=True;
-  L := TLabel(FormMatrixGame.PopupNotifier.vNotifierForm.FindComponent('UglyHack'));
+  SystemPopUp.vNotifierForm.AutoSize:=True;
+  L := TLabel(SystemPopUp.vNotifierForm.FindComponent('UglyHack'));
   L.Caption := AText;
-  FormMatrixGame.PopupNotifier.Show;
+  SystemPopUp.Show;
   w := L.Width;
-  FormMatrixGame.PopupNotifier.Hide;
-  FormMatrixGame.PopupNotifier.vNotifierForm.AutoSize:=False;
-  r:=FormMatrixGame.PopupNotifier.vNotifierForm.CalcHintRect(w, AText, nil);
-  FormMatrixGame.PopupNotifier.vNotifierForm.HintRect:=r;
-  FormMatrixGame.PopupNotifier.vNotifierForm.Width:=r.Right-r.Left + 52;
-  FormMatrixGame.PopupNotifier.vNotifierForm.Height:=r.Bottom-r.Top + 52;
+  SystemPopUp.Hide;
+  SystemPopUp.vNotifierForm.AutoSize:=False;
+  r:=SystemPopUp.vNotifierForm.CalcHintRect(w, AText, nil);
+  SystemPopUp.vNotifierForm.HintRect:=r;
+  SystemPopUp.vNotifierForm.Width:=r.Right-r.Left + 52;
+  SystemPopUp.vNotifierForm.Height:=r.Bottom-r.Top + 52;
 
-  PopUpPos.X := (FormMatrixGame.StringGridMatrix.Width div 2) - (FormMatrixGame.PopupNotifier.vNotifierForm.Width div 2);
-  PopUpPos.Y := (FormMatrixGame.StringGridMatrix.Height div 2) - (FormMatrixGame.PopupNotifier.vNotifierForm.Height div 2);
-  PopUpPos := FormMatrixGame.StringGridMatrix.ClientToScreen(PopUpPos);
+  if Assigned(FormMatrixGame) then
+    begin
+      PopUpPos.X := (FormMatrixGame.StringGridMatrix.Width div 2) - (SystemPopUp.vNotifierForm.Width div 2);
+      PopUpPos.Y := (FormMatrixGame.StringGridMatrix.Height div 2) - (SystemPopUp.vNotifierForm.Height div 2);
+      PopUpPos := FormMatrixGame.StringGridMatrix.ClientToScreen(PopUpPos);
 
-  //FormMatrixGame.PopupNotifier.Text:=AText;
-  FormMatrixGame.PopupNotifier.ShowAtPos(PopUpPos.X,PopUpPos.Y);
-  FormMatrixGame.Timer.OnTimer:=@FormMatrixGame.TimerTimer;
-  FormMatrixGame.Timer.Interval:=AInterval;
-  FormMatrixGame.Timer.Enabled:=True;
+      //SystemPopUp.Text:=AText;
+      SystemPopUp.ShowAtPos(PopUpPos.X,PopUpPos.Y);
+      FormMatrixGame.Timer.OnTimer:=@FormMatrixGame.TimerTimer;
+      FormMatrixGame.Timer.Interval:=AInterval;
+      FormMatrixGame.Timer.Enabled:=True;
+    end
+  else
+    SystemPopUp.ShowAtPos(0,0);
 end;
 
 function TGameControl.ShowConsequence(AID, S: string;
@@ -518,52 +593,39 @@ begin
   case FActor of
     gaPlayer:
       if ForGroup then
-        LConsequence.PresentPoints(FormMatrixGame.LabelIndACount,FormMatrixGame.LabelIndBCount,
-          FormMatrixGame.LabelIndCount,FormMatrixGame.LabelGroupCount)
+        LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,LabelGroup)
       else
         if Self.ID = AID then
-          LConsequence.PresentPoints(FormMatrixGame.LabelIndACount,FormMatrixGame.LabelIndBCount,
-            FormMatrixGame.LabelIndCount,FormMatrixGame.LabelGroupCount);
+          LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,LabelGroup);
 
     gaAdmin:
       begin
         // player box is ignored for group points
         // LabelGroupCount is ignored for player points
-        LConsequence.PresentPoints(GetPlayerBox(AID), FormMatrixGame.LabelGroupCount);
+        LConsequence.PresentPoints(GetPlayerBox(AID),LabelGroup);
       end;
   end;
 
   if ShowPopUp then
-    LConsequence.PresentMessage(FormMatrixGame.GBPoints)
+    begin
+      if Assigned(FormMatrixGame) then
+        LConsequence.PresentMessage(FormMatrixGame.GBPoints)
+      else
+        LConsequence.PresentMessage(TWinControl(Owner.Owner))
+    end
   else
     LConsequence.Free;
 end;
 
-procedure TGameControl.DisableConfirmationButton;
-begin
-  FormMatrixGame.StringGridMatrix.Enabled:= False;
-  FormMatrixGame.btnConfirmRow.Enabled:=False;
-  FormMatrixGame.btnConfirmRow.Caption:='OK';
-end;
-
-procedure TGameControl.CleanMatrix(AEnabled : Boolean);
-begin
-  FormMatrixGame.StringGridMatrix.Enabled:=AEnabled;
-  FormMatrixGame.StringGridMatrix.Options := FormMatrixGame.StringGridMatrix.Options-[goRowSelect];
-  FormMatrixGame.btnConfirmRow.Enabled:=True;
-  FormMatrixGame.btnConfirmRow.Caption:='Confirmar';
-  FormMatrixGame.btnConfirmRow.Visible := False;
-end;
-
-procedure TGameControl.NextConditionSetup(S: string; IsConditionStart: Boolean);
+procedure TGameControl.NextConditionSetup(S: string; IsConditionStart: Boolean); // [player_points]
 var
   A, B, G : integer;
-  LNewA, LNewB : integer;
+  LNewA : integer = 0;
+  LNewB : integer = 0;
   P : TPlayer;
   PB : TPlayerBox;
   C : TCondition;
 begin
-  LNewA := 0; LNewB := 0;
   if FExperiment.ABPoints then
     begin
       A := StrToInt(ExtractDelimited(1,S,['|']));
@@ -575,14 +637,13 @@ begin
       A := StrToInt(ExtractDelimited(1,S,['|']));
       G := StrToInt(ExtractDelimited(2,S,['|']));
     end;
-  SetLabel(FormMatrixGame.LabelGroupCount,G);
+  IncLabel(LabelGroup,G);
 
   case FActor of
     gaPlayer:
       begin
-        LNewA := A;
-        LNewB := B;
         C := FExperiment.Condition[0];
+        //P := FExperiment.PlayerFromID[ID]; should refactor this to use inc instead inclabel
         with C.Points do
           begin
             OnStart.A := A;
@@ -595,11 +656,17 @@ begin
         if IsConditionStart then
           if FExperiment.ABPoints then
             begin
-              SetLabel(FormMatrixGame.LabelIndACount,A);
-              SetLabel(FormMatrixGame.LabelIndBCount,B);
+              //Inc(P.Points.A, A);
+              //Inc(P.Points.B, B);
+              IncLabel(LabelPointA,A);
+              IncLabel(LabelPointB,B);
             end
           else
-            SetLabel(FormMatrixGame.LabelIndACount,A);
+            begin
+              //Inc(P.Points.A, A);
+              IncLabel(LabelPointA,A);
+            end;
+        //FExperiment.PlayerFromID[ID] := P;
       end;
 
     gaAdmin:
@@ -612,23 +679,22 @@ begin
             if FExperiment.ABPoints then
               begin
                 LNewA += LNewB;
-                SetLabel(PB.LabelPointsCount,LNewA);
+                IncLabel(PB.LabelPointsCount,LNewA);
               end
             else
-              SetLabel(PB.LabelPointsCount,LNewA);
+              IncLabel(PB.LabelPointsCount,LNewA);
           end;
   end;
 end;
 
-procedure TGameControl.NextGenerationSetup(AID: string);
+procedure TGameControl.NextGenerationSetup(AID: string); // [player_points]
 var
   A : integer;
   B : integer;
-  LNewA : integer;
-  LNewB : integer;
+  LNewA : integer = 0;
+  LNewB : integer = 0;
   PB : TPlayerBox;
 begin
-  LNewA :=0; LNewB := 0;
   with FExperiment.CurrentCondition.Points do
     begin
       A := OnStart.A;
@@ -642,11 +708,11 @@ begin
       if Self.ID = AID then
         if FExperiment.ABPoints then
           begin
-            SetLabel(FormMatrixGame.LabelIndACount,A);
-            SetLabel(FormMatrixGame.LabelIndBCount,B);
+            IncLabel(LabelPointA,A);
+            IncLabel(LabelPointB,B);
           end
         else
-          SetLabel(FormMatrixGame.LabelIndACount,A);
+          IncLabel(LabelPointA,A);
 
     gaAdmin:
       begin
@@ -655,7 +721,7 @@ begin
         LNewB := B;
         if FExperiment.ABPoints then
           LNewA += LNewB;
-        SetLAbel(PB.LabelPointsCount,LNewA);
+        IncLAbel(PB.LabelPointsCount,LNewA);
       end;
   end;
 end;
@@ -664,7 +730,8 @@ procedure TGameControl.EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnable
 begin
   if FExperiment.PlayerFromID[AID].Turn = ATurn then
     begin
-      CleanMatrix(AEnabled);
+      if Assigned(OnCleanEvent) then
+        OnCleanEvent(Self, AEnabled);
 
       if AEnabled then
         begin
@@ -720,7 +787,7 @@ begin
   //FExperiment.OnEndGeneration:=@NextLineage;
   //FExperiment.OnConsequence:=@Consequence;
 
-  SendRequest(K_LOGIN); // admin cannot send requests
+  SendRequest(K_LOGIN,[]); // admin cannot send requests
 end;
 
 destructor TGameControl.Destroy;
@@ -735,37 +802,42 @@ begin
 
   SetMatrix;
   SetLabels;
-  if Experiment.ShowChat then
-    FormMatrixGame.ChatPanel.Visible := Experiment.ResearcherCanChat
-  else
-    FormMatrixGame.ChatPanel.Visible := Experiment.ShowChat;
+  if Assigned(FormMatrixGame) then
+    if Experiment.ShowChat then
+      FormMatrixGame.ChatPanel.Visible := Experiment.ResearcherCanChat
+    else
+      FormMatrixGame.ChatPanel.Visible := Experiment.ShowChat;
 end;
 
 procedure TGameControl.SetMatrix;
 begin
-  SetMatrixType(FormMatrixGame.StringGridMatrix, FExperiment.MatrixType);
+  if Assigned(FormMatrixGame) then
+    SetMatrixType(FormMatrixGame.StringGridMatrix, FExperiment.MatrixType);
 end;
 
 procedure TGameControl.SetLabels;
 begin
-  with FormMatrixGame do
-    begin
-      // a b points
-      LabelIndA.Visible := FExperiment.ABPoints;
-      LabelIndB.Visible := FExperiment.ABPoints;
-      LabelIndACount.Visible := FExperiment.ABPoints;
-      LabelIndBCount.Visible := FExperiment.ABPoints;
-      ImageIndA.Visible := FExperiment.ABPoints;
-      ImageIndB.Visible := FExperiment.ABPoints;
+  if Assigned(FormMatrixGame) then
+    with FormMatrixGame do
+      begin
+        // a b points
+        LabelIndA.Visible := FExperiment.ABPoints;
+        LabelIndB.Visible := FExperiment.ABPoints;
+        LabelIndACount.Visible := FExperiment.ABPoints;
+        LabelIndBCount.Visible := FExperiment.ABPoints;
+        ImageIndA.Visible := FExperiment.ABPoints;
+        ImageIndB.Visible := FExperiment.ABPoints;
 
-      // i points
-      LabelInd.Visible := not FExperiment.ABPoints;
-      LabelIndCount.Visible := not FExperiment.ABPoints;
-      ImageInd.Visible:= not FExperiment.ABPoints;;
-    end;
+        // i points
+        LabelInd.Visible := not FExperiment.ABPoints;
+        LabelIndCount.Visible := not FExperiment.ABPoints;
+        ImageInd.Visible:= not FExperiment.ABPoints;;
+      end;
 end;
 
-procedure TGameControl.SendRequest(ARequest: UTF8string);
+// called from outside
+procedure TGameControl.SendRequest(ARequest: UTF8string;
+  AInputData: array of UTF8String);
 var
   M : array of UTF8string;
 
@@ -789,8 +861,8 @@ begin
         FZMQActor.ID
         , ' '
         , ARequest
-        , GetSelectedRowF(FormMatrixGame.StringGridMatrix)
-        , GetSelectedColorF(FormMatrixGame.StringGridMatrix)
+        , AInputData[0]
+        , AInputData[1]
       ]);
 
   end;
@@ -808,7 +880,8 @@ begin
 end;
 
 // called from outside
-procedure TGameControl.SendMessage(AMessage: UTF8string);
+procedure TGameControl.SendMessage(AMessage: UTF8string;
+  AInputData: array of UTF8String);
 var
   M : array of UTF8string;
 
@@ -821,20 +894,19 @@ var
   end;
 begin
   case AMessage of
-
     K_CHAT_M  : begin
       //if (FActor = gaAdmin) and (not FExperiment.ResearcherCanChat) then Exit;
       SetM([
         AMessage
         , GetActorNicname(FZMQActor.ID)
-        , FormMatrixGame.ChatMemoSend.Lines.Text
+        , AInputData[0]
       ]);
     end;
     K_CHOICE  : SetM([
         AMessage
         , FZMQActor.ID
-        , GetSelectedRowF(FormMatrixGame.StringGridMatrix)
-        , GetSelectedColorF(FormMatrixGame.StringGridMatrix)
+        , AInputData[0]
+        , AInputData[1]
       ]);
   end;
 
@@ -853,8 +925,6 @@ end;
 
 procedure TGameControl.Cancel;
 begin
-  FormMatrixGame.StringGridMatrix.Clean;
-  FormMatrixGame.StringGridMatrix.Options := [];
   FZMQActor.SendMessage([K_END]);
 end;
 
@@ -930,7 +1000,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                           end;
                       end;
                 end;
-              CleanMatrix(False);
+              if Assigned(OnCleanEvent) then
+                OnCleanEvent(Self, False);
 
               // do not wait for server
               // if should continue then
@@ -944,7 +1015,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           Inc(FExperiment.PlayerTurn);
 
           if Self.ID = P.ID then
-            DisableConfirmationButton
+            begin
+              if Assigned(OnEndChoice) then
+                OnEndChoice(Self);
+            end
           else
             EnablePlayerMatrix(Self.ID,FExperiment.PlayerTurn, True);
       end;
@@ -971,12 +1045,13 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     ALn: string;
   begin
     ALn := '['+AMessage[1]+']: '+AMessage[2];
-    FormMatrixGame.ChatMemoRecv.Lines.Append(ALn);
+    if Assigned(FormMatrixGame) then
+      FormMatrixGame.ChatMemoRecv.Lines.Append(ALn);
     if FActor = gaAdmin then
       FExperiment.WriteChatLn(ALn);
   end;
 
-  procedure SayGoodBye(AID:string);
+  procedure SayGoodBye(AID:string); // [player_points]
   var Pts : string;
   begin
     case FActor of
@@ -987,28 +1062,30 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             begin
               if FExperiment.ABPoints then
                 begin
-                  Pts := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption)+StrToInt(FormMatrixGame.LabelIndBCount.Caption));
-                  FormMatrixGame.LabelIndACount.Caption := '0';
-                  FormMatrixGame.LabelIndBCount.Caption := '0';
+                  Pts := IntToStr(StrToInt(LabelPointA.Caption)+StrToInt(LabelPointB.Caption));
+                  LabelPointA.Caption := '0';
+                  LabelPointB.Caption := '0';
                 end
               else
                 begin
-                  Pts := FormMatrixGame.LabelIndCount.Caption;
-                  FormMatrixGame.LabelIndCount.Caption := '0';
+                  Pts := LabelPointI.Caption;
+                  LabelPointI.Caption := '0';
                 end;
 
-              FormMatrixGame.Visible := False;
+              if Assigned(FormMatrixGame) then
+                FormMatrixGame.Visible := False;
               FormChooseActor := TFormChooseActor.Create(nil);
               FormChooseActor.Style := K_LEFT;
               FormChooseActor.ShowPoints(
                 'A tarefa terminou, obrigado por sua participação!'+LineEnding+
                 'Você produziu ' + Pts + ' fichas e ' +
-                FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados a uma escola pública.'
+                LabelGroup.Caption + ' itens escolares serão doados a uma escola pública.'
               );
 
               if FormChooseActor.ShowModal = 1 then
                 begin
-                  FormMatrixGame.Visible := True;
+                  if Assigned(FormMatrixGame) then
+                    FormMatrixGame.Visible := True;
                   FZMQActor.Request([AID,' ',K_RESUME]);
                 end
               else;
@@ -1029,22 +1106,28 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     case FActor of
       gaPlayer:
         begin
-          CleanMatrix(False);
-          FormChooseActor := TFormChooseActor.Create(FormMatrixGame);
+          if Assigned(OnCleanEvent) then
+            OnCleanEvent(Self, False);
+
+          //if Assigned(FormMatrixGame) then
+          //  FormChooseActor := TFormChooseActor.Create(FormMatrixGame)
+          //else
+          FormChooseActor := TFormChooseActor.Create(nil);
           FormChooseActor.Style := K_END;
 
           if FExperiment.ABPoints then
-            Pts := IntToStr(StrToInt(FormMatrixGame.LabelIndACount.Caption)+StrToInt(FormMatrixGame.LabelIndBCount.Caption))
+            Pts := IntToStr(StrToInt(LabelPointA.Caption)+StrToInt(LabelPointB.Caption))
           else
-            Pts := FormMatrixGame.LabelIndCount.Caption;
+            Pts := LabelPointI.Caption;
 
           FormChooseActor.ShowPoints(
           'A tarefa terminou, obrigado por sua participação!'+LineEnding+
           'Você produziu ' + Pts + ' fichas e ' +
-          FormMatrixGame.LabelGroupCount.Caption + ' itens escolares serão doados a uma escola pública.');
+          LabelGroup.Caption + ' itens escolares serão doados a uma escola pública.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
-          FormMatrixGame.Close;
+          if Assigned(FormMatrixGame) then
+            FormMatrixGame.Close;
         end;
       gaAdmin:Stop;
     end;
@@ -1053,6 +1136,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   procedure ResumeNextTurn;
   var
     LPlayerBox : TPlayerBox;
+    P : TPlayer;
   begin
     if AMessage[2] <> #27 then
       begin
@@ -1070,19 +1154,19 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               if AMessage[1] <> #32 then
                 begin
                   LPlayerBox := GetPlayerBox(AMessage[1]);
-                  FormMatrixGame.ListBoxOldPlayers.Items.Append(
-                    LPlayerBox.Caption+','+LPlayerBox.LabelPointsCount.Caption);
+                  P := FExperiment.PlayerFromID[AMessage[1]];
+                  if Assigned(OnPlayerExit) then
+                    OnPlayerExit(P, LPlayerBox.Caption+','+LPlayerBox.LabelPointsCount.Caption);
                   //DeletePlayerBox(AMessage[1]);
                   ShowSystemPopUp(
-                          'O participante '+
-                          FExperiment.PlayerFromID[AMessage[1]].Nicname+
+                          'O participante '+ P.Nicname +
                           ' saiu. Aguardando a entrada do próximo participante.',
                           GLOBAL_SYSTEM_MESSAGE_INTERVAL
                         );
                 end;
             end;
-
         end;
+
         if AMessage[1] = #32 then
           //begin
           //  if AMessage[2] <> #32 then
@@ -1126,7 +1210,11 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                     LTime:= GLOBAL_MESSAGE_INTERVAL;
 
                   LPopUpHack := TPopupNotifierHack.Create(nil);
-                  LPopUpHack.ShowAndAutoDestroy(LQConsequence,FormMatrixGame,AMessage.Count*LTime);
+                  if Assigned(FormMatrixGame) then
+                    LPopUpHack.ShowAndAutoDestroy(LQConsequence,FormMatrixGame,AMessage.Count*LTime)
+                  else
+                    LPopUpHack.ShowAndAutoDestroy(LQConsequence,nil,AMessage.Count*LTime);
+
                 end;
               end;
           end;
@@ -1167,7 +1255,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     if LGConsequence <> '' then
       begin
         LPopUpHack := TPopupNotifierHack.Create(nil);
-        LPopUpHack.ShowAndAutoDestroy(LGConsequence,FormMatrixGame,LTime);
+        if Assigned(FormMatrixGame) then
+          LPopUpHack.ShowAndAutoDestroy(LGConsequence,FormMatrixGame,LTime)
+        else
+          LPopUpHack.ShowAndAutoDestroy(LGConsequence,nil,LTime);
       end;
   end;
 
@@ -1261,7 +1352,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
             ARequest.Append(FExperiment.MatrixTypeAsString); // COUNT-4
 
             // append chat data
-            if FExperiment.ShowChat then
+            if FExperiment.ShowChat and Assigned(FormMatrixGame) then
               begin
                 if FExperiment.SendChatHistoryForNewPlayers then
                   ARequest.Append(FormMatrixGame.ChatMemoRecv.Lines.Text) // COUNT-3
@@ -1442,14 +1533,15 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         FExperiment.MatrixTypeAsString:=AReply[AReply.Count-4];
 
         // setup chat
-        if AReply[AReply.Count-3] = '[NOCHAT]' then
-          FormMatrixGame.ChatPanel.Visible := False
-        else
-          begin
-            FormMatrixGame.ChatPanel.Visible := True;
-            FormMatrixGame.ChatMemoRecv.Lines.Clear;
-            FormMatrixGame.ChatMemoRecv.Lines.Append(AReply[AReply.Count-3]);
-          end;
+        if Assigned(FormMatrixGame) then
+          if AReply[AReply.Count-3] = '[NOCHAT]' then
+            FormMatrixGame.ChatPanel.Visible := False
+          else
+            begin
+              FormMatrixGame.ChatPanel.Visible := True;
+              FormMatrixGame.ChatMemoRecv.Lines.Clear;
+              FormMatrixGame.ChatMemoRecv.Lines.Append(AReply[AReply.Count-3]);
+            end;
 
         // set global configs
         FExperiment.ABPoints := StrToBool(AReply[AReply.Count-2]);
@@ -1462,7 +1554,8 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         NextConditionSetup(AReply[AReply.Count-1], True);
 
         // set fullscreen
-        FormMatrixGame.SetFullscreen;
+        if Assigned(FormMatrixGame) then
+          FormMatrixGame.SetFullscreen;
         SetMatrix;
       end
     else

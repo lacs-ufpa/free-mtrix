@@ -118,6 +118,8 @@ type
 
   TPlayers = array of TPlayer;
 
+  TPlayerEvent = procedure (P : TPlayer; AMessage : string) of object;
+
    { TCriteria }
 
    TCriteria = record
@@ -832,30 +834,30 @@ begin
   FTimer.Enabled:=True;
 end;
 
-procedure TConsequence.PresentPoints(A, B, I, G : TLabel);
+procedure TConsequence.PresentPoints(A, B, I, G : TLabel); // [player_points]
 begin
   //is gscPoints in FStyle then just in case...
   if gscI in FStyle then
-    SetLabel(I,FP.ResultAsInteger);
+    IncLabel(I,FP.ResultAsInteger);
 
   if gscA in FStyle then
-    SetLabel(A,FP.ResultAsInteger);
+    IncLabel(A,FP.ResultAsInteger);
 
   if gscB in FStyle then
-    SetLabel(B,FP.ResultAsInteger);
+    IncLabel(B,FP.ResultAsInteger);
 
   if gscG in FStyle then
-    SetLabel(G,FP.ResultAsInteger);
+    IncLabel(G,FP.ResultAsInteger);
 end;
 
-procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G: TLabel);
+procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G: TLabel); // [player_points]
 begin
   if gscG in FStyle then
-    SetLabel(G,FP.ResultAsInteger);
+    IncLabel(G,FP.ResultAsInteger);
 
   if (gscI in FStyle) or (gscA in FStyle) or (gscB in FStyle) then
     if Assigned(APlayerBox) then
-      SetLabel(APlayerBox.LabelPointsCount,FP.ResultAsInteger);
+      IncLabel(APlayerBox.LabelPointsCount,FP.ResultAsInteger);
 end;
 
 function TConsequence.GetShouldPublishMessage: Boolean; // for players only

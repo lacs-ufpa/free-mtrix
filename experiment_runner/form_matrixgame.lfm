@@ -1,7 +1,7 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 20
+  Left = 5
   Height = 682
-  Top = 39
+  Top = 32
   Width = 1234
   HorzScrollBar.Page = 1234
   VertScrollBar.Page = 508
@@ -12,7 +12,7 @@ object FormMatrixGame: TFormMatrixGame
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   OnCreate = FormCreate
-  LCLVersion = '1.6.2.0'
+  LCLVersion = '1.8.0.1'
   object GBPoints: TGroupBox
     AnchorSideLeft.Side = asrBottom
     Left = 768
@@ -3975,7 +3975,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 0
     Height = 150
-    Top = 522
+    Top = 532
     Width = 1636
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
@@ -4043,6 +4043,7 @@ object FormMatrixGame: TFormMatrixGame
       ClickOnSelChange = False
       ExtendedSelect = False
       ItemHeight = 0
+      Options = [lboDrawFocusRect]
       ScrollWidth = 418
       TabOrder = 3
       TabStop = False
@@ -4088,7 +4089,7 @@ object FormMatrixGame: TFormMatrixGame
       Left = 6
       Height = 100
       Top = 6
-      Width = 405
+      Width = 401
       Align = alTop
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Left = 5
@@ -4108,8 +4109,8 @@ object FormMatrixGame: TFormMatrixGame
       Cursor = crVSplit
       Left = 0
       Height = 8
-      Top = 104
-      Width = 415
+      Top = 102
+      Width = 411
       Align = alNone
       Anchors = [akLeft, akRight]
       ResizeAnchor = akTop
@@ -4118,9 +4119,9 @@ object FormMatrixGame: TFormMatrixGame
       AnchorSideTop.Control = ChatSplitter
       AnchorSideTop.Side = asrBottom
       Left = 6
-      Height = 51
-      Top = 117
-      Width = 405
+      Height = 49
+      Top = 115
+      Width = 401
       Align = alBottom
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderSpacing.Around = 5
