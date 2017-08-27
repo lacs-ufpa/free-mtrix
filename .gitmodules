@@ -4,3 +4,6 @@
 [submodule "dependencies/libzmq"]
 	path = dependencies/libzmq
 	url = git@github.com:cpicanco/libzmq.git
+[submodule "dependencies/zeromq3-x"]
+	path = dependencies/zeromq3-x
+	url = https://github.com/zeromq/zeromq3-x.git
