@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/75511604.svg)](https://zenodo.org/badge/latestdoi/75511604)
+
 /*   
   Free-mtrix - Free cultural selection and social behavior experiments.   
   Copyright (C) 2016-2017 Carlos Rafael Fernandes Picanço, Universidade Federal do Pará.   
