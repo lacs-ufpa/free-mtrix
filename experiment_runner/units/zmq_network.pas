@@ -37,7 +37,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AZMQContext:Pointer; CreateSuspended: Boolean = True); overload;
+    constructor Create(CreateSuspended: Boolean = True); overload;
     destructor Destroy; override;
 
     // Send a non blocking Request(identity, ' ', s1, .. sn)
@@ -114,7 +114,6 @@ const
   CLocalHost = 'tcp://localhost:';
   CPortPublisher = '5056';
   CPortPuller_PUB = '5057';
-  CPortPuller_REP = '6057';
   //CPortRouter = '5058';
   CPortReplier = '5059';
 
@@ -129,28 +128,31 @@ end;
 procedure TZMQRequestsThread.Execute;
 var
   LMultipartMessage : array of string;
-  i : integer;
 begin
-  while not Terminated do
-  begin
-    RTLeventWaitFor(FRTLEvent);
+  FReply := TStringList.Create;
+  try
+    while not Terminated do
+    begin
+      RTLeventWaitFor(FRTLEvent);
+      FReply.Clear;
 
-    // send multipart message
-    LMultipartMessage := FMultipartMessage;
-    SendMultiPartString(FRequester, LMultipartMessage);
+      // send multipart message
+      LMultipartMessage := FMultipartMessage;
+      SendMultiPartString(FRequester, LMultipartMessage);
 
-    // receive multipart message
-    RecvMultiPartString(FRequester, FReply);
-    Queue(@ReplyReceived);
+      // receive multipart message
+      RecvMultiPartString(FRequester, FReply);
+      Synchronize(@ReplyReceived);
+    end;
+  finally
+    FReply.Free;
   end;
 end;
 
-constructor TZMQRequestsThread.Create(AZMQContext: Pointer;
-  CreateSuspended: Boolean);
+constructor TZMQRequestsThread.Create(CreateSuspended: Boolean);
 begin
   FreeOnTerminate := True;
   FRTLEvent := RTLEventCreate;
-  FReply := TStringList.Create;
   FContext := zmq_ctx_new;
 
   // request from server
@@ -162,7 +164,6 @@ end;
 destructor TZMQRequestsThread.Destroy;
 begin
   RTLeventdestroy(FRTLEvent);
-  FReply.Free;
   zmq_close(FRequester);
   zmq_ctx_destroy(FContext);
   inherited Destroy;
@@ -200,9 +201,7 @@ end;
 
 procedure TZMQMessagesThread.Execute;
 var
-  LPollEvent,
-  LMessagesCount , rc: integer;
-
+  rc: integer;
   LMessage : TStringList;
   item : zmq_pollitem_t;
 begin
@@ -219,13 +218,13 @@ begin
     while not Terminated do
     begin
       rc := zmq_poll(item, 1, -1);
+      if rc = 0 then continue;
       if (item.revents and ZMQ_POLLIN) > 0 then
         begin
           LMessage.Clear;
           RecvMultiPartString(FSubscriber, LMessage);
           FMessage := LMessage;
-          if FMessage.Count > 0 then
-            Queue(@MessageReceived);
+          Synchronize(@MessageReceived);
         end;
     end;
   finally
@@ -320,9 +319,12 @@ begin
         RecvMultiPartString(FPuller_PUB, LMultipartMessage);
         if LMultipartMessage.Count > 0 then
           begin
-            FMessage := LMultipartMessage;
-            Queue(@MessageReceived);
+            WriteLn('--------------------- pull -----------------------');
+            WriteLn(LMultipartMessage.Count);
+            WriteLn(LMultipartMessage.Text);
             SendMultiPartString(FPublisher, LMultiPartMessage);
+            FMessage := LMultipartMessage;
+            Synchronize(@MessageReceived);
           end;
       end;
 
@@ -333,6 +335,10 @@ begin
         if LMultipartMessage.Count > 2 then
           begin
             FMessage := LMultipartMessage;
+            WriteLn('--------------------- req -----------------------');
+            WriteLn(LMultipartMessage.Count);
+            WriteLn(LMultipartMessage.Text);
+
             Synchronize(@RequestReceived);
             LMultipartMessage := FMessage;
             SendMultiPartString(FReplier, LMultipartMessage);

@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils
-  , zmq.network
+  , zmq_network
   ;
 
 type
@@ -150,7 +150,7 @@ begin
   FZMQMessages := TZMQMessagesThread.Create(AID);
   FZMQMessages.OnMessageReceived:=@MessageReceived;
 
-  FZMQRequests := TZMQRequestsThread.Create(FZMQMessages.Context);
+  FZMQRequests := TZMQRequestsThread.Create;
   FZMQRequests.OnReplyReceived:=@ReplyReceived;
 end;
 
