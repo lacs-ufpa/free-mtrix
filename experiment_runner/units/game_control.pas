@@ -29,13 +29,13 @@ type
 
   TGameControl = class(TComponent)
   private
-    FID: UTF8string;
+    FID: string;
     FActor : TGameActor;
     FZMQActor : TZMQActor;
     FExperiment : TExperiment;
-    function GetPlayerBox(AID:UTF8string) : TPlayerBox;
-    function GetActorNicname(AID:UTF8string) : UTF8string;
-    function MessageHas(const A_CONST : UTF8string; AMessage : TStringList; I:ShortInt=0): Boolean;
+    function GetPlayerBox(AID:string) : TPlayerBox;
+    function GetActorNicname(AID:string) : string;
+    function MessageHas(const A_CONST : string; AMessage : TStringList; I:ShortInt=0): Boolean;
     procedure CreatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
     procedure UpdatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
     //procedure DeletePlayerBox(AID : string);
@@ -46,12 +46,12 @@ type
     procedure ReceiveReply(AReply : TStringList);
     procedure MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
   private
-    function AskQuestion(AQuestion:string):UTF8string;
+    function AskQuestion(AQuestion:string):string;
     function ShowConsequence(AID,S:string;ForGroup:Boolean;ShowPopUp : Boolean = True) : string;
 
     procedure NextConditionSetup(S : string; IsConditionStart:Boolean=False);
     procedure NextGenerationSetup(AID : string);
-    procedure EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
+    procedure EnablePlayerMatrix(AID:string; ATurn:integer; AEnabled:Boolean);
   private
     FGroupBoxPlayers: TGroupBox;
     FLabelGroup: TLabel;
@@ -102,15 +102,15 @@ type
     function LoadFromFile(AFilename : string):Boolean;
     procedure SetMatrix;
     procedure SetLabels;
-    procedure SendRequest(ARequest : UTF8string; AInputData : array of UTF8String);
-    procedure SendMessage(AMessage : UTF8string; AInputData : array of UTF8String);
+    procedure SendRequest(ARequest : string; AInputData : array of string);
+    procedure SendMessage(AMessage : string; AInputData : array of string);
     procedure Cancel;
     procedure Start;
     procedure Pause;
     procedure Resume;
     procedure Stop;
     property Experiment : TExperiment read FExperiment write FExperiment;
-    property ID : UTF8string read FID;
+    property ID : string read FID;
   public
     procedure ShowSystemPopUp(AText:string;AInterval : integer);
     property SystemPopUp : TPopupNotifier read FSystemPopUp write SetSystemPopUp;
@@ -363,7 +363,7 @@ begin
   FExperiment.Clean;
 end;
 
-function TGameControl.GetPlayerBox(AID: UTF8string): TPlayerBox;
+function TGameControl.GetPlayerBox(AID: string): TPlayerBox;
 var i : integer;
 begin
   Result := nil;
@@ -375,7 +375,7 @@ begin
       end;
 end;
 
-function TGameControl.GetActorNicname(AID: UTF8string): UTF8string;
+function TGameControl.GetActorNicname(AID: string): string;
 begin
   Result := '';
   case FActor of
@@ -390,7 +390,7 @@ begin
 end;
 
 
-function TGameControl.MessageHas(const A_CONST: UTF8string; AMessage: TStringList;
+function TGameControl.MessageHas(const A_CONST: string; AMessage: TStringList;
   I: ShortInt): Boolean;
 begin
   Result:= False;
@@ -498,7 +498,7 @@ begin
 end;
 // many thanks to howardpc for this:
 // http://forum.lazarus.freepascal.org/index.php/topic,34559.msg227585.html#msg227585
-function TGameControl.AskQuestion(AQuestion: string): UTF8string;
+function TGameControl.AskQuestion(AQuestion: string): string;
 var
   Prompt: TForm;
   ButtonPanel: TButtonPanel;
@@ -726,7 +726,7 @@ begin
   end;
 end;
 
-procedure TGameControl.EnablePlayerMatrix(AID:UTF8string; ATurn:integer; AEnabled:Boolean);
+procedure TGameControl.EnablePlayerMatrix(AID:string; ATurn:integer; AEnabled:Boolean);
 begin
   if FExperiment.PlayerFromID[AID].Turn = ATurn then
     begin
@@ -836,12 +836,12 @@ begin
 end;
 
 // called from outside
-procedure TGameControl.SendRequest(ARequest: UTF8string;
-  AInputData: array of UTF8String);
+procedure TGameControl.SendRequest(ARequest: string;
+  AInputData: array of string);
 var
-  M : array of UTF8string;
+  M : array of string;
 
-  procedure SetM(A : array of UTF8string);
+  procedure SetM(A : array of string);
   var i : integer;
   begin
     SetLength(M,Length(A));
@@ -880,12 +880,12 @@ begin
 end;
 
 // called from outside
-procedure TGameControl.SendMessage(AMessage: UTF8string;
-  AInputData: array of UTF8String);
+procedure TGameControl.SendMessage(AMessage: string;
+  AInputData: array of string);
 var
-  M : array of UTF8string;
+  M : array of string;
 
-  procedure SetM(A : array of UTF8string);
+  procedure SetM(A : array of string);
   var i : integer;
   begin
     SetLength(M,Length(A));
@@ -930,7 +930,7 @@ end;
 
 // Here FActor can be TZMQPlayer or TZMQAdmin
 procedure TGameControl.ReceiveMessage(AMessage: TStringList);
-  function MHas(const C : UTF8string) : Boolean;
+  function MHas(const C : string) : Boolean;
   begin
     Result := MessageHas(C,AMessage);
   end;
@@ -1282,7 +1282,7 @@ end;
 
 // Here FActor is garanted to be a TZMQAdmin
 procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
-  function MHas(const C : UTF8string) : Boolean;
+  function MHas(const C : string) : Boolean;
   begin
     Result := MessageHas(C,ARequest, 2);
   end;
@@ -1430,7 +1430,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   procedure ValidateQuestionResponse;
   var
     P : TPlayer;
-    M : array of UTF8string;
+    M : array of string;
     i : integer;
     LPromptConsequences : TStringList;
   begin
@@ -1509,7 +1509,7 @@ end;
 // - sending private data to player
 // - sending data from early history to income players
 procedure TGameControl.ReceiveReply(AReply: TStringList);
-  function MHas(const C : UTF8string) : Boolean;
+  function MHas(const C : string) : Boolean;
   begin
     Result := MessageHas(C,AReply,2);
   end;

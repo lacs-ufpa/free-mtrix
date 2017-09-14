@@ -15,9 +15,7 @@ unit zmq_network;
 
 interface
 
-uses Classes, SysUtils, Process
-  , zmqapi
-  ;
+uses Classes, SysUtils;
 
 type
 
@@ -29,25 +27,21 @@ type
 
   TZMQRequestsThread = class(TThread)
   private
-    FContext : TZMQContext;
+    FContext : Pointer;
     FOnReplyReceived: TMessRecvProc;
-    FPusher_REQ,
-    FRequester : TZMQSocket;
+    FRequester : Pointer;
     FReply : TStringList;
     FRTLEvent: PRTLEvent;
-    FMultipartMessage: array of UTF8String;
-    {$IFDEF DEBUG}
-    procedure RequestDebug;
-    {$ENDIF}
+    FMultipartMessage: array of string;
     procedure ReplyReceived;
   protected
     procedure Execute; override;
   public
-    constructor Create(AZMQContext:TZMQContext; CreateSuspended: Boolean = True); overload;
+    constructor Create(AZMQContext:Pointer; CreateSuspended: Boolean = True); overload;
     destructor Destroy; override;
 
     // Send a non blocking Request(identity, ' ', s1, .. sn)
-    procedure Request(AMultipartMessage : array of UTF8String);
+    procedure Request(AMultipartMessage : array of string);
     property OnReplyReceived : TMessRecvProc read FOnReplyReceived write FOnReplyReceived;
   end;
 
@@ -55,11 +49,10 @@ type
 
   TZMQMessagesThread = class(TThread)
   private
-    FContext : TZMQContext;
+    FContext : Pointer;
     FID: shortstring;
     FSubscriber,
-    FPusher_PUB : TZMQSocket;
-    FPoller : TZMQPoller;
+    FPusher_PUB : Pointer;
     FMessage : TStringList;
     FOnMessageReceived: TMessRecvProc;
     procedure ThreadStarted;
@@ -67,12 +60,12 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AID : UTF8String; CreateSuspended: Boolean = True); overload;
+    constructor Create(AID : string; CreateSuspended: Boolean = True); overload;
     destructor Destroy; override;
-    procedure Push(AMultipartMessage : array of UTF8String);
+    procedure Push(AMultipartMessage : array of string);
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
     property ID :shortstring read FID;
-    property Context : TZMQContext read FContext;
+    property Context : Pointer read FContext;
   end;
 
 
@@ -87,14 +80,11 @@ type
     FID: shortstring;
     FOnMessageReceived: TMessRecvProc;
     FOnRequestReceived: TReqRecvProc;
-    FContext : TZMQContext;
+    FContext,
     FPublisher,
     FPuller_PUB,
     FPusher_PUB,
-    FPuller_REP,
-    //FRouter,
-    FReplier : TZMQSocket;
-    FPoller : TZMQPoller;
+    FReplier : Pointer;
     FMessage : TStringList;
     procedure ThreadStart;
     procedure MessageReceived;
@@ -102,9 +92,9 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(AID : UTF8String; CreateSuspended: Boolean = True); overload;
+    constructor Create(AID : string; CreateSuspended: Boolean = True); overload;
     destructor Destroy; override;
-    procedure Push(AMultipartMessage: array of UTF8string);
+    procedure Push(AMultipartMessage: array of string);
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
     property OnRequestReceived : TReqRecvProc read FOnRequestReceived write FOnRequestReceived;
     property ID :shortstring read FID;
@@ -115,7 +105,7 @@ resourcestring
 
 implementation
 
-uses Forms, Dialogs;
+uses Forms, Dialogs, zmq, zmq.helpers;
 
 var GClientHost : string;
 
@@ -129,86 +119,56 @@ const
   CPortReplier = '5059';
 
 
-
 { TZMQRequestsThread }
-
-
-{$IFDEF DEBUG}
-procedure TZMQRequestsThread.RequestDebug;
-begin
-  WriteLn('RTLEvent Ok');
-end;
-{$ENDIF}
 
 procedure TZMQRequestsThread.ReplyReceived;
 begin
-  if Assigned(FOnReplyReceived) then
-    FOnReplyReceived(FReply);
+  if Assigned(OnReplyReceived) then OnReplyReceived(FReply);
 end;
 
 procedure TZMQRequestsThread.Execute;
 var
-  LMultipartMessage : array of UTF8string;
-  LReply : TStringList;
+  LMultipartMessage : array of string;
+  i : integer;
 begin
   while not Terminated do
-    begin
-      RTLeventWaitFor(FRTLEvent);
+  begin
+    RTLeventWaitFor(FRTLEvent);
 
-      {$IFDEF DEBUG}
-        Synchronize(@RequestDebug);
-      {$ENDIF}
+    // send multipart message
+    LMultipartMessage := FMultipartMessage;
+    SendMultiPartString(FRequester, LMultipartMessage);
 
-      LReply := TStringList.Create;
-      try
-        // send the real message to trigger the polling routine
-        LMultipartMessage := FMultipartMessage;
-        FPusher_REQ.send( LMultipartMessage );
-
-        // send empty non blocking message
-        // this fake message is necessary to avoid infinite loops inside the server pool
-        FRequester.send('');
-
-        // block thread until a real message is received
-        FRequester.recv( LReply );
-        FReply.Text := LReply.Text;
-
-        // inform the main thread
-        Synchronize(@ReplyReceived);
-      finally
-        LReply.Free;
-      end;
+    // receive multipart message
+    RecvMultiPartString(FRequester, FReply);
+    Queue(@ReplyReceived);
   end;
 end;
 
-constructor TZMQRequestsThread.Create(AZMQContext: TZMQContext;
+constructor TZMQRequestsThread.Create(AZMQContext: Pointer;
   CreateSuspended: Boolean);
 begin
   FreeOnTerminate := True;
   FRTLEvent := RTLEventCreate;
   FReply := TStringList.Create;
-  FContext := AZMQContext;
-
-  // pushes to server
-  FPusher_REQ := FContext.Socket( stPush );
-  FPusher_REQ.connect(GClientHost+CPortPuller_REP);
+  FContext := zmq_ctx_new;
 
   // request from server
-  FRequester := FContext.Socket( stReq );
-  FRequester.connect(GClientHost+CPortReplier);
+  FRequester := zmq_socket(FContext, ZMQ_REQ);
+  zmq_connect(FRequester, PChar(GClientHost+CPortReplier));
   inherited Create(CreateSuspended);
 end;
 
 destructor TZMQRequestsThread.Destroy;
 begin
   RTLeventdestroy(FRTLEvent);
-  FPusher_REQ.Free;
   FReply.Free;
-  //FContext.Free;
+  zmq_close(FRequester);
+  zmq_ctx_destroy(FContext);
   inherited Destroy;
 end;
 
-procedure TZMQRequestsThread.Request(AMultipartMessage: array of UTF8String);
+procedure TZMQRequestsThread.Request(AMultipartMessage: array of string);
 var
   LLength,
   i : integer;
@@ -216,18 +176,15 @@ begin
   LLength := Length(AMultipartMessage);
   if LLength > 0 then
     begin
-      SetLength(FMultipartMessage,LLength);
+      SetLength(FMultipartMessage, LLength);
       for i := 0 to LLength-1 do
         FMultipartMessage[i] := AMultipartMessage[i];
+      RTLeventSetEvent(FRTLEvent);
     end;
-  RTLeventSetEvent(FRTLEvent);
 end;
 
 
-
 { TZMQMessagesThread }
-
-
 
 procedure TZMQMessagesThread.ThreadStarted;
 begin
@@ -238,90 +195,78 @@ end;
 
 procedure TZMQMessagesThread.MessageReceived;
 begin
-  if Assigned(FOnMessageReceived) then FOnMessageReceived(FMessage);
+  if Assigned(OnMessageReceived) then OnMessageReceived(FMessage);
 end;
 
 procedure TZMQMessagesThread.Execute;
 var
-  LMultipartMessage : TStringList;
   LPollEvent,
-  LMessagesCount : integer;
+  LMessagesCount , rc: integer;
+
+  LMessage : TStringList;
+  item : zmq_pollitem_t;
 begin
-  LMultipartMessage := TStringList.Create;
-  while not Terminated do
+  with item do
+  begin
+    socket := FSubscriber;
+    fd := 0;
+    events := ZMQ_POLLIN;
+    revents := 0;
+  end;
+
+  LMessage := TStringList.Create;
+  try
+    while not Terminated do
     begin
-      LMultipartMessage.Clear;
-      LPollEvent := FPoller.poll(50000);
-      if LPollEvent > 0 then
+      rc := zmq_poll(item, 1, -1);
+      if (item.revents and ZMQ_POLLIN) > 0 then
         begin
-          LMessagesCount := FSubscriber.recv(LMultipartMessage);
-          if LMessagesCount > 0 then
-            begin
-              FMessage := LMultipartMessage;
-              Synchronize(@MessageReceived);
-            end;
-          {$IFDEF DEBUG}
-          WriteLn('Client:Received:',LPollEvent,',',LMessagesCount);
-          {$ENDIF}
+          LMessage.Clear;
+          RecvMultiPartString(FSubscriber, LMessage);
+          FMessage := LMessage;
+          if FMessage.Count > 0 then
+            Queue(@MessageReceived);
         end;
     end;
-  LMultipartMessage.Free;
+  finally
+    LMessage.Free;
+  end;
 end;
 
 
-constructor TZMQMessagesThread.Create(AID: UTF8String; CreateSuspended: Boolean);
+constructor TZMQMessagesThread.Create(AID: string; CreateSuspended: Boolean);
 begin
   FreeOnTerminate := True;
-  FContext := TZMQContext.create;
+  FContext := zmq_ctx_new;
 
   // client subscribe to server, it receives from itself
-  FSubscriber := FContext.Socket( stSub );
-  FSubscriber.connect(GClientHost+CPortPublisher);
-  FSubscriber.Subscribe('');
+  FSubscriber := zmq_socket(FContext, ZMQ_SUB);
+  zmq_connect(FSubscriber, PChar(GClientHost+CPortPublisher));
+
+  // subscribe to all messages
+  zmq_setsockopt(FSubscriber, ZMQ_SUBSCRIBE, nil, 0);
+
   // pushes to server
-  FPusher_PUB := FContext.Socket( stPush );
-  FPusher_PUB.connect(GClientHost+CPortPuller_PUB);
-
-  //FPusher_REQ := FContext.Socket( stPush );
-  //FPusher_REQ.connect(GClientHost+CPortPuller_REP);
-
-  // request from server
-  //FRequester := FContext.Socket( stReq );
-  //FRequester.Identity := AID;
-  //FRequester.Linger:=0;
-  //FRequester.RcvTimeout:=5000;
-  //FRequester.connect(GClientHost+CPortReplier);
-
-  //FRequester.connect(CLocalHost+CPortRouter);
-
-  // handle income messages
-  FPoller := TZMQPoller.Create(True, FContext);
-  FPoller.Register(FSubscriber, [pePollIn], True);
-
+  FPusher_PUB := zmq_socket(FContext, ZMQ_PUSH);
+  zmq_connect(FPusher_PUB, PChar(GClientHost+CPortPuller_PUB));
   inherited Create(CreateSuspended);
 end;
 
 destructor TZMQMessagesThread.Destroy;
 begin
-  FPoller.Terminate;
-  FPoller.Free;
-  //FPusher_REQ.Free;
-  FPusher_PUB.Free;
-  FSubscriber.Free;
-  FContext.Free;
+  zmq_close(FPusher_PUB);
+  zmq_close(FSubscriber);
+  zmq_ctx_destroy(FContext);
   inherited Destroy;
 end;
 
-procedure TZMQMessagesThread.Push(AMultipartMessage: array of UTF8String);
+procedure TZMQMessagesThread.Push(AMultipartMessage: array of string);
 begin
-  FPusher_PUB.send(AMultipartMessage);
+  SendMultiPartString(FPusher_PUB, AMultipartMessage);
 end;
 
 
-
 { TZMQServerThread }
-
-
 
 procedure TZMQServerThread.ThreadStart;
 begin
@@ -342,101 +287,103 @@ end;
 
 procedure TZMQServerThread.Execute;
 var
-  LMultipartMessage, S : TStringList;
-  LPollCount,
-  LMessagesCount : integer;
-begin
-  Synchronize(@ThreadStart);
-  LPollCount := 0;
-  LMessagesCount := 0;
-  LMultipartMessage := TStringList.Create;
-  while not Terminated do
-    begin
-      LPollCount := FPoller.poll;
-      if LPollCount = 0 then Continue;
-      if pePollIn in FPoller.PollItem[0].revents then
-        begin
-          LMultipartMessage.Clear;
-      	  LMessagesCount := FPuller_PUB.recv(LMultipartMessage);
-          if LMessagesCount > 0 then
-            begin
-              FMessage := LMultipartMessage;
-              Synchronize(@MessageReceived);
-              FPublisher.send(LMultiPartMessage);
-              {$IFDEF DEBUG}
-                WriteLn('Server:Published:',LPollCount,',',LMessagesCount);
-              {$ENDIF}
-            end;
-        end;
+  LMultipartMessage : TStringList;
+  rc : integer = 0;
 
-      if pePollIn in FPoller.PollItem[1].revents then
-        begin
-          LMultipartMessage.Clear;
-          LMessagesCount := FPuller_REP.recv(LMultipartMessage);
-          if LMessagesCount > 2 then
-            begin
-              FMessage := LMultipartMessage;
-              Synchronize(@RequestReceived); LMultipartMessage := FMessage; S := TStringList.Create;
-              FReplier.recv(S); S.Free;
-              FReplier.send(LMultipartMessage);
-              {$IFDEF DEBUG}
-              WriteLn('Server:Replied:',LPollCount,',',LMessagesCount);
-              {$ENDIF}
-            end;
-        end;
+  items : array [0..1] of zmq_pollitem_t;
+begin
+  with items[0] do
+  begin
+    socket := FPuller_PUB;
+    fd := 0;
+    events := ZMQ_POLLIN;
+    revents := 0;
+  end;
+  with items[1] do
+  begin
+    socket := FReplier;
+    fd := 0;
+    events := ZMQ_POLLIN;
+    revents := 0;
+  end;
+
+  LMultipartMessage := TStringList.Create;
+  try
+    rc := 0;
+    while not Terminated do
+    begin
+      rc := zmq_poll(items[0], 2, -1);
+      if rc = 0 then continue;
+      if (items[0].revents and ZMQ_POLLIN) > 0 then
+      begin
+        LMultipartMessage.Clear;
+        RecvMultiPartString(FPuller_PUB, LMultipartMessage);
+        if LMultipartMessage.Count > 0 then
+          begin
+            FMessage := LMultipartMessage;
+            Queue(@MessageReceived);
+            SendMultiPartString(FPublisher, LMultiPartMessage);
+          end;
+      end;
+
+      if (items[1].revents and ZMQ_POLLIN) > 0 then
+      begin
+        LMultipartMessage.Clear;
+        RecvMultiPartString(FReplier, LMultipartMessage);
+        if LMultipartMessage.Count > 2 then
+          begin
+            FMessage := LMultipartMessage;
+            Synchronize(@RequestReceived);
+            LMultipartMessage := FMessage;
+            SendMultiPartString(FReplier, LMultipartMessage);
+          end;
+      end;
     end;
+  finally
+    LMultipartMessage.Free;
+  end;
 end;
 
-constructor TZMQServerThread.Create(AID: UTF8String; CreateSuspended: Boolean);
+constructor TZMQServerThread.Create(AID: string; CreateSuspended: Boolean);
 begin
   FreeOnTerminate := True;
-  FContext := TZMQContext.create;
+  FContext := zmq_ctx_new;
 
   // publisher for subscribers
-  FPublisher := FContext.Socket( stPub ); // server don't need to subscribe to itself
-  FPublisher.bind(CHost+CPortPublisher);
+  FPublisher := zmq_socket(FContext, ZMQ_PUB); // server don't need to subscribe to itself
+  zmq_bind(FPublisher, PChar(CHost+CPortPublisher));
 
   // pull from inside and outside
-  FPuller_PUB  := FContext.Socket( stPull );
-  FPuller_PUB.bind(CHost+CPortPuller_PUB);
+  FPuller_PUB  := zmq_socket(FContext, ZMQ_PULL);
+  zmq_bind(FPuller_PUB, PChar(CHost+CPortPuller_PUB));
 
   // pushes from inside to outside
-  FPusher_PUB := FContext.Socket( stPush );
-  FPusher_PUB.connect(CLocalHost+CPortPuller_PUB);
+  FPusher_PUB := zmq_socket(FContext, ZMQ_PUSH);
+  zmq_connect(FPusher_PUB, PChar(CLocalHost+CPortPuller_PUB));
 
-  // reply requests from outside
-  FPuller_REP  := FContext.Socket( stPull );
-  FPuller_REP.bind(CHost+CPortPuller_REP);
+  //// reply requests from outside
+  //FPuller_REP  := zmq_socket(FContext, ZMQ_PULL);
+  //zmq_bind(FPuller_REP, PChar(CHost+CPortPuller_REP));
 
   // blocking server thread for now
-  FReplier := FContext.Socket( stRep );
-  FReplier.bind(CHost+CPortReplier);
-
-  // handle sockets
-  FPoller := TZMQPoller.Create(True, FContext);
-  FPoller.Register(FPuller_PUB,[pePollIn],True);
-  FPoller.Register(FPuller_REP,[pePollIn],True);
-  //FPoller.Register(FRouter, [pePollIn], True);
+  FReplier := zmq_socket(FContext, ZMQ_REP);
+  zmq_bind(FReplier, PChar(CHost+CPortReplier));
 
   inherited Create(CreateSuspended);
 end;
 
 destructor TZMQServerThread.Destroy;
 begin
-  FPoller.Terminate;
-  FPoller.Free;
-  //FRouter.Free;
-  FPuller_REP.Free;
-  FPusher_PUB.Free;
-  FPuller_PUB.Free;
-  FPublisher.Free;
-  FContext.Free;
+  zmq_close(FPusher_PUB);
+  zmq_close(FPuller_PUB);
+  zmq_close(FPublisher);
+  zmq_ctx_destroy(FContext);
   inherited Destroy;
 end;
 
-procedure TZMQServerThread.Push(AMultipartMessage: array of UTF8string);
+procedure TZMQServerThread.Push(AMultipartMessage: array of string);
 begin
-  FPusher_PUB.send(AMultipartMessage);
+  SendMultiPartString(FPusher_PUB, AMultipartMessage);
 end;
 
 procedure LoadIP; //forward;

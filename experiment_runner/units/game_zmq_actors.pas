@@ -15,8 +15,7 @@ interface
 
 uses
   Classes, SysUtils
-  , zmq_network
-  //, zmq_client
+  , zmq.network
   ;
 
 type
@@ -29,19 +28,19 @@ type
     FOnReplyReceived: TMessRecvProc;
     FOnRequestReceived: TReqRecvProc;
   protected
-    FID: UTF8string;
+    FID: string;
     procedure MessageReceived(AMultipartMessage : TStringList);
     procedure ReplyReceived(AMultipartMessage : TStringList);
     procedure RequestReceived(var AMultipartMessage : TStringList);
   public
-    constructor Create(AOwner : TComponent; AID : UTF8String); virtual; overload;
+    constructor Create(AOwner : TComponent; AID : string); virtual; overload;
     procedure Start; virtual;
-    procedure SendMessage(AMessage : array of UTF8string);virtual;
-    procedure Request(ARequest : array of UTF8string);virtual;
+    procedure SendMessage(AMessage : array of string);virtual;
+    procedure Request(ARequest : array of string);virtual;
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
     property OnRequestReceived : TReqRecvProc read FOnRequestReceived write FOnRequestReceived;
     property OnReplyReceived : TMessRecvProc read FOnReplyReceived write FOnReplyReceived;
-    property ID : UTF8string read FID;
+    property ID : string read FID;
   end;
 
   { TZMQPlayer }
@@ -51,11 +50,11 @@ type
     FZMQMessages : TZMQMessagesThread;
     FZMQRequests  : TZMQRequestsThread;
   public
-    constructor Create(AOwner : TComponent; AID : UTF8String); override;
+    constructor Create(AOwner : TComponent; AID : string); override;
     destructor Destroy; override;
     procedure Start; override;
-    procedure SendMessage(AMessage : array of UTF8string); override;
-    procedure Request(ARequest : array of UTF8string);override;
+    procedure SendMessage(AMessage : array of string); override;
+    procedure Request(ARequest : array of string);override;
   end;
 
   { TZMQAdmin }
@@ -64,11 +63,11 @@ type
   private
     FZMQServer : TZMQServerThread;
   public
-    constructor Create(AOwner : TComponent; AID : UTF8String); override;
+    constructor Create(AOwner : TComponent; AID : string); override;
     destructor Destroy; override;
     procedure Start; override;
-    procedure SendMessage(AMessage: array of UTF8string); override;
-    procedure Request(ARequest: array of UTF8string); override;
+    procedure SendMessage(AMessage: array of string); override;
+    procedure Request(ARequest: array of string); override;
   end;
 
   { TZMQWatcher }
@@ -93,7 +92,7 @@ end;
 
 { TZMQAdmin }
 
-constructor TZMQAdmin.Create(AOwner: TComponent; AID: UTF8String);
+constructor TZMQAdmin.Create(AOwner: TComponent; AID: string);
 begin
   inherited Create(AOwner);
   FID:=AID;
@@ -108,12 +107,12 @@ begin
   inherited Destroy;
 end;
 
-procedure TZMQAdmin.SendMessage(AMessage: array of UTF8string);
+procedure TZMQAdmin.SendMessage(AMessage: array of string);
 begin
   FZMQServer.Push(AMessage);
 end;
 
-procedure TZMQAdmin.Request(ARequest: array of UTF8string);
+procedure TZMQAdmin.Request(ARequest: array of string);
 begin
   {$IFDEF DEBUG}
   WriteLn('WARNING:'+ClassType.ClassName+':'+'CannotSendRequests:'+ARequest[2]);
@@ -128,7 +127,7 @@ end;
 
 { TZMQPlayer }
 
-procedure TZMQPlayer.SendMessage(AMessage: array of UTF8string);
+procedure TZMQPlayer.SendMessage(AMessage: array of string);
 begin
   {$IFDEF DEBUG}
   inherited SendMessage(AMessage);
@@ -136,7 +135,7 @@ begin
   FZMQMessages.Push(AMessage);
 end;
 
-procedure TZMQPlayer.Request(ARequest: array of UTF8string);
+procedure TZMQPlayer.Request(ARequest: array of string);
 begin
   {$IFDEF DEBUG}
   inherited Request(ARequest);
@@ -144,7 +143,7 @@ begin
   FZMQRequests.Request(ARequest);
 end;
 
-constructor TZMQPlayer.Create(AOwner: TComponent; AID: UTF8String);
+constructor TZMQPlayer.Create(AOwner: TComponent; AID: string);
 begin
   inherited Create(AOwner);
   FID:=AID;
@@ -210,7 +209,7 @@ begin
   if Assigned(FOnRequestReceived) then FOnRequestReceived(AMultipartMessage);
 end;
 
-constructor TZMQActor.Create(AOwner: TComponent; AID: UTF8String);
+constructor TZMQActor.Create(AOwner: TComponent; AID: string);
 begin
   inherited Create(AOwner);
 end;
@@ -222,7 +221,7 @@ begin
   {$ENDIF}
 end;
 
-procedure TZMQActor.SendMessage(AMessage: array of UTF8string);
+procedure TZMQActor.SendMessage(AMessage: array of string);
 {$IFDEF DEBUG}
 var i : integer;
 {$ENDIF}
@@ -234,7 +233,7 @@ begin
   {$ENDIF}
 end;
 
-procedure TZMQActor.Request(ARequest: array of UTF8string);
+procedure TZMQActor.Request(ARequest: array of string);
 {$IFDEF DEBUG}
 var i : integer;
 {$ENDIF}

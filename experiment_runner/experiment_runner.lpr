@@ -22,9 +22,9 @@ uses
     , BaseUnix
     {$ENDIF}
   {$ENDIF}
-  , StrUtils, Forms, Classes, sysutils
-  , form_matrixgame
+  , StrUtils, Forms, Classes, SysUtils
   , helpers
+  , form_matrixgame
   ;
 
 
@@ -79,7 +79,7 @@ const
       end
     else
       try
-        ID.Text := RandomString(32);
+        ID.Text := Format('%04X-%04X',[Random($10000), Random($10000)]);
         ID.SaveToFile(F);
         F := Copy(ID.Text,0,Length(ID.Text)-2);
       except
@@ -103,7 +103,7 @@ begin
   {$ENDIF}
   Application.Initialize;
   F := ApplicationPath+PathDelim+'id';
-  if not GetZMQNetworkID(F) then Exit;
+  if not GetZMQNetworkID(F) then exit;
   Application.CreateForm(TFormMatrixGame, FormMatrixGame);
   InitParameter := '';
   if Paramcount > 0 then

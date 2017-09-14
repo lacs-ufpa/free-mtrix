@@ -20,11 +20,11 @@ type
 
   { TAnnouncerStartEvent }
 
-  TAnnouncerStartEvent = procedure (AMessage : array of UTF8String) of object;
+  TAnnouncerStartEvent = procedure (AMessage : array of string) of object;
 
   { TAnnoucerMessages }
 
-  TAnnoucerMessages = array of array of UTF8String;
+  TAnnoucerMessages = array of array of string;
 
   { TIntervalarAnnouncer }
 
@@ -42,7 +42,7 @@ type
     procedure StartTimer(Sender:TObject);
   public
     constructor Create(AOwner : TComponent); override;
-    procedure Append(M : array of UTF8String);
+    procedure Append(M : array of string);
     procedure Reversed;
     property Messages : TAnnoucerMessages read FMessages write FMessages;
     property OnStart : TAnnouncerStartEvent read FOnStart write FOnStart;
@@ -96,7 +96,7 @@ begin
 end;
 
 procedure TIntervalarAnnouncer.StartTimer(Sender: TObject);
-var M : array of UTF8String;
+var M : array of string;
 begin
   if Length(FMessages) > 0 then
     begin
@@ -117,7 +117,7 @@ begin
   FTimer.OnStartTimer:=@StartTimer;
 end;
 
-procedure TIntervalarAnnouncer.Append(M: array of UTF8String);
+procedure TIntervalarAnnouncer.Append(M: array of string);
 var
   H : TAnnoucerMessages;
   i: Integer;

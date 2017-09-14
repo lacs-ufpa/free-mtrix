@@ -33,7 +33,7 @@
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
             <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
-            <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
+            <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -64,7 +64,8 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
+            <Libraries Value="../dependencies"/>
+            <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -92,7 +93,8 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
+            <Libraries Value="../dependencies"/>
+            <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -128,85 +130,103 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="18">
+    <Units Count="23">
       <Unit0>
         <Filename Value="experiment_runner.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="../sc_split/experiment_runner/form_matrixgame.pas"/>
+        <Filename Value="units/popup_hack.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="units/game_visual_matrix_a.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="units/game_file_methods.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="units/game_control.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="form_matrixgame.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FormMatrixGame"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="../sc_split/experiment_runner/README.md"/>
-        <IsPartOfProject Value="True"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="../sc_split/experiment_runner/units/zmq_network.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="../sc_split/experiment_runner/units/game_zmq_actors.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="../sc_split/experiment_runner/units/game_actors.pas"/>
-        <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
-        <Filename Value="../sc_split/experiment_runner/units/game_experiment.pas"/>
+        <Filename Value="units/game_experiment.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit6>
       <Unit7>
-        <Filename Value="../sc_split/experiment_runner/units/game_file_methods.pas"/>
+        <Filename Value="units/game_actors.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="../sc_split/experiment_runner/units/game_resources.pas"/>
+        <Filename Value="units/game_actors_helpers.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>
-        <Filename Value="../sc_split/experiment_runner/units/game_control.pas"/>
+        <Filename Value="units/game_resources.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit9>
       <Unit10>
-        <Filename Value="../sc_split/experiment_runner/units/string_methods.pas"/>
+        <Filename Value="units/game_visual_elements.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit10>
       <Unit11>
-        <Filename Value="../sc_split/experiment_runner/units/game_actors_point.pas"/>
+        <Filename Value="units/helpers.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="../sc_split/experiment_runner/units/game_visual_elements.pas"/>
+        <Filename Value="units/report_reader.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
-        <Filename Value="../sc_split/experiment_runner/form_chooseactor.pas"/>
+        <Filename Value="units/string_methods.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="FormChooseActor"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
       </Unit13>
       <Unit14>
-        <Filename Value="../sc_split/experiment_runner/units/csv_writer.pas"/>
+        <Filename Value="form_chooseactor.pas"/>
         <IsPartOfProject Value="True"/>
+        <HasResources Value="True"/>
       </Unit14>
       <Unit15>
-        <Filename Value="../sc_split/experiment_runner/units/helpers.pas"/>
+        <Filename Value="units/game_visual_experiment.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit15>
       <Unit16>
-        <Filename Value="units/popup_hack.pas"/>
+        <Filename Value="units/zmq.network.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit16>
       <Unit17>
-        <Filename Value="units/game_visual_matrix_a.pas"/>
+        <Filename Value="units/game_actors_point.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit17>
+      <Unit18>
+        <Filename Value="units/game_zmq_actors.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="units/presentation_classes.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="units/regdata.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="form_chooseactor.lfm"/>
+        <IsPartOfProject Value="True"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="form_matrixgame.lfm"/>
+        <IsPartOfProject Value="True"/>
+      </Unit22>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -217,7 +237,7 @@
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
       <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
-      <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
+      <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
     </SearchPaths>
     <CodeGeneration>

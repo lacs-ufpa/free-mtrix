@@ -30,24 +30,12 @@ uses
 
   ;
 
-function RandomString(ALength : Integer): Utf8String;
 procedure PrintVersions(AAplicationPath:string);
 
 
 implementation
 
 uses zmq;
-
-function RandomString( ALength: Integer ): Utf8String;
-const
-  Chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
-var
-  i: integer;
-begin
-  Result := '';
-  for i := 1 to ALength do
-    Result := Result + Chars[Random(Length(Chars)) + 1];
-end;
 
 procedure PrintVersions(AAplicationPath : string);
 var
@@ -76,7 +64,6 @@ var
     end;
   end;
 begin
-  LMajor := 0; LMinor := 0; LPatch := 0;
   zmq_version(LMajor,LMinor,LPatch);
   LVERSION := FreeMtrixVersion + 'ZMQ v'+IntToStr(LMajor)+'.'+IntToStr(LMinor)+'.'+IntToStr(LPatch);
   try

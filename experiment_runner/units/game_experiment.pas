@@ -68,20 +68,20 @@ type
     function GetConditionsCount: integer;
     function GetContingenciesCount(C: integer): integer;
     function GetContingency(ACondition, I : integer): TContingency;
-    function GetNextTurn : UTF8string;
-    function GetNextTurnPlayerID: UTF8string;
+    function GetNextTurn : string;
+    function GetNextTurnPlayerID: string;
     function GetNextCondition:string;
-    function AliasPlayerAsString(P: TPlayer): UTF8string;
-    function AliasPlayerFromString(s : UTF8string): TPlayer;
+    function AliasPlayerAsString(P: TPlayer): string;
+    function AliasPlayerFromString(s : string): TPlayer;
     function GetPlayer(I : integer): TPlayer; overload;
-    function GetPlayer(AID : UTF8string): TPlayer; overload;
+    function GetPlayer(AID : string): TPlayer; overload;
     function GetPlayerToKick: string;
-    function GetPlayerIndexFromID(AID : UTF8string): integer;
-    function GetPlayerIsPlaying(AID : UTF8string): Boolean;
+    function GetPlayerIndexFromID(AID : string): integer;
+    function GetPlayerIsPlaying(AID : string): Boolean;
     function GetPlayersCount: integer;
     function GetInterlockingPorcentageInLastCycles:real;
-    function GetConsequenceStringFromChoice(P:TPlayer): Utf8string;
-    function GetConsequenceStringFromChoices:UTF8String;
+    function GetConsequenceStringFromChoice(P:TPlayer): string;
+    function GetConsequenceStringFromChoices:string;
     procedure CheckNeedForRandomTurns;
     procedure EndExperiment;
     procedure WriteReportFooter;
@@ -92,7 +92,7 @@ type
     procedure SetContingency(ACondition, I : integer; AValue: TContingency);
     procedure SetMatrixType(AValue: TGameMatrixType);
     procedure SetPlayer(I : integer; AValue: TPlayer); overload;
-    procedure SetPlayer(S : UTF8string ; AValue: TPlayer); overload;
+    procedure SetPlayer(S : string ; AValue: TPlayer); overload;
     procedure SetResearcherCanChat(AValue: Boolean);
     procedure SetResearcherCanPlay(AValue: Boolean);
     procedure SetSendChatHistoryForNewPlayers(AValue: Boolean);
@@ -102,7 +102,7 @@ type
     procedure SetPlayersQueue(AValue: string);
   private
     FConditionMustBeUpdated: string;
-    FConsequenceStringFromChoices: UTF8String;
+    FConsequenceStringFromChoices: string;
     FEndCycle: Boolean;
     FOnConsequence: TNotifyEvent;
     FOnInterlocking: TNotifyEvent;
@@ -121,9 +121,9 @@ type
     procedure Consequence(Sender : TObject);
     function GetCurrentCondition: TCondition;
     function GetFirstTurn(AValue:integer): integer;
-    function GetMatrixTypeAsUTF8String: UTF8String;
+    function GetMatrixTypeAsString: string;
     procedure Interlocking(Sender : TObject);
-    procedure SetMatrixTypeFromUTF8String(AValue: UTF8String);
+    procedure SetMatrixTypeFromString(AValue: string);
     procedure SetOnStartCondition(AValue: TNotifyEvent);
     procedure SetOnStartCycle(AValue: TNotifyEvent);
     procedure SetOnStartGeneration(AValue: TNotifyEvent);
@@ -159,7 +159,7 @@ type
     property ShowChat : Boolean read FShowChat write FShowChat;
     property SendChatHistoryForNewPlayers : Boolean read FSendChatHistoryForNewPlayers write SetSendChatHistoryForNewPlayers;
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
-    property MatrixTypeAsString : UTF8String read GetMatrixTypeAsUTF8String write SetMatrixTypeFromUTF8String;
+    property MatrixTypeAsString : string read GetMatrixTypeAsString write SetMatrixTypeFromString;
   public // manipulation/ self awareness
     PlayerTurn : integer;
     function AppendCondition : integer; overload;
@@ -185,24 +185,24 @@ type
     property InterlockingsInLastCycles:real read GetInterlockingPorcentageInLastCycles;
     property Player[I : integer] : TPlayer read GetPlayer write SetPlayer;
     property Players : TPlayers read FPlayers;
-    property PlayerFromID[S : UTF8string ] : TPlayer read GetPlayer write SetPlayer;
+    property PlayerFromID[S : string ] : TPlayer read GetPlayer write SetPlayer;
     property PlayersCount : integer read GetPlayersCount;
-    property PlayerIsPlaying[s : UTF8string] : Boolean read GetPlayerIsPlaying;
-    property PlayerIndexFromID[s : UTF8string]: integer read GetPlayerIndexFromID;
-    property PlayerAsString[P:TPlayer]: UTF8string read AliasPlayerAsString;
-    property PlayerFromString[s : UTF8string]: TPlayer read AliasPlayerFromString;
+    property PlayerIsPlaying[s : string] : Boolean read GetPlayerIsPlaying;
+    property PlayerIndexFromID[s : string]: integer read GetPlayerIndexFromID;
+    property PlayerAsString[P:TPlayer]: string read AliasPlayerAsString;
+    property PlayerFromString[s : string]: TPlayer read AliasPlayerFromString;
     property FirstTurn[i:integer] : integer read GetFirstTurn;
   public // standard control
     function ShouldEndCondition:Boolean;
-    function CurrentConditionAsString:UTF8String;
+    function CurrentConditionAsString:string;
     procedure Clean;
     procedure Play;
     procedure WriteReportRowPrompt;
     procedure WriteChatLn(ALn : string);
-    property ConsequenceStringFromChoice[P:TPlayer]:UTF8String read GetConsequenceStringFromChoice;
-    property ConsequenceStringFromChoices: UTF8String read FConsequenceStringFromChoices;
-    property NextTurnPlayerID : UTF8string read GetNextTurnPlayerID;
-    property NextTurn : UTF8string read GetNextTurn;
+    property ConsequenceStringFromChoice[P:TPlayer]:string read GetConsequenceStringFromChoice;
+    property ConsequenceStringFromChoices: string read FConsequenceStringFromChoices;
+    property NextTurnPlayerID : string read GetNextTurnPlayerID;
+    property NextTurn : string read GetNextTurn;
     property NextCondition : string read GetNextCondition;
     property NextGeneration: string read GetPlayerToKick write SetPlayersQueue;
     property ConditionMustBeUpdated : string read FConditionMustBeUpdated write FConditionMustBeUpdated;
@@ -253,7 +253,7 @@ begin
   Result := FConditions[ACondition].Contingencies[I];
 end;
 
-function TExperiment.GetNextTurn: UTF8string; // used during player arriving
+function TExperiment.GetNextTurn: string; // used during player arriving
 var
   i : integer;
 begin
@@ -288,7 +288,7 @@ begin
   if Assigned(FOnStartTurn) then FOnStartTurn(Self);
 end;
 
-function TExperiment.GetNextTurnPlayerID: UTF8string; // used during cycles
+function TExperiment.GetNextTurnPlayerID: string; // used during cycles
 begin
   Result := Player[FConditions[CurrentConditionI].Turn.Count].ID;
 end;
@@ -334,7 +334,7 @@ begin
   Result := FPlayers[i];
 end;
 
-function TExperiment.GetPlayer(AID: UTF8string): TPlayer;
+function TExperiment.GetPlayer(AID: string): TPlayer;
 var
   i : integer;
   P : TPlayer = (
@@ -360,17 +360,17 @@ begin
 end;
 
 // fewer as possible data
-function TExperiment.AliasPlayerAsString(P: TPlayer): UTF8string;
+function TExperiment.AliasPlayerAsString(P: TPlayer): string;
 begin
   Result:= GetPlayerAsString(P);
 end;
 
-function TExperiment.AliasPlayerFromString(s: UTF8string): TPlayer;
+function TExperiment.AliasPlayerFromString(s: string): TPlayer;
 begin
   Result := GetPlayerFromString(S);
 end;
 
-function TExperiment.GetPlayerIndexFromID(AID: UTF8string): integer;
+function TExperiment.GetPlayerIndexFromID(AID: string): integer;
 var i : integer;
 begin
   Result := -1;
@@ -382,7 +382,7 @@ begin
       end;
 end;
 
-function TExperiment.GetPlayerIsPlaying(AID: UTF8string): Boolean;
+function TExperiment.GetPlayerIsPlaying(AID: string): Boolean;
 var i : integer;
 begin
   Result := PlayersCount > 0;
@@ -435,7 +435,7 @@ begin
     end;
 end;
 
-function TExperiment.GetConsequenceStringFromChoice(P: TPlayer): Utf8string;
+function TExperiment.GetConsequenceStringFromChoice(P: TPlayer): string;
 var
   i : integer;
   c : integer;
@@ -449,7 +449,7 @@ begin
         Result += DeduceNicname(Contingency[c,i].Consequence.AsString(P.ID), P)+'+';
 end;
 
-function TExperiment.GetConsequenceStringFromChoices: UTF8String;
+function TExperiment.GetConsequenceStringFromChoices: string;
 var
   i : integer;
   j : integer;
@@ -594,7 +594,7 @@ begin
   FPlayers[I] := AValue;
 end;
 
-procedure TExperiment.SetPlayer(S: UTF8string; AValue: TPlayer);
+procedure TExperiment.SetPlayer(S: string; AValue: TPlayer);
 var i : integer;
 begin
   if PlayersCount > 0 then
@@ -672,7 +672,7 @@ begin
     Result := AValue;
 end;
 
-function TExperiment.GetMatrixTypeAsUTF8String: UTF8String;
+function TExperiment.GetMatrixTypeAsString: string;
 begin
   Result := GetMatrixTypeString(MatrixType);
 end;
@@ -718,7 +718,7 @@ begin
 end;
 
 
-procedure TExperiment.SetMatrixTypeFromUTF8String(AValue: UTF8String);
+procedure TExperiment.SetMatrixTypeFromString(AValue: string);
 begin
   MatrixType := GetMatrixTypeFromString(AValue);
 end;
@@ -1135,7 +1135,7 @@ begin
   end;
 end;
 
-function TExperiment.CurrentConditionAsString: UTF8String;
+function TExperiment.CurrentConditionAsString: string;
 begin
   if ABPoints then
     Result :=
