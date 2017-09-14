@@ -52,11 +52,11 @@ if __name__ == "__main__":
     print(root_path)
 
     runner_src_win32_libraries = [
-        os.path.join(root_path, 'dependencies/libzmq-build/windows/32/libzmq.dll')
+        os.path.join(root_path, 'dependencies/libzmq-builds/windows/32/libzmq.dll')
     ]
 
     runner_src_win64_libraries = [
-        os.path.join(root_path, 'dependencies/libzmq-build/windows/64/libzmq.dll')
+        os.path.join(root_path, 'dependencies/libzmq-builds/windows/64/libzmq.dll')
     ]
 
     targets = {
