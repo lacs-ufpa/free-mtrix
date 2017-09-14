@@ -22,7 +22,7 @@
       <Language Value="0416"/>
       <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_designer" ProductName="Free-mtrix" ProductVersion="0.2.0"/>
     </VersionInfo>
-    <BuildModes Count="4">
+    <BuildModes Count="5">
       <Item1 Name="linux_64bits_debug" Default="True"/>
       <Item2 Name="linux_64bits">
         <CompilerOptions>
@@ -107,6 +107,34 @@
           </Linking>
         </CompilerOptions>
       </Item4>
+      <Item5 Name="windows_64bits">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="experiment_designer_$(BuildMode)"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir)"/>
+            <OtherUnitFiles Value="../experiment_runner/units"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <CodeGeneration>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="win64"/>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <StripSymbols Value="True"/>
+              <UseExternalDbgSyms Value="True"/>
+            </Debugging>
+            <Options>
+              <Win32>
+                <GraphicApplication Value="True"/>
+              </Win32>
+            </Options>
+          </Linking>
+        </CompilerOptions>
+      </Item5>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>

@@ -63,6 +63,7 @@ if __name__ == "__main__":
         'experiment_runner/experiment_runner_windows_64bits': runner_src_win64_libraries,
         'experiment_runner/experiment_runner_windows_32bits': runner_src_win32_libraries,
         'experiment_designer/experiment_designer_windows_32bits': [None],
+        'experiment_designer/experiment_designer_windows_64bits' : [None],
         'experiment_runner/experiment_runner_linux_64bits': [None],
         'experiment_designer/experiment_designer_linux_64bits': [None]
     }
