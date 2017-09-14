@@ -52,10 +52,15 @@ if __name__ == "__main__":
     print(root_path)
 
     runner_src_win32_libraries = [
-        os.path.join(root_path, 'dependencies/libzmq.dll')
+        os.path.join(root_path, 'dependencies/libzmq-build/windows/32/libzmq.dll')
+    ]
+
+    runner_src_win64_libraries = [
+        os.path.join(root_path, 'dependencies/libzmq-build/windows/64/libzmq.dll')
     ]
 
     targets = {
+        'experiment_runner/experiment_runner_windows_64bits': runner_src_win64_libraries,
         'experiment_runner/experiment_runner_windows_32bits': runner_src_win32_libraries,
         'experiment_designer/experiment_designer_windows_32bits': [None],
         'experiment_runner/experiment_runner_linux_64bits': [None],
