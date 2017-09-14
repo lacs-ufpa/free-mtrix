@@ -319,9 +319,9 @@ begin
         RecvMultiPartString(FPuller_PUB, LMultipartMessage);
         if LMultipartMessage.Count > 0 then
           begin
-            WriteLn('--------------------- pull -----------------------');
-            WriteLn(LMultipartMessage.Count);
-            WriteLn(LMultipartMessage.Text);
+            //WriteLn('--------------------- pull -----------------------');
+            //WriteLn(LMultipartMessage.Count);
+            //WriteLn(LMultipartMessage.Text);
             SendMultiPartString(FPublisher, LMultiPartMessage);
             FMessage := LMultipartMessage;
             Synchronize(@MessageReceived);
@@ -335,10 +335,9 @@ begin
         if LMultipartMessage.Count > 2 then
           begin
             FMessage := LMultipartMessage;
-            WriteLn('--------------------- req -----------------------');
-            WriteLn(LMultipartMessage.Count);
-            WriteLn(LMultipartMessage.Text);
-
+            //WriteLn('--------------------- req -----------------------');
+            //WriteLn(LMultipartMessage.Count);
+            //WriteLn(LMultipartMessage.Text);
             Synchronize(@RequestReceived);
             LMultipartMessage := FMessage;
             SendMultiPartString(FReplier, LMultipartMessage);
