@@ -11,6 +11,8 @@ program experiment_runner;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE DEBUG}
+
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
@@ -65,23 +67,23 @@ const
   end;
 {$ENDIF}
 
-  function GetZMQNetworkID(var F:string):Boolean;
+  function GetZMQNetworkID(var AF:string):Boolean;
   var ID : TStringList;
   begin
     Result := True;
     ID := TStringList.Create;
-    if FileExists(F) then
+    if FileExists(AF) then
       try
-        ID.LoadFromFile(F);
-        F := Copy(ID.Text,0,Length(ID.Text)-2);
+        ID.LoadFromFile(AF);
+        F := ID[0];
       finally
         ID.Free;
       end
     else
       try
-        ID.Text := Format('%04X-%04X',[Random($10000), Random($10000)]);
+        ID.Append(Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)]));
         ID.SaveToFile(F);
-        F := Copy(ID.Text,0,Length(ID.Text)-2);
+        F := ID[0];
       except
         on E: Exception do
           begin
