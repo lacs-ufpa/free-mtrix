@@ -49,7 +49,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="../../dependencies/delphizmq;../../experiment_runner;../../experiment_runner/units"/>
+      <OtherUnitFiles Value="../../experiment_runner;../../experiment_runner/units;../../dependencies/fpc-zmq"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
@@ -60,9 +60,11 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dUseCThreads"/>
-      <OtherDefines Count="1">
+      <CustomOptions Value="-dUseCThreads
+-dTEST_MODE"/>
+      <OtherDefines Count="2">
         <Define0 Value="UseCThreads"/>
+        <Define1 Value="TEST_MODE"/>
       </OtherDefines>
     </Other>
   </CompilerOptions>

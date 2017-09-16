@@ -955,7 +955,11 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
         FZMQActor.ID
         , ' '
         , GA_PLAYER+K_QUESTION
+        {$IFDEF TEST_MODE}
+        , RandomFrom(['Y', 'N'])
+        {$ELSE}
         , AskQuestion(AMessage[1])
+        {$ENDIF}
         , AMessage[2] // generation
         , AMessage[3] // conditions
       ]);
@@ -1112,6 +1116,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           //if Assigned(FormMatrixGame) then
           //  FormChooseActor := TFormChooseActor.Create(FormMatrixGame)
           //else
+          {$IFNDEF TEST_MODE}
           FormChooseActor := TFormChooseActor.Create(nil);
           FormChooseActor.Style := K_END;
 
@@ -1126,8 +1131,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           LabelGroup.Caption + ' itens escolares serão doados a uma escola pública.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
+
           if Assigned(FormMatrixGame) then
             FormMatrixGame.Close;
+          {$ENDIF}
         end;
       gaAdmin:Stop;
     end;

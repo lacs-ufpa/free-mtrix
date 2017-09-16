@@ -43,6 +43,7 @@ type
     ButtonQN1: TButton;
     ButtonQN2: TButton;
     ButtonQN3: TButton;
+    CheckBoxAutoPlay: TCheckBox;
     chkP1: TCheckBox;
     chkP2: TCheckBox;
     chkP3: TCheckBox;
@@ -109,10 +110,13 @@ type
     TabSheet2: TTabSheet;
     TabSheet3: TTabSheet;
     TabSheet4: TTabSheet;
+    Timer1: TTimer;
     procedure ButtonChoice1Click(Sender: TObject);
     procedure ButtonLoginClick(Sender: TObject);
     procedure ButtonQY1Click(Sender: TObject);
+    procedure CheckBoxAutoPlayChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
   private
     FPopupNotifierServer : TPopupNotifier;
     FPopupNotifierP1 : TPopupNotifier;
@@ -138,12 +142,9 @@ var
 implementation
 
 uses
-  strutils
-  , helpers
-  , game_actors_helpers
+  game_actors_helpers
   , game_zmq_actors
   , game_resources
-  , string_methods
   ;
 
 {$R *.lfm}
@@ -219,7 +220,10 @@ begin
   FExperimentBox.Top := 16;
   FExperimentBox.Parent := Self;
 
-  FServer := TGameControl.Create(TZMQAdmin.Create(Self,RandomString(32)),ExtractFilePath(Application.ExeName));
+  FServer := TGameControl.Create(TZMQAdmin.Create(Self,
+    Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)])),
+    ExtractFilePath(Application.ExeName));
+
   FServer.OnInterlocking := @FExperimentBox.Interlocking;
   FServer.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;
   FServer.OnStartExperiment := @FExperimentBox.StartExperiment;
@@ -241,11 +245,18 @@ begin
   FServer.GroupBoxPlayers := GBLastChoiceServer;
 end;
 
+procedure TForm1.Timer1Timer(Sender: TObject);
+begin
+  if chkP1.Checked xor chkP2.Checked xor chkP3.Checked then
+    ButtonChoice1Click(Sender)
+  else exit;
+end;
+
 procedure TForm1.ButtonLoginClick(Sender: TObject);
 var
-  ID: UTF8String;
+  ID: string;
 begin
-  ID := RandomString(32);
+  ID := Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)]);
   case GPlayers of
     0 :
       begin
@@ -326,74 +337,65 @@ begin
 
 end;
 
-procedure TForm1.ButtonChoice1Click(Sender: TObject);
-var
-  n : UTF8String;
-  c : UTF8String;
+procedure TForm1.CheckBoxAutoPlayChange(Sender: TObject);
 begin
-  if Sender = ButtonChoice1 then
-    begin
-      n := '1';
-      c := 'Y';
-    end;
+  Timer1.Enabled:= not Timer1.Enabled;
+  if Timer1.Enabled then
+  begin
+    GLOBAL_MESSAGE_INTERVAL := 30;
+    GLOBAL_SYSTEM_MESSAGE_INTERVAL := 50;
+    GLOBAL_MESSAGES_INTERVAL := 22;
+  end
+  else
+  begin
+    GLOBAL_MESSAGE_INTERVAL := 3000;
+    GLOBAL_SYSTEM_MESSAGE_INTERVAL := 5000;
+    GLOBAL_MESSAGES_INTERVAL := 2200;
+  end;
+end;
 
-  if Sender = ButtonChoice2 then
-    begin
-      n := '2';
-      c := 'R';
-    end;
+type TTestChoice = record
+  n : string;
+  c : string;
+end;
 
-  if Sender = ButtonChoice3 then
-    begin
-      n := '3';
-      c := 'G';
-    end;
+procedure TForm1.ButtonChoice1Click(Sender: TObject);
+const
+  choices : array [0..9] of
+    TTestChoice = (
+      (n : '1';  c : 'Y'),
+      (n : '2';  c : 'R'),
+      (n : '3';  c : 'G'),
+      (n : '4';  c : 'B'),
+      (n : '5';  c : 'M'),
+      (n : '6';  c : 'Y'),
+      (n : '7';  c : 'R'),
+      (n : '8';  c : 'G'),
+      (n : '9';  c : 'B'),
+      (n : '10'; c : 'M')
+    );
 
-  if Sender = ButtonChoice4 then
-    begin
-      n := '4';
-      c := 'B';
-    end;
-
-  if Sender = ButtonChoice5 then
-    begin
-      n := '5';
-      c := 'M';
-    end;
-  if Sender = ButtonChoice6 then
-    begin
-      n := '6';
-      c := 'Y';
-    end;
-  if Sender = ButtonChoice7 then
-    begin
-      n := '7';
-      c := 'R';
-    end;
-  if Sender = ButtonChoice8 then
-    begin
-      n := '8';
-      c := 'G';
-    end;
-  if Sender = ButtonChoice9 then
-    begin
-      n := '9';
-      c := 'B';
-    end;
-  if Sender = ButtonChoice10 then
-    begin
-      n := '10';
-      c := 'M';
-    end;
+var
+  choice : TTestChoice;
+begin
+  if Sender = ButtonChoice1 then choice := choices[0];
+  if Sender = ButtonChoice2 then choice := choices[1];
+  if Sender = ButtonChoice3 then choice := choices[2];
+  if Sender = ButtonChoice4 then choice := choices[3];
+  if Sender = ButtonChoice5 then choice := choices[4];
+  if Sender = ButtonChoice6 then choice := choices[5];
+  if Sender = ButtonChoice7 then choice := choices[6];
+  if Sender = ButtonChoice8 then choice := choices[7];
+  if Sender = ButtonChoice9 then choice := choices[8];
+  if Sender = ButtonChoice10 then choice := choices[9];
+  if Sender = Timer1 then choice := choices[Random(10)];
 
   if chkP1.Checked then
-    FPlayer1.SendRequest(K_CHOICE, [n,c]);
-
-  if chkP2.Checked then
-    FPlayer2.SendRequest(K_CHOICE, [n,c]);
-
-  if chkP3.Checked then
-    FPlayer3.SendRequest(K_CHOICE, [n,c]);
+    FPlayer1.SendRequest(K_CHOICE, [choice.n,choice.c])
+  else if chkP2.Checked then
+    FPlayer2.SendRequest(K_CHOICE, [choice.n,choice.c])
+  else if chkP3.Checked then
+    FPlayer3.SendRequest(K_CHOICE, [choice.n,choice.c]);
 end;
 
 procedure TForm1.WriteReport(S: string);

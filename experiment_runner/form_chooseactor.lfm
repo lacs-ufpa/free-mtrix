@@ -11,7 +11,7 @@ object FormChooseActor: TFormChooseActor
   FormStyle = fsStayOnTop
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '1.6.2.0'
+  LCLVersion = '1.8.0.4'
   object btnPlayerResume: TButton
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner

@@ -89,7 +89,9 @@ end;
 
 procedure TFormChooseActor.ExitApplication(Sender: TObject);
 begin
+  {$IFNDEF TEST_MODE}
   Application.Terminate;
+  {$ENDIF}
 end;
 
 procedure TFormChooseActor.SetStyle(AValue: string);
