@@ -128,8 +128,8 @@ const
       //);
 
       Points : (
-        Count : ( A:0; B:0; G:0; );
-        OnStart : ( A:0; B:0; G:0; );
+        Count : ( A:0; B:0; G1:0; G2:0; );
+        OnStart : ( A:0; B:0; G1:0; G2:0; );
       );
 
       Turn : (

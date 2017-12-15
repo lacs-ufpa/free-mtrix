@@ -119,7 +119,7 @@ begin
           LConcequence := TConsequence.Create(
             AExperiment,
             1,
-            [gscPoints, gscG, gscMessage],
+            [gscPoints, gscG1, gscMessage],
             ['','perderam','item escolar','itens escolares','produziram','item escolar','itens escolares','não produziram nem perderam itens escolares']);
           Contingencies[2] := TContingency.Create(AExperiment,LConcequence,LCriteria3,True);
           Contingencies[2].ContingencyName := 'MCRF 1G';
@@ -128,7 +128,7 @@ begin
           LConcequence := TConsequence.Create(
             AExperiment,
             -1,
-            [gscPoints, gscG, gscMessage],
+            [gscPoints, gscG1, gscMessage],
             ['','perderam','item escolar','itens escolares','produziram','item escolar','itens escolares','não produziram nem perderam itens escolares']);
           Contingencies[3] := TContingency.Create(AExperiment,LConcequence,LCriteria4,True);
           Contingencies[3].ContingencyName := 'MPUN -1G';
@@ -249,12 +249,14 @@ var
                 begin
                   Points.OnStart.A := ReadInteger(LS, KEY_POINTS_ONSTART_A,0);
                   Points.OnStart.B := ReadInteger(LS, KEY_POINTS_ONSTART_B,0);
-                  Points.OnStart.G := ReadInteger(LS, KEY_POINTS_ONSTART_G,0);
+                  Points.OnStart.G1 := ReadInteger(LS, KEY_POINTS_ONSTART_G1,0);
+                  Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
                 end
               else
                 begin
                   Points.OnStart.A := ReadInteger(LS, KEY_POINTS_ONSTART_I,0);
-                  Points.OnStart.G := ReadInteger(LS, KEY_POINTS_ONSTART_G,0);
+                  Points.OnStart.G1 := ReadInteger(LS, KEY_POINTS_ONSTART_G1,0);
+                  Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
                 end;
 
               Turn.Count:= ReadInteger(LS, KEY_TURN_COUNT,0);
@@ -422,12 +424,14 @@ begin
               begin
                 WriteInteger(LC, KEY_POINTS_ONSTART_A,Points.OnStart.A);
                 WriteInteger(LC, KEY_POINTS_ONSTART_B,Points.OnStart.B);
-                WriteInteger(LC, KEY_POINTS_ONSTART_G,Points.OnStart.G);
+                WriteInteger(LC, KEY_POINTS_ONSTART_G1,Points.OnStart.G1);
+                WriteInteger(LC, KEY_POINTS_ONSTART_G2,Points.OnStart.G2);
               end
             else
               begin
                 WriteInteger(LC, KEY_POINTS_ONSTART_I,Points.OnStart.A);
-                WriteInteger(LC, KEY_POINTS_ONSTART_G,Points.OnStart.G);
+                WriteInteger(LC, KEY_POINTS_ONSTART_G1,Points.OnStart.G1);
+                WriteInteger(LC, KEY_POINTS_ONSTART_G2,Points.OnStart.G2);
               end;
             WriteInteger(LC, KEY_TURN_COUNT,Turn.Count);
             WriteInteger(LC, KEY_TURN_VALUE,Turn.Value);

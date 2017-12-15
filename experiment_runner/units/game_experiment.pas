@@ -1141,11 +1141,13 @@ begin
     Result :=
       IntToStr(Condition[CurrentConditionI].Points.OnStart.A)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.B)+'|'+
-      IntToStr(Condition[CurrentConditionI].Points.OnStart.G)
+      IntToStr(Condition[CurrentConditionI].Points.OnStart.G1)+'|'+
+      IntToStr(Condition[CurrentConditionI].Points.OnStart.G2)
   else
     Result:=
       IntToStr(Condition[CurrentConditionI].Points.OnStart.A)+'|'+
-      IntToStr(Condition[CurrentConditionI].Points.OnStart.G);
+      IntToStr(Condition[CurrentConditionI].Points.OnStart.G1)+'|'+
+      IntToStr(Condition[CurrentConditionI].Points.OnStart.G2);
 end;
 
 //procedure TExperiment.TargetInterlocking;

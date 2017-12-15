@@ -88,7 +88,8 @@ function GetPointsFromString(S: string) : TPoints;
 begin
   Result.A := StrToIntDef(ExtractDelimited(1,S,[',']),0);
   Result.B := StrToIntDef(ExtractDelimited(2,S,[',']),0);
-  Result.G := StrToIntDef(ExtractDelimited(3,S,[',']),0);
+  Result.G1 := StrToIntDef(ExtractDelimited(3,S,[',']),0);
+  Result.G2 := StrToIntDef(ExtractDelimited(3,S,[',']),0);
 end;
 
 
@@ -264,7 +265,8 @@ begin
     'PONTOS COM VARIAÇÃO' : Result:= gscVariablePoints;
     'PONTOS A' : Result:= gscA;
     'PONTOS B' : Result:= gscB;
-    'PONTOS G' : Result:= gscG;
+    'PONTOS G1' : Result:= gscG1;
+    'PONTOS G2' : Result:= gscG2;
     'PONTOS I' : Result:= gscI;
   end;
 end;
@@ -280,7 +282,8 @@ begin
     gscVariablePoints : Result:= 'PONTOS COM VARIAÇÃO';
     gscA :  Result:= 'PONTOS A';
     gscB :  Result:= 'PONTOS B';
-    gscG :  Result:= 'PONTOS G';
+    gscG1 :  Result:= 'PONTOS G1';
+    gscG2 :  Result:= 'PONTOS G2';
     gscI :  Result:= 'PONTOS I';
   end;
 end;
@@ -377,7 +380,8 @@ begin
       'V':Result+=[gscVariablePoints];
       'A':Result+=[gscA];
       'B':Result+=[gscB];
-      'G':Result+=[gscG];
+      'G1':Result+=[gscG1];
+      'G2':Result+=[gscG2];
       'I':Result+=[gscI];
     end;
 end;
@@ -396,7 +400,8 @@ begin
         gscVariablePoints:Result += 'V';
         gscA:Result += 'A';
         gscB:Result += 'B';
-        gscG:Result += 'G';
+        gscG1:Result += 'G1';
+        gscG2:Result += 'G2';
         gscI:Result += 'I';
       end;
       Result += ',';
@@ -457,7 +462,8 @@ function GetPointsString(APoints: TPoints): string;
 begin
   Result := IntToStr(APoints.A) + VV_SEP;
   Result := Result + IntToStr(APoints.B) + VV_SEP;
-  Result := Result + IntToStr(APoints.G) + VV_SEP;
+  Result := Result + IntToStr(APoints.G1) + VV_SEP;
+  Result := Result + IntToStr(APoints.G2) + VV_SEP;
 end;
 
 function GetChoiceString(AChoice: TPlayerChoice): string;

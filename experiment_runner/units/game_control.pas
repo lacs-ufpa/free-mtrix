@@ -54,7 +54,8 @@ type
     procedure EnablePlayerMatrix(AID:string; ATurn:integer; AEnabled:Boolean);
   private
     FGroupBoxPlayers: TGroupBox;
-    FLabelGroup: TLabel;
+    FLabelGroup1: TLabel;
+    FLabelGroup2: TLabel;
     FLabelPointA: TLabel;
     FLabelPointB: TLabel;
     FLabelPointI: TLabel;
@@ -73,7 +74,8 @@ type
     FSystemPopUp: TPopupNotifier;
     procedure Interlocking(Sender: TObject);
     procedure SetGroupBoxPlayers(AValue: TGroupBox);
-    procedure SetLabelGroup(AValue: TLabel);
+    procedure SetLabelGroup1(AValue: TLabel);
+    procedure SetLabelGroup2(AValue: TLabel);
     procedure SetLabelPointA(AValue: TLabel);
     procedure SetLabelPointB(AValue: TLabel);
     procedure SetLabelPointI(AValue: TLabel);
@@ -114,7 +116,8 @@ type
   public
     procedure ShowSystemPopUp(AText:string;AInterval : integer);
     property SystemPopUp : TPopupNotifier read FSystemPopUp write SetSystemPopUp;
-    property LabelGroup : TLabel read FLabelGroup write SetLabelGroup;
+    property LabelGroup1 : TLabel read FLabelGroup1 write SetLabelGroup1;
+    property LabelGroup2 : TLabel read FLabelGroup2 write SetLabelGroup2;
     property LabelPointA : TLabel read FLabelPointA write SetLabelPointA;
     property LabelPointB : TLabel read FLabelPointB write SetLabelPointB;
     property LabelPointI : TLabel read FLabelPointI write SetLabelPointI;
@@ -227,10 +230,16 @@ begin
   FGroupBoxPlayers:=AValue;
 end;
 
-procedure TGameControl.SetLabelGroup(AValue: TLabel);
+procedure TGameControl.SetLabelGroup1(AValue: TLabel);
 begin
-  if FLabelGroup=AValue then Exit;
-  FLabelGroup:=AValue;
+  if FLabelGroup1=AValue then Exit;
+  FLabelGroup1:=AValue;
+end;
+
+procedure TGameControl.SetLabelGroup2(AValue: TLabel);
+begin
+  if FLabelGroup2=AValue then Exit;
+  FLabelGroup2:=AValue;
 end;
 
 procedure TGameControl.SetLabelPointA(AValue: TLabel);
@@ -593,16 +602,19 @@ begin
   case FActor of
     gaPlayer:
       if ForGroup then
-        LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,LabelGroup)
+        LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,
+          LabelGroup1, LabelGroup2)
       else
         if Self.ID = AID then
-          LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,LabelGroup);
+          LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,
+            LabelGroup1, LabelGroup2);
 
     gaAdmin:
       begin
         // player box is ignored for group points
         // LabelGroupCount is ignored for player points
-        LConsequence.PresentPoints(GetPlayerBox(AID),LabelGroup);
+        LConsequence.PresentPoints(GetPlayerBox(AID),
+          LabelGroup1, LabelGroup2);
       end;
   end;
 
@@ -619,7 +631,7 @@ end;
 
 procedure TGameControl.NextConditionSetup(S: string; IsConditionStart: Boolean); // [player_points]
 var
-  A, B, G : integer;
+  A, B, G1, G2 : integer;
   LNewA : integer = 0;
   LNewB : integer = 0;
   P : TPlayer;
@@ -630,14 +642,21 @@ begin
     begin
       A := StrToInt(ExtractDelimited(1,S,['|']));
       B := StrToInt(ExtractDelimited(2,S,['|']));
-      G := StrToInt(ExtractDelimited(3,S,['|']));
+      G1 := StrToIntDef(ExtractDelimited(3,S,['|']), 0);
+      G2 := StrToIntDef(ExtractDelimited(4,S,['|']), 0);
     end
   else
     begin
       A := StrToInt(ExtractDelimited(1,S,['|']));
-      G := StrToInt(ExtractDelimited(2,S,['|']));
+      G1 := StrToIntDef(ExtractDelimited(2,S,['|']), 0);
+      G2 := StrToIntDef(ExtractDelimited(3,S,['|']), 0);
     end;
-  IncLabel(LabelGroup,G);
+
+  if G1 > 0 then
+    IncLabel(LabelGroup1, G1);
+
+  if G2 > 0 then
+    IncLabel(LabelGroup2, G2);
 
   case FActor of
     gaPlayer:
@@ -1083,7 +1102,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor.ShowPoints(
                 'A tarefa terminou, obrigado por sua participação!'+LineEnding+
                 'Você produziu ' + Pts + ' fichas e ' +
-                LabelGroup.Caption + ' itens escolares serão doados a uma escola pública.'
+                LabelGroup1.Caption + ' itens escolares serão doados a uma escola pública.'
               );
 
               if FormChooseActor.ShowModal = 1 then
@@ -1128,7 +1147,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor.ShowPoints(
           'A tarefa terminou, obrigado por sua participação!'+LineEnding+
           'Você produziu ' + Pts + ' fichas e ' +
-          LabelGroup.Caption + ' itens escolares serão doados a uma escola pública.');
+          LabelGroup1.Caption + ' itens escolares serão doados a uma escola pública.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
 
