@@ -89,7 +89,7 @@ begin
   Result.A := StrToIntDef(ExtractDelimited(1,S,[',']),0);
   Result.B := StrToIntDef(ExtractDelimited(2,S,[',']),0);
   Result.G1 := StrToIntDef(ExtractDelimited(3,S,[',']),0);
-  Result.G2 := StrToIntDef(ExtractDelimited(3,S,[',']),0);
+  Result.G2 := StrToIntDef(ExtractDelimited(4,S,[',']),0);
 end;
 
 
