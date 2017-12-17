@@ -56,8 +56,8 @@ resourcestring
   KEY_POINTS_ONSTART_A = 'Pontos.Somar_ao_iniciar_condição.A';
   KEY_POINTS_ONSTART_B = 'Pontos.Somar_ao_iniciar_condição.B';
   KEY_POINTS_ONSTART_I = 'Pontos.Somar_ao_iniciar_condição.I';
-  KEY_POINTS_ONSTART_G1 = 'Pontos.Somar_ao_iniciar_condição.G1';
-  KEY_POINTS_ONSTART_G2 = 'Pontos.Somar_ao_iniciar_condição.G2';
+  KEY_POINTS_ONSTART_G1 = 'Pontos.Somar_ao_iniciar_condição.C1';
+  KEY_POINTS_ONSTART_G2 = 'Pontos.Somar_ao_iniciar_condição.C2';
 
   KEY_CYCLES_VALUE = 'Ciclos.MudançaDeGeração';
   KEY_CYCLES_COUNT = 'Ciclos.AoRecomeço';

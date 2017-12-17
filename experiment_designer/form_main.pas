@@ -69,8 +69,9 @@ type
     GroupBox1: TGroupBox;
     LabelPA: TLabel;
     LabelPB: TLabel;
+    LabelCult2: TLabel;
     LabelPI: TLabel;
-    LabelPG: TLabel;
+    LabelCult1: TLabel;
     LabelCsq10: TLabel;
     LabelCsq3: TLabel;
     LabelCsq5: TLabel;
@@ -120,8 +121,9 @@ type
     SpinEditCyclesValue: TSpinEdit;
     SpinEditOnConditionBeginA: TSpinEdit;
     SpinEditOnConditionBeginB: TSpinEdit;
+    SpinEditOnConditionBeginG2: TSpinEdit;
     SpinEditOnConditionBeginI: TSpinEdit;
-    SpinEditOnConditionBeginG: TSpinEdit;
+    SpinEditOnConditionBeginG1: TSpinEdit;
     SpinEditTurnValue: TSpinEdit;
     TabSheetContingencies: TTabSheet;
     TabSheetConditions: TTabSheet;
@@ -594,8 +596,11 @@ begin
           if TSpinEdit(Sender) = SpinEditOnConditionBeginI then
             WriteInteger(LS, KEY_POINTS_ONSTART_I, SpinEditOnConditionBeginI.Value);
 
-          if TSpinEdit(Sender) = SpinEditOnConditionBeginG then
-            WriteInteger(LS, KEY_POINTS_ONSTART_G, SpinEditOnConditionBeginG.Value);
+          if TSpinEdit(Sender) = SpinEditOnConditionBeginG1 then
+            WriteInteger(LS, KEY_POINTS_ONSTART_G1, SpinEditOnConditionBeginG1.Value);
+
+          if TSpinEdit(Sender) = SpinEditOnConditionBeginG2 then
+            WriteInteger(LS, KEY_POINTS_ONSTART_G2, SpinEditOnConditionBeginG2.Value);
         end;
 end;
 
@@ -895,12 +900,12 @@ begin
       begin
         if gscA in CS then CBPointsType.ItemIndex := 0;
         if gscB in CS then CBPointsType.ItemIndex := 1;
-        if gscG in CS then CBPointsType.ItemIndex := 2;
+        if gscG1 in CS then CBPointsType.ItemIndex := 2;
       end;
     1: { I }
       begin
         if gscI in CS then CBPointsType.ItemIndex := 0;
-        if gscG in CS then CBPointsType.ItemIndex := 1;
+        if gscG1 in CS then CBPointsType.ItemIndex := 1;
       end;
   end;
 
@@ -1110,7 +1115,8 @@ begin
       WriteInteger(ASection, KEY_POINTS_ONSTART_A,SpinEditOnConditionBeginA.Value);
       WriteInteger(ASection, KEY_POINTS_ONSTART_B,SpinEditOnConditionBeginB.Value);
       WriteInteger(ASection, KEY_POINTS_ONSTART_I,SpinEditOnConditionBeginI.Value);
-      WriteInteger(ASection, KEY_POINTS_ONSTART_G,SpinEditOnConditionBeginG.Value);
+      WriteInteger(ASection, KEY_POINTS_ONSTART_G1,SpinEditOnConditionBeginG1.Value);
+      WriteInteger(ASection, KEY_POINTS_ONSTART_G2,SpinEditOnConditionBeginG2.Value);
       WriteInteger(ASection, KEY_CYCLES_VALUE, SpinEditCyclesValue.Value);
       WriteString(ASection, KEY_PROMPT_MESSAGE, EditQuestion.Text);
       WriteString(ASection, KEY_PROMPT_STYLE, GetPromptQuestionStringFromCGQuestion);
@@ -1245,12 +1251,12 @@ begin
       case CBPointsType.ItemIndex of
         0 {'Individual A'} : CS += [gscA];
         1 {'Individual B'} : CS += [gscB];
-        2 {'Para o Grupo'} : CS += [gscG];
+        2 {'Para o Grupo'} : CS += [gscG1];
       end;
     1: { I }
       case CBPointsType.ItemIndex of
         0 {'Individual'} : CS += [gscI];
-        1 {'Para o Grupo'} : CS += [gscG];
+        1 {'Para o Grupo'} : CS += [gscG1];
       end;
   end;
 
@@ -1361,7 +1367,8 @@ begin
       SpinEditOnConditionBeginA.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_A, 0);
       SpinEditOnConditionBeginB.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_B, 0);
       SpinEditOnConditionBeginI.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_I, 0);
-      SpinEditOnConditionBeginG.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_G, 0);
+      SpinEditOnConditionBeginG1.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_G1, 0);
+      SpinEditOnConditionBeginG2.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_G2, 0);
 
       SetRGEndCriteriaStyle(ReadString(ASection, KEY_ENDCRITERIA, 'O QUE OCORRER PRIMEIRO'));
       SpinEditEndCriteriaAbsCycles.Value := ReadInteger(ASection, KEY_ENDCRITERIA_CYCLES, 20);
