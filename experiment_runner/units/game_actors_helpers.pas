@@ -16,12 +16,20 @@ interface
 uses
   Classes, SysUtils, Graphics, StdCtrls, game_actors;
 
+type
+  TLabelFormat = (lafNone, lafInteger, lafRealMoney);
+
 function DeduceNicname(S : string; P : TPlayer) : string;
 function GetColorFromCode(ACode : TGameColor) : TColor;
 function GetMessagesFromPromptStyle(APromptStyle : TPromptStyle;
   AContingencies : TContingencies) : TStringList;
 function FirstDelimitedString(S : string):string;
-procedure IncLabel(ALabel : TLabel; AValue:integer=0);
+function IntToRealMoney(AValue : integer) : string;
+procedure IncLabel(ALabel: TLabel; ACounter: integer; AValue:integer;
+  AFormat: TLabelFormat);
+
+var
+  Multiplier : Extended = 0.01;
 
 const
 
@@ -274,16 +282,26 @@ begin
   Result := ExtractDelimited(1,S,['#'])
 end;
 
-procedure IncLabel(ALabel: TLabel; AValue:integer);
-var
-  C : integer;
+function IntToRealMoney(AValue: integer): string;
 begin
-  C := StrToInt(ALabel.Caption);
-  C += AValue;
-  if C > 0 then
-    ALabel.Caption := IntToStr(C)
-  else
-    ALabel.Caption := '0';
+  Result := 'R$ '+Format('%f',[AValue*Multiplier]);
+end;
+
+procedure IncLabel(ALabel: TLabel; ACounter: integer;
+  AValue:integer; AFormat: TLabelFormat);
+var
+  S : string = '';
+begin
+  Inc(ACounter, AValue);
+  case AFormat of
+    lafNone : { do nothing };
+
+    lafInteger :
+      ALabel.Caption := IntToStr(ACounter);
+
+    lafRealMoney :
+      ALabel.Caption := IntToRealMoney(ACounter);
+  end;
 end;
 
 end.

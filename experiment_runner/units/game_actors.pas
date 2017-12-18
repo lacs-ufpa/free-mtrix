@@ -161,8 +161,10 @@ type
      function GenerateMessage(ForGroup: Boolean):string;
      procedure Clean; virtual;
      procedure PresentMessage(AControl : TWinControl);
-     procedure PresentPoints(A, B, I, G : TLabel);
-     procedure PresentPoints(APlayerBox: TPlayerBox; G: TLabel); overload;
+     procedure PresentPoints(ALabelA, ALabelB, ALabelI, ALabelG : TLabel;
+       ACounterA, ACounterB, ACounterI, ACounterG : integer);
+     procedure PresentPoints(APlayer: TPlayer; APlayerBox: TPlayerBox;
+       ACounterG: integer; ALabelG: TLabel); overload;
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
      property Prepend : string read FPrepend;
      property AppendiceLossSingular : string read FAppendiceLossSingular;
@@ -711,6 +713,7 @@ constructor TConsequence.Create(AOwner: TComponent; ACsqString, APrepend,
   AAppendiceEarnSingular, AAppendiceEarnPlural, AAppendiceZero: string);
 var
   LP : string;
+  LGamePointFormat : TGamePointFormat;
 begin
   inherited Create(AOwner);
 
@@ -727,11 +730,18 @@ begin
   // extract game point string
   LP := ExtractDelimited(1,ACsqString,['|']);
 
-  // [value,variation]
-  FP := TGamePoint.Create(AOwner,[StrToInt(ExtractDelimited(1,LP,[','])),StrToInt(ExtractDelimited(2,LP,[',']))]);
-
-  // consequesen style string
+  // consequence style string
   FStyle := GetConsequenceStyleFromString(ExtractDelimited(2,ACsqString,['|']));
+
+  if (gscA in FStyle) or (gscB in FStyle) then
+    LGamePointFormat := gpfRealMoney
+  else
+    LGamePointFormat := gpfInteger;
+
+  // [value,variation]
+  FP := TGamePoint.Create(AOwner,
+    [StrToInt(ExtractDelimited(1,LP,[','])),StrToInt(ExtractDelimited(2,LP,[',']))],
+    LGamePointFormat);
 
   FMessage := TPopupNotifier.Create(AOwner);
   FConsequenceByPlayerID := TStringList.Create;
@@ -739,10 +749,17 @@ end;
 
 constructor TConsequence.Create(AOwner: TComponent; AP: integer;
   AStyle:TConsequenceStyle; AMessage: array of string);
+var
+  LGamePointFormat : TGamePointFormat;
 begin
   inherited Create(AOwner);
-  FP := TGamePoint.Create(AOwner,AP);
   FStyle:=AStyle;
+  if (gscA in FStyle) or (gscB in FStyle) then
+    LGamePointFormat := gpfRealMoney
+  else
+    LGamePointFormat := gpfInteger;
+  FP := TGamePoint.Create(AOwner, AP, LGamePointFormat);
+
   FPrepend:=AMessage[0];
   FPrependLoss:=AMessage[1];
   FAppendiceLossSingular:=AMessage[2];
@@ -757,10 +774,17 @@ end;
 
 constructor TConsequence.Create(AOwner: TComponent;
   AConsequenceString: string);
+var
+  LGamePointFormat : TGamePointFormat;
 begin
   inherited Create(AOwner);
-  FP := TGamePoint.Create(AOwner,ExtractDelimited(1,AConsequenceString,['|']));
   FStyle:=GetConsequenceStyleFromString(ExtractDelimited(2,AConsequenceString,['|']));
+
+  if (gscA in FStyle) or (gscB in FStyle) then
+    LGamePointFormat := gpfRealMoney
+  else
+    LGamePointFormat := gpfInteger;
+  FP := TGamePoint.Create(AOwner,ExtractDelimited(1,AConsequenceString,['|']), LGamePointFormat);
   FPrepend:=ExtractDelimited(3,AConsequenceString,['|']);
   FPrependLoss:=ExtractDelimited(4,AConsequenceString,['|']);
   FAppendiceLossSingular:=ExtractDelimited(5,AConsequenceString,['|']);
@@ -834,30 +858,52 @@ begin
   FTimer.Enabled:=True;
 end;
 
-procedure TConsequence.PresentPoints(A, B, I, G : TLabel); // [player_points]
+
+// for players
+procedure TConsequence.PresentPoints(ALabelA, ALabelB, ALabelI, ALabelG : TLabel;
+  ACounterA, ACounterB, ACounterI, ACounterG : integer); // [player_points]
 begin
   //is gscPoints in FStyle then just in case...
   if gscI in FStyle then
-    IncLabel(I,FP.ResultAsInteger);
+    IncLabel(ALabelI, ACounterI, FP.ResultAsInteger, lafInteger);
 
   if gscA in FStyle then
-    IncLabel(A,FP.ResultAsInteger);
+    IncLabel(ALabelA, ACounterA, FP.ResultAsInteger, lafRealMoney);
 
   if gscB in FStyle then
-    IncLabel(B,FP.ResultAsInteger);
+    IncLabel(ALabelB, ACounterB, FP.ResultAsInteger, lafRealMoney);
 
   if gscG in FStyle then
-    IncLabel(G,FP.ResultAsInteger);
+    IncLabel(ALabelG, ACounterG, FP.ResultAsInteger, lafInteger);
 end;
 
-procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G: TLabel); // [player_points]
+// for admins
+procedure TConsequence.PresentPoints(APlayer: TPlayer; APlayerBox: TPlayerBox;
+  ACounterG: integer; ALabelG: TLabel);
+var
+  LFakeCounter : integer = 0;
 begin
-  if gscG in FStyle then
-    IncLabel(G,FP.ResultAsInteger);
+  if Assigned(APlayerBox) then
+  begin
+    if gscI in FStyle then
+      IncLabel(APlayerBox.LabelPointsCount,
+        APlayer.Points.A, FP.ResultAsInteger, lafInteger);
 
-  if (gscI in FStyle) or (gscA in FStyle) or (gscB in FStyle) then
-    if Assigned(APlayerBox) then
-      IncLabel(APlayerBox.LabelPointsCount,FP.ResultAsInteger);
+    if (gscA in FStyle) or (gscB in FStyle) then
+    begin
+      if gscA in FStyle then
+        Inc(APlayer.Points.A, FP.ResultAsInteger);
+
+      if gscB in FStyle then
+        Inc(APlayer.Points.B, FP.ResultAsInteger);
+
+      IncLabel(APlayerBox.LabelPointsCount, LFakeCounter,
+        APlayer.Points.A+APlayer.Points.B, lafRealMoney);
+    end;
+  end;
+
+  if gscG in FStyle then
+    IncLabel(ALabelG, ACounterG, FP.ResultAsInteger, lafInteger);
 end;
 
 function TConsequence.GetShouldPublishMessage: Boolean; // for players only

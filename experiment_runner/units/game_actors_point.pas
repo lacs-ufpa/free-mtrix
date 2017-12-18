@@ -20,8 +20,11 @@ type
 
   { TGamePoint }
 
+  TGamePointFormat = (gpfInteger, gpfRealMoney);
+
   TGamePoint = class(TComponent)
   private
+    FFormat : TGamePointFormat;
     FResult: integer;
     FValue,
     FVariation : integer;
@@ -29,9 +32,9 @@ type
     function GetResultAsString: string;
     function GetValue: integer;
   public
-    constructor Create(AOwner:TComponent;AValue : integer);overload;
-    constructor Create(AOwner:TComponent;AValue : array of integer); overload;
-    constructor Create(AOwner:TComponent;AResult : string); overload;
+    constructor Create(AOwner:TComponent;AValue : integer; AFormat : TGamePointFormat);overload;
+    constructor Create(AOwner:TComponent;AValue : array of integer; AFormat : TGamePointFormat); overload;
+    constructor Create(AOwner:TComponent;AResult : string; AFormat : TGamePointFormat); overload;
     function PointMessage(APrepend, APrependLoss, AAppendiceLossSingular,AAppendiceLossPlural,
       APrependEarn,AAppendiceEarnSingular,AAppendiceEarnPlural,AAppendiceZero: string; IsGroupPoint: Boolean) : string;
     property ValueWithVariation : integer read GetValue write FValue;
@@ -46,7 +49,7 @@ type
 
 implementation
 
-uses strutils;
+uses game_actors_helpers, strutils;
 
 //operator:=(I: integer):TGamePoint;
 //begin
@@ -74,29 +77,38 @@ end;
 
 function TGamePoint.GetResultAsString: string;
 begin
-  Result := IntToStr(abs(FResult));
+  case FFormat of
+    gpfInteger : Result := IntToStr(abs(FResult));
+    gpfRealMoney : Result := IntToRealMoney(abs(FResult));
+  end;
 end;
 
-constructor TGamePoint.Create(AOwner: TComponent; AValue: integer);
+constructor TGamePoint.Create(AOwner: TComponent; AValue: integer;
+  AFormat: TGamePointFormat);
 begin
   inherited Create(AOwner);
   FValue := AValue;
   FVariation:=0;
+  FFormat:=AFormat;
 end;
 
-constructor TGamePoint.Create(AOwner: TComponent; AValue: array of integer);
+constructor TGamePoint.Create(AOwner: TComponent; AValue: array of integer;
+  AFormat: TGamePointFormat);
 begin
   inherited Create(AOwner);
   FValue := AValue[0];
   FVariation := AValue[1];
+  FFormat:=AFormat;
 end;
 
-constructor TGamePoint.Create(AOwner: TComponent; AResult: string);
+constructor TGamePoint.Create(AOwner: TComponent; AResult: string;
+  AFormat: TGamePointFormat);
 begin
   inherited Create(AOwner);
   FValue := 0;//does not matter here, this creation method is called by a player, result is sent by the admin
   FVariation := 0;
   FResult := StrToInt(AResult);
+  FFormat:=AFormat;
 end;
 
 function TGamePoint.PointMessage(APrepend,

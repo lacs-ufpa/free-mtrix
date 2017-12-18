@@ -29,6 +29,9 @@ type
 
   TGameControl = class(TComponent)
   private
+    FA, // used for players only
+    FB, // used for players only
+    FG : integer; // used for players and admins
     FID: string;
     FActor : TGameActor;
     FZMQActor : TZMQActor;
@@ -593,16 +596,22 @@ begin
   case FActor of
     gaPlayer:
       if ForGroup then
-        LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,LabelGroup)
+        LConsequence.PresentPoints(
+          LabelPointA,LabelPointB,LabelPointI,LabelGroup,
+          FA, FB, FA, FG)
       else
         if Self.ID = AID then
-          LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,LabelGroup);
-
+          LConsequence.PresentPoints(
+            LabelPointA,LabelPointB,LabelPointI,LabelGroup,
+            FA, FB, FA, FG);
     gaAdmin:
       begin
-        // player box is ignored for group points
-        // LabelGroupCount is ignored for player points
-        LConsequence.PresentPoints(GetPlayerBox(AID),LabelGroup);
+        LConsequence.PresentPoints(
+          // player box is ignored for group points
+          FExperiment.PlayerFromID[AID], GetPlayerBox(AID),
+
+          // LabelGroupCount is ignored for player points
+          FG, LabelGroup);
       end;
   end;
 
@@ -637,7 +646,7 @@ begin
       A := StrToInt(ExtractDelimited(1,S,['|']));
       G := StrToInt(ExtractDelimited(2,S,['|']));
     end;
-  IncLabel(LabelGroup,G);
+  IncLabel(LabelGroup, FG, G, lafInteger);
 
   case FActor of
     gaPlayer:
@@ -658,13 +667,13 @@ begin
             begin
               //Inc(P.Points.A, A);
               //Inc(P.Points.B, B);
-              IncLabel(LabelPointA,A);
-              IncLabel(LabelPointB,B);
+              IncLabel(LabelPointA, FA, A, lafRealMoney);
+              IncLabel(LabelPointB, FB, B, lafRealMoney);
             end
           else
             begin
               //Inc(P.Points.A, A);
-              IncLabel(LabelPointA,A);
+              IncLabel(LabelPointA, FA, A, lafInteger);
             end;
         //FExperiment.PlayerFromID[ID] := P;
       end;
@@ -676,13 +685,15 @@ begin
             PB := GetPlayerBox(P.ID);
             LNewA := A;
             LNewB := B;
+            FExperiment.PlayerFromID[P.ID].Points.A += LNewA;
+            FExperiment.PlayerFromID[P.ID].Points.B += LNewB;
             if FExperiment.ABPoints then
               begin
                 LNewA += LNewB;
-                IncLabel(PB.LabelPointsCount,LNewA);
+                IncLabel(PB.LabelPointsCount, 0, LNewA, lafRealMoney);
               end
             else
-              IncLabel(PB.LabelPointsCount,LNewA);
+              IncLabel(PB.LabelPointsCount, 0, LNewA, lafInteger);
           end;
   end;
 end;
@@ -708,20 +719,26 @@ begin
       if Self.ID = AID then
         if FExperiment.ABPoints then
           begin
-            IncLabel(LabelPointA,A);
-            IncLabel(LabelPointB,B);
+            IncLabel(LabelPointA, FA, A, lafRealMoney);
+            IncLabel(LabelPointB, FB, B, lafRealMoney);
           end
         else
-          IncLabel(LabelPointA,A);
+          IncLabel(LabelPointA, FA, A, lafInteger);
 
     gaAdmin:
       begin
         PB := GetPlayerBox(AID);
         LNewA := A;
         LNewB := B;
+        FExperiment.PlayerFromID[AID].Points.A += LNewA;
+        FExperiment.PlayerFromID[AID].Points.B += LNewB;
         if FExperiment.ABPoints then
-          LNewA += LNewB;
-        IncLAbel(PB.LabelPointsCount,LNewA);
+          begin
+            LNewA += LNewB;
+            IncLAbel(PB.LabelPointsCount, 0, LNewA, lafRealMoney);
+          end
+        else
+          IncLAbel(PB.LabelPointsCount, 0, LNewA, lafInteger);
       end;
   end;
 end;
@@ -753,6 +770,9 @@ end;
 constructor TGameControl.Create(AOwner: TComponent;AppPath:string);
 begin
   inherited Create(AOwner);
+  FA := 0;
+  FB := 0;
+  FG := 0;
   FZMQActor := TZMQActor(AOwner);
   FID := FZMQActor.ID;
   FZMQActor.OnMessageReceived:=@ReceiveMessage;
@@ -821,15 +841,12 @@ begin
     with FormMatrixGame do
       begin
         // a b points
-        LabelIndA.Visible := FExperiment.ABPoints;
-        LabelIndB.Visible := FExperiment.ABPoints;
         LabelIndACount.Visible := FExperiment.ABPoints;
         LabelIndBCount.Visible := FExperiment.ABPoints;
         ImageIndA.Visible := FExperiment.ABPoints;
         ImageIndB.Visible := FExperiment.ABPoints;
 
         // i points
-        LabelInd.Visible := not FExperiment.ABPoints;
         LabelIndCount.Visible := not FExperiment.ABPoints;
         ImageInd.Visible:= not FExperiment.ABPoints;;
       end;

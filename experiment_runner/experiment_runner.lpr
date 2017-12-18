@@ -54,7 +54,10 @@ const
         if Pos(('Participant'), Application.ExeName) > 0 then
           Break;
         F := ApplicationPath+'Participant'+IntToStr(i+1);
+        {$IFDEF LINUX}
         WriteLn(F);
+        {$ENDIF}
+
         if ForceDirectoriesUTF8(F) then // ensure we have always the newer version for tests
           begin
             CopyFile(Application.ExeName,F+PathDelim+ApplicationName,[cffOverwriteFile]);
