@@ -202,6 +202,7 @@ begin
     gcGreen :Result  :=  'VERDE';
     gcDiff :Result  :=  'DIFERENTES';
     gcEqual :Result  :=  'IGUAIS';
+    gcThis  :Result  := 'ESPECIFICAMENTE';
     gcNot : Result := 'EXCETO';
   end;
 end;
@@ -217,6 +218,7 @@ begin
     'M', 'ROXO','MAGENTA', 'VIOLETA' : Result := gcMagenta;
     '!','<>','DIFERENTES', 'DIFFERENT' : Result := gcDiff;
     '=','IGUAIS', 'EQUAL' : Result := gcEqual;
+    'ESPECIFICAMENTE' : Result := gcThis;
     'EXCETO' : Result := gcNot;
   end;
 end;

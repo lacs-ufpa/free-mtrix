@@ -62,7 +62,8 @@ type
   TGameColor = (
     gcNone,
 
-    // For contingencies only. It means 'a participant choosen a color'.
+    // For contingencies it means 'a participant choosen a color'.
+    // For metacontingencies it specifies colors for the 'gcThis' option.
     gcYellow,gcRed,gcGreen,gcBlue,gcMagenta, // 5 colors
 
     // For metacontingencies only. It means 'all choosen rows are different from each other'.
@@ -70,6 +71,9 @@ type
 
     // For metacontingencies only. It means 'all choosen rows are different from each other'.
     gcEqual,
+
+    // For metacontingencies only. It meand 'a participant chose a specified color'.
+    gcThis,
 
     // For metacontingencies only. Has the following meanings:
     // 1) With grDiff:  Everything except different colors.
@@ -603,6 +607,10 @@ const
   //end;
 
   function ColorsResult: Boolean;
+  var
+    LColor : TGameColor;
+    LColorCriteria : TGameColors = [gcBlue, gcGreen, gcMagenta, gcYellow, gcRed];
+    LChosenColors : TGameColors = [];
   begin
     if gcDiff in Criteria.Colors then
       if gcNot in Criteria.Colors then
@@ -615,6 +623,18 @@ const
         Result := ColorRelationExists(LDIFF)
       else
         Result := not ColorRelationExists(LDIFF);
+
+    if gcThis in Criteria.Colors then
+    begin
+      // colors chosen by participants
+      for LColor in Cs do Include(LChosenColors, LColor);
+
+      // colors specified by researchers
+      LColorCriteria := LColorCriteria * Criteria.Colors;
+
+      // result
+      Result := LChosenColors <= LColorCriteria;
+    end;
   end;
 
 begin
