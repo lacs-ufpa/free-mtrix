@@ -29,6 +29,7 @@ type
     BtnRemoveContingency: TButton;
     BtnReorderCond: TButton;
     BtnReorderContingency: TButton;
+    Button1: TButton;
     ButtonPreviewMessage: TButton;
     CGGlobal: TCheckGroup;
     CheckBoxImutableMessage: TCheckBox;
@@ -69,8 +70,9 @@ type
     GroupBox1: TGroupBox;
     LabelPA: TLabel;
     LabelPB: TLabel;
+    LabelPGB: TLabel;
     LabelPI: TLabel;
-    LabelPG: TLabel;
+    LabelPGA: TLabel;
     LabelCsq10: TLabel;
     LabelCsq3: TLabel;
     LabelCsq5: TLabel;
@@ -120,8 +122,9 @@ type
     SpinEditCyclesValue: TSpinEdit;
     SpinEditOnConditionBeginA: TSpinEdit;
     SpinEditOnConditionBeginB: TSpinEdit;
+    SpinEditOnConditionBeginGB: TSpinEdit;
     SpinEditOnConditionBeginI: TSpinEdit;
-    SpinEditOnConditionBeginG: TSpinEdit;
+    SpinEditOnConditionBeginGA: TSpinEdit;
     SpinEditTurnValue: TSpinEdit;
     TabSheetContingencies: TTabSheet;
     TabSheetConditions: TTabSheet;
@@ -133,6 +136,7 @@ type
     procedure BtnRemoveContingencyClick(Sender: TObject);
     procedure BtnReorderCondClick(Sender: TObject);
     procedure BtnReorderContingencyClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
     procedure ButtonPreviewMessageClick(Sender: TObject);
     procedure CGGlobalClick(Sender: TObject);
     procedure CGGlobalItemClick(Sender: TObject; Index: integer);
@@ -208,6 +212,7 @@ type
     procedure UpdateConditionsList;
     procedure UpdateContingencyCombo(ASection: String);
     procedure UpdateContingencyList(ASection: String);
+    procedure LoadDefaultMessageText;
   private
     FLoading : Boolean;
     FPersistentTXTFilename : string;
@@ -437,6 +442,13 @@ begin
             CreateChkBox('ChkNot', 'TUDO EXCETO', GBContingencyColors);
             CreateChkBox('ChkEqual', 'CORES IGUAIS', GBContingencyColors);
             CreateChkBox('ChkDiff', 'CORES DIFERENTES', GBContingencyColors);
+            CreateChkBox('ChkThis', 'CORES ESPECÍFICAS', GBContingencyColors);
+
+            CreateChkBox('ChkY', 'AMARELO', GBContingencyColors);
+            CreateChkBox('ChkR', 'VERMELHO', GBContingencyColors);
+            CreateChkBox('ChkM', 'ROXO', GBContingencyColors);
+            CreateChkBox('ChkB', 'AZUL', GBContingencyColors);
+            CreateChkBox('ChkG', 'VERDE', GBContingencyColors);
             LabelIf.Caption := 'SE OS PARTICIPANTES ESCOLHEREM';
             LC := KEY_METACONTINGENCY;
           end;
@@ -504,7 +516,8 @@ begin
         CBPointsType.Items.Clear;
         CBPointsType.Items.Append('Individual A');
         CBPointsType.Items.Append('Individual B');
-        CBPointsType.Items.Append('Para o Grupo');
+        CBPointsType.Items.Append('Para o Grupo A (Culturante 1)');
+        CBPointsType.Items.Append('Para o Grupo B (Culturante 2)');
         LVisible := True;
         SpinEditOnConditionBeginA.Visible:=LVisible;
         SpinEditOnConditionBeginB.Visible:=LVisible;
@@ -518,7 +531,8 @@ begin
       begin
         CBPointsType.Items.Clear;
         CBPointsType.Items.Append('Individual');
-        CBPointsType.Items.Append('Para o Grupo');
+        CBPointsType.Items.Append('Para o Grupo A (Culturante 1)');
+        CBPointsType.Items.Append('Para o Grupo B (Culturante 2)');
         LVisible := False;
         SpinEditOnConditionBeginA.Visible:=LVisible;
         SpinEditOnConditionBeginB.Visible:=LVisible;
@@ -594,8 +608,11 @@ begin
           if TSpinEdit(Sender) = SpinEditOnConditionBeginI then
             WriteInteger(LS, KEY_POINTS_ONSTART_I, SpinEditOnConditionBeginI.Value);
 
-          if TSpinEdit(Sender) = SpinEditOnConditionBeginG then
-            WriteInteger(LS, KEY_POINTS_ONSTART_G, SpinEditOnConditionBeginG.Value);
+          if TSpinEdit(Sender) = SpinEditOnConditionBeginGA then
+            WriteInteger(LS, KEY_POINTS_ONSTART_G1, SpinEditOnConditionBeginGA.Value);
+
+          if TSpinEdit(Sender) = SpinEditOnConditionBeginGB then
+            WriteInteger(LS, KEY_POINTS_ONSTART_G2, SpinEditOnConditionBeginGB.Value);
         end;
 end;
 
@@ -837,6 +854,7 @@ var
         'ChkEqual': TCheckBox(GBContingencyColors.Components[i]).Checked := gcEqual in GC;
         'ChkDiff': TCheckBox(GBContingencyColors.Components[i]).Checked := gcDiff in GC;
         'ChkNot': TCheckBox(GBContingencyColors.Components[i]).Checked := gcNot in GC;
+        'ChkThis': TCheckBox(GBContingencyColors.Components[i]).Checked := gcThis in GC;
         'ChkY': TCheckBox(GBContingencyColors.Components[i]).Checked := gcYellow in GC;
         'ChkR': TCheckBox(GBContingencyColors.Components[i]).Checked := gcRed in GC;
         'ChkM': TCheckBox(GBContingencyColors.Components[i]).Checked := gcMagenta in GC;
@@ -895,12 +913,14 @@ begin
       begin
         if gscA in CS then CBPointsType.ItemIndex := 0;
         if gscB in CS then CBPointsType.ItemIndex := 1;
-        if gscG in CS then CBPointsType.ItemIndex := 2;
+        if gscG1 in CS then CBPointsType.ItemIndex := 2;
+        if gscG2 in CS then CBPointsType.ItemIndex := 3;
       end;
     1: { I }
       begin
         if gscI in CS then CBPointsType.ItemIndex := 0;
-        if gscG in CS then CBPointsType.ItemIndex := 1;
+        if gscG1 in CS then CBPointsType.ItemIndex := 1;
+        if gscG2 in CS then CBPointsType.ItemIndex := 2;
       end;
   end;
 
@@ -946,6 +966,34 @@ begin
   ReadContingencyNames(ASection,LC,KEY_CONT_NAME,ListBoxContingencies.Items);
   //ListBoxContingencies.Items.Text := S.Text;
   //S.Free;
+end;
+
+procedure TFormDesigner.LoadDefaultMessageText;
+begin
+  case RGBroadcastMessage.ItemIndex of
+    0:
+      begin
+        EditMessPrefix.Text := '$NICNAME';
+        EditMessPrefixLoss.Text := 'perdeu';
+        EditMessSufixLossSingular.Text := 'ficha.';
+        EditMessSufixLossPlural.Text := 'fichas.';
+        EditMessPrefixEarn.Text := 'ganhou';
+        EditMessSufixEarnSingular.Text := 'ficha.';
+        EditMessSufixEarnPlural.Text := 'fichas.';
+        EditMessSufixZero.Text := 'não perdeu nem ganhou fichas.';
+      end;
+    1:
+      begin
+        EditMessPrefix.Text := 'Vocês';
+        EditMessPrefixLoss.Text := 'retiraram';
+        EditMessSufixLossSingular.Text := 'item escolar de uma escola pública.';
+        EditMessSufixLossPlural.Text := 'itens escolares de uma escola pública.';
+        EditMessPrefixEarn.Text := 'doaram';
+        EditMessSufixEarnSingular.Text := 'item escolar a uma escola pública.';
+        EditMessSufixEarnPlural.Text := 'itens escolares a uma escola pública.';
+        EditMessSufixZero.Text := 'não doaram nem retiram itens escolares.';
+      end;
+  end;
 end;
 
 procedure TFormDesigner.UpdateContingencyCombo(ASection: String);
@@ -1110,7 +1158,8 @@ begin
       WriteInteger(ASection, KEY_POINTS_ONSTART_A,SpinEditOnConditionBeginA.Value);
       WriteInteger(ASection, KEY_POINTS_ONSTART_B,SpinEditOnConditionBeginB.Value);
       WriteInteger(ASection, KEY_POINTS_ONSTART_I,SpinEditOnConditionBeginI.Value);
-      WriteInteger(ASection, KEY_POINTS_ONSTART_G,SpinEditOnConditionBeginG.Value);
+      WriteInteger(ASection, KEY_POINTS_ONSTART_G1,SpinEditOnConditionBeginGA.Value);
+      WriteInteger(ASection, KEY_POINTS_ONSTART_G2,SpinEditOnConditionBeginGB.Value);
       WriteInteger(ASection, KEY_CYCLES_VALUE, SpinEditCyclesValue.Value);
       WriteString(ASection, KEY_PROMPT_MESSAGE, EditQuestion.Text);
       WriteString(ASection, KEY_PROMPT_STYLE, GetPromptQuestionStringFromCGQuestion);
@@ -1245,12 +1294,14 @@ begin
       case CBPointsType.ItemIndex of
         0 {'Individual A'} : CS += [gscA];
         1 {'Individual B'} : CS += [gscB];
-        2 {'Para o Grupo'} : CS += [gscG];
+        2 {'Para o Grupo A'} : CS += [gscG1];
+        3 {'Para o Grupo B'} : CS += [gscG2];
       end;
     1: { I }
       case CBPointsType.ItemIndex of
         0 {'Individual'} : CS += [gscI];
-        1 {'Para o Grupo'} : CS += [gscG];
+        1 {'Para o Grupo A'} : CS += [gscG1];
+        2 {'Para o Grupo B'} : CS += [gscG2];
       end;
   end;
 
@@ -1301,6 +1352,7 @@ var
         'ChkEqual': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcEqual];
         'ChkDiff': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcDiff];
         'ChkNot': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcNot];
+        'ChkThis': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcThis];
         'ChkY': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcYellow];
         'ChkR': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcRed];
         'ChkM': if TCheckBox(GBContingencyColors.Components[i]).Checked then Result += [gcMagenta];
@@ -1361,7 +1413,8 @@ begin
       SpinEditOnConditionBeginA.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_A, 0);
       SpinEditOnConditionBeginB.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_B, 0);
       SpinEditOnConditionBeginI.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_I, 0);
-      SpinEditOnConditionBeginG.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_G, 0);
+      SpinEditOnConditionBeginGA.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_G1, 0);
+      SpinEditOnConditionBeginGB.Value := ReadInteger(ASection, KEY_POINTS_ONSTART_G2, 0);
 
       SetRGEndCriteriaStyle(ReadString(ASection, KEY_ENDCRITERIA, 'O QUE OCORRER PRIMEIRO'));
       SpinEditEndCriteriaAbsCycles.Value := ReadInteger(ASection, KEY_ENDCRITERIA_CYCLES, 20);
@@ -1896,6 +1949,11 @@ begin
   ShowMessage('Não implementado.');
 end;
 
+procedure TFormDesigner.Button1Click(Sender: TObject);
+begin
+  LoadDefaultMessageText;
+end;
+
 procedure TFormDesigner.ButtonPreviewMessageClick(Sender: TObject);
 var
   LGamePoint : TGamePoint;
@@ -1991,31 +2049,7 @@ begin
       LabelCsq3.Caption := 'Texto no início da mensagem';
       if not FLoading then
         begin
-          case RGContingencyStyle.ItemIndex of
-            0:
-              begin
-                EditMessPrefix.Text := '$NICNAME';
-                EditMessPrefixLoss.Text := 'perdeu';
-                EditMessSufixLossSingular.Text := 'ficha.';
-                EditMessSufixLossPlural.Text := 'fichas.';
-                EditMessPrefixEarn.Text := 'ganhou';
-                EditMessSufixEarnSingular.Text := 'ficha.';
-                EditMessSufixEarnPlural.Text := 'fichas.';
-                EditMessSufixZero.Text := 'não perdeu nem ganhou fichas.';
-              end;
-            1:
-              begin
-                EditMessPrefix.Text := 'Vocês';
-                EditMessPrefixLoss.Text := 'retiraram';
-                EditMessSufixLossSingular.Text := 'item escolar de uma escola pública.';
-                EditMessSufixLossPlural.Text := 'itens escolares de uma escola pública.';
-                EditMessPrefixEarn.Text := 'doaram';
-                EditMessSufixEarnSingular.Text := 'item escolar a uma escola pública.';
-                EditMessSufixEarnPlural.Text := 'itens escolares a uma escola pública.';
-                EditMessSufixZero.Text := 'não doaram nem retiram itens escolares.';
-              end;
-
-          end;
+          //LoadDefaultMessageText;
           ButtonPreviewMessage.Caption:= 'Ver como a mensagem poderá ser apresentada';
         end;
     end;
@@ -2093,8 +2127,21 @@ end;
 //end;
 
 procedure TFormDesigner.CheckBoxColorsRowsChange(Sender: TObject);
+const
+  LColorBoxesNames : array [0..4] of string
+  = ('ChkY', 'ChkR', 'ChkM', 'ChkB', 'ChkG');
+
 var
   LS, LC : String;
+  function IsColorBoxName(AName : string)  : Boolean;
+  var
+    LName : string;
+  begin
+    Result := True;
+    for LName in LColorBoxesNames do
+      if LName = AName then Exit;
+    Result := False;
+  end;
 
   procedure UncheckBox(ACheckBoxName : string);
   var i : integer;
@@ -2102,6 +2149,14 @@ var
     for i := 0 to TCheckBox(Sender).Owner.ComponentCount -1 do
       if TCheckBox(Sender).Owner.Components[i].Name = ACheckBoxName then
         TCheckBox(TCheckBox(Sender).Owner.Components[i]).Checked := not TCheckBox(Sender).Checked;
+    if ACheckBoxName = 'ChkThis' then
+      begin
+        UncheckBox('ChkY');
+        UncheckBox('ChkR');
+        UncheckBox('ChkM');
+        UncheckBox('ChkB');
+        UncheckBox('ChkG');
+      end;
   end;
 
 begin
@@ -2114,11 +2169,30 @@ begin
 
       if TCheckBox(Sender).Name = 'ChkEqual' then
         if TCheckBox(Sender).Checked then
-          UncheckBox('ChkDiff');
+          begin
+            UncheckBox('ChkDiff');
+            UncheckBox('ChkThis');
+          end;
 
       if TCheckBox(Sender).Name = 'ChkDiff' then
         if TCheckBox(Sender).Checked then
-          UncheckBox('ChkEqual');
+          begin
+            UncheckBox('ChkEqual');
+            UncheckBox('ChkThis');
+          end;
+
+      if TCheckBox(Sender).Name = 'ChkNot' then
+        if TCheckBox(Sender).Checked then
+            UncheckBox('ChkThis');
+
+      if (TCheckBox(Sender).Name = 'ChkThis') or
+         IsColorBoxName(TCheckBox(Sender).Name) then
+        if TCheckBox(Sender).Checked then
+          begin
+            UncheckBox('ChkEqual');
+            UncheckBox('ChkDiff');
+            UncheckBox('ChkNot');
+          end;
 
       if TCheckBox(Sender).Name = 'ChkEven' then
         if TCheckBox(Sender).Checked then
