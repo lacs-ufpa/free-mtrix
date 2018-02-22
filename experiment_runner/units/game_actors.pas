@@ -162,9 +162,9 @@ type
      procedure Clean; virtual;
      procedure PresentMessage(AControl : TWinControl);
      procedure PresentPoints(ALabelA, ALabelB, ALabelI, ALabelG : TLabel;
-       ACounterA, ACounterB, ACounterI, ACounterG : integer);
+       var ACounterA, ACounterB, ACounterI, ACounterG : integer);
      procedure PresentPoints(APlayer: TPlayer; APlayerBox: TPlayerBox;
-       ACounterG: integer; ALabelG: TLabel); overload;
+       var ACounterG: integer; ALabelG: TLabel); overload;
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
      property Prepend : string read FPrepend;
      property AppendiceLossSingular : string read FAppendiceLossSingular;
@@ -861,7 +861,7 @@ end;
 
 // for players
 procedure TConsequence.PresentPoints(ALabelA, ALabelB, ALabelI, ALabelG : TLabel;
-  ACounterA, ACounterB, ACounterI, ACounterG : integer); // [player_points]
+  var ACounterA, ACounterB, ACounterI, ACounterG : integer); // [player_points]
 begin
   //is gscPoints in FStyle then just in case...
   if gscI in FStyle then
@@ -879,7 +879,7 @@ end;
 
 // for admins
 procedure TConsequence.PresentPoints(APlayer: TPlayer; APlayerBox: TPlayerBox;
-  ACounterG: integer; ALabelG: TLabel);
+  var ACounterG: integer; ALabelG: TLabel);
 var
   LFakeCounter : integer = 0;
 begin

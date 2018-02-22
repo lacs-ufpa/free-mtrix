@@ -634,6 +634,7 @@ var
   P : TPlayer;
   PB : TPlayerBox;
   C : TCondition;
+  fakecounter : integer;
 begin
   if FExperiment.ABPoints then
     begin
@@ -690,10 +691,10 @@ begin
             if FExperiment.ABPoints then
               begin
                 LNewA += LNewB;
-                IncLabel(PB.LabelPointsCount, 0, LNewA, lafRealMoney);
+                IncLabel(PB.LabelPointsCount, fakecounter, LNewA, lafRealMoney);
               end
             else
-              IncLabel(PB.LabelPointsCount, 0, LNewA, lafInteger);
+              IncLabel(PB.LabelPointsCount, fakecounter, LNewA, lafInteger);
           end;
   end;
 end;
@@ -705,6 +706,7 @@ var
   LNewA : integer = 0;
   LNewB : integer = 0;
   PB : TPlayerBox;
+  fakecounter : integer;
 begin
   with FExperiment.CurrentCondition.Points do
     begin
@@ -735,10 +737,10 @@ begin
         if FExperiment.ABPoints then
           begin
             LNewA += LNewB;
-            IncLAbel(PB.LabelPointsCount, 0, LNewA, lafRealMoney);
+            IncLAbel(PB.LabelPointsCount, fakecounter, LNewA, lafRealMoney);
           end
         else
-          IncLAbel(PB.LabelPointsCount, 0, LNewA, lafInteger);
+          IncLAbel(PB.LabelPointsCount, fakecounter, LNewA, lafInteger);
       end;
   end;
 end;
@@ -856,7 +858,7 @@ end;
 procedure TGameControl.SendRequest(ARequest: string;
   AInputData: array of string);
 var
-  M : array of string;
+  M : array of UTF8String;
 
   procedure SetM(A : array of string);
   var i : integer;
@@ -900,7 +902,7 @@ end;
 procedure TGameControl.SendMessage(AMessage: string;
   AInputData: array of string);
 var
-  M : array of string;
+  M : array of UTF8String;
 
   procedure SetM(A : array of string);
   var i : integer;
@@ -1083,13 +1085,13 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             begin
               if FExperiment.ABPoints then
                 begin
-                  Pts := IntToStr(StrToInt(LabelPointA.Caption)+StrToInt(LabelPointB.Caption));
+                  Pts := IntToRealMoney(FA+FB);
                   LabelPointA.Caption := '0';
                   LabelPointB.Caption := '0';
                 end
               else
                 begin
-                  Pts := LabelPointI.Caption;
+                  Pts := IntToRealMoney(FA);
                   LabelPointI.Caption := '0';
                 end;
 
@@ -1099,8 +1101,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor.Style := K_LEFT;
               FormChooseActor.ShowPoints(
                 'A tarefa terminou, obrigado por sua participação!'+LineEnding+
-                'Você produziu ' + Pts + ' fichas e ' +
-                LabelGroup.Caption + ' itens escolares serão doados a uma escola pública.'
+                'Você ganhou ' + Pts + ' e doou' +
+                LabelGroup.Caption + ' itens escolares a uma escola pública.'
               );
 
               if FormChooseActor.ShowModal = 1 then
@@ -1138,14 +1140,14 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor.Style := K_END;
 
           if FExperiment.ABPoints then
-            Pts := IntToStr(StrToInt(LabelPointA.Caption)+StrToInt(LabelPointB.Caption))
+            Pts := IntToRealMoney(FA+FB)
           else
-            Pts := LabelPointI.Caption;
+            Pts := IntToRealMoney(FA);
 
           FormChooseActor.ShowPoints(
           'A tarefa terminou, obrigado por sua participação!'+LineEnding+
-          'Você produziu ' + Pts + ' fichas e ' +
-          LabelGroup.Caption + ' itens escolares serão doados a uma escola pública.');
+          'Você ganhou ' + Pts + ' e doou' +
+          LabelGroup.Caption + ' itens escolares a uma escola pública.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
 
@@ -1454,7 +1456,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   procedure ValidateQuestionResponse;
   var
     P : TPlayer;
-    M : array of string;
+    M : array of UTF8String;
     i : integer;
     LPromptConsequences : TStringList;
   begin

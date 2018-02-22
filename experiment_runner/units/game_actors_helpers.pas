@@ -25,7 +25,7 @@ function GetMessagesFromPromptStyle(APromptStyle : TPromptStyle;
   AContingencies : TContingencies) : TStringList;
 function FirstDelimitedString(S : string):string;
 function IntToRealMoney(AValue : integer) : string;
-procedure IncLabel(ALabel: TLabel; ACounter: integer; AValue:integer;
+procedure IncLabel(ALabel: TLabel; var ACounter: integer; AValue:integer;
   AFormat: TLabelFormat);
 
 var
@@ -287,7 +287,7 @@ begin
   Result := 'R$ '+Format('%f',[AValue*Multiplier]);
 end;
 
-procedure IncLabel(ALabel: TLabel; ACounter: integer;
+procedure IncLabel(ALabel: TLabel; var ACounter: integer;
   AValue:integer; AFormat: TLabelFormat);
 var
   S : string = '';

@@ -1070,14 +1070,17 @@ begin
 end;
 
 function TExperiment.ShouldAskQuestion: string;
+var
+  i : integer;
 begin
-  if Assigned(CurrentCondition.Prompt) and
-    ContingencyFired(CurrentCondition.Prompt.TargetMetacontingencyName) then
-    Result := CurrentCondition.Prompt.Question
+  i := CurrentConditionI;
+  if Assigned(FConditions[i].Prompt) and
+    ContingencyFired(FConditions[i].Prompt.TargetMetacontingencyName) then
+    Result := FConditions[i].Prompt.Question
   else
     begin
       Result := #32;
-      if Assigned(CurrentCondition.Prompt) then
+      if Assigned(FConditions[i].Prompt) then
         WriteReportRowPrompt; //TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
       Clean;
     end;
@@ -1177,8 +1180,8 @@ begin
   for i := 0 to ContingenciesCount[c]-1 do
     Contingency[c,i].Clean;
 
-  if Assigned(Condition[c].Prompt) then  // TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
-    Condition[c].Prompt.Clean;
+  if FConditions[c].Prompt <> nil then  // TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
+    FConditions[c].Prompt.Clean;
 
   FRegData.CloseAndOpen;
 end;

@@ -20,11 +20,11 @@ type
 
   { TAnnouncerStartEvent }
 
-  TAnnouncerStartEvent = procedure (AMessage : array of string) of object;
+  TAnnouncerStartEvent = procedure (AMessage : array of UTF8String) of object;
 
   { TAnnoucerMessages }
 
-  TAnnoucerMessages = array of array of string;
+  TAnnoucerMessages = array of array of UTF8String;
 
   { TIntervalarAnnouncer }
 
@@ -96,7 +96,7 @@ begin
 end;
 
 procedure TIntervalarAnnouncer.StartTimer(Sender: TObject);
-var M : array of string;
+var M : array of UTF8String;
 begin
   if Length(FMessages) > 0 then
     begin

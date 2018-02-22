@@ -9,7 +9,6 @@
       <Title Value="experiment_runner"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
-      <Icon Value="0"/>
     </General>
     <i18n>
       <EnableI18N LFM="False"/>
@@ -32,7 +31,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
             <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
@@ -94,12 +93,15 @@
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
             <Libraries Value="../dependencies/libzmq-builds/windows/32"/>
-            <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
+            <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
           <CodeGeneration>
             <TargetCPU Value="i386"/>
             <TargetOS Value="win32"/>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
           </CodeGeneration>
           <Linking>
             <Debugging>
@@ -122,10 +124,22 @@
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
             <Libraries Value="../dependencies/libzmq-builds/windows/64"/>
-            <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
+            <OtherUnitFiles Value="units;../dependencies/delphizmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <IncludeAssertionCode Value="True"/>
+            </SyntaxOptions>
+          </Parsing>
           <CodeGeneration>
+            <Checks>
+              <IOChecks Value="True"/>
+              <RangeChecks Value="True"/>
+              <OverflowChecks Value="True"/>
+              <StackChecks Value="True"/>
+            </Checks>
+            <VerifyObjMethodCallValidity Value="True"/>
             <TargetCPU Value="x86_64"/>
             <TargetOS Value="win64"/>
           </CodeGeneration>
@@ -264,7 +278,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
+      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
       <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
     </SearchPaths>

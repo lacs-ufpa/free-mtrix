@@ -35,8 +35,8 @@ type
   public
     constructor Create(AOwner : TComponent; AID : string); virtual; overload;
     procedure Start; virtual;
-    procedure SendMessage(AMessage : array of string);virtual;
-    procedure Request(ARequest : array of string);virtual;
+    procedure SendMessage(AMessage : array of UTF8String);virtual;
+    procedure Request(ARequest : array of UTF8String);virtual;
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
     property OnRequestReceived : TReqRecvProc read FOnRequestReceived write FOnRequestReceived;
     property OnReplyReceived : TMessRecvProc read FOnReplyReceived write FOnReplyReceived;
@@ -53,8 +53,8 @@ type
     constructor Create(AOwner : TComponent; AID : string); override;
     destructor Destroy; override;
     procedure Start; override;
-    procedure SendMessage(AMessage : array of string); override;
-    procedure Request(ARequest : array of string);override;
+    procedure SendMessage(AMessage : array of UTF8String); override;
+    procedure Request(ARequest : array of UTF8String);override;
   end;
 
   { TZMQAdmin }
@@ -66,8 +66,8 @@ type
     constructor Create(AOwner : TComponent; AID : string); override;
     destructor Destroy; override;
     procedure Start; override;
-    procedure SendMessage(AMessage: array of string); override;
-    procedure Request(ARequest: array of string); override;
+    procedure SendMessage(AMessage: array of UTF8String); override;
+    procedure Request(ARequest: array of UTF8String); override;
   end;
 
   { TZMQWatcher }
@@ -107,12 +107,12 @@ begin
   inherited Destroy;
 end;
 
-procedure TZMQAdmin.SendMessage(AMessage: array of string);
+procedure TZMQAdmin.SendMessage(AMessage: array of UTF8String);
 begin
   FZMQServer.Push(AMessage);
 end;
 
-procedure TZMQAdmin.Request(ARequest: array of string);
+procedure TZMQAdmin.Request(ARequest: array of UTF8String);
 begin
   {$IFDEF DEBUG}
   WriteLn('WARNING:'+ClassType.ClassName+':'+'CannotSendRequests:'+ARequest[2]);
@@ -127,7 +127,7 @@ end;
 
 { TZMQPlayer }
 
-procedure TZMQPlayer.SendMessage(AMessage: array of string);
+procedure TZMQPlayer.SendMessage(AMessage: array of UTF8String);
 begin
   {$IFDEF DEBUG}
   inherited SendMessage(AMessage);
@@ -135,7 +135,7 @@ begin
   FZMQMessages.Push(AMessage);
 end;
 
-procedure TZMQPlayer.Request(ARequest: array of string);
+procedure TZMQPlayer.Request(ARequest: array of UTF8String);
 begin
   {$IFDEF DEBUG}
   inherited Request(ARequest);
@@ -150,7 +150,7 @@ begin
   FZMQMessages := TZMQMessagesThread.Create(AID);
   FZMQMessages.OnMessageReceived:=@MessageReceived;
 
-  FZMQRequests := TZMQRequestsThread.Create;
+  FZMQRequests := TZMQRequestsThread.Create(True);
   FZMQRequests.OnReplyReceived:=@ReplyReceived;
 end;
 
@@ -221,7 +221,7 @@ begin
   {$ENDIF}
 end;
 
-procedure TZMQActor.SendMessage(AMessage: array of string);
+procedure TZMQActor.SendMessage(AMessage: array of UTF8String);
 {$IFDEF DEBUG}
 var i : integer;
 {$ENDIF}
@@ -233,7 +233,7 @@ begin
   {$ENDIF}
 end;
 
-procedure TZMQActor.Request(ARequest: array of string);
+procedure TZMQActor.Request(ARequest: array of UTF8String);
 {$IFDEF DEBUG}
 var i : integer;
 {$ENDIF}

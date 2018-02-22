@@ -304,6 +304,7 @@ procedure TFormMatrixGame.btnConfirmRowClick(Sender: TObject);
 var
   S : TStringGridA;
 begin
+  btnConfirmRow.Enabled := False;
   S := TStringGridA(StringGridMatrix);
   FGameControl.SendRequest(K_CHOICE, [S.GetSelectedRowF, S.GetSelectedMatrixColorF]);
 end;
