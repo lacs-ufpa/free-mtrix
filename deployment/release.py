@@ -60,12 +60,12 @@ if __name__ == "__main__":
     ]
 
     targets = {
-        'experiment_runner/experiment_runner_windows_64bits': runner_src_win64_libraries,
+        # 'experiment_runner/experiment_runner_windows_64bits': runner_src_win64_libraries,
         'experiment_runner/experiment_runner_windows_32bits': runner_src_win32_libraries,
-        'experiment_designer/experiment_designer_windows_32bits': [None],
-        'experiment_designer/experiment_designer_windows_64bits' : [None],
-        'experiment_runner/experiment_runner_linux_64bits': [None],
-        'experiment_designer/experiment_designer_linux_64bits': [None]
+        # 'experiment_designer/experiment_designer_windows_32bits': [None],
+        # 'experiment_designer/experiment_designer_windows_64bits' : [None],
+        # 'experiment_runner/experiment_runner_linux_64bits': [None],
+        # 'experiment_designer/experiment_designer_linux_64bits': [None]
     }
 
     for build_name, libraries in targets.items(): 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         if tag:
             tag = get_tag_commit()
             tag = tag[:-1]
-            dst_filename = os.path.join(releases, build_basename+'_'+tag)
+            dst_filename = os.path.join(releases, build_basename+'_'+tag.decode('utf-8'))
         else:
             dst_filename = os.path.join(releases, build_basename)
         compress_folder(destination, dst_filename)
