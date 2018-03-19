@@ -656,8 +656,8 @@ var
   PB : TPlayerBox;
   C : TCondition;
 begin
-  LabelGroup1Name.Caption := ExtractDelimited(1,S,['|']);
-  LabelGroup2Name.Caption := ExtractDelimited(2,S,['|']);
+  LabelGroup1Name.Caption := Sanitize(ExtractDelimited(1,S,['|']));
+  LabelGroup2Name.Caption := Sanitize(ExtractDelimited(2,S,['|']));
   if FExperiment.ABPoints then
     begin
       A := StrToInt(ExtractDelimited(3,S,['|']));

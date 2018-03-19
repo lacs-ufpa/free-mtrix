@@ -16,6 +16,7 @@ interface
 uses
   Classes, SysUtils, Graphics, StdCtrls, game_actors;
 
+function Sanitize(S : string):string;
 function DeduceNicname(S : string; P : TPlayer) : string;
 function GetColorFromCode(ACode : TGameColor) : TColor;
 function GetMessagesFromPromptStyle(APromptStyle : TPromptStyle;
@@ -158,6 +159,15 @@ const
 implementation
 
 uses strutils, game_resources, string_methods;
+
+function Sanitize(S: string): string;
+const
+  LineFeed = '\n';
+begin
+  Result := S;
+  if (Pos(LineFeed, S) > 0) then
+     Result := ReplaceStr(S, LineFeed, LineEnding);
+end;
 
 function DeduceNicname(S: string; P: TPlayer): string;
 begin
