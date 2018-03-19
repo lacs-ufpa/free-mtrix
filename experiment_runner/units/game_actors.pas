@@ -260,6 +260,8 @@ type
 
   TCondition = record
     ConditionName : string;
+    Label1 : string;
+    Label2 : string;
     Contingencies : TContingencies; // for producing points during the condition
     //Interlocks : record
     //  Count : integer; // culturant,

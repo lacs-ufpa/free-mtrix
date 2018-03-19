@@ -121,6 +121,8 @@ const
   C_CONDITION_TEMPLATE : TCondition =
     (
       ConditionName : '';
+      Label1:'';
+      Label2:'';
       Contingencies : nil;
       //Interlocks : (
       //  Count : 0;

@@ -1,5 +1,5 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 5
+  Left = 33
   Height = 682
   Top = 32
   Width = 1234
@@ -7,12 +7,12 @@ object FormMatrixGame: TFormMatrixGame
   VertScrollBar.Page = 594
   AutoScroll = True
   Caption = 'Matrix'
-  ClientHeight = 672
+  ClientHeight = 669
   ClientWidth = 1234
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   OnCreate = FormCreate
-  LCLVersion = '1.8.0.5'
+  LCLVersion = '1.8.2.0'
   object GBPoints: TGroupBox
     AnchorSideLeft.Side = asrBottom
     Left = 768
@@ -1000,6 +1000,7 @@ object FormMatrixGame: TFormMatrixGame
       Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
+      Font.Height = -16
       Font.Name = 'Monospace'
       Font.Style = [fsBold]
       Layout = tlCenter
@@ -1974,6 +1975,7 @@ object FormMatrixGame: TFormMatrixGame
       Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
+      Font.Height = -16
       Font.Name = 'Monospace'
       Font.Style = [fsBold]
       Layout = tlCenter
@@ -2952,6 +2954,7 @@ object FormMatrixGame: TFormMatrixGame
       Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
+      Font.Height = -16
       Font.Name = 'Monospace'
       Font.Style = [fsBold]
       Layout = tlCenter
@@ -3942,6 +3945,7 @@ object FormMatrixGame: TFormMatrixGame
       Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
+      Font.Height = -16
       Font.Name = 'Monospace'
       Font.Style = [fsBold]
       Layout = tlCenter
@@ -4930,6 +4934,7 @@ object FormMatrixGame: TFormMatrixGame
       Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
+      Font.Height = -16
       Font.Name = 'Monospace'
       Font.Style = [fsBold]
       Layout = tlCenter
@@ -4962,7 +4967,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 5
     Height = 150
-    Top = 522
+    Top = 519
     Width = 758
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True

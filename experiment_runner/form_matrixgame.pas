@@ -76,7 +76,6 @@ type
     procedure DisableConfirmationButton(Sender : TObject);
     procedure CleanMatrix(Sender: TObject; AEnabled : Boolean);
     procedure PlayerExit(P : TPlayer; AMessage : string);
-
   public
     StringGridMatrix: TStringGrid;
     procedure LoadFromFile(FFilename : string);
@@ -97,7 +96,11 @@ resourcestring
 
 implementation
 
-uses form_chooseactor, game_resources, game_visual_matrix_a;
+uses
+  form_chooseactor
+  , game_resources
+  , game_visual_matrix_a
+  ;
 
 {$R *.lfm}
 
@@ -175,6 +178,8 @@ begin
   FGameControl.LabelPointA := LabelIndACount;
   FGameControl.LabelPointB := LabelIndBCount;
   FGameControl.LabelPointI := LabelIndCount;
+  FGameControl.LabelGroup1Name := LabelGroup1;
+  FGameControl.LabelGroup2Name := LabelGroup2;
   FGameControl.GroupBoxPlayers := GBLastChoice;
   FGameControl.OnInterlocking := @FExperimentBox.Interlocking;
   FGameControl.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;
@@ -273,6 +278,7 @@ begin
   L.Align:=alClient;
   L.Anchors := [akLeft,akRight];
   L.Alignment := taCenter;
+  L.Font.Color:=clBlack;
   L.AutoSize:=True;
   L.Layout := tlCenter;
   L.WordWrap := False;

@@ -47,6 +47,8 @@ resourcestring
 
   SEC_CONDITION = 'Condição.';
   KEY_COND_NAME = 'Nome';
+  KEY_CULTURANT1_CAPTION = 'Culturante1.Contador.Rótulo';
+  KEY_CULTURANT2_CAPTION = 'Culturante2.Contador.Rótulo';
 
   KEY_TURN_VALUE = 'Rodada.NúmeroDeJogadores';  // 3
   KEY_TURN_COUNT = 'Rodada.IniciarNaJogada';    // 1

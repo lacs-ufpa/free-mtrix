@@ -56,6 +56,8 @@ type
     FGroupBoxPlayers: TGroupBox;
     FLabelGroup1: TLabel;
     FLabelGroup2: TLabel;
+    FLabelGroup1Name : TLabel;
+    FLabelGroup2Name : TLabel;
     FLabelPointA: TLabel;
     FLabelPointB: TLabel;
     FLabelPointI: TLabel;
@@ -75,7 +77,9 @@ type
     procedure Interlocking(Sender: TObject);
     procedure SetGroupBoxPlayers(AValue: TGroupBox);
     procedure SetLabelGroup1(AValue: TLabel);
+    procedure SetLabelGroup1Name(AValue: TLabel);
     procedure SetLabelGroup2(AValue: TLabel);
+    procedure SetLabelGroup2Name(AValue: TLabel);
     procedure SetLabelPointA(AValue: TLabel);
     procedure SetLabelPointB(AValue: TLabel);
     procedure SetLabelPointI(AValue: TLabel);
@@ -121,6 +125,8 @@ type
     property LabelPointA : TLabel read FLabelPointA write SetLabelPointA;
     property LabelPointB : TLabel read FLabelPointB write SetLabelPointB;
     property LabelPointI : TLabel read FLabelPointI write SetLabelPointI;
+    property LabelGroup1Name : TLabel read FLabelGroup1Name write SetLabelGroup1Name;
+    property LabelGroup2Name : TLabel read FLabelGroup2Name write SetLabelGroup2Name;
     property GroupBoxPlayers : TGroupBox read FGroupBoxPlayers write SetGroupBoxPlayers;
     property OnEndExperiment : TNotifyEvent read FOnEndExperiment write SetOnEndExperiment;
     property OnInterlocking : TNotifyEvent read FOnInterlocking write SetOnInterlocking;
@@ -236,10 +242,22 @@ begin
   FLabelGroup1:=AValue;
 end;
 
+procedure TGameControl.SetLabelGroup1Name(AValue: TLabel);
+begin
+  if LabelGroup1Name=AValue then Exit;
+  FLabelGroup1Name:=AValue;
+end;
+
 procedure TGameControl.SetLabelGroup2(AValue: TLabel);
 begin
   if FLabelGroup2=AValue then Exit;
   FLabelGroup2:=AValue;
+end;
+
+procedure TGameControl.SetLabelGroup2Name(AValue: TLabel);
+begin
+  if LabelGroup2Name=AValue then Exit;
+  FLabelGroup2Name:=AValue;
 end;
 
 procedure TGameControl.SetLabelPointA(AValue: TLabel);
@@ -638,18 +656,20 @@ var
   PB : TPlayerBox;
   C : TCondition;
 begin
+  LabelGroup1Name.Caption := ExtractDelimited(1,S,['|']);
+  LabelGroup2Name.Caption := ExtractDelimited(2,S,['|']);
   if FExperiment.ABPoints then
     begin
-      A := StrToInt(ExtractDelimited(1,S,['|']));
-      B := StrToInt(ExtractDelimited(2,S,['|']));
-      G1 := StrToIntDef(ExtractDelimited(3,S,['|']), 0);
-      G2 := StrToIntDef(ExtractDelimited(4,S,['|']), 0);
+      A := StrToInt(ExtractDelimited(3,S,['|']));
+      B := StrToInt(ExtractDelimited(4,S,['|']));
+      G1 := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
+      G2 := StrToIntDef(ExtractDelimited(6,S,['|']), 0);
     end
   else
     begin
-      A := StrToInt(ExtractDelimited(1,S,['|']));
-      G1 := StrToIntDef(ExtractDelimited(2,S,['|']), 0);
-      G2 := StrToIntDef(ExtractDelimited(3,S,['|']), 0);
+      A := StrToInt(ExtractDelimited(3,S,['|']));
+      G1 := StrToIntDef(ExtractDelimited(4,S,['|']), 0);
+      G2 := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
     end;
 
   if G1 > 0 then
