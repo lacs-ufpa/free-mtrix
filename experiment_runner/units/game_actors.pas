@@ -635,7 +635,7 @@ const
       LColorCriteria := LColorCriteria * Criteria.Colors;
 
       // result
-      Result := LChosenColors <= LColorCriteria;
+      Result := LColorCriteria <= LChosenColors;
     end;
   end;
 
