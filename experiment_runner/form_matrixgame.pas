@@ -243,16 +243,21 @@ end;
 procedure TFormMatrixGame.FormCreate(Sender: TObject);
 var
   L : TLabel;
-  LLeft : integer;
+  i : integer;
 begin
   StringGridMatrix := TStringGridA.Create(Self);
   // TStringGridA(StringGridMatrix).PopUpNotifier := PopupNotifier;
   TStringGridA(StringGridMatrix).ConfirmationButton := btnConfirmRow;
   StringGridMatrix.Parent := Self;
-  LLeft := StringGridMatrix.Width+btnConfirmRow.Width+GBPoints.Width+10;
-  LLeft := LLeft div 2;
-  LLeft := (Screen.Width div 2)-LLeft;
-  StringGridMatrix.Left:=LLeft;
+  i := StringGridMatrix.Width+btnConfirmRow.Width+GBPoints.Width+10;
+  i := i div 2;
+  i := (Screen.Width div 2)-i;
+  StringGridMatrix.Left:=i;
+
+  i := StringGridMatrix.Height+GBLastChoice.Height+10;
+  i := i div 2;
+  i := (Screen.Height div 2) - i;
+  StringGridMatrix.Top:=i;
 
   btnConfirmRow.AnchorSideLeft.Control := StringGridMatrix;
   btnConfirmRow.AnchorSideLeft.Side := asrRight;

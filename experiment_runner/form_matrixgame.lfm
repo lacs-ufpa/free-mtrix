@@ -4922,6 +4922,7 @@ object FormMatrixGame: TFormMatrixGame
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
       }
       Stretch = True
+      Visible = False
     end
     object LabelGroup2: TLabel
       Left = 130
@@ -4941,6 +4942,7 @@ object FormMatrixGame: TFormMatrixGame
       ParentColor = False
       ParentFont = False
       Transparent = False
+      Visible = False
     end
     object LabelGroup2Count: TLabel
       Left = 350
@@ -4958,6 +4960,7 @@ object FormMatrixGame: TFormMatrixGame
       ParentColor = False
       ParentFont = False
       Transparent = False
+      Visible = False
     end
   end
   object GBLastChoice: TGroupBox
