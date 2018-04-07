@@ -42,25 +42,25 @@ var
   LCriteria1 : TCriteria = (
     Style:(gtRowsOnly);
     Rows:[grEven];
-    Colors:[];
+    Colors:nil;
   );
 
   LCriteria2 : TCriteria = (
     Style:(gtRowsOnly);
     Rows:[grOdd];
-    Colors:[];
+    Colors:nil;
   );
 
   LCriteria3 : TCriteria = (
     Style:(gtRowsAndColors);
     Rows:[grEven];
-    Colors:[gcDiff];
+    Colors: nil; // Colors:[gcDiff];
   );
 
   LCriteria4 : TCriteria = (
     Style:(gtRowsOrColors);
     Rows:[grNot,grEven];
-    Colors:[gcNot,gcDiff];
+    Colors: nil; //Colors:[gcNot,gcDiff];
   );
 begin
   Result := False;

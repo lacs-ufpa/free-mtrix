@@ -328,9 +328,9 @@ begin
 
   LS := ExtractDelimited(3,S,['|']);
   LCount := WordCount(LS,[#0,',']);
-  Result.Colors := [];
+  SetLength(Result.Colors, LCount);
   for i := 1 to LCount do
-    Result.Colors += [GetGameColorFromString(ExtractDelimited(i,LS,[',']))];
+    Result.Colors[i-1] := GetGameColorFromString(ExtractDelimited(i,LS,[',']));
 end;
 
 function GetCriteriaStyleString(AStyle: TGameStyle): string;

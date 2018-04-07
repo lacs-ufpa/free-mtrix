@@ -83,6 +83,8 @@ type
 
   TGameColors = set of TGameColor;
 
+  TGameAColors = array of TGameColor;
+
   TGameEndCondition = (gecInterlockingPorcentage,gecAbsoluteCycles,gecWhichComeFirst);
   //TGameOperator = (goNONE, goAND, goOR);
   TGameStyle = (gtNone, gtRowsOnly, gtColorsOnly, gtRowsAndColors, gtRowsOrColors);
@@ -133,7 +135,7 @@ type
    TCriteria = record
      Style : TGameStyle;
      Rows : TGameRows;
-     Colors : TGameColors;
+     Colors : TGameAColors;
    end;
 
    { TConsequence }
@@ -288,10 +290,89 @@ type
     EndCriterium : TEndConditionCriterium; // to change from one condition to another
   end;
 
+operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boolean;
+
 implementation
 
 uses Graphics,strutils, string_methods, game_actors_helpers, game_resources;
 
+operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boolean;
+var
+  i: Integer;
+begin
+  Result := True;
+  for i := Low(AArrayOfColors) to High(AArrayOfColors) do
+    if AColor = AArrayOfColors[i] then Exit;
+  Result := False;
+end;
+
+function fact(n: integer): longint;
+begin
+    if (n = 0) then
+        fact := 1
+    else
+        fact := n * fact(n - 1);
+end;
+
+// hardcoded for now
+function GetCombination(AArrayOfColors: TGameAColors; AN, ATotal : integer): TGameAColors;
+begin
+  if ATotal <> 6 then
+      raise Exception.Create('game_actors.GetCombinations '+IntToStr(ATotal)+' not implemented');
+  SetLength(Result, Length(AArrayOfColors));
+  case AN of
+    0 :
+      begin
+        Result[0] := AArrayOfColors[0];
+        Result[1] := AArrayOfColors[1];
+        Result[2] := AArrayOfColors[2];
+      end;
+    1 :
+      begin
+        Result[0] := AArrayOfColors[0];
+        Result[1] := AArrayOfColors[2];
+        Result[2] := AArrayOfColors[1];
+      end;
+    2 :
+      begin
+        Result[0] := AArrayOfColors[1];
+        Result[1] := AArrayOfColors[2];
+        Result[2] := AArrayOfColors[0];
+      end;
+    3 :
+      begin
+        Result[0] := AArrayOfColors[1];
+        Result[1] := AArrayOfColors[0];
+        Result[2] := AArrayOfColors[2];
+      end;
+    4 :
+      begin
+        Result[0] := AArrayOfColors[2];
+        Result[1] := AArrayOfColors[0];
+        Result[2] := AArrayOfColors[1];
+      end;
+    5 :
+      begin
+        Result[0] := AArrayOfColors[2];
+        Result[1] := AArrayOfColors[1];
+        Result[2] := AArrayOfColors[0];
+      end;
+  end;
+end;
+
+function EqualAColors(const A : TGameAColors; const B : TGameAColors):Boolean;
+var
+  i : integer;
+begin
+  Result := True;
+  if Length(A) = Length(B) then
+    for i := Low(A) to High(B) do
+      if A[i] = B[i] then Continue else
+        begin
+          Result := False;
+          Break;
+        end;
+end;
 { TContingency }
 
 function TContingency.RowMod(R: TGameRow): TGameRow;
@@ -376,7 +457,7 @@ end;
 function TContingency.ResponseMeetsCriteriaG(Players: TPlayers): Boolean; // must be called from admin only
 var
   i : integer;
-  Cs : array of TGameColor;
+  Cs : TGameAColors;
   Rs : array of TGameRow;
   //C : TGameColor;
   R : TGameRow;
@@ -610,9 +691,12 @@ const
 
   function ColorsResult: Boolean;
   var
+    i : integer;
+    j : integer;
     LColor : TGameColor;
-    LColorCriteria : TGameColors = [gcBlue, gcGreen, gcMagenta, gcYellow, gcRed];
-    LChosenColors : TGameColors = [];
+    LColorSet : TGameAColors;
+    LColorCriteria : TGameAColors;
+    Results : array of Boolean;
   begin
     if gcDiff in Criteria.Colors then
       if gcNot in Criteria.Colors then
@@ -628,14 +712,28 @@ const
 
     if gcThis in Criteria.Colors then
     begin
-      // colors chosen by participants
-      for LColor in Cs do Include(LChosenColors, LColor);
+      SetLength(LColorSet, 5);
+      LColorSet[0] := gcBlue;
+      LColorSet[1] := gcGreen;
+      LColorSet[2] := gcMagenta;
+      LColorSet[3] := gcYellow;
+      LColorSet[4] := gcRed;
 
-      // colors specified by researchers
-      LColorCriteria := LColorCriteria * Criteria.Colors;
+      // colors specified by researchers, LColorSet * Criteria.Colors
+      LColorCriteria := nil;
+      for i := Low(Criteria.Colors) to High(Criteria.Colors) do
+        if Criteria.Colors[i] in LColorSet then
+        begin
+          Len := Length(LColorCriteria);
+          SetLength(LColorCriteria, Len+1);
+          Inc(Len);
+          LColorCriteria[Len-1] := Criteria.Colors[i];
+        end;
 
-      // result
-      Result := LColorCriteria <= LChosenColors;
+      j := fact(Length(Cs));
+      Result := False;
+      for i := 0 to j-1 do
+        Result := Result or EqualAColors(GetCombination(Cs, i, j), LColorCriteria);
     end;
   end;
 
