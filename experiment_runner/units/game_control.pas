@@ -1122,7 +1122,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor.ShowPoints(
                 'A tarefa terminou, obrigado por sua participação!'+LineEnding+
                 'Você produziu ' + Pts + ' fichas e ' +
-                LabelGroup1.Caption + ' itens escolares serão doados a uma escola pública.'
+                LabelGroup1.Caption + ' + '+ LabelGroup2.Caption +
+                ' itens escolares serão doados a uma escola pública.'
               );
 
               if FormChooseActor.ShowModal = 1 then
@@ -1167,7 +1168,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor.ShowPoints(
           'A tarefa terminou, obrigado por sua participação!'+LineEnding+
           'Você produziu ' + Pts + ' fichas e ' +
-          LabelGroup1.Caption + ' itens escolares serão doados a uma escola pública.');
+          LabelGroup1.Caption + ' + '+ LabelGroup2.Caption +
+          ' itens escolares serão doados a uma escola pública.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
 
