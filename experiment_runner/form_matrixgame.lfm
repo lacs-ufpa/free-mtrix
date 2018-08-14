@@ -3,16 +3,75 @@ object FormMatrixGame: TFormMatrixGame
   Height = 682
   Top = 32
   Width = 1234
-  HorzScrollBar.Page = 1234
+  HorzScrollBar.Page = 1232
   VertScrollBar.Page = 594
   AutoScroll = True
   Caption = 'Matrix'
-  ClientHeight = 669
+  ClientHeight = 682
   ClientWidth = 1234
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   OnCreate = FormCreate
-  LCLVersion = '1.8.2.0'
+  LCLVersion = '1.8.4.0'
+  object ChatPanel: TPanel
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Side = asrBottom
+    Left = 768
+    Height = 386
+    Top = 0
+    Width = 390
+    BorderSpacing.Left = 5
+    ClientHeight = 386
+    ClientWidth = 390
+    TabOrder = 4
+    object ChatMemoRecv: TMemo
+      AnchorSideBottom.Control = ChatSplitter
+      Left = 6
+      Height = 220
+      Top = 6
+      Width = 378
+      Align = alTop
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      BorderSpacing.Left = 5
+      BorderSpacing.Top = 5
+      BorderSpacing.Right = 5
+      BorderSpacing.Bottom = 5
+      Constraints.MinHeight = 100
+      Enabled = False
+      Lines.Strings = (
+        '[Chat]'
+      )
+      ScrollBars = ssAutoVertical
+      TabOrder = 0
+      WantReturns = False
+    end
+    object ChatSplitter: TSplitter
+      Cursor = crVSplit
+      Left = 0
+      Height = 8
+      Top = 231
+      Width = 384
+      Align = alNone
+      Anchors = [akLeft, akRight]
+      ResizeAnchor = akTop
+    end
+    object ChatMemoSend: TMemo
+      AnchorSideTop.Control = ChatSplitter
+      AnchorSideTop.Side = asrBottom
+      Left = 6
+      Height = 136
+      Top = 244
+      Width = 378
+      Align = alBottom
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      BorderSpacing.Around = 5
+      OnKeyPress = ChatMemoSendKeyPress
+      ScrollBars = ssAutoVertical
+      TabOrder = 2
+      WantTabs = True
+    end
+  end
   object GBPoints: TGroupBox
     AnchorSideLeft.Side = asrBottom
     Left = 768
@@ -38,6 +97,7 @@ object FormMatrixGame: TFormMatrixGame
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 0
+    Visible = False
     object ImageIndA: TImage
       Left = 10
       Height = 100
@@ -4967,7 +5027,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 5
     Height = 150
-    Top = 519
+    Top = 532
     Width = 758
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
@@ -4989,14 +5049,11 @@ object FormMatrixGame: TFormMatrixGame
     TabOrder = 1
   end
   object GBAdmin: TGroupBox
-    AnchorSideLeft.Control = ChatPanel
     AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = ChatPanel
-    Left = 1632
+    Left = 768
     Height = 448
     Top = 8
     Width = 436
-    BorderSpacing.Left = 5
     Caption = 'Pesquisador'
     ClientHeight = 431
     ClientWidth = 432
@@ -5063,68 +5120,6 @@ object FormMatrixGame: TFormMatrixGame
     Caption = 'Confirmar'
     OnClick = btnConfirmRowClick
     TabOrder = 3
-  end
-  object ChatPanel: TPanel
-    AnchorSideLeft.Control = GBPoints
-    AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = GBPoints
-    AnchorSideRight.Control = GBPoints
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Side = asrBottom
-    Left = 1237
-    Height = 386
-    Top = 8
-    Width = 390
-    BorderSpacing.Left = 5
-    ClientHeight = 386
-    ClientWidth = 390
-    TabOrder = 4
-    object ChatMemoRecv: TMemo
-      AnchorSideBottom.Control = ChatSplitter
-      Left = 6
-      Height = 220
-      Top = 6
-      Width = 378
-      Align = alTop
-      Anchors = [akTop, akLeft, akRight, akBottom]
-      BorderSpacing.Left = 5
-      BorderSpacing.Top = 5
-      BorderSpacing.Right = 5
-      BorderSpacing.Bottom = 5
-      Constraints.MinHeight = 100
-      Enabled = False
-      Lines.Strings = (
-        '[Chat]'
-      )
-      ScrollBars = ssAutoVertical
-      TabOrder = 0
-      WantReturns = False
-    end
-    object ChatSplitter: TSplitter
-      Cursor = crVSplit
-      Left = 0
-      Height = 8
-      Top = 231
-      Width = 384
-      Align = alNone
-      Anchors = [akLeft, akRight]
-      ResizeAnchor = akTop
-    end
-    object ChatMemoSend: TMemo
-      AnchorSideTop.Control = ChatSplitter
-      AnchorSideTop.Side = asrBottom
-      Left = 6
-      Height = 136
-      Top = 244
-      Width = 378
-      Align = alBottom
-      Anchors = [akTop, akLeft, akRight, akBottom]
-      BorderSpacing.Around = 5
-      OnKeyPress = ChatMemoSendKeyPress
-      ScrollBars = ssAutoVertical
-      TabOrder = 2
-      WantTabs = True
-    end
   end
   object OpenDialog: TOpenDialog
     Width = 862

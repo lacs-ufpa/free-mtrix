@@ -270,6 +270,7 @@ begin
     'PONTOS G1' : Result:= gscG1;
     'PONTOS G2' : Result:= gscG2;
     'PONTOS I' : Result:= gscI;
+    'ATRASAR PUNIÇÃO': Result:= gscDelayPunishement;
   end;
 end;
 
@@ -287,6 +288,7 @@ begin
     gscG1 :  Result:= 'PONTOS G1';
     gscG2 :  Result:= 'PONTOS G2';
     gscI :  Result:= 'PONTOS I';
+    gscDelayPunishement : Result := 'ATRASAR PUNIÇÃO';
   end;
 end;
 
@@ -376,15 +378,16 @@ begin
   for i:= 1 to LCount do
     case ExtractDelimited(i,S,[',']) of
       '0':Result+=[gscNone];
-      'M':Result+=[gscMessage];
-      'C':Result+=[gscBroadcastMessage];
-      'P':Result+=[gscPoints];
-      'V':Result+=[gscVariablePoints];
-      'A':Result+=[gscA];
-      'B':Result+=[gscB];
-      'G1':Result+=[gscG1];
-      'G2':Result+=[gscG2];
-      'I':Result+=[gscI];
+      'MENSAGEM','M':Result+=[gscMessage];
+      'MENSAGEM A TODOS','C':Result+=[gscBroadcastMessage];
+      'PONTOS','P':Result+=[gscPoints];
+      'PONTOS COM VARIAÇÃO','V':Result+=[gscVariablePoints];
+      'PONTOS A','A':Result+=[gscA];
+      'PONTOS B','B':Result+=[gscB];
+      'PONTOS G1','G1':Result+=[gscG1];
+      'PONTOS G2','G2':Result+=[gscG2];
+      'PONTOS I','I':Result+=[gscI];
+      'ATRASAR PUNIÇÃO', 'D':Result+=[gscDelayPunishement];
     end;
 end;
 
@@ -405,6 +408,7 @@ begin
         gscG1:Result += 'G1';
         gscG2:Result += 'G2';
         gscI:Result += 'I';
+        gscDelayPunishement:Result += 'D';
       end;
       Result += ',';
     end;

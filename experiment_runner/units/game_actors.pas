@@ -92,6 +92,7 @@ type
   TGameConsequenceStyle = (
     gscNone, gscMessage, gscBroadcastMessage,
     gscPoints, gscVariablePoints,
+    gscDelayPunishement,
     gscA, gscB,gscG1,gscG2,gscI
   );
   TConsequenceStyle = set of TGameConsequenceStyle;
@@ -167,12 +168,14 @@ type
      constructor Create(AOwner:TComponent; AP:integer; AStyle: TConsequenceStyle; AMessage:array of string);overload;
      constructor Create(AOwner:TComponent; AConsequenceString: string);virtual;overload;
      destructor Destroy;override;
-     function AsString(AID :string): string;
+     function AsString(AID :string = ''): string;
      function GenerateMessage(ForGroup: Boolean):string;
      procedure Clean; virtual;
      procedure PresentMessage(AControl : TWinControl);
      procedure PresentPoints(A, B, I, G1, G2 : TLabel);
-     procedure PresentPoints(APlayerBox: TPlayerBox; G1, G2: TLabel); overload;
+     procedure PresentPoints(G1, G2: TLabel); overload;
+     procedure PresentPoints(APlayerBox: TPlayerBox;
+       APlayerLabel : TPlayerCounterLabel); overload;
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
      property Prepend : string read FPrepend;
      property AppendiceLossSingular : string read FAppendiceLossSingular;
@@ -262,6 +265,7 @@ type
 
   TCondition = record
     ConditionName : string;
+    InitialMessage : string;
     Label1 : string;
     Label2 : string;
     Contingencies : TContingencies; // for producing points during the condition
@@ -294,7 +298,7 @@ operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boole
 
 implementation
 
-uses Graphics,strutils, string_methods, game_actors_helpers, game_resources;
+uses Graphics,strutils, string_methods, game_actors_helpers, game_resources, form_regressivecounter;
 
 operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boolean;
 var
@@ -693,10 +697,10 @@ const
   var
     i : integer;
     j : integer;
-    LColor : TGameColor;
+    //LColor : TGameColor;
     LColorSet : TGameAColors;
     LColorCriteria : TGameAColors;
-    Results : array of Boolean;
+    //Results : array of Boolean;
   begin
     if gcDiff in Criteria.Colors then
       if gcNot in Criteria.Colors then
@@ -941,24 +945,27 @@ procedure TConsequence.PresentMessage(AControl : TWinControl);
 var
   PopUpPos : TPoint;
 begin
-  PopUpPos.X := 0;
-  if (gscA in FStyle) or (gscI in FStyle) then
-    PopUpPos.Y := AControl.Top+AControl.Height;
+  if gscMessage in FStyle then
+  begin
+    PopUpPos.X := 0;
+    if (gscA in FStyle) or (gscI in FStyle) then
+      PopUpPos.Y := AControl.Top;
 
-  if gscB in FStyle then
-    PopUpPos.Y := AControl.Top+AControl.Height+FMessage.vNotifierForm.Height;
+    if gscB in FStyle then
+      PopUpPos.Y := AControl.Top+FMessage.vNotifierForm.Height;
 
-  if gscG1 in FStyle then
-    PopUpPos.Y := AControl.Top+AControl.Height+(FMessage.vNotifierForm.Height*2);
+    if gscG1 in FStyle then
+      PopUpPos.Y := AControl.Top+(FMessage.vNotifierForm.Height*2);
 
-  if gscG2 in FStyle then
-    PopUpPos.Y := AControl.Top+AControl.Height+(FMessage.vNotifierForm.Height*4);
+    if gscG2 in FStyle then
+      PopUpPos.Y := AControl.Top+(FMessage.vNotifierForm.Height*4);
 
-  PopUpPos := AControl.ClientToScreen(PopUpPos);
-  FMessage.Color:=clTeal;
-  FMessage.Title:='';
-  FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
-  FTimer.Enabled:=True;
+    PopUpPos := AControl.ClientToScreen(PopUpPos);
+    FMessage.Color:=clTeal;
+    FMessage.Title:='';
+    FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
+    FTimer.Enabled:=True;
+  end;
 end;
 
 procedure TConsequence.PresentPoints(A, B, I, G1, G2: TLabel); // [player_points]
@@ -980,17 +987,27 @@ begin
     IncLabel(G2, FP.ResultAsInteger);
 end;
 
-procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G1, G2: TLabel); // [player_points]
+procedure TConsequence.PresentPoints(G1, G2: TLabel);
 begin
   if gscG1 in FStyle then
+  begin
     IncLabel(G1, FP.ResultAsInteger);
+    FormRegressiveCounter.LabelGroup1Count.Caption := G1.Caption;
+  end;
 
   if gscG2 in FStyle then
     IncLabel(G2, FP.ResultAsInteger);
+end;
 
+procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox;
+  APlayerLabel: TPlayerCounterLabel);
+begin
   if (gscI in FStyle) or (gscA in FStyle) or (gscB in FStyle) then
     if Assigned(APlayerBox) then
+    begin
       IncLabel(APlayerBox.LabelPointsCount, FP.ResultAsInteger);
+      APlayerLabel.Caption := APlayerBox.LabelPointsCount.Caption;
+    end;
 end;
 
 function TConsequence.GetShouldPublishMessage: Boolean; // for players only

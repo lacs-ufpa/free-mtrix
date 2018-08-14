@@ -1139,6 +1139,8 @@ function TExperiment.CurrentConditionAsString: string;
 begin
   if ABPoints then
     Result :=
+      Condition[CurrentConditionI].ConditionName+'|'+
+      Condition[CurrentConditionI].InitialMessage+'|'+
       Condition[CurrentConditionI].Label1+'|'+
       Condition[CurrentConditionI].Label2+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.A)+'|'+
@@ -1147,6 +1149,8 @@ begin
       IntToStr(Condition[CurrentConditionI].Points.OnStart.G2)
   else
     Result:=
+      Condition[CurrentConditionI].ConditionName+'|'+
+      Condition[CurrentConditionI].InitialMessage+'|'+
       Condition[CurrentConditionI].Label1+'|'+
       Condition[CurrentConditionI].Label2+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.A)+'|'+

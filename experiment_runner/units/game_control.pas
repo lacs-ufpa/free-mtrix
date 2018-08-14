@@ -118,7 +118,7 @@ type
     property Experiment : TExperiment read FExperiment write FExperiment;
     property ID : string read FID;
   public
-    procedure ShowSystemPopUp(AText:string;AInterval : integer);
+    procedure ShowSystemPopUp(AText:string; AInterval : integer);
     property SystemPopUp : TPopupNotifier read FSystemPopUp write SetSystemPopUp;
     property LabelGroup1 : TLabel read FLabelGroup1 write SetLabelGroup1;
     property LabelGroup2 : TLabel read FLabelGroup2 write SetLabelGroup2;
@@ -144,6 +144,7 @@ type
 // TODO: PUT NORMAL STRING MESSAGES IN RESOURCESTRING INSTEAD
 
 const
+  K_PUNISHER = '.Punisher';
   K_ARRIVED  = '.Arrived';
   K_CHAT_M   = '.ChatM';
   K_CHOICE   = '.Choice';
@@ -173,6 +174,7 @@ uses ButtonPanel,Controls,ExtCtrls, LazUTF8, Forms, Dialogs, strutils
      , popup_hack
      , form_matrixgame
      , form_chooseactor
+     , form_regressivecounter
      , presentation_classes
      , game_resources
      , game_actors_helpers
@@ -426,7 +428,10 @@ begin
 end;
 
 procedure TGameControl.CreatePlayerBox(P: TPlayer; Me: Boolean; Admin: Boolean);
-var i1 : integer;
+var
+  i1 : integer;
+  LPlayerLabel : TLabel;
+  LPlayerCounterLabel : TPlayerCounterLabel;
 begin
   with TPlayerBox.Create(GroupBoxPlayers,P.ID,Admin) do
     begin
@@ -442,6 +447,22 @@ begin
       PanelLastColor.Color := GetColorFromCode(P.Choice.Color);
       Enabled := True;
       Parent := GroupBoxPlayers;
+    end;
+
+  if Admin then
+    begin
+      LPlayerLabel := TLabel.Create(FormRegressiveCounter.GBTokens);
+      with LPlayerLabel do
+        begin
+          Caption := P.Nicname;
+          Alignment:=taLeftJustify;
+          Layout:=tlCenter;
+          Parent := FormRegressiveCounter.GBTokens;
+        end;
+      LPlayerCounterLabel :=
+        TPlayerCounterLabel.Create(FormRegressiveCounter.GBTokens, P.ID);
+      LPlayerCounterLabel.Sister := LPlayerLabel;
+      LPlayerCounterLabel.Parent := FormRegressiveCounter.GBTokens;
     end;
 end;
 
@@ -463,6 +484,12 @@ begin
           PanelLastColor.Color := GetColorFromCode(P.Choice.Color);
         end;
     end;
+  if Admin then
+    with TPlayerCounterLabel.FromId(FormRegressiveCounter.GBTokens, P.ID) do
+      begin
+        Caption := '0';
+        Sister.Caption := P.Nicname;
+      end;
 end;
 
 //procedure TGameControl.DeletePlayerBox(AID: string);
@@ -613,6 +640,8 @@ function TGameControl.ShowConsequence(AID, S: string;
   ForGroup: Boolean; ShowPopUp: Boolean):string;
 var
   LConsequence : TConsequence;
+  LPlayerBox : TPlayerBox;
+  LPlayerLabel : TPlayerCounterLabel;
 begin
   Result := '';
   LConsequence := TConsequence.Create(nil,S);
@@ -629,10 +658,19 @@ begin
 
     gaAdmin:
       begin
-        // player box is ignored for group points
-        // LabelGroupCount is ignored for player points
-        LConsequence.PresentPoints(GetPlayerBox(AID),
-          LabelGroup1, LabelGroup2);
+        if gscDelayPunishement in LConsequence.Style then
+        begin
+          FormRegressiveCounter.ChangeToBlack;
+        end;
+        if ForGroup then
+          LConsequence.PresentPoints(LabelGroup1, LabelGroup2)
+        else
+          begin
+            LPlayerLabel :=
+              TPlayerCounterLabel.FromId(FormRegressiveCounter.GBTokens, AID);
+            LPlayerBox := GetPlayerBox(AID);
+            LConsequence.PresentPoints(LPlayerBox, LPlayerLabel);
+          end;
       end;
   end;
 
@@ -655,21 +693,24 @@ var
   P : TPlayer;
   PB : TPlayerBox;
   C : TCondition;
+  LConditionName, LInitialMessage : string;
 begin
-  LabelGroup1Name.Caption := Sanitize(ExtractDelimited(1,S,['|']));
-  LabelGroup2Name.Caption := Sanitize(ExtractDelimited(2,S,['|']));
+  LConditionName := Sanitize(ExtractDelimited(1,S,['|']));
+  LInitialMessage := Sanitize(ExtractDelimited(2,S,['|']));;
+  LabelGroup1Name.Caption := Sanitize(ExtractDelimited(3,S,['|']));
+  LabelGroup2Name.Caption := Sanitize(ExtractDelimited(4,S,['|']));
   if FExperiment.ABPoints then
     begin
-      A := StrToInt(ExtractDelimited(3,S,['|']));
-      B := StrToInt(ExtractDelimited(4,S,['|']));
-      G1 := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
-      G2 := StrToIntDef(ExtractDelimited(6,S,['|']), 0);
+      A := StrToInt(ExtractDelimited(5,S,['|']));
+      B := StrToInt(ExtractDelimited(6,S,['|']));
+      G1 := StrToIntDef(ExtractDelimited(7,S,['|']), 0);
+      G2 := StrToIntDef(ExtractDelimited(8,S,['|']), 0);
     end
   else
     begin
-      A := StrToInt(ExtractDelimited(3,S,['|']));
-      G1 := StrToIntDef(ExtractDelimited(4,S,['|']), 0);
-      G2 := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
+      A := StrToInt(ExtractDelimited(5,S,['|']));
+      G1 := StrToIntDef(ExtractDelimited(6,S,['|']), 0);
+      G2 := StrToIntDef(ExtractDelimited(7,S,['|']), 0);
     end;
 
   if G1 > 0 then
@@ -681,7 +722,11 @@ begin
   case FActor of
     gaPlayer:
       begin
+        // here condition 0 is used as a template
+        // because FExperiment is admin only
         C := FExperiment.Condition[0];
+        C.ConditionName := LConditionName;
+        C.InitialMessage := LInitialMessage;
         //P := FExperiment.PlayerFromID[ID]; should refactor this to use inc instead inclabel
         with C.Points do
           begin
@@ -693,6 +738,9 @@ begin
         FormMatrixGame.ChatMemoRecv.Append(IntToStr(FExperiment.CurrentCondition.Points.OnStart.A));
         {$ENDIF}
         if IsConditionStart then
+          if C.InitialMessage <> '' then
+            ShowSystemPopUp(C.InitialMessage, 10000);
+
           if FExperiment.ABPoints then
             begin
               //Inc(P.Points.A, A);
@@ -710,6 +758,19 @@ begin
 
     gaAdmin:
       if IsConditionStart then
+      begin
+        if Assigned(FormRegressiveCounter) then
+        begin
+          if LInitialMessage <> '' then
+            FormRegressiveCounter.ShowSystemMessage(LInitialMessage);
+
+          case LConditionName of
+            'Condição A1', 'Condição A2', 'Condição A3' :
+              FormRegressiveCounter.SetupConditionA;
+            'Condição B1', 'Condição B2', 'Condição B3' :
+              FormRegressiveCounter.SetupConditionB;
+          end;
+        end;
         for P in FExperiment.Players do
           begin
             PB := GetPlayerBox(P.ID);
@@ -723,6 +784,7 @@ begin
             else
               IncLabel(PB.LabelPointsCount,LNewA);
           end;
+      end;
   end;
 end;
 
@@ -774,10 +836,12 @@ begin
 
       if AEnabled then
         begin
+          FormMatrixGame.SetFocus;
           ShowSystemPopUp(
             'É sua vez! Clique sobre uma linha da matriz e confirme sua escolha.',
             GLOBAL_SYSTEM_MESSAGE_INTERVAL
           );
+
           {$IFDEF DEBUG}
             {$IFDEF WINDOWS}
               // todo:
@@ -947,6 +1011,12 @@ begin
         , AInputData[0]
         , AInputData[1]
       ]);
+    K_PUNISHER : SetM([
+        AMessage
+        , FZMQActor.ID  // sender
+        , AInputData[0] // target
+        , AInputData[1] // punishment
+    ]);
   end;
 
   case FActor of
@@ -1310,12 +1380,35 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       end;
   end;
 
+  procedure ReceivePunishment;
+  var
+    LConsequence : TConsequence;
+  begin
+    WriteLn(AMessage.Text);
+    LConsequence := TConsequence.Create(nil, AMessage[3]);
+    LConsequence.GenerateMessage(True);
+    case FActor of
+      gaPlayer:
+          LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,
+            LabelGroup1, LabelGroup2);
+
+      gaAdmin:
+          LConsequence.PresentPoints(LabelGroup1, LabelGroup2);
+    end;
+
+    if Assigned(FormMatrixGame) then
+      LConsequence.PresentMessage(FormMatrixGame.GBPoints)
+    else
+      LConsequence.PresentMessage(TWinControl(Owner.Owner))
+  end;
+
 begin
   if MHas(K_ARRIVED) then ReceiveActor;
   if MHas(K_CHAT_M)  then ReceiveChat;
   if MHas(K_CHOICE)  then ReceiveChoice;
   if MHas(K_MESSAGE) then ShowConsequence(AMessage[1],AMessage[2],StrToBool(AMessage[3]));
   if MHas(K_GMESSAGE) then ShowGroupedMessage(AMessage[1]);
+  if MHas(K_PUNISHER) then ReceivePunishment;
   if MHas(K_START) then NotifyPlayers;
   if MHas(K_QUESTION) then ShowQuestion;
   if MHas(K_MOVQUEUE) then

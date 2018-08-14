@@ -73,6 +73,7 @@ type
     FExperimentBox : TExperimentBox;
     FID: string;
     FInitParameter: string;
+    procedure RemoveCulturant(Sender : TObject);
     procedure DisableConfirmationButton(Sender : TObject);
     procedure CleanMatrix(Sender: TObject; AEnabled : Boolean);
     procedure PlayerExit(P : TPlayer; AMessage : string);
@@ -98,6 +99,7 @@ implementation
 
 uses
   form_chooseactor
+  , form_regressivecounter
   , game_resources
   , game_visual_matrix_a
   ;
@@ -110,6 +112,22 @@ procedure TFormMatrixGame.TimerTimer(Sender: TObject);
 begin
   Timer.Enabled:=False;
   PopupNotifier.Visible:=False;
+end;
+
+procedure TFormMatrixGame.RemoveCulturant(Sender: TObject);
+var
+  LStyle : TConsequenceStyle;
+  LConsequence : TConsequence;
+begin
+  LStyle := [gscPoints, gscBroadcastMessage, gscG1, gscMessage];
+  LConsequence := TConsequence.Create(
+  nil, -1,LStyle, ['Um item escolar foi removido.','','','','','','','']);
+
+  FGameControl.SendMessage(
+    K_PUNISHER,
+    ['ALL',
+    LConsequence.AsString]);
+  LConsequence.Free;
 end;
 
 procedure TFormMatrixGame.DisableConfirmationButton(Sender: TObject);
@@ -150,6 +168,9 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
   begin
     FGameControl := TGameControl.Create(TZMQAdmin.Create(Self,FID),ExtractFilePath(Application.ExeName));
     GBAdmin.Visible:= True;
+    GBAdmin.Left := StringGridMatrix.Left;
+    StringGridMatrix.Visible := False;
+    btnConfirmRow.Visible := False;
   end;
 
   procedure SetZMQPlayer;
@@ -205,17 +226,27 @@ end;
 procedure TFormMatrixGame.SetID(S, P: string);
 begin
   FID := S;
-  FInitParameter := P
+  FInitParameter := P;
 end;
 
-
 procedure TFormMatrixGame.FormActivate(Sender: TObject);
+  procedure CreateRegressiveCounter;
+  begin
+    FormRegressiveCounter := TFormRegressiveCounter.Create(Self);
+    FormRegressiveCounter.OnZeroReached:=@RemoveCulturant;
+    FormRegressiveCounter.UpperTime := 30;
+    FormRegressiveCounter.Show;
+  end;
 begin
   StringGridMatrix.ClearSelections;
   StringGridMatrix.FocusRectVisible := False;
   btnConfirmRow.Visible := False;
   case FInitParameter of
-    'a': FormMatrixGame.SetGameActor(gaAdmin);
+    'a':
+      begin
+        CreateRegressiveCounter;
+        FormMatrixGame.SetGameActor(gaAdmin);
+      end;
     'p': FormMatrixGame.SetGameActor(gaPlayer);
     'w': FormMatrixGame.SetGameActor(gaWatcher);
     else
@@ -226,7 +257,11 @@ begin
           try
             if FormChooseActor.ShowModal = 1 then
               case FormChooseActor.GameActor of
-                gaAdmin: FormMatrixGame.SetGameActor(gaAdmin);
+                gaAdmin:
+                  begin
+                    CreateRegressiveCounter;
+                    FormMatrixGame.SetGameActor(gaAdmin);
+                  end;
                 gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
                 gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
               end
@@ -265,7 +300,6 @@ begin
   btnConfirmRow.Top := StringGridMatrix.Top;
   btnConfirmRow.Left := StringGridMatrix.BoundsRect.Right+5;
   GBPoints.Left := btnConfirmRow.Left+btnConfirmRow.Width+10;
-  GBAdmin.Left := GBPoints.Left+GBPoints.Width+5;
 
   {$IFDEF DEBUG}
   with TPlayerBox.Create(GBLastChoice,'test') do

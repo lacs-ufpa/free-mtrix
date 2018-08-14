@@ -220,7 +220,6 @@ var
           ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_APPEND_EARN_P,''),
           ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_APPEND_ZERO, '')
         );
-
         LCriteria := GetCriteriaFromString(ReadString(LS, LCK+KEY_CRITERIA, ''));
         Result := TContingency.Create(AExperiment,LConsequence,LCriteria,Pos(KEY_METACONTINGENCY,LCK)>0);
         Result.ContingencyName := ReadString(LS, LCK+KEY_CONT_NAME, LCK);
@@ -230,7 +229,7 @@ var
 
   procedure ReadConditions;
   var
-    s1, LS , LPromptStyle, LPromptMessa,LPromptTarget: string;
+    s1, LS {, LPromptStyle, LPromptMessa,LPromptTarget}: string;
     i,j , LContingenciesCount, LMetaContingenCount: integer;
     C :TCondition;
   begin
@@ -242,6 +241,7 @@ var
           with C do
             begin
               ConditionName := ReadString(LS,KEY_COND_NAME,LS);
+              InitialMessage:= ReadString(LS, KEY_INIT_MESSAGE, '');
               Points.Count := GetPointsFromString(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
               Label1 := ReadString(LS, KEY_CULTURANT1_CAPTION, 'Itens escolares para doação');
               Label2 := ReadString(LS, KEY_CULTURANT2_CAPTION, 'Itens escolares para doação');
@@ -288,19 +288,20 @@ var
                     Contingencies[Length(Contingencies)-1] := ReadContingency(i,KEY_METACONTINGENCY+IntToStr(j+1));
                   end;
 
-              LPromptStyle := ReadString(LS,KEY_PROMPT_STYLE,'');
-              LPromptMessa := ReadString(LS,KEY_PROMPT_MESSAGE,'');
-              LPromptTarget := ReadString(LS,KEY_PROMPT_TARGET,'');
-              if (LPromptMessa <> '') and
-                 (LPromptStyle <> '') and
-                 (LPromptTarget <> '') then
-                Prompt := TPrompt.Create(
-                  AExperiment
-                  , GetPromptStyleFromString(LPromptStyle)
-                  , Contingencies
-                  , LPromptMessa
-                  , LPromptTarget
-                );
+              Prompt := nil;
+              //LPromptStyle := ReadString(LS,KEY_PROMPT_STYLE,'');
+              //LPromptMessa := ReadString(LS,KEY_PROMPT_MESSAGE,'');
+              //LPromptTarget := ReadString(LS,KEY_PROMPT_TARGET,'');
+              //if (LPromptMessa <> '') and
+              //   (LPromptStyle <> '') and
+              //   (LPromptTarget <> '') then
+              //  Prompt := TPrompt.Create(
+              //    AExperiment
+              //    , GetPromptStyleFromString(LPromptStyle)
+              //    , Contingencies
+              //    , LPromptMessa
+              //    , LPromptTarget
+              //  );
             end;
             AExperiment.Condition[AExperiment.AppendCondition]:= C;
             Inc(i);

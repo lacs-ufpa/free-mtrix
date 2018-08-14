@@ -18,8 +18,22 @@ uses
 
 type
 
-  { TPlayerBox }
+  { TPlayerCounterLabel }
 
+  TPlayerCounterLabel = class(TLabel)
+  private
+    FID : string;
+    FSister: TLabel;
+    procedure SetSister(AValue: TLabel);
+  public
+    constructor Create(AOwner: TComponent; AID: string); reintroduce;
+    class function FromId(AOwner: TComponent; AID : string) : TPlayerCounterLabel;
+    property ID : string read FID write FID;
+    property Sister : TLabel read FSister write SetSister;
+  end;
+
+
+  { TPlayerBox }
   TPlayerBox = class (TGroupBox)
     LabelLastColor : TLabel;
     PanelLastColor : TPanel;
@@ -43,6 +57,38 @@ resourcestring
   CAP_WAINTING_FOR_PLAYER = 'Esperando Jogador...';
 
 implementation
+
+{ TPlayerCounterLabel }
+
+procedure TPlayerCounterLabel.SetSister(AValue: TLabel);
+begin
+  if FSister=AValue then Exit;
+  FSister:=AValue;
+end;
+
+constructor TPlayerCounterLabel.Create(AOwner: TComponent; AID: string);
+begin
+  inherited Create(AOwner);
+  FID := AID;
+  Caption := '0';
+  Alignment:=taCenter;
+  Layout:=tlCenter;
+end;
+
+class function TPlayerCounterLabel.FromId(AOwner: TComponent;
+  AID: string): TPlayerCounterLabel;
+var i : integer;
+begin
+  Result := nil;
+  with AOwner do
+    for i := 0 to ComponentCount-1 do
+      if Components[i] is TPlayerCounterLabel then
+        if TPlayerCounterLabel(Components[i]).ID = AID then
+          begin
+            Result := TPlayerCounterLabel(Components[i]);
+            Break;
+          end;
+end;
 
 { TPlayerBox }
 
@@ -91,7 +137,6 @@ begin
       Layout:=tlCenter;
       Parent := Self;
     end;
-
 
   LabelLastRowCount:= TLabel.Create(Self);
   with LabelLastRowCount do

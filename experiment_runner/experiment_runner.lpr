@@ -11,8 +11,6 @@ program experiment_runner;
 
 {$mode objfpc}{$H+}
 
-//{$DEFINE DEBUG}
-
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
@@ -36,9 +34,9 @@ var
   F : string;
 
 const
-  PAdmin : array [0..3] of string = ('--admin','--adm','-admin','-adm');
-  PPlayer : array [0..3] of string = ('--player','--play','-player','-play');
-  PWatcher : array [0..3] of string = ('--watcher','--watch','-watcher','-watch');
+  PAdmin : array [0..4] of string = ('--admin','--adm','-admin','-adm', '-a');
+  PPlayer : array [0..4] of string = ('--player','--play','-player','-play', '-p');
+  PWatcher : array [0..4] of string = ('--watcher','--watch','-watcher','-watch', '-w');
 
 {$R *.res}
 

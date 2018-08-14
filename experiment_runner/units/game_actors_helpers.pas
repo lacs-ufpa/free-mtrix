@@ -122,6 +122,7 @@ const
   C_CONDITION_TEMPLATE : TCondition =
     (
       ConditionName : '';
+      InitialMessage: '';
       Label1:'';
       Label2:'';
       Contingencies : nil;

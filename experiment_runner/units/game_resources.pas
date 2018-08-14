@@ -54,6 +54,7 @@ resourcestring
   KEY_TURN_COUNT = 'Rodada.IniciarNaJogada';    // 1
   KEY_TURN_RANDOM = 'Rodada.OrdemDeJogadaAleatória'; // Sim
 
+  KEY_INIT_MESSAGE = 'MensagemInicial';
   KEY_POINTS_COUNT = 'Pontos.AoRecomeço';
   KEY_POINTS_ONSTART_A = 'Pontos.Somar_ao_iniciar_condição.A';
   KEY_POINTS_ONSTART_B = 'Pontos.Somar_ao_iniciar_condição.B';
