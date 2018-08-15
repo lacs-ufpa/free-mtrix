@@ -22,6 +22,7 @@
 *.res
 *.rsj
 *.rst
+*.compiled
 *.sublime-project
 *.sublime-workspace
 *.xml
