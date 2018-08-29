@@ -73,6 +73,7 @@ procedure TFormRegressiveCounter.ZeroReachedBlack(Sender: TObject);
 begin
   FOnZeroReached := FOnZeroReachedOrange;
   LabelGroup1Count.Font.Color := $0000A5FF;
+  LabelTimer.Hide;
 end;
 
 procedure TFormRegressiveCounter.TimerMessageTimer(Sender: TObject);
@@ -124,6 +125,7 @@ begin
   FOnZeroReachedOrange := FOnZeroReached;
   FOnZeroReached := @ZeroReachedBlack;
   LabelGroup1Count.Font.Color := clBlack;
+  LabelTimer.Show;
 end;
 
 procedure TFormRegressiveCounter.Stop;
@@ -134,7 +136,7 @@ end;
 
 procedure TFormRegressiveCounter.Start;
 begin
-  LabelTimer.Show;
+  //LabelTimer.Show;
   Reset;
 end;
 
@@ -147,6 +149,7 @@ end;
 procedure TFormRegressiveCounter.SetupConditionB;
 begin
   LabelGroup1Count.Font.Color := $0000A5FF;
+  LabelTimer.Hide;
   Start;
 end;
 

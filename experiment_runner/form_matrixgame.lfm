@@ -5126,7 +5126,7 @@ object FormMatrixGame: TFormMatrixGame
     Height = 434
     Title = 'Abrir Experimento'
     DefaultExt = '.ini'
-    Filter = 'txt|*.txt|ini|*.ini'
+    Filter = 'Arquivo de Configuração|*.txt|*.ini'
     FilterIndex = 2
     InitialDir = 'Pesquisadores'
     Options = [ofNoChangeDir, ofFileMustExist, ofNoNetworkButton, ofEnableSizing, ofDontAddToRecent]

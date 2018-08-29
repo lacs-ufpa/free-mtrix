@@ -247,7 +247,11 @@ begin
         CreateRegressiveCounter;
         FormMatrixGame.SetGameActor(gaAdmin);
       end;
-    'p': FormMatrixGame.SetGameActor(gaPlayer);
+    'p':
+      begin
+        FormRegressiveCounter := nil;
+        FormMatrixGame.SetGameActor(gaPlayer);
+      end;
     'w': FormMatrixGame.SetGameActor(gaWatcher);
     else
       if not Assigned(FGameControl) then

@@ -714,7 +714,11 @@ begin
     end;
 
   if G1 > 0 then
+  begin
     IncLabel(LabelGroup1, G1);
+    if Assigned(FormRegressiveCounter) then
+      IncLabel(FormRegressiveCounter.LabelGroup1Count);
+  end;
 
   if G2 > 0 then
     IncLabel(LabelGroup2, G2);
