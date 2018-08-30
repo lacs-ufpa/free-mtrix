@@ -1086,14 +1086,20 @@ end;
 function TExperiment.ContingencyFired(AContingencyName: string): Boolean;
 var
   i: Integer;
+  LContingencyName : string;
 begin
   Result := False;
   for i:= 0 to ContingenciesCount[CurrentConditionI]-1 do
-    if Condition[CurrentConditionI].Contingencies[i].ContingencyName.Contains(AContingencyName) then
-      begin
-        Result := Condition[CurrentConditionI].Contingencies[i].Fired;
-        Break;
-      end;
+    begin
+      LContingencyName := Condition[CurrentConditionI].Contingencies[i].ContingencyName;
+      WriteLn(LContingencyName, ' ', AContingencyName);
+      if UpperCase(LContingencyName).Contains(UpperCase(AContingencyName)) then
+        if Condition[CurrentConditionI].Contingencies[i].Fired then
+          begin
+            Result := True;
+            Break;
+          end;
+    end;
 end;
 
 function TExperiment.ShouldStartExperiment: Boolean;
