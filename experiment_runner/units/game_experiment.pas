@@ -1092,7 +1092,6 @@ begin
   for i:= 0 to ContingenciesCount[CurrentConditionI]-1 do
     begin
       LContingencyName := Condition[CurrentConditionI].Contingencies[i].ContingencyName;
-      WriteLn(LContingencyName, ' ', AContingencyName);
       if UpperCase(LContingencyName).Contains(UpperCase(AContingencyName)) then
         if Condition[CurrentConditionI].Contingencies[i].Fired then
           begin
