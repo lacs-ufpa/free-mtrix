@@ -1089,7 +1089,7 @@ var
 begin
   Result := False;
   for i:= 0 to ContingenciesCount[CurrentConditionI]-1 do
-    if Condition[CurrentConditionI].Contingencies[i].ContingencyName = AContingencyName then
+    if Condition[CurrentConditionI].Contingencies[i].ContingencyName.Contains(AContingencyName) then
       begin
         Result := Condition[CurrentConditionI].Contingencies[i].Fired;
         Break;
