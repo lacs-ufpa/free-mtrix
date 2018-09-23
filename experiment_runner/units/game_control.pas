@@ -1196,7 +1196,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor.ShowPoints(
                 'A tarefa terminou, obrigado por sua participação!'+LineEnding+
                 'Você produziu ' + Pts + ' fichas e ' +
-                LabelGroup1.Caption + ' + '+ LabelGroup2.Caption +
+                LabelGroup1.Caption +
                 ' itens escolares serão doados a uma escola pública.'
               );
 
@@ -1242,7 +1242,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor.ShowPoints(
           'A tarefa terminou, obrigado por sua participação!'+LineEnding+
           'Você produziu ' + Pts + ' fichas e ' +
-          LabelGroup1.Caption + ' + '+ LabelGroup2.Caption +
+          LabelGroup2.Caption +
           ' itens escolares serão doados a uma escola pública.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
@@ -1388,7 +1388,6 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   var
     LConsequence : TConsequence;
   begin
-    WriteLn(AMessage.Text);
     LConsequence := TConsequence.Create(nil, AMessage[3]);
     LConsequence.GenerateMessage(True);
     case FActor of
@@ -1397,7 +1396,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             LabelGroup1, LabelGroup2);
 
       gaAdmin:
+        begin
           LConsequence.PresentPoints(LabelGroup1, LabelGroup2);
+          FormRegressiveCounter.ShowSystemMessage('Um item escolar foi removido.');
+        end;
     end;
 
     if Assigned(FormMatrixGame) then
