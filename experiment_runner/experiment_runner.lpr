@@ -11,7 +11,7 @@ program experiment_runner;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE DEBUG}
+//{$DEFINE DEBUG}
 
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
@@ -26,7 +26,7 @@ uses
   {$ENDIF}
   , StrUtils, Forms, Classes, SysUtils
   , helpers
-  , form_matrixgame
+  , form_matrixgame, game_view
   ;
 
 

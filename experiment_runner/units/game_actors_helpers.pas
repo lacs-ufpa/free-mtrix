@@ -22,7 +22,7 @@ function GetColorFromCode(ACode : TGameColor) : TColor;
 function GetMessagesFromPromptStyle(APromptStyle : TPromptStyle;
   AContingencies : TContingencies) : TStringList;
 function FirstDelimitedString(S : string):string;
-procedure IncLabel(ALabel : TLabel; AValue:integer=0);
+procedure IncCount(var ALabelCount : integer; AValue:integer=0);
 
 const
 
@@ -287,16 +287,11 @@ begin
   Result := ExtractDelimited(1,S,['#'])
 end;
 
-procedure IncLabel(ALabel: TLabel; AValue:integer);
-var
-  C : integer;
+procedure IncCount(var ALabelCount: integer; AValue:integer);
 begin
-  C := StrToInt(ALabel.Caption);
-  C += AValue;
-  if C > 0 then
-    ALabel.Caption := IntToStr(C)
-  else
-    ALabel.Caption := '0';
+  ALabelCount += AValue;
+  if ALabelCount < 0 then
+    ALabelCount := 0;
 end;
 
 end.

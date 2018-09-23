@@ -74,7 +74,7 @@ end;
 
 function TGamePoint.GetResultAsString: string;
 begin
-  Result := IntToStr(abs(FResult));
+  Result := abs(FResult).ToString;
 end;
 
 constructor TGamePoint.Create(AOwner: TComponent; AValue: integer);
@@ -96,7 +96,7 @@ begin
   inherited Create(AOwner);
   FValue := 0;//does not matter here, this creation method is called by a player, result is sent by the admin
   FVariation := 0;
-  FResult := StrToInt(AResult);
+  FResult := AResult.ToInteger;
 end;
 
 function TGamePoint.PointMessage(APrepend,

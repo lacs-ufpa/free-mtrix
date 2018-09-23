@@ -33,24 +33,8 @@ type
     ButtonExpPause: TButton;
     ButtonExpStart: TButton;
     GBLastChoice: TGroupBox;
-    GBPoints: TGroupBox;
     GBAdmin: TGroupBox;
-    ImageGroup2: TImage;
-    ImageIndA: TImage;
-    ImageInd: TImage;
-    ImageIndB: TImage;
-    ImageGroup1: TImage;
-    LabelGroup2: TLabel;
-    LabelGroup1Count: TLabel;
-    LabelGroup2Count: TLabel;
     LabelOldPlayers: TLabel;
-    LabelGroup1: TLabel;
-    LabelInd: TLabel;
-    LabelIndCount: TLabel;
-    LabelIndACount: TLabel;
-    LabelIndBCount: TLabel;
-    LabelIndA: TLabel;
-    LabelIndB: TLabel;
     ChatMemoRecv: TMemo;
     ChatMemoSend: TMemo;
     ChatPanel: TPanel;
@@ -194,13 +178,6 @@ begin
   FGameControl.OnEndChoice:=@DisableConfirmationButton;
   FGameControl.OnCleanEvent:=@CleanMatrix;
   FGameControl.SystemPopUp := PopupNotifier;
-  FGameControl.LabelGroup1 := LabelGroup1Count;
-  FGameControl.LabelGroup2 := LabelGroup2Count;
-  FGameControl.LabelPointA := LabelIndACount;
-  FGameControl.LabelPointB := LabelIndBCount;
-  FGameControl.LabelPointI := LabelIndCount;
-  FGameControl.LabelGroup1Name := LabelGroup1;
-  FGameControl.LabelGroup2Name := LabelGroup2;
   FGameControl.GroupBoxPlayers := GBLastChoice;
   FGameControl.OnInterlocking := @FExperimentBox.Interlocking;
   FGameControl.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;
@@ -288,7 +265,7 @@ begin
   // TStringGridA(StringGridMatrix).PopUpNotifier := PopupNotifier;
   TStringGridA(StringGridMatrix).ConfirmationButton := btnConfirmRow;
   StringGridMatrix.Parent := Self;
-  i := StringGridMatrix.Width+btnConfirmRow.Width+GBPoints.Width+10;
+  i := StringGridMatrix.Width+btnConfirmRow.Width+10;
   i := i div 2;
   i := (Screen.Width div 2)-i;
   StringGridMatrix.Left:=i;
@@ -303,7 +280,6 @@ begin
   btnConfirmRow.BorderSpacing.Left := 5;
   btnConfirmRow.Top := StringGridMatrix.Top;
   btnConfirmRow.Left := StringGridMatrix.BoundsRect.Right+5;
-  GBPoints.Left := btnConfirmRow.Left+btnConfirmRow.Width+10;
 
   {$IFDEF DEBUG}
   with TPlayerBox.Create(GBLastChoice,'test') do

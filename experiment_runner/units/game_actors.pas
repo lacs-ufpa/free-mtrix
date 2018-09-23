@@ -172,9 +172,11 @@ type
      function GenerateMessage(ForGroup: Boolean):string;
      procedure Clean; virtual;
      procedure PresentMessage(AControl : TWinControl);
-     procedure PresentPoints(A, B, I, G1, G2 : TLabel);
-     procedure PresentPoints(G1, G2: TLabel); overload;
-     procedure PresentPoints(APlayerBox: TPlayerBox;
+     procedure PresentPoints(var A : integer; var B : integer;
+       var G1 : integer; var G2 : integer);
+     procedure PresentPoints(var G1 : integer;
+       var G2 : integer); overload;
+     procedure PresentPoints(var APlayer: TPlayer; APlayerBox: TPlayerBox;
        APlayerLabel : TPlayerCounterLabel); overload;
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
      property Prepend : string read FPrepend;
@@ -968,46 +970,64 @@ begin
   end;
 end;
 
-procedure TConsequence.PresentPoints(A, B, I, G1, G2: TLabel); // [player_points]
+procedure TConsequence.PresentPoints(var A : integer; var B : integer;
+  var G1 : integer; var G2 : integer); // [player_points]
 begin
   //is gscPoints in FStyle then just in case...
-  if gscI in FStyle then
-    IncLabel(I, FP.ResultAsInteger);
-
-  if gscA in FStyle then
-    IncLabel(A, FP.ResultAsInteger);
+  if (gscA in FStyle) or (gscI in FStyle) then
+    IncCount(A, FP.ResultAsInteger);
 
   if gscB in FStyle then
-    IncLabel(B, FP.ResultAsInteger);
+    IncCount(B, FP.ResultAsInteger);
 
   if gscG1 in FStyle then
-    IncLabel(G1, FP.ResultAsInteger);
+    IncCount(G1, FP.ResultAsInteger);
 
   if gscG2 in FStyle then
-    IncLabel(G2, FP.ResultAsInteger);
+    IncCount(G2, FP.ResultAsInteger);
 end;
 
-procedure TConsequence.PresentPoints(G1, G2: TLabel);
+procedure TConsequence.PresentPoints(  var G1 : integer; var G2 : integer);
 begin
   if gscG1 in FStyle then
   begin
-    IncLabel(G1, FP.ResultAsInteger);
-    FormRegressiveCounter.LabelGroup1Count.Caption := G1.Caption;
+    IncCount(G1, FP.ResultAsInteger);
+    FormRegressiveCounter.LabelGroup1Count.Caption := G1.ToString;
   end;
 
   if gscG2 in FStyle then
-    IncLabel(G2, FP.ResultAsInteger);
+  begin
+    IncCount(G2, FP.ResultAsInteger);
+  end;
 end;
 
-procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox;
+procedure TConsequence.PresentPoints(var APlayer : TPlayer; APlayerBox: TPlayerBox;
   APlayerLabel: TPlayerCounterLabel);
+var
+  LPoints : integer;
+  LPointsAsString : string;
 begin
-  if (gscI in FStyle) or (gscA in FStyle) or (gscB in FStyle) then
+  if gscPoints in FStyle then
+  begin
+    if (gscA in FStyle) or (gscI in FStyle) then
+    begin
+      IncCount(APlayer.Points.A, FP.ResultAsInteger);
+      LPoints := APlayer.Points.A;
+    end;
+
+    if gscB in FStyle then
+    begin
+      IncCount(APlayer.Points.B, FP.ResultAsInteger);
+      LPoints := APlayer.Points.B;
+    end;
+
     if Assigned(APlayerBox) then
     begin
-      IncLabel(APlayerBox.LabelPointsCount, FP.ResultAsInteger);
-      APlayerLabel.Caption := APlayerBox.LabelPointsCount.Caption;
+      LPointsAsString := LPoints.ToString;
+      APlayerBox.LabelPointsCount.Caption := LPointsAsString;
+      APlayerLabel.Caption := LPointsAsString;
     end;
+  end;
 end;
 
 function TConsequence.GetShouldPublishMessage: Boolean; // for players only
