@@ -224,6 +224,9 @@ type
     property OnWriteReport : TNotifyOnWriteReport read FOnWriteReport write SetOnWriteReport;
   end;
 
+var
+  Experiment : TExperiment;
+
 resourcestring
   WARN_CANNOT_SAVE = 'O experimento não pode ser salvo.';
 

@@ -300,7 +300,7 @@ operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boole
 
 implementation
 
-uses Graphics,strutils, string_methods, game_actors_helpers, game_resources, form_regressivecounter;
+uses Graphics,strutils, string_methods, game_actors_helpers, game_resources, form_points;
 
 operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boolean;
 var
@@ -988,16 +988,20 @@ begin
 end;
 
 procedure TConsequence.PresentPoints(  var G1 : integer; var G2 : integer);
+var
+  Points : integer;
 begin
+  Points := FP.ResultAsInteger;
   if gscG1 in FStyle then
   begin
-    IncCount(G1, FP.ResultAsInteger);
-    FormRegressiveCounter.LabelGroup1Count.Caption := G1.ToString;
+    IncCount(G1, Points);
+    FormPoints.LabelItemsCount.Caption := G1.ToString;
+    FormPoints.Decrement(Points);
   end;
 
   if gscG2 in FStyle then
   begin
-    IncCount(G2, FP.ResultAsInteger);
+    IncCount(G2, Points);
   end;
 end;
 
@@ -1005,19 +1009,21 @@ procedure TConsequence.PresentPoints(var APlayer : TPlayer; APlayerBox: TPlayerB
   APlayerLabel: TPlayerCounterLabel);
 var
   LPoints : integer;
+  LPointsToIncrement : integer;
   LPointsAsString : string;
 begin
   if gscPoints in FStyle then
   begin
+    LPointsToIncrement := FP.ResultAsInteger;
     if (gscA in FStyle) or (gscI in FStyle) then
     begin
-      IncCount(APlayer.Points.A, FP.ResultAsInteger);
+      IncCount(APlayer.Points.A, LPointsToIncrement);
       LPoints := APlayer.Points.A;
     end;
 
     if gscB in FStyle then
     begin
-      IncCount(APlayer.Points.B, FP.ResultAsInteger);
+      IncCount(APlayer.Points.B, LPointsToIncrement);
       LPoints := APlayer.Points.B;
     end;
 
@@ -1027,6 +1033,9 @@ begin
       APlayerBox.LabelPointsCount.Caption := LPointsAsString;
       APlayerLabel.Caption := LPointsAsString;
     end;
+
+    if LPointsToIncrement > 0 then
+      FormPoints.Decrement(LPointsToIncrement);
   end;
 end;
 

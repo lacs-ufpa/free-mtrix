@@ -57,7 +57,6 @@ type
     FExperimentBox : TExperimentBox;
     FID: string;
     FInitParameter: string;
-    procedure RemoveCulturant(Sender : TObject);
     procedure DisableConfirmationButton(Sender : TObject);
     procedure CleanMatrix(Sender: TObject; AEnabled : Boolean);
     procedure PlayerExit(P : TPlayer; AMessage : string);
@@ -83,8 +82,9 @@ implementation
 
 uses
   form_chooseactor
-  , form_regressivecounter
+  , form_points
   , game_resources
+  , game_experiment
   , game_visual_matrix_a
   ;
 
@@ -96,22 +96,6 @@ procedure TFormMatrixGame.TimerTimer(Sender: TObject);
 begin
   Timer.Enabled:=False;
   PopupNotifier.Visible:=False;
-end;
-
-procedure TFormMatrixGame.RemoveCulturant(Sender: TObject);
-var
-  LStyle : TConsequenceStyle;
-  LConsequence : TConsequence;
-begin
-  LStyle := [gscPoints, gscBroadcastMessage, gscG1, gscMessage];
-  LConsequence := TConsequence.Create(
-  nil, -1,LStyle, ['Um item escolar foi removido.','','','','','','','']);
-
-  FGameControl.SendMessage(
-    K_PUNISHER,
-    ['ALL',
-    LConsequence.AsString]);
-  LConsequence.Free;
 end;
 
 procedure TFormMatrixGame.DisableConfirmationButton(Sender: TObject);
@@ -209,10 +193,8 @@ end;
 procedure TFormMatrixGame.FormActivate(Sender: TObject);
   procedure CreateRegressiveCounter;
   begin
-    FormRegressiveCounter := TFormRegressiveCounter.Create(Self);
-    FormRegressiveCounter.OnZeroReached:=@RemoveCulturant;
-    FormRegressiveCounter.UpperTime := 30;
-    FormRegressiveCounter.Show;
+    FormPoints := TFormPoints.Create(Self);
+    FormPoints.Show;
   end;
 begin
   StringGridMatrix.ClearSelections;
@@ -226,7 +208,7 @@ begin
       end;
     'p':
       begin
-        FormRegressiveCounter := nil;
+        FormPoints := nil;
         FormMatrixGame.SetGameActor(gaPlayer);
       end;
     'w': FormMatrixGame.SetGameActor(gaWatcher);
@@ -347,7 +329,7 @@ begin
   ButtonExpStart.Caption := CAPTION_START;
   ButtonExpCancel.Enabled := not ButtonExpStart.Enabled;
   ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
-  FGameControl.Experiment.SaveToFile(OpenDialog.FileName+'.canceled');
+  Experiment.SaveToFile(OpenDialog.FileName+'.canceled');
   StringGridMatrix.Clean;
   StringGridMatrix.Options := [];
   FGameControl.Cancel;

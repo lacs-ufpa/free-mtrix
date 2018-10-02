@@ -32,7 +32,6 @@ type
     FID: string;
     FActor : TGameActor;
     FZMQActor : TZMQActor;
-    FExperiment : TExperiment;
     function GetPlayerBox(AID:string) : TPlayerBox;
     function GetActorNicname(AID:string) : string;
     function MessageHas(const A_CONST : string; AMessage : TStringList; I:ShortInt=0): Boolean;
@@ -106,7 +105,6 @@ type
     procedure Pause;
     procedure Resume;
     procedure Stop;
-    property Experiment : TExperiment read FExperiment write FExperiment;
     property ID : string read FID;
   public
     procedure ShowSystemPopUp(AText:string; AInterval : integer);
@@ -164,7 +162,7 @@ uses ButtonPanel,Controls,ExtCtrls, LazUTF8, Forms, Dialogs, strutils
      , popup_hack
      , form_matrixgame
      , form_chooseactor
-     , form_regressivecounter
+     , form_points
      , presentation_classes
      , game_resources
      , game_actors_helpers
@@ -186,7 +184,6 @@ const
 procedure TGameControl.EndExperiment(Sender: TObject);
 begin
   ShowSystemPopUp('O Experimento terminou.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
-  if Assigned(FormRegressiveCounter) then FormRegressiveCounter.Stop;
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
 
@@ -321,7 +318,7 @@ end;
 
 procedure TGameControl.Pause;
 begin
-  //FExperiment.State:=xsPaused;
+  //Experiment.State:=xsPaused;
   // save to file
 
   // inform players
@@ -329,7 +326,7 @@ end;
 
 procedure TGameControl.Resume;
 begin
-  //FExperiment.State:=xsRunning;
+  //Experiment.State:=xsRunning;
   // load from file
 
   // wait for players
@@ -338,7 +335,7 @@ end;
 procedure TGameControl.Stop;
 begin
   // cleaning
-  FExperiment.Clean;
+  Experiment.Clean;
 end;
 
 function TGameControl.GetPlayerBox(AID: string): TPlayerBox;
@@ -359,11 +356,11 @@ begin
   case FActor of
     gaPlayer: begin
       Result := 'UNKNOWN';
-      if FExperiment.Player[AID].ID <> '' then
-        Result := FExperiment.Player[AID].Nicname;
+      if Experiment.Player[AID].ID <> '' then
+        Result := Experiment.Player[AID].Nicname;
     end;
 
-    gaAdmin: Result := FExperiment.Researcher;
+    gaAdmin: Result := Experiment.Researcher;
   end;
 end;
 
@@ -400,18 +397,18 @@ begin
 
   if Admin then
     begin
-      LPlayerLabel := TLabel.Create(FormRegressiveCounter.GBTokens);
+      LPlayerLabel := TLabel.Create(FormPoints.GBTokens);
       with LPlayerLabel do
         begin
           Caption := P.Nicname;
           Alignment:=taLeftJustify;
           Layout:=tlCenter;
-          Parent := FormRegressiveCounter.GBTokens;
+          Parent := FormPoints.GBTokens;
         end;
       LPlayerCounterLabel :=
-        TPlayerCounterLabel.Create(FormRegressiveCounter.GBTokens, P.ID);
+        TPlayerCounterLabel.Create(FormPoints.GBTokens, P.ID);
       LPlayerCounterLabel.Sister := LPlayerLabel;
-      LPlayerCounterLabel.Parent := FormRegressiveCounter.GBTokens;
+      LPlayerCounterLabel.Parent := FormPoints.GBTokens;
     end;
 end;
 
@@ -434,7 +431,7 @@ begin
         end;
     end;
   if Admin then
-    with TPlayerCounterLabel.FromId(FormRegressiveCounter.GBTokens, P.ID) do
+    with TPlayerCounterLabel.FromId(FormPoints.GBTokens, P.ID) do
       begin
         Caption := '0';
         Sister.Caption := P.Nicname;
@@ -484,18 +481,18 @@ procedure TGameControl.MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
 var
   P : TPlayer;
 begin
-  P := FExperiment.PlayerFromString[ANewPlayerString]; // new
+  P := Experiment.PlayerFromString[ANewPlayerString]; // new
   UpdatePlayerBox(P,Self.ID = P.ID, FActor=gaAdmin);
-  if FExperiment.ConditionMustBeUpdated <> '' then
+  if Experiment.ConditionMustBeUpdated <> '' then
     begin
-      NextConditionSetup(FExperiment.ConditionMustBeUpdated);
-      FExperiment.ConditionMustBeUpdated := '';
+      NextConditionSetup(Experiment.ConditionMustBeUpdated);
+      Experiment.ConditionMustBeUpdated := '';
     end;
   NextGenerationSetup(P.ID);
   if FActor=gaPlayer then
     begin
-      P.Turn := FExperiment.Player[AOldPlayerID].Turn;
-      FExperiment.Player[AOldPlayerID] := P;
+      P.Turn := Experiment.Player[AOldPlayerID].Turn;
+      Experiment.Player[AOldPlayerID] := P;
       EnablePlayerMatrix(Self.ID,0, True);
     end;
 end;
@@ -608,21 +605,19 @@ begin
 
     gaAdmin:
       begin
-        if gscDelayPunishement in LConsequence.Style then
-        begin
-          FormRegressiveCounter.ChangeToBlack;
-        end;
         if ForGroup then
           LConsequence.PresentPoints(FCountGroup1, FCountGroup2)
         else
           begin
             LPlayer := Experiment.PlayerFromID[AID];
             LPlayerLabel :=
-              TPlayerCounterLabel.FromId(FormRegressiveCounter.GBTokens, AID);
+              TPlayerCounterLabel.FromId(FormPoints.GBTokens, AID);
             LPlayerBox := GetPlayerBox(AID);
             LConsequence.PresentPoints(LPlayer, LPlayerBox, LPlayerLabel);
             Experiment.PlayerFromID[AID] := LPlayer;
           end;
+        if (Experiment.CurrentCondition.Turn.Count = 2) then
+          FormPoints.CummulativeEffect(3);
       end;
   end;
 
@@ -649,7 +644,7 @@ begin
   LInitialMessage := Sanitize(ExtractDelimited(2,S,['|']));
   FLabelGroup1Name := Sanitize(ExtractDelimited(3,S,['|']));
   FLabelGroup2Name := Sanitize(ExtractDelimited(4,S,['|']));
-  if FExperiment.ABPoints then
+  if Experiment.ABPoints then
     begin
       A := StrToInt(ExtractDelimited(5,S,['|']));
       B := StrToInt(ExtractDelimited(6,S,['|']));
@@ -666,8 +661,8 @@ begin
   if G1 > 0 then
   begin
     IncCount(FCountGroup1, G1);
-    if Assigned(FormRegressiveCounter) then
-      FormRegressiveCounter.LabelGroup1Count.Caption := CountGroup1.ToString;
+    if Assigned(FormPoints) then
+      FormPoints.LabelItemsCount.Caption := CountGroup1.ToString;
   end;
 
   if G2 > 0 then
@@ -677,17 +672,17 @@ begin
     gaPlayer:
       begin
         // here condition 0 is used as a template
-        // because FExperiment is admin only
-        C := FExperiment.Condition[0];
+        // because Experiment is admin only
+        C := Experiment.Condition[0];
         C.ConditionName := LConditionName;
         C.InitialMessage := LInitialMessage;
-        //P := FExperiment.PlayerFromID[ID]; should refactor this to use inc instead inclabel
+        //P := Experiment.PlayerFromID[ID]; should refactor this to use inc instead inclabel
         with C.Points do
           begin
             OnStart.A := A;
             OnStart.B := B;
           end;
-        FExperiment.Condition[0] := C;
+        Experiment.Condition[0] := C;
         {$IFDEF DEBUG}
         FormMatrixGame.ChatMemoRecv.Append(FExperiment.CurrentCondition.Points.OnStart.A.ToString);
         {$ENDIF}
@@ -695,7 +690,7 @@ begin
           if C.InitialMessage <> '' then
             ShowSystemPopUp(C.InitialMessage, 10000);
 
-          if FExperiment.ABPoints then
+          if Experiment.ABPoints then
             begin
               //Inc(P.Points.A, A);
               //Inc(P.Points.B, B);
@@ -707,30 +702,25 @@ begin
               //Inc(P.Points.A, A);
               IncCount(FCountPointA, A);
             end;
-        //FExperiment.PlayerFromID[ID] := P;
+        //Experiment.PlayerFromID[ID] := P;
       end;
 
     gaAdmin:
       if IsConditionStart then
       begin
-        if Assigned(FormRegressiveCounter) then
+        if Assigned(FormPoints) then
         begin
           if LInitialMessage <> '' then
-            FormRegressiveCounter.ShowSystemMessage(LInitialMessage);
+            FormPoints.ShowSystemMessage(LInitialMessage);
 
-          case LConditionName of
-            'Condição A1', 'Condição A2', 'Condição A3' :
-              FormRegressiveCounter.SetupConditionA;
-            'Condição B1', 'Condição B2', 'Condição B3' :
-              FormRegressiveCounter.SetupConditionB;
-          end;
+          FormPoints.SetupCondition;
         end;
-        for i := Low(FExperiment.Players) to High(FExperiment.Players) do
+        for i := Low(Experiment.Players) to High(Experiment.Players) do
           begin
-            P := FExperiment.Players[i];
+            P := Experiment.Players[i];
             PB := GetPlayerBox(P.ID);
 
-            if FExperiment.ABPoints then
+            if Experiment.ABPoints then
               begin
                 P.Points.A := P.Points.A+A;
                 P.Points.B := P.Points.B+B;
@@ -741,7 +731,7 @@ begin
                 P.Points.A := P.Points.A+A;
                 PB.LabelPointsCount.Caption:=(P.Points.A+P.Points.B).ToString;
               end;
-            FExperiment.Players[i] := P;
+            Experiment.Players[i] := P;
           end;
       end;
   end;
@@ -755,7 +745,7 @@ var
   LNewB : integer = 0;
   PB : TPlayerBox;
 begin
-  with FExperiment.CurrentCondition.Points do
+  with Experiment.CurrentCondition.Points do
     begin
       A := OnStart.A;
       B := OnStart.B;
@@ -766,7 +756,7 @@ begin
   case FActor of
     gaPlayer:
       if Self.ID = AID then
-        if FExperiment.ABPoints then
+        if Experiment.ABPoints then
           begin
             IncCount(FCountPointA,A);
             IncCount(FCountPointB,B);
@@ -779,7 +769,7 @@ begin
         PB := GetPlayerBox(AID);
         LNewA := A;
         LNewB := B;
-        if FExperiment.ABPoints then
+        if Experiment.ABPoints then
           LNewA += LNewB;
         //IncCount(PB.LabelPointsCount,LNewA); todo:fix this
       end;
@@ -788,7 +778,7 @@ end;
 
 procedure TGameControl.EnablePlayerMatrix(AID:string; ATurn:integer; AEnabled:Boolean);
 begin
-  if FExperiment.PlayerFromID[AID].Turn = ATurn then
+  if Experiment.PlayerFromID[AID].Turn = ATurn then
     begin
       if Assigned(OnCleanEvent) then
         OnCleanEvent(Self, AEnabled);
@@ -830,24 +820,24 @@ begin
     FActor := gaWatcher;
 
   case FActor of
-    gaAdmin:FExperiment := TExperiment.Create(FZMQActor.Owner,AppPath);
-    gaPlayer:FExperiment := TExperiment.Create(FZMQActor.Owner);
-    gaWatcher:FExperiment := TExperiment.Create(FZMQActor.Owner);
+    gaAdmin:Experiment := TExperiment.Create(FZMQActor.Owner,AppPath);
+    gaPlayer:Experiment := TExperiment.Create(FZMQActor.Owner);
+    gaWatcher:Experiment := TExperiment.Create(FZMQActor.Owner);
   end;
-  FExperiment.OnStartTurn:=@StartTurn;
-  FExperiment.OnStartCondition:=@StartCondition;
-  FExperiment.OnStartCycle:=@StartCycle;
-  FExperiment.OnStartExperiment:=@StartExperiment;
-  FExperiment.OnStartGeneration:=@StartGeneration;
-  FExperiment.OnEndExperiment:= @EndExperiment;
-  FExperiment.OnInterlocking:=@Interlocking;
-  FExperiment.OnTargetInterlocking:=@TargetInterlocking;
+  Experiment.OnStartTurn:=@StartTurn;
+  Experiment.OnStartCondition:=@StartCondition;
+  Experiment.OnStartCycle:=@StartCycle;
+  Experiment.OnStartExperiment:=@StartExperiment;
+  Experiment.OnStartGeneration:=@StartGeneration;
+  Experiment.OnEndExperiment:= @EndExperiment;
+  Experiment.OnInterlocking:=@Interlocking;
+  Experiment.OnTargetInterlocking:=@TargetInterlocking;
 
-  //FExperiment.OnEndTurn := @NextTurn;
-  //FExperiment.OnEndCycle := @NextCycle;
-  //FExperiment.OnEndCondition:= @NextCondition;
-  //FExperiment.OnEndGeneration:=@NextLineage;
-  //FExperiment.OnConsequence:=@Consequence;
+  //Experiment.OnEndTurn := @NextTurn;
+  //Experiment.OnEndCycle := @NextCycle;
+  //Experiment.OnEndCondition:= @NextCondition;
+  //Experiment.OnEndGeneration:=@NextLineage;
+  //Experiment.OnConsequence:=@Consequence;
 
   SendRequest(K_LOGIN,[]); // admin cannot send requests
 end;
@@ -859,7 +849,7 @@ end;
 
 function TGameControl.LoadFromFile(AFilename: string): Boolean;
 begin
-  Result := FExperiment.LoadFromFile(AFilename);
+  Result := Experiment.LoadFromFile(AFilename);
   if not Result then Exit;
 
   SetMatrix;
@@ -874,7 +864,7 @@ end;
 procedure TGameControl.SetMatrix;
 begin
   if Assigned(FormMatrixGame) then
-    SetMatrixType(FormMatrixGame.StringGridMatrix, FExperiment.MatrixType);
+    SetMatrixType(FormMatrixGame.StringGridMatrix, Experiment.MatrixType);
 end;
 
 // called from outside
@@ -937,7 +927,7 @@ var
 begin
   case AMessage of
     K_CHAT_M  : begin
-      //if (FActor = gaAdmin) and (not FExperiment.ResearcherCanChat) then Exit;
+      //if (FActor = gaAdmin) and (not Experiment.ResearcherCanChat) then Exit;
       SetM([
         AMessage
         , GetActorNicname(FZMQActor.ID)
@@ -989,8 +979,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     case FActor of
       gaPlayer:
         begin
-          P := FExperiment.PlayerFromString[AMessage[1]];
-          FExperiment.AppendPlayer(P);
+          P := Experiment.PlayerFromString[AMessage[1]];
+          Experiment.AppendPlayer(P);
           CreatePlayerBox(P, Self.ID = P.ID)
         end;
     end;
@@ -1022,7 +1012,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     LIDTurn: String;
     LCount, i: Integer;
   begin
-    P := FExperiment.PlayerFromID[AMessage[1]];
+    P := Experiment.PlayerFromID[AMessage[1]];
     // add last responses to player box
     FPlayerBox := GetPlayerBox(P.ID);
     FPlayerBox.LabelLastRowCount.Caption := AMessage[2];
@@ -1034,7 +1024,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       gaPlayer:
         begin
           // last turn // end cycle
-          if FExperiment.PlayerTurn = FExperiment.PlayersCount-1 then
+          if Experiment.PlayerTurn = Experiment.PlayersCount-1 then
             begin
               // update next turn if necessary
               if AMessage[4] <> #32 then
@@ -1046,9 +1036,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                         LIDTurn := ExtractDelimited(i,AMessage[4],['+']);
                         if Self.ID = ExtractDelimited(1,LIDTurn,['|']) then
                           begin
-                            P := FExperiment.PlayerFromID[Self.ID];
+                            P := Experiment.PlayerFromID[Self.ID];
                             P.Turn := StrToInt(ExtractDelimited(2,LIDTurn,['|']));
-                            FExperiment.PlayerFromID[Self.ID] := P;
+                            Experiment.PlayerFromID[Self.ID] := P;
                           end;
                       end;
                 end;
@@ -1061,10 +1051,10 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               // EnablePlayerMatrix(Self.ID,0, True)
 
               // wait for server
-              FExperiment.PlayerTurn := 0;
+              Experiment.PlayerTurn := 0;
               Exit;
             end;
-          Inc(FExperiment.PlayerTurn);
+          Inc(Experiment.PlayerTurn);
 
           if Self.ID = P.ID then
             begin
@@ -1072,7 +1062,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                 OnEndChoice(Self);
             end
           else
-            EnablePlayerMatrix(Self.ID,FExperiment.PlayerTurn, True);
+            EnablePlayerMatrix(Self.ID,Experiment.PlayerTurn, True);
       end;
     end;
   end;
@@ -1081,13 +1071,13 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   begin
     case FActor of
       gaPlayer:
-          if FExperiment.PlayerFromID[Self.ID].Turn = 0 then
+          if Experiment.PlayerFromID[Self.ID].Turn = 0 then
               EnablePlayerMatrix(Self.ID, 0, True)
           else
               ShowSystemPopUp('Começou! Aguarde sua vez.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
 
       gaAdmin:
-        NextConditionSetup(FExperiment.CurrentConditionAsString,True);
+        NextConditionSetup(Experiment.CurrentConditionAsString,True);
 
     end;
   end;
@@ -1100,7 +1090,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     if Assigned(FormMatrixGame) then
       FormMatrixGame.ChatMemoRecv.Lines.Append(ALn);
     if FActor = gaAdmin then
-      FExperiment.WriteChatLn(ALn);
+      Experiment.WriteChatLn(ALn);
   end;
 
   procedure SayGoodBye(AID:string); // [player_points]
@@ -1112,7 +1102,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           //DeletePlayerBox(AID); // old player
           if Self.ID = AID then
             begin
-              if FExperiment.ABPoints then
+              if Experiment.ABPoints then
                 Pts := IntToStr(CountPointA+CountPointB)
               else
                 Pts := CountPointA.ToString;
@@ -1139,7 +1129,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             end
           else
             ShowSystemPopUp(
-              FExperiment.PlayerFromID[AID].Nicname+ ' saiu. Por favor, aguarde a chegada de alguém para ocupar o lugar.',
+              Experiment.PlayerFromID[AID].Nicname+ ' saiu. Por favor, aguarde a chegada de alguém para ocupar o lugar.',
               GLOBAL_SYSTEM_MESSAGE_INTERVAL
             );
         end;
@@ -1162,7 +1152,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor := TFormChooseActor.Create(nil);
           FormChooseActor.Style := K_END;
 
-          if FExperiment.ABPoints then
+          if Experiment.ABPoints then
             Pts := (CountPointA+CountPointB).ToString
           else
             Pts := CountPointA.ToString;
@@ -1204,7 +1194,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               if AMessage[1] <> #32 then
                 begin
                   LPlayerBox := GetPlayerBox(AMessage[1]);
-                  P := FExperiment.PlayerFromID[AMessage[1]];
+                  P := Experiment.PlayerFromID[AMessage[1]];
                   if Assigned(OnPlayerExit) then
                     OnPlayerExit(P, LPlayerBox.Caption+','+LPlayerBox.LabelPointsCount.Caption);
                   //DeletePlayerBox(AMessage[1]);
@@ -1224,7 +1214,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           //end
         else
           if AMessage[2] <> #32 then
-            FExperiment.ConditionMustBeUpdated := AMessage[2];
+            Experiment.ConditionMustBeUpdated := AMessage[2];
       end
     else EndExperimentMessage;
   end;
@@ -1247,7 +1237,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             for i := 3 to AMessage.Count -1 do
               begin
                 MID := ExtractDelimited(1,AMessage[i],['#']);
-                P := FExperiment.PlayerFromID[MID];
+                P := Experiment.PlayerFromID[MID];
                 LQConsequence += DeduceNicname(ShowConsequence(MID, ExtractDelimited(2,AMessage[i],['#']),MID = 'M',False),P)+LineEnding;
               end;
 
@@ -1312,37 +1302,12 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       end;
   end;
 
-  procedure ReceivePunishment;
-  var
-    LConsequence : TConsequence;
-  begin
-    LConsequence := TConsequence.Create(nil, AMessage[3]);
-    LConsequence.GenerateMessage(True);
-    case FActor of
-      gaPlayer:
-          LConsequence.PresentPoints(FCountPointA,FCountPointB,
-            FCountGroup1, FCountGroup2);
-
-      gaAdmin:
-        begin
-          LConsequence.PresentPoints(FCountGroup1, FCountGroup2);
-          FormRegressiveCounter.ShowSystemMessage('Um item escolar foi removido.');
-        end;
-    end;
-
-    if Assigned(FormMatrixGame) then
-      LConsequence.PresentMessage(FormMatrixGame)
-    else
-      LConsequence.PresentMessage(TWinControl(Owner.Owner))
-  end;
-
 begin
   if MHas(K_ARRIVED) then ReceiveActor;
   if MHas(K_CHAT_M)  then ReceiveChat;
   if MHas(K_CHOICE)  then ReceiveChoice;
   if MHas(K_MESSAGE) then ShowConsequence(AMessage[1],AMessage[2],StrToBool(AMessage[3]));
   if MHas(K_GMESSAGE) then ShowGroupedMessage(AMessage[1]);
-  if MHas(K_PUNISHER) then ReceivePunishment;
   if MHas(K_START) then NotifyPlayers;
   if MHas(K_QUESTION) then ShowQuestion;
   if MHas(K_MOVQUEUE) then
@@ -1368,25 +1333,25 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
       TS,
       PS : string;
   begin
-    if not FExperiment.PlayerIsPlaying[ARequest[0]] then
+    if not Experiment.PlayerIsPlaying[ARequest[0]] then
       begin
-        if FExperiment.PlayersCount < FExperiment.CurrentCondition.Turn.Value then
+        if Experiment.PlayersCount < Experiment.CurrentCondition.Turn.Value then
           begin
             // ok, let player login
             P.ID := ARequest[0];
 
             // check if we already know this player
-            i := FExperiment.PlayerIndexFromID[P.ID];
+            i := Experiment.PlayerIndexFromID[P.ID];
             if i > -1 then
               begin
                 // then load p data
-                P := FExperiment.Player[i]
+                P := Experiment.Player[i]
               end
             else
               begin
                 // if not then generate and save p data
-                i := FExperiment.AppendPlayer;
-                if FExperiment.GenPlayersAsNeeded then
+                i := Experiment.AppendPlayer;
+                if Experiment.GenPlayersAsNeeded then
                   P.Nicname := GenResourceName(i)
                 else
                   P.Nicname := InputBox
@@ -1400,8 +1365,8 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
                 P.Status:=gpsPlaying;
                 P.Choice.Color:=gcNone;
                 P.Choice.Row:=grNone;
-                P.Turn := FExperiment.FirstTurn[i];
-                FExperiment.Player[i] := P;
+                P.Turn := Experiment.FirstTurn[i];
+                Experiment.Player[i] := P;
               end;
 
             // create/config playerbox
@@ -1412,24 +1377,24 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
             ARequest[2] := GA_ADMIN+ARequest[2]+K_ARRIVED;
 
             // player
-            PS := FExperiment.PlayerAsString[P];
+            PS := Experiment.PlayerAsString[P];
             //ARequest.Append(PS);
 
             // append current players playing
-            if FExperiment.PlayersCount > 0 then
-              for i:=0 to FExperiment.PlayersCount -1 do
-                if FExperiment.Player[i].ID <> P.ID then
+            if Experiment.PlayersCount > 0 then
+              for i:=0 to Experiment.PlayersCount -1 do
+                if Experiment.Player[i].ID <> P.ID then
                   begin
-                    TS := FExperiment.PlayerAsString[FEXperiment.Player[i]];
+                    TS := Experiment.PlayerAsString[Experiment.Player[i]];
                     ARequest.Append(TS);  // FROM 3 to COUNT-5
                   end;
             // appen matrix type
-            ARequest.Append(FExperiment.MatrixTypeAsString); // COUNT-4
+            ARequest.Append(Experiment.MatrixTypeAsString); // COUNT-4
 
             // append chat data
-            if FExperiment.ShowChat and Assigned(FormMatrixGame) then
+            if Experiment.ShowChat and Assigned(FormMatrixGame) then
               begin
-                if FExperiment.SendChatHistoryForNewPlayers then
+                if Experiment.SendChatHistoryForNewPlayers then
                   ARequest.Append(FormMatrixGame.ChatMemoRecv.Lines.Text) // COUNT-3
                 else
                   ARequest.Append('[CHAT]'); // must append something to keep the message envelop with standard size
@@ -1438,17 +1403,17 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
               ARequest.Append('[NOCHAT]'); // must append something to keep the message envelop with standard size
 
             // append global configs.
-            ARequest.Append(BoolToStr(FExperiment.ABPoints)); // COUNT-2
+            ARequest.Append(BoolToStr(Experiment.ABPoints)); // COUNT-2
 
             // append condition global data
-            ARequest.Append(FExperiment.CurrentConditionAsString);
+            ARequest.Append(Experiment.CurrentConditionAsString);
 
             // inform all players about the new player, including itself
             FZMQActor.SendMessage([K_ARRIVED,PS]);
 
             // start Experiment
-            if FExperiment.ShouldStartExperiment then
-              FExperiment.Play;
+            if Experiment.ShouldStartExperiment then
+              Experiment.Play;
 
           end
         else
@@ -1467,38 +1432,38 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     P : TPlayer;
     S : string;
   begin
-    P := FExperiment.PlayerFromID[ARequest[0]];                    // 0 = ID, 1 = #32
+    P := Experiment.PlayerFromID[ARequest[0]];                    // 0 = ID, 1 = #32
     P.Choice.Row:= GetRowFromString(ARequest[3]);                  // 3 row
     P.Choice.Color:= GetGameColorFromString(ARequest[4]);          // 4 color
     ARequest[2] := K_CHOICE+K_ARRIVED;                             // 2 message topic
 
     // generate individual consequences and update player
-    S := FExperiment.ConsequenceStringFromChoice[P];
+    S := Experiment.ConsequenceStringFromChoice[P];
 
     // update turn
-    ARequest.Append(FExperiment.NextTurn);                         // 5
+    ARequest.Append(Experiment.NextTurn);                         // 5
 
     // individual consequences
     ARequest.Append(S);                                            // 6
 
     // if all participants played
-    if FExperiment.IsEndCycle then
+    if Experiment.IsEndCycle then
       begin
         // group consequences from choices of all players
-        ARequest.Append(FExperiment.ConsequenceStringFromChoices); // 7
+        ARequest.Append(Experiment.ConsequenceStringFromChoices); // 7
 
         // prompt question if an odd row was selected
-        S := FExperiment.ShouldAskQuestion;
+        S := Experiment.ShouldAskQuestion;
         ARequest.Append(S);                                        // 8
 
         // #32 resume else NextGeneration = PlayerToKick AID
-        ARequest.Append(FExperiment.NextGeneration);               // 9
+        ARequest.Append(Experiment.NextGeneration);               // 9
 
         // Check if we need to end the current condition
         if S <> #32 then
           ARequest.Append(#32)// ValidateQuestionResponse
         else
-          ARequest.Append(FExperiment.NextCondition);              // 10
+          ARequest.Append(Experiment.NextCondition);              // 10
       end;
   end;
 
@@ -1509,35 +1474,35 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     i : integer;
     LPromptConsequences : TStringList;
   begin
-    P := FExperiment.PlayerFromID[ARequest[0]];
+    P := Experiment.PlayerFromID[ARequest[0]];
     ARequest[2] := K_QUESTION+K_ARRIVED;
 
     // append response of each player
-    FExperiment.CurrentCondition.Prompt.AppendResponse(P.ID,ARequest[3]);
+    Experiment.CurrentCondition.Prompt.AppendResponse(P.ID,ARequest[3]);
 
     // return to experiment and present the prompt consequence, if any
-    if FExperiment.CurrentCondition.Prompt.ResponsesCount = FExperiment.PlayersCount then
+    if Experiment.CurrentCondition.Prompt.ResponsesCount = Experiment.PlayersCount then
       begin
         // generate messages
-        LPromptConsequences := FExperiment.CurrentCondition.Prompt.AsString;
-        FExperiment.WriteReportRowPrompt;
+        LPromptConsequences := Experiment.CurrentCondition.Prompt.AsString;
+        Experiment.WriteReportRowPrompt;
         SetLength(M, 3+LPromptConsequences.Count);
         M[0] := K_QMESSAGE;
         M[1] := ARequest[4]; // generation envelop
-        M[2] := FExperiment.NextCondition;
+        M[2] := Experiment.NextCondition;
 
         if LPromptConsequences.Count > 0 then
           begin
             for i := 0 to LPromptConsequences.Count-1 do
               begin
-                P := FExperiment.PlayerFromID[ExtractDelimited(1,LPromptConsequences[i],['+'])];
+                P := Experiment.PlayerFromID[ExtractDelimited(1,LPromptConsequences[i],['+'])];
                 LPromptConsequences[i] := DeduceNicname(LPromptConsequences[i],P);
               end;
 
             for i := 0 to LPromptConsequences.Count -1 do
               M[i+3] := LPromptConsequences[i]; // messages envelop
           end;
-        FExperiment.Clean;
+        Experiment.Clean;
         // send identified messages; each player takes only its own message and ignore the rest
         FZMQActor.SendMessage(M);
       end;
@@ -1548,9 +1513,9 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     P : TPlayer;
     S : string;
   begin
-    P := FExperiment.PlayerFromID[ARequest[0]];
+    P := Experiment.PlayerFromID[ARequest[0]];
     ARequest[2] := K_RESUME+K_ARRIVED;
-    if FExperiment.GenPlayersAsNeeded then
+    if Experiment.GenPlayersAsNeeded then
       P.Nicname := GenResourceName(-1)
     else
       P.Nicname := InputBox
@@ -1560,19 +1525,19 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
           GenResourceName(-1)
         );
 
-    S := FExperiment.PlayerAsString[P];
-    FExperiment.NextGeneration := S;
+    S := Experiment.PlayerAsString[P];
+    Experiment.NextGeneration := S;
     MovePlayerQueue(S,ARequest[0]);
     ARequest.Append(S); // 3
   end;
 
 begin
-  if FExperiment.State = xsWaiting then
+  if Experiment.State = xsWaiting then
     begin
       if MHas(K_LOGIN) then ReplyLoginRequest;
     end;
 
-  if FExperiment.State = xsRunning then
+  if Experiment.State = xsRunning then
     begin
       if MHas(K_RESUME) then ReplyResume;
       if MHas(K_CHOICE) then ValidateChoice;
@@ -1599,13 +1564,13 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         // lets load already logged in players, if any
         for i:= 3 to AReply.Count -5 do
           begin
-            P := FExperiment.PlayerFromString[AReply[i]];
-            FExperiment.AppendPlayer(P);
+            P := Experiment.PlayerFromString[AReply[i]];
+            Experiment.AppendPlayer(P);
             CreatePlayerBox(P, False);
           end;
 
         // set matrix type/ stringgrid
-        FExperiment.MatrixTypeAsString:=AReply[AReply.Count-4];
+        Experiment.MatrixTypeAsString:=AReply[AReply.Count-4];
 
         // setup chat
         if Assigned(FormMatrixGame) then
@@ -1619,11 +1584,11 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
             end;
 
         // set global configs
-        FExperiment.ABPoints := StrToBool(AReply[AReply.Count-2]);
+        Experiment.ABPoints := StrToBool(AReply[AReply.Count-2]);
         //SetLabels;
 
         // we need a valid fake condition in memory for player internals (on start, on generation points).
-        FExperiment.AppendCondition(C_CONDITION_TEMPLATE);
+        Experiment.AppendCondition(C_CONDITION_TEMPLATE);
 
         // set condition specific configurations
         NextConditionSetup(AReply[AReply.Count-1], True);

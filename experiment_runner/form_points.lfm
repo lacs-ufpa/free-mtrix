@@ -1,25 +1,39 @@
-object FormRegressiveCounter: TFormRegressiveCounter
-  Left = 33
-  Height = 716
-  Top = 24
+object FormPoints: TFormPoints
+  Left = 31
+  Height = 715
+  Top = 30
   Width = 1333
-  Caption = 'FormRegressiveCounter'
-  ClientHeight = 716
+  Caption = 'FormPoints'
+  ClientHeight = 715
   ClientWidth = 1333
   LCLVersion = '1.8.4.0'
   object Panel1: TPanel
     Left = 672
-    Height = 716
+    Height = 715
     Top = 0
     Width = 661
     Align = alRight
-    ClientHeight = 716
+    ClientHeight = 715
     ClientWidth = 661
     TabOrder = 0
+    object LabelReserveItems: TLabel
+      Left = 1
+      Height = 64
+      Top = 1
+      Width = 659
+      Align = alTop
+      Alignment = taCenter
+      Caption = 'Reserva de Itens Escolares'
+      Font.Height = -47
+      Font.Style = [fsBold]
+      Layout = tlCenter
+      ParentColor = False
+      ParentFont = False
+    end
     object GBScholarItems: TGroupBox
       Left = 1
       Height = 174
-      Top = 54
+      Top = 303
       Width = 659
       Align = alTop
       AutoSize = True
@@ -996,7 +1010,7 @@ object FormRegressiveCounter: TFormRegressiveCounter
         }
         Stretch = True
       end
-      object LabelGroup1Count: TLabel
+      object LabelItemsCount: TLabel
         Left = 338
         Height = 150
         Top = 10
@@ -1016,24 +1030,10 @@ object FormRegressiveCounter: TFormRegressiveCounter
         Transparent = False
       end
     end
-    object LabelTimer: TLabel
+    object LabelItems: TLabel
       Left = 1
-      Height = 487
-      Top = 228
-      Width = 659
-      Align = alClient
-      Alignment = taCenter
-      Caption = 'Tempo'#10'30s'
-      Font.Height = -133
-      Layout = tlCenter
-      ParentColor = False
-      ParentFont = False
-      Visible = False
-    end
-    object LabelTokens1: TLabel
-      Left = 1
-      Height = 53
-      Top = 1
+      Height = 64
+      Top = 239
       Width = 659
       Align = alTop
       Alignment = taCenter
@@ -1044,20 +1044,65 @@ object FormRegressiveCounter: TFormRegressiveCounter
       ParentColor = False
       ParentFont = False
     end
+    object GBScholarItems1: TGroupBox
+      Left = 1
+      Height = 174
+      Top = 65
+      Width = 659
+      Align = alTop
+      AutoSize = True
+      ChildSizing.LeftRightSpacing = 10
+      ChildSizing.TopBottomSpacing = 10
+      ChildSizing.HorizontalSpacing = 20
+      ChildSizing.VerticalSpacing = 10
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.EnlargeVertical = crsHomogenousChildResize
+      ChildSizing.ShrinkHorizontal = crsHomogenousChildResize
+      ChildSizing.ShrinkVertical = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 2
+      ClientHeight = 170
+      ClientWidth = 655
+      Constraints.MinWidth = 400
+      Font.Height = -40
+      Font.Name = 'Monospace'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 1
+      object LabelReserveItemsCount: TLabel
+        Left = 10
+        Height = 150
+        Top = 10
+        Width = 635
+        Alignment = taCenter
+        AutoSize = False
+        Caption = '0'
+        Color = clDefault
+        Constraints.MinHeight = 150
+        Constraints.MinWidth = 150
+        Font.Color = clBlack
+        Font.Height = -67
+        Font.Name = 'Monospace'
+        Layout = tlCenter
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+    end
   end
   object Panel2: TPanel
     Left = 0
-    Height = 716
+    Height = 715
     Top = 0
     Width = 656
     Align = alLeft
-    ClientHeight = 716
+    ClientHeight = 715
     ClientWidth = 656
     TabOrder = 1
     object ImageInd: TImage
       Left = 1
       Height = 100
-      Top = 54
+      Top = 303
       Width = 654
       Align = alTop
       Center = True
@@ -1997,8 +2042,8 @@ object FormRegressiveCounter: TFormRegressiveCounter
     end
     object LabelTokens: TLabel
       Left = 1
-      Height = 53
-      Top = 1
+      Height = 64
+      Top = 239
       Width = 654
       Align = alTop
       Alignment = taCenter
@@ -2012,7 +2057,7 @@ object FormRegressiveCounter: TFormRegressiveCounter
     object GBTokens: TGroupBox
       Left = 1
       Height = 4
-      Top = 154
+      Top = 403
       Width = 654
       Align = alTop
       AutoSize = True
@@ -2033,10 +2078,69 @@ object FormRegressiveCounter: TFormRegressiveCounter
       ParentFont = False
       TabOrder = 0
     end
+    object GBScholarItems2: TGroupBox
+      Left = 1
+      Height = 174
+      Top = 65
+      Width = 654
+      Align = alTop
+      AutoSize = True
+      ChildSizing.LeftRightSpacing = 10
+      ChildSizing.TopBottomSpacing = 10
+      ChildSizing.HorizontalSpacing = 20
+      ChildSizing.VerticalSpacing = 10
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.EnlargeVertical = crsHomogenousChildResize
+      ChildSizing.ShrinkHorizontal = crsHomogenousChildResize
+      ChildSizing.ShrinkVertical = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 2
+      ClientHeight = 170
+      ClientWidth = 650
+      Constraints.MinWidth = 400
+      Font.Height = -40
+      Font.Name = 'Monospace'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 1
+      object LabelReserveTokensCount: TLabel
+        Left = 10
+        Height = 150
+        Top = 10
+        Width = 630
+        Alignment = taCenter
+        AutoSize = False
+        Caption = '0'
+        Color = clDefault
+        Constraints.MinHeight = 150
+        Constraints.MinWidth = 150
+        Font.Color = clBlack
+        Font.Height = -67
+        Font.Name = 'Monospace'
+        Layout = tlCenter
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
+    end
+    object LabelReserveTokens: TLabel
+      Left = 1
+      Height = 64
+      Top = 1
+      Width = 654
+      Align = alTop
+      Alignment = taCenter
+      Caption = 'Reserva de fichas'
+      Font.Height = -47
+      Font.Style = [fsBold]
+      Layout = tlCenter
+      ParentColor = False
+      ParentFont = False
+    end
   end
   object LabelMessage: TLabel
     Left = 656
-    Height = 716
+    Height = 715
     Top = 0
     Width = 16
     Align = alClient
@@ -2047,17 +2151,11 @@ object FormRegressiveCounter: TFormRegressiveCounter
     ParentFont = False
     Visible = False
   end
-  object Timer: TTimer
-    Enabled = False
-    OnTimer = TimerTimer
-    left = 40
-    top = 32
-  end
   object TimerMessage: TTimer
     Enabled = False
-    Interval = 5000
+    Interval = 6000
     OnTimer = TimerMessageTimer
-    left = 44
-    top = 258
+    left = 103
+    top = 457
   end
 end

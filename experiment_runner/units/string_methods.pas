@@ -417,7 +417,7 @@ end;
 function GetEndCriteriaLastCyclesFromString(S: string): integer;
 begin
   try
-    Result := StrToInt(ExtractDelimited(2,S,[',']));
+    Result := StrToIntDef(ExtractDelimited(2,S,[',']), 100);
   except
     On E : Exception do
       Result := 0;
@@ -427,7 +427,7 @@ end;
 function GetEndCriteriaPorcentageFromString(S: string): integer;
 begin
   try
-    Result := StrToInt(ExtractDelimited(1,S,[',']));
+    Result := StrToIntDef(ExtractDelimited(1,S,[',']), 80);
   except
     On E : Exception do
       Result := 0;

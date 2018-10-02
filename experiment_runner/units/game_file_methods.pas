@@ -261,7 +261,7 @@ var
 
               Turn.Count:= ReadInteger(LS, KEY_TURN_COUNT,0);
               Turn.Value:= ReadInteger(LS, KEY_TURN_VALUE,2);
-              Turn.Random:= ReadBool(LS, KEY_TURN_RANDOM,False);
+              Turn.Random:= ReadBool(LS, KEY_TURN_RANDOM,True);
               Cycles.Count:= ReadInteger(LS, KEY_CYCLES_COUNT,0);
               Cycles.Value:= ReadInteger(LS, KEY_CYCLES_VALUE,10);
               Cycles.Generation:= ReadInteger(LS, KEY_CYCLES_GEN,0);
