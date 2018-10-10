@@ -131,10 +131,14 @@ begin
     WordWrap := True;
     Parent:=Self;
     Font.Size := 30;
-    OnClick := @ShowResumeButton;
+    //OnClick := @ShowResumeButton;
     case FStyle of
       '.Left': btnPlayerResume.Caption := 'Entrar';
-      '.EndX': btnPlayerResume.Caption := 'Sair';
+      '.EndX':
+        begin
+          btnPlayerResume.Caption := 'Sair';
+          FCanClose := True;
+        end;
     end;
   end;
 end;

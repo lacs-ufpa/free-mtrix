@@ -54,6 +54,8 @@ var
 
 implementation
 
+uses form_matrixgame;
+
 {$R *.lfm}
 
 { TFormRegressiveCounter }
@@ -78,6 +80,7 @@ end;
 
 procedure TFormRegressiveCounter.TimerMessageTimer(Sender: TObject);
 begin
+  FormMatrixGame.SendHideSystemMessage;
   TimerMessage.Enabled := False;
   Panel1.Show;
   Panel2.Show;
@@ -104,6 +107,7 @@ end;
 
 procedure TFormRegressiveCounter.ShowSystemMessage(AMessage: string);
 begin
+  FormMatrixGame.SendSystemMessage(AMessage);
   Panel1.Hide;
   Panel2.Hide;
   LabelMessage.Caption := AMessage;

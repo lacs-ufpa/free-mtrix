@@ -11,7 +11,7 @@ object FormChooseActor: TFormChooseActor
   FormStyle = fsStayOnTop
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '1.8.0.4'
+  LCLVersion = '1.8.4.0'
   object btnPlayerResume: TButton
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
@@ -36,7 +36,7 @@ object FormChooseActor: TFormChooseActor
   end
   object btnAdmin: TButton
     Left = 0
-    Height = 43
+    Height = 47
     Top = 50
     Width = 320
     Align = alTop
@@ -52,7 +52,7 @@ object FormChooseActor: TFormChooseActor
   object btnPlayer: TButton
     Left = 0
     Height = 43
-    Top = 143
+    Top = 147
     Width = 320
     Align = alTop
     BorderSpacing.Top = 50

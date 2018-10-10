@@ -134,6 +134,7 @@ type
 // TODO: PUT NORMAL STRING MESSAGES IN RESOURCESTRING INSTEAD
 
 const
+  K_SMessage = '.SMessage';
   K_PUNISHER = '.Punisher';
   K_ARRIVED  = '.Arrived';
   K_CHAT_M   = '.ChatM';
@@ -956,6 +957,12 @@ begin
         , AInputData[0] // target
         , AInputData[1] // punishment
     ]);
+    K_SMessage : SetM([
+        AMessage
+        , FZMQActor.ID  // sender
+        , AInputData[0] // kind
+        , AInputData[1] // message
+    ]);
   end;
 
   case FActor of
@@ -1320,13 +1327,19 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     LConsequence.GenerateMessage(True);
     case FActor of
       gaPlayer:
+        if FCountGroup1 > 0 then
           LConsequence.PresentPoints(FCountPointA,FCountPointB,
             FCountGroup1, FCountGroup2);
 
       gaAdmin:
         begin
-          LConsequence.PresentPoints(FCountGroup1, FCountGroup2);
-          FormRegressiveCounter.ShowSystemMessage('Um item escolar foi removido.');
+          if FCountGroup1 > 0 then
+          begin
+            LConsequence.PresentPoints(FCountGroup1, FCountGroup2);
+            FormRegressiveCounter.ShowSystemMessage('Um item escolar foi removido.');
+          end;
+          if FCountGroup1 < 1 then
+            FExperiment.ForceEndCondition;
         end;
     end;
 
@@ -1336,6 +1349,20 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       LConsequence.PresentMessage(TWinControl(Owner.Owner))
   end;
 
+  procedure HandleSystemMessage;
+  var
+    Code : string = '';
+    Message : string = '';
+  begin
+    Code := AMessage[2];
+    Message := AMessage[3];
+    if FActor = gaPlayer then
+    case AMessage[2] of
+      'show': FormMatrixGame.ShowSystemMessage(AMessage[3]);
+      'hide': FormMatrixGame.HideSystemMessage;
+    end;
+  end;
+
 begin
   if MHas(K_ARRIVED) then ReceiveActor;
   if MHas(K_CHAT_M)  then ReceiveChat;
@@ -1343,6 +1370,7 @@ begin
   if MHas(K_MESSAGE) then ShowConsequence(AMessage[1],AMessage[2],StrToBool(AMessage[3]));
   if MHas(K_GMESSAGE) then ShowGroupedMessage(AMessage[1]);
   if MHas(K_PUNISHER) then ReceivePunishment;
+  if MHas(K_SMessage) then HandleSystemMessage;
   if MHas(K_START) then NotifyPlayers;
   if MHas(K_QUESTION) then ShowQuestion;
   if MHas(K_MOVQUEUE) then

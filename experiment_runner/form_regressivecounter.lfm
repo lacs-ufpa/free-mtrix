@@ -1,25 +1,25 @@
 object FormRegressiveCounter: TFormRegressiveCounter
-  Left = 33
-  Height = 716
-  Top = 24
+  Left = 31
+  Height = 715
+  Top = 30
   Width = 1333
   Caption = 'FormRegressiveCounter'
-  ClientHeight = 716
+  ClientHeight = 715
   ClientWidth = 1333
   LCLVersion = '1.8.4.0'
   object Panel1: TPanel
     Left = 672
-    Height = 716
+    Height = 715
     Top = 0
     Width = 661
     Align = alRight
-    ClientHeight = 716
+    ClientHeight = 715
     ClientWidth = 661
     TabOrder = 0
     object GBScholarItems: TGroupBox
       Left = 1
       Height = 174
-      Top = 54
+      Top = 65
       Width = 659
       Align = alTop
       AutoSize = True
@@ -1018,8 +1018,8 @@ object FormRegressiveCounter: TFormRegressiveCounter
     end
     object LabelTimer: TLabel
       Left = 1
-      Height = 487
-      Top = 228
+      Height = 475
+      Top = 239
       Width = 659
       Align = alClient
       Alignment = taCenter
@@ -1032,7 +1032,7 @@ object FormRegressiveCounter: TFormRegressiveCounter
     end
     object LabelTokens1: TLabel
       Left = 1
-      Height = 53
+      Height = 64
       Top = 1
       Width = 659
       Align = alTop
@@ -1047,17 +1047,17 @@ object FormRegressiveCounter: TFormRegressiveCounter
   end
   object Panel2: TPanel
     Left = 0
-    Height = 716
+    Height = 715
     Top = 0
     Width = 656
     Align = alLeft
-    ClientHeight = 716
+    ClientHeight = 715
     ClientWidth = 656
     TabOrder = 1
     object ImageInd: TImage
       Left = 1
       Height = 100
-      Top = 54
+      Top = 65
       Width = 654
       Align = alTop
       Center = True
@@ -1997,7 +1997,7 @@ object FormRegressiveCounter: TFormRegressiveCounter
     end
     object LabelTokens: TLabel
       Left = 1
-      Height = 53
+      Height = 64
       Top = 1
       Width = 654
       Align = alTop
@@ -2012,7 +2012,7 @@ object FormRegressiveCounter: TFormRegressiveCounter
     object GBTokens: TGroupBox
       Left = 1
       Height = 4
-      Top = 154
+      Top = 165
       Width = 654
       Align = alTop
       AutoSize = True
@@ -2036,7 +2036,7 @@ object FormRegressiveCounter: TFormRegressiveCounter
   end
   object LabelMessage: TLabel
     Left = 656
-    Height = 716
+    Height = 715
     Top = 0
     Width = 16
     Align = alClient
