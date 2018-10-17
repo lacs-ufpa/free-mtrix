@@ -18,6 +18,7 @@ type
     GBScholarItems2: TGroupBox;
     GBTokens: TGroupBox;
     ImageGroup1: TImage;
+    ImageGroup2: TImage;
     ImageInd: TImage;
     LabelReserveItemsCount: TLabel;
     LabelMessage: TLabel;
@@ -45,6 +46,7 @@ type
     procedure Decrement(AValue : integer);
     procedure ShowSystemMessage(AMessage : string);
     procedure SetupCondition;
+    procedure UpdateItems;
   end;
 
 var
@@ -54,7 +56,7 @@ implementation
 
 {$R *.lfm}
 
-uses game_experiment;
+uses game_experiment, form_matrixgame;
 { TFormPoints }
 
 procedure TFormPoints.TimerMessageTimer(Sender: TObject);
@@ -116,6 +118,7 @@ procedure TFormPoints.DecrementItems(AValue: integer);
 begin
   Dec(FItems, AValue);
   UpdateCaptions;
+  FormMatrixGame.UpdateNetwork('items', FItems.ToString);
 end;
 
 procedure TFormPoints.DecrementTokens(AValue: integer);
@@ -143,6 +146,11 @@ begin
     'Condição C1', 'Condição C2', 'Condição C3' :
       FormPoints.SetupConditionC;
   end;
+end;
+
+procedure TFormPoints.UpdateItems;
+begin
+  LabelItemsCount.Caption := FItems.ToString;
 end;
 
 procedure TFormPoints.SetupConditionA;

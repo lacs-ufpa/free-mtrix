@@ -62,6 +62,7 @@ type
     procedure PlayerExit(P : TPlayer; AMessage : string);
   public
     StringGridMatrix: TStringGrid;
+    procedure UpdateNetwork(AKey, AValue : string);
     procedure LoadFromFile(FFilename : string);
     procedure SetID(S, P : string);
     procedure SetGameActor(AValue: TGameActor);
@@ -117,6 +118,11 @@ end;
 procedure TFormMatrixGame.PlayerExit(P: TPlayer; AMessage: string);
 begin
   ListBoxOldPlayers.Items.Append(AMessage);
+end;
+
+procedure TFormMatrixGame.UpdateNetwork(AKey, AValue: string);
+begin
+  FGameControl.SendMessage(K_UPDATE, [AKey, AValue]);
 end;
 
 procedure TFormMatrixGame.LoadFromFile(FFilename: string);

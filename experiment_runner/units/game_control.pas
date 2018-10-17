@@ -132,7 +132,7 @@ type
 // TODO: PUT NORMAL STRING MESSAGES IN RESOURCESTRING INSTEAD
 
 const
-  K_PUNISHER = '.Punisher';
+  K_UPDATE = '.Update';
   K_ARRIVED  = '.Arrived';
   K_CHAT_M   = '.ChatM';
   K_CHOICE   = '.Choice';
@@ -940,11 +940,11 @@ begin
         , AInputData[0]
         , AInputData[1]
       ]);
-    K_PUNISHER : SetM([
+    K_UPDATE : SetM([
         AMessage
         , FZMQActor.ID  // sender
-        , AInputData[0] // target
-        , AInputData[1] // punishment
+        , AInputData[0] // key
+        , AInputData[1] // value
     ]);
   end;
 
@@ -1160,7 +1160,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor.ShowPoints(
           'A tarefa terminou, obrigado por sua participação!'+LineEnding+
           'Você produziu ' + Pts + ' fichas e ' +
-          CountGroup2.ToString +
+          CountGroup1.ToString +
           ' itens escolares serão doados a uma escola pública.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
@@ -1302,6 +1302,22 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       end;
   end;
 
+  procedure Update;
+  var
+    LKey, LValue : string;
+  begin
+    LKey := AMessage[2];
+    LValue := AMessage[3];
+    case LKey of
+      'items': FCountGroup1 := LValue.ToInteger;
+    end;
+    case FActor of
+      gaAdmin:
+        if Assigned(FormPoints) then
+          FormPoints.UpdateItems;
+    end;
+  end;
+
 begin
   if MHas(K_ARRIVED) then ReceiveActor;
   if MHas(K_CHAT_M)  then ReceiveChat;
@@ -1309,6 +1325,7 @@ begin
   if MHas(K_MESSAGE) then ShowConsequence(AMessage[1],AMessage[2],StrToBool(AMessage[3]));
   if MHas(K_GMESSAGE) then ShowGroupedMessage(AMessage[1]);
   if MHas(K_START) then NotifyPlayers;
+  if Mhas(K_UPDATE) then Update;
   if MHas(K_QUESTION) then ShowQuestion;
   if MHas(K_MOVQUEUE) then
     if FActor = gaPlayer then
