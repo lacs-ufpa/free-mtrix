@@ -1177,7 +1177,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor.ShowPoints(
           'A tarefa terminou, obrigado por sua participação!'+LineEnding+
           'Você produziu ' + Pts + ' fichas e ' +
-          CountGroup2.ToString +
+          CountGroup1.ToString +
           ' itens escolares serão doados a uma escola pública.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
