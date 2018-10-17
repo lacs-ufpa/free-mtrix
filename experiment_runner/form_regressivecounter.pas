@@ -92,6 +92,7 @@ procedure TFormRegressiveCounter.SetOnZeroReached(AValue: TNotifyEvent);
 begin
   if FOnZeroReached=AValue then Exit;
   FOnZeroReached:=AValue;
+  FOnZeroReachedOrange:=FOnZeroReached;
 end;
 
 procedure TFormRegressiveCounter.SetUpperTime(AValue: integer);
@@ -102,7 +103,7 @@ end;
 
 procedure TFormRegressiveCounter.UpdateLabel;
 begin
-  LabelTimer.Caption := 'Tempo'+LineEnding+IntToStr(FCounting)+#32+'s';;
+  LabelTimer.Caption := 'Tempo'+LineEnding+IntToStr(FCounting)+#32+'s';
 end;
 
 procedure TFormRegressiveCounter.ShowSystemMessage(AMessage: string);
@@ -126,7 +127,7 @@ end;
 procedure TFormRegressiveCounter.ChangeToBlack;
 begin
   Reset;
-  FOnZeroReachedOrange := FOnZeroReached;
+  //FOnZeroReachedOrange := FOnZeroReached;
   FOnZeroReached := @ZeroReachedBlack;
   LabelGroup1Count.Font.Color := clBlack;
   LabelTimer.Show;
