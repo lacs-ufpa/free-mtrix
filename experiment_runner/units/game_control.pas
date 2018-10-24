@@ -596,7 +596,8 @@ var
 begin
   Result := '';
   LConsequence := TConsequence.Create(nil,S);
-  Result := LConsequence.GenerateMessage(ForGroup);
+  if gscMessage in LConsequence.Style then
+    Result := LConsequence.GenerateMessage(ForGroup);
   case FActor of
     gaPlayer:
       if ForGroup then
@@ -1289,6 +1290,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     i : integer;
     MID : string;
     LConsequence : string;
+    LAuxiliar : string;
     LGConsequence : string;
     LPopUpHack : TPopupNotifierHack;
   begin
@@ -1306,7 +1308,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
         begin
           LConsequence := ExtractDelimited(i,AMessage,['+']);
           MID := ExtractDelimited(1,LConsequence,['#']);
-          LGConsequence += ShowConsequence(MID, ExtractDelimited(2,LConsequence,['#']),MID = 'M',False)+LineEnding;
+          LAuxiliar := ShowConsequence(MID, ExtractDelimited(2,LConsequence,['#']),MID = 'M',False);
+          if LAuxiliar <> '' then
+            LGConsequence += LAuxiliar+LineEnding;
         end;
 
     if LGConsequence <> '' then
