@@ -963,7 +963,7 @@ begin
       PopUpPos.Y := AControl.Top+(FMessage.vNotifierForm.Height*4);
 
     PopUpPos := AControl.ClientToScreen(PopUpPos);
-    FMessage.Color:=clTeal;
+    FMessage.Color:=clDefault;
     FMessage.Title:='';
     FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
     FTimer.Enabled:=True;

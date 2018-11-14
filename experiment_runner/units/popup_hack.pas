@@ -54,12 +54,14 @@ begin
   FTimer.OnTimer:=@AutoDestroy;
   FLabel := TLabel.Create(vNotifierForm);
   FLabel.Name:='UglyHack';
+  FLabel.Caption:='';
   FLabel.Align:=alClient;
   FLabel.Anchors := [akLeft,akRight];
   FLabel.Alignment := taCenter;
   FLabel.AutoSize:=True;
   FLabel.Layout := tlCenter;
   FLabel.WordWrap := False;
+  FLabel.Font.Color:=clDefault;
   FLabel.BorderSpacing.Top:=26;
   FLabel.BorderSpacing.Left:=26;
   FLabel.BorderSpacing.Right:=26;
@@ -68,7 +70,7 @@ begin
   FLabel.Parent := vNotifierForm;
   vNotifierForm.AutoSize:=True;
   vNotifierForm.Font.Size := 12;
-  Color:=clTeal;
+  Color:=clDefault;
 end;
 
 //destructor TPopupNotifierHack.Destroy;

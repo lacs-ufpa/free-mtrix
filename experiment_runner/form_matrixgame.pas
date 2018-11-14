@@ -111,7 +111,7 @@ var
 begin
   LStyle := [gscPoints, gscBroadcastMessage, gscG1, gscMessage];
   LConsequence := TConsequence.Create(
-  nil, -1,LStyle, ['Um item escolar foi removido.','','','','','','','']);
+  nil, -1,LStyle, ['Um item escolar foi subtraído.','','','','','','','']);
 
   FGameControl.SendMessage(
     K_PUNISHER,
@@ -326,7 +326,7 @@ begin
   L.Align:=alClient;
   L.Anchors := [akLeft,akRight];
   L.Alignment := taCenter;
-  L.Font.Color:=clBlack;
+  L.Font.Color:=clDefault;
   L.AutoSize:=True;
   L.Layout := tlCenter;
   L.WordWrap := False;
