@@ -1340,7 +1340,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           if FCountGroup1 > 0 then
           begin
             LConsequence.PresentPoints(FCountGroup1, FCountGroup2);
-            FormRegressiveCounter.ShowSystemMessage('Um item escolar foi removido.');
+            FormRegressiveCounter.ShowSystemMessage('Um item escolar foi subtraído.');
           end;
           if FCountGroup1 < 1 then
             FExperiment.ForceEndCondition;
