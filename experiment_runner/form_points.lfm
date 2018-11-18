@@ -6,6 +6,7 @@ object FormPoints: TFormPoints
   Caption = 'FormPoints'
   ClientHeight = 715
   ClientWidth = 1333
+  OnCreate = FormCreate
   LCLVersion = '1.8.4.0'
   object Panel1: TPanel
     Left = 672
@@ -56,7 +57,7 @@ object FormPoints: TFormPoints
       ParentFont = False
       TabOrder = 0
       Visible = False
-      object ImageGroup1: TImage
+      object ImageItems: TImage
         Left = 10
         Height = 150
         Top = 10
@@ -1046,7 +1047,7 @@ object FormPoints: TFormPoints
       ParentFont = False
       Visible = False
     end
-    object GBScholarItems1: TGroupBox
+    object GBScholarItemsReserve: TGroupBox
       Left = 1
       Height = 174
       Top = 129
@@ -1071,7 +1072,7 @@ object FormPoints: TFormPoints
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 1
-      object ImageGroup2: TImage
+      object ImageItemsReserve: TImage
         Left = 10
         Height = 150
         Top = 10
@@ -3035,7 +3036,7 @@ object FormPoints: TFormPoints
       ParentFont = False
       TabOrder = 0
     end
-    object GBScholarItems2: TGroupBox
+    object GBTokensReserve: TGroupBox
       Left = 1
       Height = 174
       Top = 65
@@ -3113,6 +3114,12 @@ object FormPoints: TFormPoints
     Interval = 6000
     OnTimer = TimerMessageTimer
     left = 103
+    top = 457
+  end
+  object TimerReajustMessage: TTimer
+    Enabled = False
+    OnTimer = TimerReajustMessageTimer
+    left = 248
     top = 457
   end
 end

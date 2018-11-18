@@ -32,15 +32,17 @@ type
     ButtonExpCancel: TButton;
     ButtonExpPause: TButton;
     ButtonExpStart: TButton;
-    GBLastChoice: TGroupBox;
-    GBAdmin: TGroupBox;
-    LabelOldPlayers: TLabel;
     ChatMemoRecv: TMemo;
     ChatMemoSend: TMemo;
     ChatPanel: TPanel;
     ChatSplitter: TSplitter;
+    GBAdmin: TGroupBox;
+    GBLastChoice: TGroupBox;
+    LabelMessage: TLabel;
+    LabelOldPlayers: TLabel;
     ListBoxOldPlayers: TListBox;
     OpenDialog: TOpenDialog;
+    Panel: TPanel;
     PopupNotifier: TPopupNotifier;
     Timer: TTimer;
     procedure btnConfirmRowClick(Sender: TObject);
@@ -63,6 +65,10 @@ type
   public
     StringGridMatrix: TStringGrid;
     procedure UpdateNetwork(AKey, AValue : string);
+    procedure ShowSystemMessage(AMessage : string);
+    procedure HideSystemMessage;
+    procedure SendSystemMessage(AMessage : string);
+    procedure SendHideSystemMessage;
     procedure LoadFromFile(FFilename : string);
     procedure SetID(S, P : string);
     procedure SetGameActor(AValue: TGameActor);
@@ -123,6 +129,30 @@ end;
 procedure TFormMatrixGame.UpdateNetwork(AKey, AValue: string);
 begin
   FGameControl.SendMessage(K_UPDATE, [AKey, AValue]);
+end;
+
+procedure TFormMatrixGame.ShowSystemMessage(AMessage: string);
+begin
+  Panel.Hide;
+  LabelMessage.Show;
+  LabelMessage.Caption:=AMessage;
+end;
+
+procedure TFormMatrixGame.HideSystemMessage;
+begin
+  Panel.Show;
+  LabelMessage.Hide;
+  LabelMessage.Caption:='';
+end;
+
+procedure TFormMatrixGame.SendSystemMessage(AMessage: string);
+begin
+  FGameControl.SendMessage(K_SMessage,['show', AMessage]);
+end;
+
+procedure TFormMatrixGame.SendHideSystemMessage;
+begin
+  FGameControl.SendMessage(K_SMessage,['hide', '']);
 end;
 
 procedure TFormMatrixGame.LoadFromFile(FFilename: string);
@@ -249,10 +279,10 @@ var
   L : TLabel;
   i : integer;
 begin
-  StringGridMatrix := TStringGridA.Create(Self);
+  StringGridMatrix := TStringGridA.Create(Panel);
   // TStringGridA(StringGridMatrix).PopUpNotifier := PopupNotifier;
   TStringGridA(StringGridMatrix).ConfirmationButton := btnConfirmRow;
-  StringGridMatrix.Parent := Self;
+  StringGridMatrix.Parent := Panel;
   i := StringGridMatrix.Width+btnConfirmRow.Width+10;
   i := i div 2;
   i := (Screen.Width div 2)-i;

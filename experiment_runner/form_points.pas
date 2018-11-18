@@ -14,11 +14,11 @@ type
 
   TFormPoints = class(TForm)
     GBScholarItems: TGroupBox;
-    GBScholarItems1: TGroupBox;
-    GBScholarItems2: TGroupBox;
+    GBScholarItemsReserve: TGroupBox;
+    GBTokensReserve: TGroupBox;
     GBTokens: TGroupBox;
-    ImageGroup1: TImage;
-    ImageGroup2: TImage;
+    ImageItems: TImage;
+    ImageItemsReserve: TImage;
     ImageInd: TImage;
     LabelReserveItemsCount: TLabel;
     LabelMessage: TLabel;
@@ -31,18 +31,23 @@ type
     Panel1: TPanel;
     Panel2: TPanel;
     TimerMessage: TTimer;
+    TimerReajustMessage: TTimer;
+    procedure FormCreate(Sender: TObject);
+    procedure TimerReajustMessageTimer(Sender: TObject);
     procedure TimerMessageTimer(Sender: TObject);
   private
     FItems : integer;
-    FTokens: integer;
+    FReserveItems : integer;
+    FReserveTokens: integer;
     procedure UpdateCaptions;
     procedure DecrementItems(AValue : integer);
     procedure DecrementTokens(AValue : integer);
     procedure SetupConditionA;
     procedure SetupConditionB;
     procedure SetupConditionC;
-  public
     procedure CummulativeEffect(APorcentage : integer);
+  public
+    procedure UpdateCummulativeEffect;
     procedure Decrement(AValue : integer);
     procedure ShowSystemMessage(AMessage : string);
     procedure SetupCondition;
@@ -59,6 +64,20 @@ implementation
 uses game_experiment, form_matrixgame;
 { TFormPoints }
 
+procedure TFormPoints.TimerReajustMessageTimer(Sender: TObject);
+begin
+  TimerReajustMessage.Enabled := False;
+  CummulativeEffect(3);
+  UpdateCaptions;
+end;
+
+procedure TFormPoints.FormCreate(Sender: TObject);
+begin
+  FItems:=0;
+  FReserveItems:=0;
+  FReserveTokens:=0;
+end;
+
 procedure TFormPoints.TimerMessageTimer(Sender: TObject);
 begin
   TimerMessage.Enabled := False;
@@ -69,8 +88,9 @@ end;
 
 procedure TFormPoints.UpdateCaptions;
 begin
-  LabelReserveTokensCount.Caption := FTokens.ToString;
-  LabelReserveItemsCount.Caption := FItems.ToString;
+  LabelReserveTokensCount.Caption := FReserveTokens.ToString;
+  LabelReserveItemsCount.Caption := FReserveItems.ToString;
+  LabelItemsCount.Caption := Experiment.CurrentCondition.Points.Count.G1.ToString;
 end;
 
 procedure TFormPoints.CummulativeEffect(APorcentage: integer);
@@ -81,22 +101,53 @@ begin
   case Experiment.CurrentCondition.ConditionName of
     'Condição A1', 'Condição A2', 'Condição A3' :
       begin
-        LTokensToIncrement := (APorcentage*FTokens)div 100;
-        Inc(FTokens, LTokensToIncrement);
+        LTokensToIncrement := (APorcentage*FReserveTokens)div 100;
+        Inc(FReserveTokens, LTokensToIncrement);
       end;
     'Condição B1', 'Condição B2', 'Condição B3' :
       begin
-        LItemsToIncrement := (APorcentage*FItems)div 100;
-        Inc(FItems, LItemsToIncrement);
+        LItemsToIncrement := (APorcentage*FReserveItems)div 100;
+        Inc(FReserveItems, LItemsToIncrement);
       end;
     'Condição C1', 'Condição C2', 'Condição C3' :
       begin
-        LTokensToIncrement := (APorcentage*FTokens)div 100;
-        Inc(FTokens, LTokensToIncrement);
-        LItemsToIncrement := (APorcentage*FItems)div 100;
-        Inc(FItems, LItemsToIncrement);
+        LTokensToIncrement := (APorcentage*FReserveTokens)div 100;
+        Inc(FReserveTokens, LTokensToIncrement);
+        LItemsToIncrement := (APorcentage*FReserveItems)div 100;
+        Inc(FReserveItems, LItemsToIncrement);
       end;
   end;
+end;
+
+procedure TFormPoints.UpdateCummulativeEffect;
+  procedure AppendReajustItems;
+  begin
+    LabelReserveItemsCount.Caption :=
+      LabelReserveItemsCount.Caption + LineEnding +
+      'REAJUSTE';
+  end;
+
+  procedure AppendReajustTokens;
+  begin
+    LabelReserveTokensCount.Caption :=
+      LabelReserveTokensCount.Caption + LineEnding +
+      'REAJUSTE';
+  end;
+begin
+  case Experiment.CurrentCondition.ConditionName of
+    'Condição A1', 'Condição A2', 'Condição A3' :
+      AppendReajustTokens;
+
+    'Condição B1', 'Condição B2', 'Condição B3' :
+      AppendReajustItems;
+
+    'Condição C1', 'Condição C2', 'Condição C3' :
+      begin
+        AppendReajustTokens;
+        AppendReajustItems;
+      end;
+  end;
+  TimerReajustMessage.Enabled:=True;
 end;
 
 procedure TFormPoints.Decrement(AValue: integer);
@@ -116,14 +167,13 @@ end;
 
 procedure TFormPoints.DecrementItems(AValue: integer);
 begin
-  Dec(FItems, AValue);
+  Dec(FReserveItems, AValue);
   UpdateCaptions;
-  FormMatrixGame.UpdateNetwork('items', FItems.ToString);
 end;
 
 procedure TFormPoints.DecrementTokens(AValue: integer);
 begin
-  Dec(FTokens, AValue);
+  Dec(FReserveTokens, AValue);
   UpdateCaptions;
 end;
 
@@ -149,40 +199,52 @@ begin
 end;
 
 procedure TFormPoints.UpdateItems;
+var
+  LItems : string;
 begin
-  LabelItemsCount.Caption := FItems.ToString;
+  Inc(FItems, FReserveItems);
+  LItems := FItems.ToString;
+  Experiment.WriteChatLn('Items da condição anterior: '+ LItems);
+  LabelItemsCount.Caption := LItems;
+  FormMatrixGame.UpdateNetwork('items', LItems);
 end;
 
 procedure TFormPoints.SetupConditionA;
 begin
-  FItems := 0;
-  FTokens:= 200;
+  UpdateItems;
+  FReserveItems := 0;
+  FReserveTokens:= 200;
   LabelReserveTokens.Show;
   LabelReserveTokensCount.Show;
   LabelReserveItems.Hide;
   LabelReserveItemsCount.Hide;
+  GBScholarItemsReserve.Hide;
   UpdateCaptions;
 end;
 
 procedure TFormPoints.SetupConditionB;
 begin
-  FItems := 200;
-  FTokens:= 0;
+  UpdateItems;
+  FReserveItems := 200;
+  FReserveTokens:= 0;
   LabelReserveTokens.Hide;
   LabelReserveTokensCount.Hide;
   LabelReserveItems.Show;
   LabelReserveItemsCount.Show;
+  GBScholarItemsReserve.Show;
   UpdateCaptions;
 end;
 
 procedure TFormPoints.SetupConditionC;
 begin
-  FItems := 200;
-  FTokens:= 200;
+  UpdateItems;
+  FReserveItems := 200;
+  FReserveTokens:= 200;
   LabelReserveTokens.Show;
   LabelReserveTokensCount.Show;
   LabelReserveItems.Show;
   LabelReserveItemsCount.Show;
+  GBScholarItemsReserve.Show;
   UpdateCaptions;
 end;
 

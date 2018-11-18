@@ -132,6 +132,7 @@ type
 // TODO: PUT NORMAL STRING MESSAGES IN RESOURCESTRING INSTEAD
 
 const
+  K_SMessage = '.SMessage';
   K_UPDATE = '.Update';
   K_ARRIVED  = '.Arrived';
   K_CHAT_M   = '.ChatM';
@@ -183,6 +184,7 @@ const
 
 procedure TGameControl.EndExperiment(Sender: TObject);
 begin
+  FormPoints.UpdateItems;
   ShowSystemPopUp('O Experimento terminou.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
@@ -617,7 +619,7 @@ begin
             Experiment.PlayerFromID[AID] := LPlayer;
           end;
         if (Experiment.CurrentCondition.Turn.Count = 2) then
-          FormPoints.CummulativeEffect(3);
+          FormPoints.UpdateCummulativeEffect;
       end;
   end;
 
@@ -805,6 +807,7 @@ end;
 constructor TGameControl.Create(AOwner: TComponent;AppPath:string);
 begin
   inherited Create(AOwner);
+  FCountGroup1 := 0;
   FZMQActor := TZMQActor(AOwner);
   FID := FZMQActor.ID;
   FZMQActor.OnMessageReceived:=@ReceiveMessage;
@@ -946,8 +949,13 @@ begin
         , AInputData[0] // key
         , AInputData[1] // value
     ]);
+    K_SMessage : SetM([
+        AMessage
+        , FZMQActor.ID  // sender
+        , AInputData[0] // kind
+        , AInputData[1] // message
+    ]);
   end;
-
   case FActor of
     gaAdmin: begin
       M[0] := GA_ADMIN+M[0];
@@ -1311,19 +1319,33 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     case LKey of
       'items': FCountGroup1 := LValue.ToInteger;
     end;
-    case FActor of
-      gaAdmin:
-        if Assigned(FormPoints) then
-          FormPoints.UpdateItems;
-    end;
+    //case FActor of
+    //  gaAdmin:
+    //    if Assigned(FormPoints) then
+    //      FormPoints.UpdateItems;
+    //end;
   end;
 
+  procedure HandleSystemMessage;
+  var
+    Code : string = '';
+    Message : string = '';
+  begin
+    Code := AMessage[2];
+    Message := AMessage[3];
+    if FActor = gaPlayer then
+    case AMessage[2] of
+      'show': FormMatrixGame.ShowSystemMessage(AMessage[3]);
+      'hide': FormMatrixGame.HideSystemMessage;
+    end;
+  end;
 begin
   if MHas(K_ARRIVED) then ReceiveActor;
   if MHas(K_CHAT_M)  then ReceiveChat;
   if MHas(K_CHOICE)  then ReceiveChoice;
   if MHas(K_MESSAGE) then ShowConsequence(AMessage[1],AMessage[2],StrToBool(AMessage[3]));
   if MHas(K_GMESSAGE) then ShowGroupedMessage(AMessage[1]);
+  if MHas(K_SMessage) then HandleSystemMessage;
   if MHas(K_START) then NotifyPlayers;
   if Mhas(K_UPDATE) then Update;
   if MHas(K_QUESTION) then ShowQuestion;

@@ -1,9 +1,9 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 33
+  Left = 82
   Height = 660
-  Top = 32
+  Top = 73
   Width = 1234
-  HorzScrollBar.Page = 1158
+  HorzScrollBar.Page = 770
   VertScrollBar.Page = 448
   AutoScroll = True
   Caption = 'Matrix'
@@ -13,165 +13,188 @@ object FormMatrixGame: TFormMatrixGame
   OnActivate = FormActivate
   OnCreate = FormCreate
   LCLVersion = '1.8.4.0'
-  object ChatPanel: TPanel
-    AnchorSideLeft.Side = asrBottom
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Side = asrBottom
-    Left = 768
-    Height = 386
+  object LabelMessage: TLabel
+    Left = 0
+    Height = 660
     Top = 0
-    Width = 390
-    BorderSpacing.Left = 5
-    ClientHeight = 386
-    ClientWidth = 390
-    TabOrder = 3
-    object ChatMemoRecv: TMemo
-      AnchorSideBottom.Control = ChatSplitter
-      Left = 6
-      Height = 220
-      Top = 6
-      Width = 378
-      Align = alTop
-      Anchors = [akTop, akLeft, akRight, akBottom]
+    Width = 1234
+    Align = alClient
+    Alignment = taCenter
+    Caption = 'LabelMessage'
+    Layout = tlCenter
+    ParentColor = False
+    Visible = False
+  end
+  object Panel: TPanel
+    Left = 0
+    Height = 660
+    Top = 0
+    Width = 1234
+    Align = alClient
+    BevelOuter = bvNone
+    BorderStyle = bsSingle
+    Caption = 'Panel'
+    ClientHeight = 660
+    ClientWidth = 1234
+    TabOrder = 0
+    object ChatPanel: TPanel
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Side = asrBottom
+      Left = 380
+      Height = 386
+      Top = 0
+      Width = 390
       BorderSpacing.Left = 5
-      BorderSpacing.Top = 5
+      ClientHeight = 386
+      ClientWidth = 390
+      TabOrder = 0
+      object ChatMemoRecv: TMemo
+        AnchorSideBottom.Control = ChatSplitter
+        Left = 6
+        Height = 220
+        Top = 6
+        Width = 378
+        Align = alTop
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        BorderSpacing.Left = 5
+        BorderSpacing.Top = 5
+        BorderSpacing.Right = 5
+        BorderSpacing.Bottom = 5
+        Constraints.MinHeight = 100
+        Enabled = False
+        Lines.Strings = (
+          '[Chat]'
+        )
+        ScrollBars = ssAutoVertical
+        TabOrder = 0
+        WantReturns = False
+      end
+      object ChatSplitter: TSplitter
+        Cursor = crVSplit
+        Left = 0
+        Height = 8
+        Top = 231
+        Width = 384
+        Align = alNone
+        Anchors = [akLeft, akRight]
+        ResizeAnchor = akTop
+      end
+      object ChatMemoSend: TMemo
+        AnchorSideTop.Control = ChatSplitter
+        AnchorSideTop.Side = asrBottom
+        Left = 6
+        Height = 136
+        Top = 244
+        Width = 378
+        Align = alBottom
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        BorderSpacing.Around = 5
+        OnKeyPress = ChatMemoSendKeyPress
+        ScrollBars = ssAutoVertical
+        TabOrder = 2
+        WantTabs = True
+      end
+    end
+    object GBLastChoice: TGroupBox
+      AnchorSideBottom.Side = asrBottom
+      Left = 0
+      Height = 180
+      Top = 480
+      Width = 1249
+      Anchors = [akLeft, akRight, akBottom]
+      AutoSize = True
+      BorderSpacing.Left = 5
       BorderSpacing.Right = 5
       BorderSpacing.Bottom = 5
-      Constraints.MinHeight = 100
-      Enabled = False
-      Lines.Strings = (
-        '[Chat]'
-      )
-      ScrollBars = ssAutoVertical
-      TabOrder = 0
-      WantReturns = False
-    end
-    object ChatSplitter: TSplitter
-      Cursor = crVSplit
-      Left = 0
-      Height = 8
-      Top = 231
-      Width = 384
-      Align = alNone
-      Anchors = [akLeft, akRight]
-      ResizeAnchor = akTop
-    end
-    object ChatMemoSend: TMemo
-      AnchorSideTop.Control = ChatSplitter
-      AnchorSideTop.Side = asrBottom
-      Left = 6
-      Height = 136
-      Top = 244
-      Width = 378
-      Align = alBottom
-      Anchors = [akTop, akLeft, akRight, akBottom]
-      BorderSpacing.Around = 5
-      OnKeyPress = ChatMemoSendKeyPress
-      ScrollBars = ssAutoVertical
-      TabOrder = 2
-      WantTabs = True
-    end
-  end
-  object GBLastChoice: TGroupBox
-    AnchorSideLeft.Control = Owner
-    AnchorSideBottom.Control = Owner
-    AnchorSideBottom.Side = asrBottom
-    Left = 5
-    Height = 180
-    Top = 475
-    Width = 785
-    Anchors = [akLeft, akRight, akBottom]
-    AutoSize = True
-    BorderSpacing.Left = 5
-    BorderSpacing.Right = 5
-    BorderSpacing.Bottom = 5
-    Caption = 'Escolhas na última jogada'
-    ChildSizing.LeftRightSpacing = 10
-    ChildSizing.TopBottomSpacing = 5
-    ChildSizing.HorizontalSpacing = 10
-    ChildSizing.EnlargeVertical = crsHomogenousChildResize
-    ChildSizing.Layout = cclLeftToRightThenTopToBottom
-    ChildSizing.ControlsPerLine = 6
-    Constraints.MaxHeight = 180
-    Constraints.MinHeight = 180
-    Font.Height = -20
-    Font.Name = 'Monospace'
-    Font.Style = [fsBold]
-    ParentFont = False
-    TabOrder = 0
-  end
-  object GBAdmin: TGroupBox
-    AnchorSideLeft.Side = asrBottom
-    Left = 120
-    Height = 448
-    Top = 0
-    Width = 436
-    Caption = 'Pesquisador'
-    ClientHeight = 431
-    ClientWidth = 432
-    TabOrder = 1
-    Visible = False
-    object ButtonExpStart: TButton
-      Left = 0
-      Height = 25
-      Top = 0
-      Width = 128
-      Caption = 'Começar'
-      OnClick = ButtonExpStartClick
-      TabOrder = 0
-    end
-    object ButtonExpPause: TButton
-      Left = 152
-      Height = 25
-      Top = 0
-      Width = 128
-      Caption = 'Pausar'
-      Enabled = False
-      OnClick = ButtonExpPauseClick
+      Caption = 'Escolhas na última jogada'
+      ChildSizing.LeftRightSpacing = 10
+      ChildSizing.TopBottomSpacing = 5
+      ChildSizing.HorizontalSpacing = 10
+      ChildSizing.EnlargeVertical = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 6
+      Constraints.MaxHeight = 180
+      Constraints.MinHeight = 180
+      Font.Height = -20
+      Font.Name = 'Monospace'
+      Font.Style = [fsBold]
+      ParentFont = False
       TabOrder = 1
     end
-    object ButtonExpCancel: TButton
-      Left = 304
-      Height = 25
+    object GBAdmin: TGroupBox
+      AnchorSideLeft.Side = asrBottom
+      Left = 120
+      Height = 448
       Top = 0
-      Width = 128
-      Caption = 'Cancelar'
-      Enabled = False
-      OnClick = ButtonExpCancelClick
+      Width = 436
+      Caption = 'Pesquisador'
+      ClientHeight = 431
+      ClientWidth = 432
       TabOrder = 2
+      Visible = False
+      object ButtonExpStart: TButton
+        Left = 0
+        Height = 25
+        Top = 0
+        Width = 128
+        Caption = 'Começar'
+        OnClick = ButtonExpStartClick
+        TabOrder = 0
+      end
+      object ButtonExpPause: TButton
+        Left = 152
+        Height = 25
+        Top = 0
+        Width = 128
+        Caption = 'Pausar'
+        Enabled = False
+        OnClick = ButtonExpPauseClick
+        TabOrder = 1
+      end
+      object ButtonExpCancel: TButton
+        Left = 304
+        Height = 25
+        Top = 0
+        Width = 128
+        Caption = 'Cancelar'
+        Enabled = False
+        OnClick = ButtonExpCancelClick
+        TabOrder = 2
+      end
+      object ListBoxOldPlayers: TListBox
+        Left = 8
+        Height = 80
+        Top = 352
+        Width = 420
+        ClickOnSelChange = False
+        ExtendedSelect = False
+        ItemHeight = 0
+        ScrollWidth = 418
+        TabOrder = 3
+        TabStop = False
+        TopIndex = -1
+      end
+      object LabelOldPlayers: TLabel
+        Left = 8
+        Height = 15
+        Top = 328
+        Width = 136
+        AutoSize = False
+        Caption = 'Jogadores Antigos'
+        Layout = tlCenter
+        ParentColor = False
+      end
     end
-    object ListBoxOldPlayers: TListBox
-      Left = 8
-      Height = 80
-      Top = 352
-      Width = 420
-      ClickOnSelChange = False
-      ExtendedSelect = False
-      ItemHeight = 0
-      ScrollWidth = 418
+    object btnConfirmRow: TButton
+      Left = 584
+      Height = 40
+      Top = 8
+      Width = 115
+      Caption = 'Confirmar'
+      OnClick = btnConfirmRowClick
       TabOrder = 3
-      TabStop = False
-      TopIndex = -1
     end
-    object LabelOldPlayers: TLabel
-      Left = 8
-      Height = 15
-      Top = 328
-      Width = 136
-      AutoSize = False
-      Caption = 'Jogadores Antigos'
-      Layout = tlCenter
-      ParentColor = False
-    end
-  end
-  object btnConfirmRow: TButton
-    Left = 584
-    Height = 40
-    Top = 8
-    Width = 115
-    Caption = 'Confirmar'
-    OnClick = btnConfirmRowClick
-    TabOrder = 2
   end
   object OpenDialog: TOpenDialog
     Width = 862
@@ -182,8 +205,8 @@ object FormMatrixGame: TFormMatrixGame
     FilterIndex = 2
     InitialDir = 'Pesquisadores'
     Options = [ofNoChangeDir, ofFileMustExist, ofNoNetworkButton, ofEnableSizing, ofDontAddToRecent]
-    left = 632
-    top = 392
+    left = 660
+    top = 420
   end
   object PopupNotifier: TPopupNotifier
     Color = clDefault
@@ -194,14 +217,14 @@ object FormMatrixGame: TFormMatrixGame
     Title = 'Caption'
     Visible = False
     OnClose = PopupNotifierClose
-    left = 680
-    top = 352
+    left = 708
+    top = 380
   end
   object Timer: TTimer
     Enabled = False
     Interval = 8000
     OnTimer = TimerTimer
-    left = 632
-    top = 352
+    left = 660
+    top = 380
   end
 end
