@@ -72,6 +72,7 @@ type
     FOnStartTurn: TNotifyEvent;
     FOnTargetInterlocking: TNotifyEvent;
     FSystemPopUp: TPopupNotifier;
+    procedure EndCycle(Sender: TObject);
     procedure Interlocking(Sender: TObject);
     procedure SetGroupBoxPlayers(AValue: TGroupBox);
     procedure SetOnCleanEvent(AValue: TCleanEvent);
@@ -185,7 +186,7 @@ const
 
 procedure TGameControl.EndExperiment(Sender: TObject);
 begin
-  FormPoints.UpdateItems;
+  FormPoints.EndExperiment;
   ShowSystemPopUp('O Experimento terminou.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
@@ -619,9 +620,6 @@ begin
             LConsequence.PresentPoints(LPlayer, LPlayerBox, LPlayerLabel);
             Experiment.PlayerFromID[AID] := LPlayer;
           end;
-        if (Experiment.Cycles.Global <> 0) and
-           (Experiment.CurrentCondition.Turn.Count = 0) then
-          FormPoints.UpdateCummulativeEffect;
       end;
   end;
 
@@ -806,6 +804,11 @@ begin
     end;
 end;
 
+procedure TGameControl.EndCycle(Sender: TObject);
+begin
+  FormPoints.UpdateCummulativeEffect;
+end;
+
 constructor TGameControl.Create(AOwner: TComponent;AppPath:string);
 begin
   inherited Create(AOwner);
@@ -837,9 +840,8 @@ begin
   Experiment.OnEndExperiment:= @EndExperiment;
   Experiment.OnInterlocking:=@Interlocking;
   Experiment.OnTargetInterlocking:=@TargetInterlocking;
-
   //Experiment.OnEndTurn := @NextTurn;
-  //Experiment.OnEndCycle := @NextCycle;
+  Experiment.OnEndCycle := @EndCycle;
   //Experiment.OnEndCondition:= @NextCondition;
   //Experiment.OnEndGeneration:=@NextLineage;
   //Experiment.OnConsequence:=@Consequence;

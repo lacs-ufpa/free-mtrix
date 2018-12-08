@@ -13,21 +13,22 @@ type
   { TFormPoints }
 
   TFormPoints = class(TForm)
-    GBScholarItems: TGroupBox;
+    GBTotalAccumulated: TGroupBox;
     GBScholarItemsReserve: TGroupBox;
     GBTokensReserve: TGroupBox;
     GBTokens: TGroupBox;
-    ImageItems: TImage;
     ImageItemsReserve: TImage;
     ImageInd: TImage;
+    LabelItems: TLabel;
+    LabelTokens: TLabel;
+    LabelTokensCount: TLabel;
+    LabelReserveTokensCount: TLabel;
     LabelReajustItems: TLabel;
     LabelReserveItemsCount: TLabel;
     LabelMessage: TLabel;
     LabelItemsCount: TLabel;
     LabelReajustTokens: TLabel;
-    LabelReserveTokensCount: TLabel;
-    LabelTokens: TLabel;
-    LabelItems: TLabel;
+    LabelTokensIndividual: TLabel;
     LabelReserveItems: TLabel;
     LabelReserveTokens: TLabel;
     Panel1: TPanel;
@@ -39,6 +40,7 @@ type
     procedure TimerMessageTimer(Sender: TObject);
   private
     FItems : integer;
+    FTokens: integer;
     FReserveItems : integer;
     FReserveTokens: integer;
     procedure UpdateCaptions;
@@ -54,6 +56,7 @@ type
     procedure ShowSystemMessage(AMessage : string);
     procedure SetupCondition;
     procedure UpdateItems;
+    procedure EndExperiment;
   end;
 
 var
@@ -76,11 +79,30 @@ begin
   LabelReajustTokens.Hide;
   BringToFront;
   Show;
+  case Experiment.CurrentCondition.ConditionName of
+    'Condição A1', 'Condição A2', 'Condição A3' :
+      if (FReserveTokens >= 306) or
+         (FReserveTokens <= 0) then
+         Experiment.ForceEndCondition;
+
+    'Condição B1', 'Condição B2', 'Condição B3' :
+      if (FReserveItems >= 306) or
+         (FReserveItems <= 0) then
+         Experiment.ForceEndCondition;
+
+    'Condição C1', 'Condição C2', 'Condição C3' :
+      if (FReserveTokens >= 306) or
+         (FReserveTokens <= 0) or
+         (FReserveItems >= 306) or
+         (FReserveItems <= 0) then
+         Experiment.ForceEndCondition;
+  end;
 end;
 
 procedure TFormPoints.FormCreate(Sender: TObject);
 begin
   FItems:=0;
+  FTokens:=0;
   FReserveItems:=0;
   FReserveTokens:=0;
 end;
@@ -97,7 +119,8 @@ procedure TFormPoints.UpdateCaptions;
 begin
   LabelReserveTokensCount.Caption := FReserveTokens.ToString;
   LabelReserveItemsCount.Caption := FReserveItems.ToString;
-  LabelItemsCount.Caption := Experiment.CurrentCondition.Points.Count.G1.ToString;
+  LabelItemsCount.Caption := FItems.ToString;
+  LabelTokensCount.Caption := FTokens.ToString;
 end;
 
 procedure TFormPoints.CummulativeEffect(APorcentage: integer);
@@ -163,12 +186,14 @@ end;
 procedure TFormPoints.DecrementItems(AValue: integer);
 begin
   Dec(FReserveItems, AValue);
+  if FReserveItems < 0 then FReserveItems := 0;
   UpdateCaptions;
 end;
 
 procedure TFormPoints.DecrementTokens(AValue: integer);
 begin
   Dec(FReserveTokens, AValue);
+  if FReserveTokens < 0 then FReserveTokens := 0;
   UpdateCaptions;
 end;
 
@@ -196,14 +221,34 @@ end;
 procedure TFormPoints.UpdateItems;
 var
   LItems : string;
+  LTokens: string;
 begin
   if FReserveItems > 0 then
     Inc(FItems, FReserveItems);
   LItems := FItems.ToString;
+
+  if FReserveTokens > 0 then
+    Inc(FTokens, FReserveTokens);
+  LTokens := FTokens.ToString;
+
   if Experiment.CurrentConditionI > 0 then
-    Experiment.WriteChatLn('Items da condição: '+ LItems + LineEnding);
+  begin
+    Experiment.WriteChatLn('Items acumulados: '+ LItems + LineEnding);
+    Experiment.WriteChatLn('Fichas acumuladas:'+ LTokens + LineEnding);
+  end;
   LabelItemsCount.Caption := LItems;
   FormMatrixGame.UpdateNetwork('items', LItems);
+end;
+
+procedure TFormPoints.EndExperiment;
+begin
+  UpdateItems;
+  FReserveItems:=0;
+  FReserveTokens:=0;
+  LabelReserveItems.Hide;
+  GBScholarItemsReserve.Hide;
+  LabelReserveTokens.Hide;
+  GBTokensReserve.Hide;
 end;
 
 procedure TFormPoints.SetupConditionA;
