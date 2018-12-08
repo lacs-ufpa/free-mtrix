@@ -34,7 +34,7 @@ object FormPoints: TFormPoints
     object GBScholarItems: TGroupBox
       Left = 1
       Height = 174
-      Top = 367
+      Top = 431
       Width = 659
       Align = alTop
       AutoSize = True
@@ -1035,7 +1035,7 @@ object FormPoints: TFormPoints
     object LabelItems: TLabel
       Left = 1
       Height = 64
-      Top = 303
+      Top = 367
       Width = 659
       Align = alTop
       Alignment = taCenter
@@ -2047,6 +2047,21 @@ object FormPoints: TFormPoints
         Transparent = False
       end
     end
+    object LabelReajustItems: TLabel
+      Left = 1
+      Height = 64
+      Top = 303
+      Width = 659
+      Align = alTop
+      Alignment = taCenter
+      Caption = 'Reajuste'
+      Font.Height = -47
+      Font.Style = [fsBold]
+      Layout = tlCenter
+      ParentColor = False
+      ParentFont = False
+      Visible = False
+    end
   end
   object Panel2: TPanel
     Left = 0
@@ -2060,7 +2075,7 @@ object FormPoints: TFormPoints
     object ImageInd: TImage
       Left = 1
       Height = 100
-      Top = 303
+      Top = 367
       Width = 654
       Align = alTop
       Center = True
@@ -3001,7 +3016,7 @@ object FormPoints: TFormPoints
     object LabelTokens: TLabel
       Left = 1
       Height = 64
-      Top = 239
+      Top = 303
       Width = 654
       Align = alTop
       Alignment = taCenter
@@ -3015,7 +3030,7 @@ object FormPoints: TFormPoints
     object GBTokens: TGroupBox
       Left = 1
       Height = 4
-      Top = 403
+      Top = 467
       Width = 654
       Align = alTop
       AutoSize = True
@@ -3095,6 +3110,21 @@ object FormPoints: TFormPoints
       ParentColor = False
       ParentFont = False
     end
+    object LabelReajustTokens: TLabel
+      Left = 1
+      Height = 64
+      Top = 239
+      Width = 654
+      Align = alTop
+      Alignment = taCenter
+      Caption = 'Reajuste'
+      Font.Height = -47
+      Font.Style = [fsBold]
+      Layout = tlCenter
+      ParentColor = False
+      ParentFont = False
+      Visible = False
+    end
   end
   object LabelMessage: TLabel
     Left = 656
@@ -3116,9 +3146,10 @@ object FormPoints: TFormPoints
     left = 103
     top = 457
   end
-  object TimerReajustMessage: TTimer
+  object TimerReadjustMessage: TTimer
     Enabled = False
-    OnTimer = TimerReajustMessageTimer
+    Interval = 2000
+    OnTimer = TimerReadjustMessageTimer
     left = 248
     top = 457
   end

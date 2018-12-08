@@ -132,6 +132,7 @@ type
 // TODO: PUT NORMAL STRING MESSAGES IN RESOURCESTRING INSTEAD
 
 const
+  K_Readjust = '.Reajust';
   K_SMessage = '.SMessage';
   K_UPDATE = '.Update';
   K_ARRIVED  = '.Arrived';
@@ -618,7 +619,8 @@ begin
             LConsequence.PresentPoints(LPlayer, LPlayerBox, LPlayerLabel);
             Experiment.PlayerFromID[AID] := LPlayer;
           end;
-        if (Experiment.CurrentCondition.Turn.Count = 2) then
+        if (Experiment.Cycles.Global <> 0) and
+           (Experiment.CurrentCondition.Turn.Count = 0) then
           FormPoints.UpdateCummulativeEffect;
       end;
   end;

@@ -20,9 +20,11 @@ type
     ImageItems: TImage;
     ImageItemsReserve: TImage;
     ImageInd: TImage;
+    LabelReajustItems: TLabel;
     LabelReserveItemsCount: TLabel;
     LabelMessage: TLabel;
     LabelItemsCount: TLabel;
+    LabelReajustTokens: TLabel;
     LabelReserveTokensCount: TLabel;
     LabelTokens: TLabel;
     LabelItems: TLabel;
@@ -31,9 +33,9 @@ type
     Panel1: TPanel;
     Panel2: TPanel;
     TimerMessage: TTimer;
-    TimerReajustMessage: TTimer;
+    TimerReadjustMessage: TTimer;
     procedure FormCreate(Sender: TObject);
-    procedure TimerReajustMessageTimer(Sender: TObject);
+    procedure TimerReadjustMessageTimer(Sender: TObject);
     procedure TimerMessageTimer(Sender: TObject);
   private
     FItems : integer;
@@ -64,11 +66,16 @@ implementation
 uses game_experiment, form_matrixgame;
 { TFormPoints }
 
-procedure TFormPoints.TimerReajustMessageTimer(Sender: TObject);
+procedure TFormPoints.TimerReadjustMessageTimer(Sender: TObject);
 begin
-  TimerReajustMessage.Enabled := False;
+  FormMatrixGame.SendHideSystemMessage;
+  TimerReadjustMessage.Enabled := False;
   CummulativeEffect(3);
   UpdateCaptions;
+  LabelReajustItems.Hide;
+  LabelReajustTokens.Hide;
+  BringToFront;
+  Show;
 end;
 
 procedure TFormPoints.FormCreate(Sender: TObject);
@@ -120,34 +127,22 @@ begin
 end;
 
 procedure TFormPoints.UpdateCummulativeEffect;
-  procedure AppendReajustItems;
-  begin
-    LabelReserveItemsCount.Caption :=
-      LabelReserveItemsCount.Caption + LineEnding +
-      'REAJUSTE';
-  end;
-
-  procedure AppendReajustTokens;
-  begin
-    LabelReserveTokensCount.Caption :=
-      LabelReserveTokensCount.Caption + LineEnding +
-      'REAJUSTE';
-  end;
 begin
+  FormMatrixGame.SendSystemMessage('REAJUSTE');
   case Experiment.CurrentCondition.ConditionName of
     'Condição A1', 'Condição A2', 'Condição A3' :
-      AppendReajustTokens;
+      LabelReajustTokens.Show;
 
     'Condição B1', 'Condição B2', 'Condição B3' :
-      AppendReajustItems;
+      LabelReajustItems.Show;
 
     'Condição C1', 'Condição C2', 'Condição C3' :
       begin
-        AppendReajustTokens;
-        AppendReajustItems;
+        LabelReajustTokens.Show;
+        LabelReajustItems.Show;
       end;
   end;
-  TimerReajustMessage.Enabled:=True;
+  TimerReadjustMessage.Enabled:=True;
 end;
 
 procedure TFormPoints.Decrement(AValue: integer);
@@ -202,9 +197,11 @@ procedure TFormPoints.UpdateItems;
 var
   LItems : string;
 begin
-  Inc(FItems, FReserveItems);
+  if FReserveItems > 0 then
+    Inc(FItems, FReserveItems);
   LItems := FItems.ToString;
-  Experiment.WriteChatLn('Items da condição anterior: '+ LItems);
+  if Experiment.CurrentConditionI > 0 then
+    Experiment.WriteChatLn('Items da condição: '+ LItems + LineEnding);
   LabelItemsCount.Caption := LItems;
   FormMatrixGame.UpdateNetwork('items', LItems);
 end;
