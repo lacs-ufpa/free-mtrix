@@ -118,13 +118,13 @@ function TGamePoint.PointMessage(APrepend,
 
   procedure ReadBuiltInGroupMessage;
   begin
-    Result := 'Vocês';
+    Result := 'You';
     case FResult of
-      -MaxInt..-2: Result += #32+'retiraram'+#32+Self.AsString+#32+'itens escolares de uma escola pública';
-     -1 : Result += #32+'retiraram'+#32+Self.AsString+#32+'item escolar de uma escola pública';
-      0 : Result += #32+'não doaram e nem retiraram itens escolares';
-      1 : Result += #32+'doaram'+#32+Self.AsString+#32+'item escolar a uma escola pública';
-      2..MaxInt: Result += #32+'doaram'+#32+Self.AsString+#32+'itens escolares a uma escola pública';
+      -MaxInt..-2: Result += #32+'removed'+#32+Self.AsString+#32+'toys for donation to children at cancer hospitals';
+     -1 : Result += #32+'removed'+#32+Self.AsString+#32+'toy for donation to children at cancer hospitals';
+      0 : Result += #32+'do not added nor removed any toy for donation to children at cancer hospitals';
+      1 : Result += #32+'added'+#32+Self.AsString+#32+'toy for donation to children at cancer hospitals';
+      2..MaxInt: Result += #32+'added'+#32+Self.AsString+#32+'toys for donation to children at cancer hospitals';
     end;
     Result += '.';
   end;
@@ -133,11 +133,11 @@ function TGamePoint.PointMessage(APrepend,
   begin
     Result := '$NICNAME';
     case FResult of
-      -MaxInt..-2: Result += #32+'perdeu'+#32+Self.AsString+#32+'pontos';
-     -1 : Result += #32+'perdeu'+#32+Self.AsString+#32+'ponto';
-      0 : Result += #32+'não perdeu nem ganhou pontos';
-      1 : Result += #32+'ganhou'+#32+Self.AsString+#32+'ponto';
-      2..MaxInt: Result += #32+'ganhou'+#32+Self.AsString+#32+'pontos';
+      -MaxInt..-2: Result += #32+'lost'+#32+Self.AsString+#32+'tokens';
+     -1 : Result += #32+'lost'+#32+Self.AsString+#32+'token';
+      0 : Result += #32+'do not lost nor earned any token';
+      1 : Result += #32+'earned'+#32+Self.AsString+#32+'token';
+      2..MaxInt: Result += #32+'earned'+#32+Self.AsString+#32+'tokens';
     end;
     Result += '.';
   end;

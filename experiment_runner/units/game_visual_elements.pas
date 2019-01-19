@@ -36,11 +36,11 @@ type
   end;
 
 resourcestring
-  CAP_ROW = 'Linha:';
-  CAP_COLOR = 'Cor:';
-  CAP_POINTS = 'Pontos:';
+  CAP_ROW = 'Row:';
+  CAP_COLOR = 'Color:';
+  CAP_POINTS = 'Tokens:';
   CAP_NA = 'NA';
-  CAP_WAINTING_FOR_PLAYER = 'Esperando Jogador...';
+  CAP_WAINTING_FOR_PLAYER = 'Waiting for player...';
 
 implementation
 

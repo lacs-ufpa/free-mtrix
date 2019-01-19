@@ -5,13 +5,13 @@ object FormChooseActor: TFormChooseActor
   Width = 320
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
-  Caption = 'Ator'
+  Caption = 'Actor'
   ClientHeight = 240
   ClientWidth = 320
   FormStyle = fsStayOnTop
   Position = poScreenCenter
   ShowInTaskBar = stNever
-  LCLVersion = '1.8.0.4'
+  LCLVersion = '1.8.4.0'
   object btnPlayerResume: TButton
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
@@ -26,7 +26,7 @@ object FormChooseActor: TFormChooseActor
     Align = alCustom
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Around = 50
-    Caption = 'Entrar'
+    Caption = 'Sign-in'
     Font.Height = -53
     Font.Name = 'Impact'
     OnClick = btnPlayerResumeClick
@@ -36,13 +36,13 @@ object FormChooseActor: TFormChooseActor
   end
   object btnAdmin: TButton
     Left = 0
-    Height = 43
+    Height = 47
     Top = 50
     Width = 320
     Align = alTop
     AutoSize = True
     BorderSpacing.Top = 50
-    Caption = 'Pesquisador'
+    Caption = 'Researcher'
     Font.Height = -27
     Font.Name = 'Impact'
     OnClick = btnAdminClick
@@ -52,11 +52,11 @@ object FormChooseActor: TFormChooseActor
   object btnPlayer: TButton
     Left = 0
     Height = 43
-    Top = 143
+    Top = 147
     Width = 320
     Align = alTop
     BorderSpacing.Top = 50
-    Caption = 'Jogador'
+    Caption = 'Participant'
     Font.Height = -27
     Font.Name = 'Impact'
     OnClick = btnPlayerClick

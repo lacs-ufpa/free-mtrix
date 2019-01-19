@@ -243,8 +243,14 @@ var
             begin
               ConditionName := ReadString(LS,KEY_COND_NAME,LS);
               Points.Count := GetPointsFromString(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
-              Label1 := ReadString(LS, KEY_CULTURANT1_CAPTION, 'Itens escolares para doação');
-              Label2 := ReadString(LS, KEY_CULTURANT2_CAPTION, 'Itens escolares para doação');
+              Label1 := ReadString(LS, KEY_CULTURANT1_CAPTION,
+                                  'Toys for donation'+LineEnding+
+                                  'to children'+LineEnding+
+                                  'at cancer hospitals');
+              Label2 := ReadString(LS, KEY_CULTURANT2_CAPTION,
+                                  'Toys for donation'+LineEnding+
+                                  'to children'+LineEnding+
+                                  'at cancer hospitals');
               if AExperiment.ABPoints then
                 begin
                   Points.OnStart.A := ReadInteger(LS, KEY_POINTS_ONSTART_A,0);

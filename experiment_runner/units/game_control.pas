@@ -193,7 +193,7 @@ const
 
 procedure TGameControl.EndExperiment(Sender: TObject);
 begin
-  ShowSystemPopUp('O Experimento terminou.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
+  ShowSystemPopUp('The experiment ended.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
 
@@ -431,7 +431,7 @@ begin
   with TPlayerBox.Create(GroupBoxPlayers,P.ID,Admin) do
     begin
       if Me then
-        Caption := P.Nicname+SysToUtf8(' (Você)' )
+        Caption := P.Nicname+SysToUtf8(' (You)' )
       else
         Caption := P.Nicname;
       i1 := PtrInt(P.Choice.Row);
@@ -450,7 +450,7 @@ begin
   with GetPlayerBox(P.ID) do
     begin
       if Me then
-        Caption := P.Nicname+SysToUtf8(' (Você)' )
+        Caption := P.Nicname+SysToUtf8(' (You)' )
       else
         Caption := P.Nicname;
       if Admin then
@@ -542,8 +542,8 @@ begin
         with ButtonPanel do
           begin
             ButtonOrder:=boCloseOKCancel;
-            OKButton.Caption:='Sim';
-            CancelButton.Caption:='Não';
+            OKButton.Caption:='Yes';
+            CancelButton.Caption:='No';
             ShowButtons:=[pbOK, pbCancel];
             ShowBevel:=True;
             ShowGlyphs:=[];
@@ -775,7 +775,7 @@ begin
       if AEnabled then
         begin
           ShowSystemPopUp(
-            'É sua vez! Clique sobre uma linha da matriz e confirme sua escolha.',
+            'It is your turn! Click at a row and confirm your choice.',
             GLOBAL_SYSTEM_MESSAGE_INTERVAL
           );
           {$IFDEF DEBUG}
@@ -1075,7 +1075,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           if FExperiment.PlayerFromID[Self.ID].Turn = 0 then
               EnablePlayerMatrix(Self.ID, 0, True)
           else
-              ShowSystemPopUp('Começou! Aguarde sua vez.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
+              ShowSystemPopUp('It is started! Wait for your turn.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
 
       gaAdmin:
         NextConditionSetup(FExperiment.CurrentConditionAsString,True);
@@ -1120,9 +1120,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor := TFormChooseActor.Create(nil);
               FormChooseActor.Style := K_LEFT;
               FormChooseActor.ShowPoints(
-                'A tarefa terminou, obrigado por sua participação!'+LineEnding+
-                'Você produziu ' + Pts + ' fichas e ' +
-                LabelGroup1.Caption + ' itens escolares serão doados a uma escola pública.'
+                'The task is over, thank you for your collaboration!'+LineEnding+
+                'You produced ' + Pts + ' tokens and ' +
+                LabelGroup1.Caption + ' toys for donation to children at cancer hospitals.'
               );
 
               if FormChooseActor.ShowModal = 1 then
@@ -1136,7 +1136,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             end
           else
             ShowSystemPopUp(
-              FExperiment.PlayerFromID[AID].Nicname+ ' saiu. Por favor, aguarde a chegada de alguém para ocupar o lugar.',
+              FExperiment.PlayerFromID[AID].Nicname+ ' exited. Please, wait for someone else to arrive.',
               GLOBAL_SYSTEM_MESSAGE_INTERVAL
             );
         end;
@@ -1165,9 +1165,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             Pts := LabelPointI.Caption;
 
           FormChooseActor.ShowPoints(
-          'A tarefa terminou, obrigado por sua participação!'+LineEnding+
-          'Você produziu ' + Pts + ' fichas e ' +
-          LabelGroup1.Caption + ' itens escolares serão doados a uma escola pública.');
+          'The task is over, thank you for your collaboration!'+LineEnding+
+          'You produced ' + Pts + ' tokens and ' +
+          LabelGroup1.Caption + ' toys for donation to children at cancer hospitals.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
 
@@ -1205,8 +1205,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                     OnPlayerExit(P, LPlayerBox.Caption+','+LPlayerBox.LabelPointsCount.Caption);
                   //DeletePlayerBox(AMessage[1]);
                   ShowSystemPopUp(
-                          'O participante '+ P.Nicname +
-                          ' saiu. Aguardando a entrada do próximo participante.',
+                          'Participant '+ P.Nicname +
+                          ' exited. Waiting for the next participant to arrive.',
                           GLOBAL_SYSTEM_MESSAGE_INTERVAL
                         );
                 end;
@@ -1362,8 +1362,8 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
                 else
                   P.Nicname := InputBox
                     (
-                      'Um participante entrou no experimento.',
-                      'Qual o apelido do novo participante?',
+                      'A new participant arrived.',
+                      'What is his/her nickname?',
                       GenResourceName(i)
                     );
                 P.Points.A:=0;
@@ -1526,8 +1526,8 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     else
       P.Nicname := InputBox
         (
-          'Mudança de geração',
-          'Um novo participante entrou no lugar do participante mais antigo. Qual o apelido do novo participante?',
+          'A new generation has started',
+          'A new participant replaced the oldest one. What is the nickname of the new participant?',
           GenResourceName(-1)
         );
 

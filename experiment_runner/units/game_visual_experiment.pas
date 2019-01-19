@@ -60,15 +60,15 @@ type
   end;
 
 resourcestring
-  CAP_EXPERIMENT = 'Experimento';
-  CAP_INTERLOCK = 'Entrelaçamentos';
-  CAP_TARGET_INTERLOCK = 'Entrelaçamentos alvo';
-  CAP_CONDITION = 'Condição';
-  CAP_TURN = 'Turno';
-  CAP_GENERATION = 'Geração';
-  CAP_COND_CYCLE = 'Ciclo (Condição)';
-  CAP_CYCLES = 'Ciclo';
-  HINT_GENERATION_A = 'Em parênteses o número de ciclos a cada mudança de geração';
+  CAP_EXPERIMENT = 'Experiment';
+  CAP_INTERLOCK = 'Interlockings';
+  CAP_TARGET_INTERLOCK = 'Target interlock';
+  CAP_CONDITION = 'Condition';
+  CAP_TURN = 'Turn';
+  CAP_GENERATION = 'Generation';
+  CAP_COND_CYCLE = 'Cycle (Condition)';
+  CAP_CYCLES = 'Cycle (Global)';
+  HINT_GENERATION_A = 'Inside parentheses, it is the number of cycles of the current generation.';
 
 implementation
 

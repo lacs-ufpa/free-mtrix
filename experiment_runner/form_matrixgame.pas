@@ -90,9 +90,9 @@ var
   FormMatrixGame: TFormMatrixGame;
 
 resourcestring
-  CAPTION_RESUME = 'Recomeçar';
-  CAPTION_START = 'Começar';
-  CAPTION_RUNNING = 'Rodando';
+  CAPTION_RESUME = 'Resume';
+  CAPTION_START = 'Start';
+  CAPTION_RUNNING = 'Running';
 
 implementation
 
@@ -124,7 +124,7 @@ begin
   StringGridMatrix.Enabled:=AEnabled;
   StringGridMatrix.Options := FormMatrixGame.StringGridMatrix.Options-[goRowSelect];
   btnConfirmRow.Enabled:=True;
-  btnConfirmRow.Caption:='Confirmar';
+  btnConfirmRow.Caption:='Confirm';
   btnConfirmRow.Visible := False;
 end;
 
@@ -341,7 +341,7 @@ end;
 
 procedure TFormMatrixGame.ButtonExpPauseClick(Sender: TObject);
 begin
-  ShowMessage('Não implementado.');
+  ShowMessage('Not implemented yet.');
   //ButtonExpStart.Enabled := True;
   //ButtonExpStart.Caption := CAPTION_RESUME;
   //ButtonExpPause.Enabled := not ButtonExpStart.Enabled;
