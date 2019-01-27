@@ -45,6 +45,7 @@ def copy_file(src, dst):
 
 RELEASES_FOLDER = 'deployment'
 DOCS_FOLDER = 'docs'
+DATA_FOLDER = 'data'
 
 if __name__ == "__main__":
     root_path = os.path.dirname(os.path.abspath(__file__))
@@ -101,6 +102,11 @@ if __name__ == "__main__":
         # copy doc as documentation
         src_examples = os.path.join(root_path, DOCS_FOLDER)
         dst_examples = os.path.join(destination, 'Documentation')
+        copy_folder(src_examples, dst_examples)
+
+        # copy doc as documentation
+        src_examples = os.path.join(root_path, DATA_FOLDER)
+        dst_examples = os.path.join(destination, 'data')
         copy_folder(src_examples, dst_examples)
 
         # zip release destination 
