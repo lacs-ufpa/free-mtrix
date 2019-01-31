@@ -24,7 +24,7 @@ uses
     , BaseUnix
     {$ENDIF}
   {$ENDIF}
-  , StrUtils, Forms, Classes, SysUtils
+  , StrUtils, Forms, castle_base, Classes, SysUtils
   , helpers
   , form_matrixgame, game_view
   ;

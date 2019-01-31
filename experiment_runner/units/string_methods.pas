@@ -55,8 +55,8 @@ function GetChoiceFromString(S:string) : TPlayerChoice;
 
 function GetEndCriteriaLastCyclesFromString(S:string):integer;
 function GetEndCriteriaPorcentageFromString(S:string):integer;
-function GetEndCriteriaStyleString(AEndCriteriaStyle : TGameEndCondition):string;
-function GetEndCriteriaStyleFromString(S:string):TGameEndCondition;
+function GetEndCriteriaStyleString(AEndCriteriaStyle : TGameEndConditionCriteria):string;
+function GetEndCriteriaStyleFromString(S:string):TGameEndConditionCriteria;
 function GetEndCriteriaString(AEndCriterium:TEndConditionCriterium) : string;
 function GetEndCriteriaFromString(S:string) : TEndConditionCriterium;
 
@@ -74,14 +74,11 @@ uses strutils;
 
 function GetEndCriteriaFromString(S:string) : TEndConditionCriterium;
 begin
-  case StrToIntDef(ExtractDelimited(1,S,[',']),2) of
-    0: Result.Style := gecAbsoluteCycles;
-    1: Result.Style := gecInterlockingPorcentage;
-    2: Result.Style := gecWhichComeFirst;
-  end;
+  Result.Style:=GetEndCriteriaStyleFromString(ExtractDelimited(1,S,[',']));
   Result.AbsoluteCycles := StrToIntDef(ExtractDelimited(2,S,[',']), 20);
   Result.InterlockingPorcentage := StrToIntDef(ExtractDelimited(3,S,[',']),10);
   Result.LastCycles := StrToIntDef(ExtractDelimited(4,S,[',']), 10);
+  Result.MaximumG1 := StrToIntDef(ExtractDelimited(5,S,[',']), 312);;
 end;
 
 function GetPointsFromString(S: string) : TPoints;
@@ -156,6 +153,7 @@ begin
 
     grEven : Result := 'PAR';
     grOdd : Result := 'IMPAR';
+    grSomeOdd : Result := 'ALGUMA IMPAR';
     grNot_EVEN_ODD_ONLY : Result := 'EXCETO_PAR_IMP';
 
     grEqual : Result := 'IGUAIS';
@@ -182,6 +180,7 @@ begin
 
     'PAR', 'EVEN'         : Result := grEven;
     'IMPAR', 'ODD'        : Result := grOdd;
+    'ALGUMA IMPAR'        : Result := grSomeOdd;
     'EXCETO_PAR_IMP'      : Result := grNot_EVEN_ODD_ONLY;
 
     'IGUAIS'              : Result := grEqual;
@@ -202,6 +201,7 @@ begin
     gcGreen :Result  :=  'VERDE';
     gcDiff :Result  :=  'DIFERENTES';
     gcEqual :Result  :=  'IGUAIS';
+    gcSomeEqual : Result := 'ALGUMA IGUAL';
     gcThis  :Result  := 'ESPECIFICAMENTE';
     gcNot : Result := 'EXCETO';
   end;
@@ -218,6 +218,7 @@ begin
     'M', 'ROXO','MAGENTA', 'VIOLETA' : Result := gcMagenta;
     '!','<>','DIFERENTES', 'DIFFERENT' : Result := gcDiff;
     '=','IGUAIS', 'EQUAL' : Result := gcEqual;
+    'ALGUMA IGUAL'        : Result := gcSomeEqual;
     'ESPECIFICAMENTE' : Result := gcThis;
     'EXCETO' : Result := gcNot;
   end;
@@ -435,33 +436,42 @@ begin
 end;
 
 
-function GetEndCriteriaStyleString(AEndCriteriaStyle: TGameEndCondition): string;
+function GetEndCriteriaStyleString(AEndCriteriaStyle: TGameEndConditionCriteria): string;
+var
+  LEndCondition : TGameEndCondition;
 begin
-  case AEndCriteriaStyle of
-   gecAbsoluteCycles: Result := 'CICLOS';
-   gecInterlockingPorcentage: Result := 'PORCENTAGEM';
-   gecWhichComeFirst: Result := 'O QUE OCORRER PRIMEIRO';
-  end;
+  Result := '';
+  for LEndCondition in AEndCriteriaStyle do
+    case LEndCondition of
+      gecITEMS : Result += 'ITENS|';
+      gecInterlockingPorcentage : Result += 'ENTRELAÇAMENTOS|';
+      gecAbsoluteCycles : Result += 'CICLOS|';
+    end;
 end;
 
-function GetEndCriteriaStyleFromString(S: string): TGameEndCondition;
+function GetEndCriteriaStyleFromString(S: string): TGameEndConditionCriteria;
+var
+  LCount, i : integer;
 begin
-  case S of
-   'CICLOS': Result := gecAbsoluteCycles;
-   'PORCENTAGEM': Result := gecInterlockingPorcentage;
-   'O QUE OCORRER PRIMEIRO': Result := gecWhichComeFirst;
-  end;
+  Result := [];
+  LCount := WordCount(S,[#0,'|']);
+  for i:= 1 to LCount do
+    case ExtractDelimited(i,S,['|']) of
+      'ITENS':Result+=[gecITEMS];
+      'ENTRELAÇAMENTOS':Result+=[gecInterlockingPorcentage];
+      'CICLOS':Result+=[gecAbsoluteCycles];
+    end;
 end;
 
 function GetEndCriteriaString(AEndCriterium: TEndConditionCriterium
   ): string;
 begin
-  // 2,20,10,10,
-  Result := GetEndCriteriaStyleString(AEndCriterium.Style);
-  Result := Result + VV_SEP;
+  // X|Y|Z|,20,10,10,312,
+  Result := GetEndCriteriaStyleString(AEndCriterium.Style) + VV_SEP;
   Result := Result + IntToStr(AEndCriterium.AbsoluteCycles) + VV_SEP;
   Result := Result + IntToStr(AEndCriterium.InterlockingPorcentage) + VV_SEP;
   Result := Result + IntToStr(AEndCriterium.LastCycles) + VV_SEP;
+  Result := Result + IntToStr(AEndCriterium.MaximumG1) + VV_SEP;
 end;
 
 function GetPointsString(APoints: TPoints): string;

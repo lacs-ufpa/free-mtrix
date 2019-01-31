@@ -47,6 +47,10 @@ resourcestring
 
   SEC_CONDITION = 'Condição.';
   KEY_COND_NAME = 'Nome';
+  KEY_ITEMS_READJUST_PORCENTAGE = 'ReajustarItensEscolares.Porcentagem';
+  KEY_INSTRUCTION = 'Instrução';
+  KEY_CYCLES_TO_TALK = 'PodeConversar.Ciclos';
+
   KEY_CULTURANT1_CAPTION = 'Culturante1.Contador.Rótulo';
   KEY_CULTURANT2_CAPTION = 'Culturante2.Contador.Rótulo';
 
@@ -58,22 +62,21 @@ resourcestring
   KEY_POINTS_COUNT = 'Pontos.AoRecomeço';
   KEY_POINTS_ONSTART_A = 'Pontos.Somar_ao_iniciar_condição.A';
   KEY_POINTS_ONSTART_B = 'Pontos.Somar_ao_iniciar_condição.B';
-  KEY_POINTS_ONSTART_I = 'Pontos.Somar_ao_iniciar_condição.I';
-  KEY_POINTS_ONSTART_G1 = 'Pontos.Somar_ao_iniciar_condição.C1';
-  KEY_POINTS_ONSTART_G2 = 'Pontos.Somar_ao_iniciar_condição.C2';
+  KEY_POINTS_ONSTART_I = 'PontosAoIniciarCondição.Individual';
+  KEY_POINTS_ONSTART_G1 = 'PontosAoIniciarCondição.Itens';
 
   KEY_CYCLES_VALUE = 'Ciclos.MudançaDeGeração';
   KEY_CYCLES_COUNT = 'Ciclos.AoRecomeço';
   KEY_CYCLES_GEN = 'Ciclos.IniciarNaGeração';
 
   //KEY_PROMPT_VALUE = 'Questão.Apresentar'; // BOOL,CSQPROMPTCODE
-  KEY_PROMPT_STYLE = 'Questão.Estilo'; // string
+  KEY_PROMPT_STYLE = 'Questão.Estilo'; // ENTRELAÇAMENTOS|ITENS|CICLOS|
   KEY_PROMPT_MESSAGE = 'Questão.Mensagem'; // string
   KEY_PROMPT_TARGET = 'Questão.MetacontingênciaAlvo';
   KEY_ENDCRITERIA = 'Critério_de_Finalização.Estilo'; //2,50,10,30,
   KEY_ENDCRITERIA_CYCLES = 'Critério_de_Finalização.Ciclos'; // 20
   KEY_ENDCRITERIA_PORCENTAGE = 'Critério_de_Finalização.Porcentagem'; // 80|10
-
+  KEY_ENDCRITERIA_ITEMS = 'Critério_de_Finalização.Itens';//312
 
   KEY_CONTINGENCY = 'Contingência.';
   KEY_METACONTINGENCY = 'Metacontingência.';
@@ -81,6 +84,8 @@ resourcestring
   // ROW,COLOR,OPCODE
   KEY_CONT_NAME = '.Nome';
   KEY_CRITERIA = '.Resposta';
+  KEY_IS_TARGET = '.Alvo';
+
   KEY_CONSEQUE = '.Consequência'; // A,B,G,CSQCODE
   KEY_STYLE = '.Estilo';
   KEY_CONSEQUE_MESSAGE_PREPEND = '.Consequência.Mensagem.Prefixo';
@@ -100,9 +105,9 @@ resourcestring
   VAL_END_TIME = 'Término';
   VAL_RESEARCHERS = 'Pesquisadores';
 
-  DEF_END_CRITERIA_STYLE = 'CICLOS';
+  DEF_END_CRITERIA_STYLE = 'CICLOS|ENTRELAÇAMENTOS|ITEMS|';
   //DEF_END_CRITERIA_CYCLES = '20';
-  DEF_END_CRITERIA_PORCENTAGE = '80,10';
+  DEF_END_CRITERIA_PORCENTAGE = '80,50';
 
   DEF_POINTS = '0,0,0,';
   DEF_CONSEQUENCE = '1,0|M,C,P,A,|$NICNAME produziu|ponto.|pontos.|';

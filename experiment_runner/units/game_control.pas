@@ -53,7 +53,6 @@ type
     procedure EnablePlayerMatrix(AID:string; ATurn:integer; AEnabled:Boolean);
   private
     FGroupBoxPlayers: TGroupBox;
-    FCountGroup1: integer;
     FCountGroup2: integer;
     FLabelGroup1Name : string;
     FLabelGroup2Name : string;
@@ -72,6 +71,7 @@ type
     FOnStartTurn: TNotifyEvent;
     FOnTargetInterlocking: TNotifyEvent;
     FSystemPopUp: TPopupNotifier;
+    procedure CummulativeEffect(AValue : integer);
     procedure EndCycle(Sender: TObject);
     procedure Interlocking(Sender: TObject);
     procedure SetGroupBoxPlayers(AValue: TGroupBox);
@@ -94,6 +94,7 @@ type
     procedure StartGeneration(Sender: TObject);
     procedure StartTurn(Sender: TObject);
     procedure TargetInterlocking(Sender: TObject);
+    procedure UpdateGroupPoints(Sender: TObject);
   public
     constructor Create(AOwner : TComponent;AppPath:string = '');overload;
     destructor Destroy; override;
@@ -110,7 +111,6 @@ type
   public
     procedure ShowSystemPopUp(AText:string; AInterval : integer);
     property SystemPopUp : TPopupNotifier read FSystemPopUp write SetSystemPopUp;
-    property CountGroup1 : integer read FCountGroup1;
     property CountGroup2 : integer read FCountGroup2;
     property CountPointA : integer read FCountPointA;
     property CountPointB : integer read FCountPointB;
@@ -182,12 +182,10 @@ const
 //function TGameControl.ShouldEndGeneration: Boolean;
 //begin
 //  Result := FExperiment.CurrentCondition.Cycles.Count = FExperiment.CurrentCondition.Cycles.Value-1;
-//end;
+//end
 
 procedure TGameControl.EndExperiment(Sender: TObject);
 begin
-  FormPoints.EndExperiment;
-  ShowSystemPopUp('O Experimento terminou.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
 
@@ -245,6 +243,11 @@ end;
 procedure TGameControl.TargetInterlocking(Sender: TObject);
 begin
   if Assigned(FOnTargetInterlocking) then FOnTargetInterlocking(Sender);
+end;
+
+procedure TGameControl.UpdateGroupPoints(Sender: TObject);
+begin
+  FormPoints.UpdateCaptions;
 end;
 
 //procedure TGameControl.Consequence(Sender: TObject);
@@ -339,6 +342,8 @@ end;
 procedure TGameControl.Stop;
 begin
   // cleaning
+  FormPoints.EndExperiment;
+  ShowSystemPopUp('O Experimento terminou.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
   Experiment.Clean;
 end;
 
@@ -593,24 +598,34 @@ var
   LPlayerBox : TPlayerBox;
   LPlayerLabel : TPlayerCounterLabel;
   LPlayer : TPlayer;
+  //LGroupItems : integer;
 begin
-  Result := '';
   LConsequence := TConsequence.Create(nil,S);
   Result := LConsequence.GenerateMessage(ForGroup);
   case FActor of
     gaPlayer:
-      if ForGroup then
-        LConsequence.PresentPoints(FCountPointA,FCountPointB,
-          FCountGroup1, FCountGroup2)
-      else
-        if Self.ID = AID then
-          LConsequence.PresentPoints(FCountPointA,FCountPointB,
-            FCountGroup1, FCountGroup2);
-
+      begin
+        //// we must update it from an admin
+        //LGroupItems := 0;
+        //if ForGroup then
+        //  LConsequence. (FCountPointA,FCountPointB,
+        //    LGroupItems, FCountGroup2)
+        //else
+        //  if Self.ID = AID then
+        //    LConsequence.CalculatePoints(FCountPointA,FCountPointB,
+        //      LGroupItems, FCountGroup2);
+      end;
     gaAdmin:
       begin
+        //if Assigned(FormPoints) then
+        //  FormPoints.UpdateCaptions;
+        //LGroupItems := Experiment.CurrentCondition.Points.Count.G1;
         if ForGroup then
-          LConsequence.PresentPoints(FCountGroup1, FCountGroup2)
+        begin
+          //LConsequence.CalculatePoints(FCountPointA, FCountPointB,
+          //  LGroupItems, FCountGroup2);
+          //Experiment.UpdateGroupItems(LGroupItems);
+        end
         else
           begin
             LPlayer := Experiment.PlayerFromID[AID];
@@ -623,7 +638,7 @@ begin
       end;
   end;
 
-  if ShowPopUp then
+  if (Result <> '') and ShowPopUp then
     begin
       if Assigned(FormMatrixGame) then
         LConsequence.PresentMessage(FormMatrixGame.StringGridMatrix)
@@ -659,16 +674,6 @@ begin
       G1 := StrToIntDef(ExtractDelimited(6,S,['|']), 0);
       G2 := StrToIntDef(ExtractDelimited(7,S,['|']), 0);
     end;
-
-  if G1 > 0 then
-  begin
-    IncCount(FCountGroup1, G1);
-    if Assigned(FormPoints) then
-      FormPoints.LabelItemsCount.Caption := CountGroup1.ToString;
-  end;
-
-  if G2 > 0 then
-    IncCount(FCountGroup2, G2);
 
   case FActor of
     gaPlayer:
@@ -710,11 +715,11 @@ begin
     gaAdmin:
       if IsConditionStart then
       begin
+        //Experiment.UpdateGroupItems(G1);
         if Assigned(FormPoints) then
         begin
           if LInitialMessage <> '' then
             FormPoints.ShowSystemMessage(LInitialMessage);
-
           FormPoints.SetupCondition;
         end;
         for i := Low(Experiment.Players) to High(Experiment.Players) do
@@ -745,7 +750,7 @@ var
   B : integer;
   LNewA : integer = 0;
   LNewB : integer = 0;
-  PB : TPlayerBox;
+  //PB : TPlayerBox;
 begin
   with Experiment.CurrentCondition.Points do
     begin
@@ -768,7 +773,7 @@ begin
 
     gaAdmin:
       begin
-        PB := GetPlayerBox(AID);
+        //PB := GetPlayerBox(AID);
         LNewA := A;
         LNewB := B;
         if Experiment.ABPoints then
@@ -804,15 +809,20 @@ begin
     end;
 end;
 
+procedure TGameControl.CummulativeEffect(AValue : integer);
+begin
+  FormPoints.UpdateCummulativeEffect(AValue);
+end;
+
 procedure TGameControl.EndCycle(Sender: TObject);
 begin
-  FormPoints.UpdateCummulativeEffect;
+  FormPoints.UpdateCanTalkCount;
 end;
 
 constructor TGameControl.Create(AOwner: TComponent;AppPath:string);
 begin
   inherited Create(AOwner);
-  FCountGroup1 := 0;
+
   FZMQActor := TZMQActor(AOwner);
   FID := FZMQActor.ID;
   FZMQActor.OnMessageReceived:=@ReceiveMessage;
@@ -832,6 +842,7 @@ begin
     gaPlayer:Experiment := TExperiment.Create(FZMQActor.Owner);
     gaWatcher:Experiment := TExperiment.Create(FZMQActor.Owner);
   end;
+  Experiment.OnCummulativeEffect:=@CummulativeEffect;
   Experiment.OnStartTurn:=@StartTurn;
   Experiment.OnStartCondition:=@StartCondition;
   Experiment.OnStartCycle:=@StartCycle;
@@ -840,6 +851,7 @@ begin
   Experiment.OnEndExperiment:= @EndExperiment;
   Experiment.OnInterlocking:=@Interlocking;
   Experiment.OnTargetInterlocking:=@TargetInterlocking;
+  Experiment.OnUpdateGroupPoints:=@UpdateGroupPoints;
   //Experiment.OnEndTurn := @NextTurn;
   Experiment.OnEndCycle := @EndCycle;
   //Experiment.OnEndCondition:= @NextCondition;
@@ -858,7 +870,19 @@ function TGameControl.LoadFromFile(AFilename: string): Boolean;
 begin
   Result := Experiment.LoadFromFile(AFilename);
   if not Result then Exit;
-
+  case Experiment.ExperimentName of
+    'Experimento 1' : ExperimentType := Experiment1;
+    'Experimento 2' : ExperimentType := Experiment2;
+    else
+      begin
+        raise Exception.Create(
+          Experiment.ExperimentName + #32 +
+          'não é um nome válido.' + #32 +
+          'Use "Experimento 1" ou "Experimento 2".'
+        );
+        Halt;
+      end
+  end;
   SetMatrix;
   //SetLabels;
   if Assigned(FormMatrixGame) then
@@ -1106,7 +1130,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   end;
 
   procedure SayGoodBye(AID:string); // [player_points]
-  var Pts : string;
+  //var Pts : string;
   begin
     case FActor of
       gaPlayer:
@@ -1114,20 +1138,17 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           //DeletePlayerBox(AID); // old player
           if Self.ID = AID then
             begin
-              if Experiment.ABPoints then
-                Pts := IntToStr(CountPointA+CountPointB)
-              else
-                Pts := CountPointA.ToString;
+              //if Experiment.ABPoints then
+              //  Pts := IntToStr(CountPointA+CountPointB)
+              //else
+              //  Pts := CountPointA.ToString;
 
               if Assigned(FormMatrixGame) then
                 FormMatrixGame.Visible := False;
               FormChooseActor := TFormChooseActor.Create(nil);
               FormChooseActor.Style := K_LEFT;
               FormChooseActor.ShowPoints(
-                'A tarefa terminou, obrigado por sua participação!'+LineEnding+
-                'Você produziu ' + Pts + ' fichas e ' +
-                CountGroup1.ToString +
-                ' itens escolares serão doados a uma escola pública.'
+                'A tarefa terminou, obrigado por sua participação!'
               );
 
               if FormChooseActor.ShowModal = 1 then
@@ -1149,7 +1170,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   end;
 
   procedure EndExperimentMessage;
-  var Pts : string;
+  //var Pts : string;
   begin
     case FActor of
       gaPlayer:
@@ -1164,16 +1185,14 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor := TFormChooseActor.Create(nil);
           FormChooseActor.Style := K_END;
 
-          if Experiment.ABPoints then
-            Pts := (CountPointA+CountPointB).ToString
-          else
-            Pts := CountPointA.ToString;
+          //if Experiment.ABPoints then
+          //  Pts := (CountPointA+CountPointB).ToString
+          //else
+          //  Pts := CountPointA.ToString;
 
           FormChooseActor.ShowPoints(
-          'A tarefa terminou, obrigado por sua participação!'+LineEnding+
-          'Você produziu ' + Pts + ' fichas e ' +
-          CountGroup1.ToString +
-          ' itens escolares serão doados a uma escola pública.');
+            'A tarefa terminou, obrigado por sua participação!'
+          );
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
 
@@ -1301,7 +1320,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
         begin
           LConsequence := ExtractDelimited(i,AMessage,['+']);
           MID := ExtractDelimited(1,LConsequence,['#']);
-          LGConsequence += ShowConsequence(MID, ExtractDelimited(2,LConsequence,['#']),MID = 'M',False)+LineEnding;
+          LConsequence := ShowConsequence(MID, ExtractDelimited(2,LConsequence,['#']),MID = 'M',False);
+          if LConsequence <> '' then
+            LGConsequence += LConsequence+LineEnding;
         end;
 
     if LGConsequence <> '' then
@@ -1321,22 +1342,17 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     LKey := AMessage[2];
     LValue := AMessage[3];
     case LKey of
-      'items': FCountGroup1 := LValue.ToInteger;
+      'items': Experiment.AllItems := LValue.ToInteger;
     end;
-    //case FActor of
-    //  gaAdmin:
-    //    if Assigned(FormPoints) then
-    //      FormPoints.UpdateItems;
-    //end;
   end;
 
   procedure HandleSystemMessage;
-  var
-    Code : string = '';
-    Message : string = '';
+  //var
+  //  Code : string = '';
+  //  Message : string = '';
   begin
-    Code := AMessage[2];
-    Message := AMessage[3];
+    //Code := AMessage[2];
+    //Message := AMessage[3];
     if FActor = gaPlayer then
     case AMessage[2] of
       'show': FormMatrixGame.ShowSystemMessage(AMessage[3]);
@@ -1665,7 +1681,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         // The Announcer sends a message, waits interval time until all messages have been sent and then destroys itself.
         LAnnouncer := TIntervalarAnnouncer.Create(nil);
         LAnnouncer.OnStart := @FZMQActor.SendMessage;
-        LAnnouncer.Interval := 1000;
+        LAnnouncer.Interval := 500;
 
         // individual consequences
         LCount := WordCount(AReply[6],['+']);

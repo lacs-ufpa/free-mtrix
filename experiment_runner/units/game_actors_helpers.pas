@@ -22,7 +22,7 @@ function GetColorFromCode(ACode : TGameColor) : TColor;
 function GetMessagesFromPromptStyle(APromptStyle : TPromptStyle;
   AContingencies : TContingencies) : TStringList;
 function FirstDelimitedString(S : string):string;
-procedure IncCount(var ALabelCount : integer; AValue:integer=0);
+procedure IncCount(var ACount : integer; AValue:integer=0);
 
 const
 
@@ -123,6 +123,9 @@ const
     (
       ConditionName : '';
       InitialMessage: '';
+      Instruction: '';
+      ItemsReadjustPorcentage: 0;
+      CyclesToTalk: 0;
       Label1:'';
       Label2:'';
       Contingencies : nil;
@@ -150,10 +153,11 @@ const
 
       Prompt : nil;
       EndCriterium : (
-        Style : gecWhichComeFirst;
+        Style : [gecITEMS, gecAbsoluteCycles, gecInterlockingPorcentage];
         InterlockingPorcentage : 50;
         LastCycles : 4;
         AbsoluteCycles: 6;
+        MaximumG1 : 312;
       );
     );
 
@@ -287,11 +291,9 @@ begin
   Result := ExtractDelimited(1,S,['#'])
 end;
 
-procedure IncCount(var ALabelCount: integer; AValue:integer);
+procedure IncCount(var ACount: integer; AValue:integer);
 begin
-  ALabelCount += AValue;
-  if ALabelCount < 0 then
-    ALabelCount := 0;
+  ACount := ACount + AValue;
 end;
 
 end.

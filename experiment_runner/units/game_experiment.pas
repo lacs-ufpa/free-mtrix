@@ -22,7 +22,7 @@ uses
 
 type
 
-  { TExperiment }
+  TCummulativeEffectEvent = procedure(AValue : integer) of object;
 
   TNotifyOnWriteReport = procedure (S : string) of object;
 
@@ -37,6 +37,7 @@ type
     Generations : integer;
   end;
 
+  { TExperiment }
   TExperiment = class(TComponent)
   private
     FABPoints: Boolean;
@@ -82,6 +83,7 @@ type
     function GetInterlockingPorcentageInLastCycles:real;
     function GetConsequenceStringFromChoice(P:TPlayer): string;
     function GetConsequenceStringFromChoices:string;
+    function IsTargetMetacontingency(AContigency : integer) : Boolean;
     procedure CheckNeedForRandomTurns;
     procedure EndExperiment;
     procedure WriteReportFooter;
@@ -104,7 +106,9 @@ type
     FConditionMustBeUpdated: string;
     FConsequenceStringFromChoices: string;
     FEndCycle: Boolean;
+    FInterlockingsInLastCycles: real;
     FOnConsequence: TNotifyEvent;
+    FOnCummulativeEffect: TCummulativeEffectEvent;
     FOnInterlocking: TNotifyEvent;
     FOnEndTurn: TNotifyEvent;
     FOnEndCondition: TNotifyEvent;
@@ -115,19 +119,23 @@ type
     FOnStartCycle: TNotifyEvent;
     FOnStartGeneration: TNotifyEvent;
     FOnStartTurn: TNotifyEvent;
+    FOnUpdateGroupPoints: TNotifyEvent;
     FOnWriteReport: TNotifyOnWriteReport;
     FOnStartExperiment: TNotifyEvent;
     FOnTargetInterlocking: TNotifyEvent;
+    procedure CummulativeEffect;
     procedure Consequence(Sender : TObject);
     function GetCurrentCondition: TCondition;
     function GetFirstTurn(AValue:integer): integer;
     function GetMatrixTypeAsString: string;
     procedure Interlocking(Sender : TObject);
     procedure SetMatrixTypeFromString(AValue: string);
+    procedure SetOnCummulativeEffect(AValue: TCummulativeEffectEvent);
     procedure SetOnStartCondition(AValue: TNotifyEvent);
     procedure SetOnStartCycle(AValue: TNotifyEvent);
     procedure SetOnStartGeneration(AValue: TNotifyEvent);
     procedure SetOnStartTurn(AValue: TNotifyEvent);
+    procedure SetOnUpdateGroupPoints(AValue: TNotifyEvent);
     procedure SetOnWriteReport(AValue: TNotifyOnWriteReport);
     procedure SetOnStartExperiment(AValue: TNotifyEvent);
     procedure SetOnTargetInterlocking(AValue: TNotifyEvent);
@@ -161,6 +169,7 @@ type
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
     property MatrixTypeAsString : string read GetMatrixTypeAsString write SetMatrixTypeFromString;
   public // manipulation/ self awareness
+    AllItems : integer;
     PlayerTurn : integer;
     function AppendCondition : integer; overload;
     function AppendCondition(ACondition : TCondition) : integer;overload;
@@ -174,6 +183,7 @@ type
     function ContingencyFired(AContingencyName : string):Boolean;
     function ShouldStartExperiment : Boolean;
     function DumpReportReader:string;
+    procedure UpdateGroupItems(AValue : integer);
     property IsEndCycle : Boolean read FEndCycle;
     property Condition[I : Integer]: TCondition read GetCondition write SetCondition;
     property ConditionsCount : integer read GetConditionsCount;
@@ -182,7 +192,7 @@ type
     property Contingency[C, I : integer] : TContingency read GetContingency write SetContingency;
     property ContingenciesCount[C:integer]:integer read GetContingenciesCount;
     property Cycles : TCycles read FCycles;
-    property InterlockingsInLastCycles:real read GetInterlockingPorcentageInLastCycles;
+    property InterlockingsInLastCycles:real read FInterlockingsInLastCycles; //GetInterlockingPorcentageInLastCycles
     property Player[I : integer] : TPlayer read GetPlayer write SetPlayer;
     property Players : TPlayers read FPlayers;
     property PlayerFromID[S : string ] : TPlayer read GetPlayer write SetPlayer;
@@ -223,6 +233,8 @@ type
     property OnStartTurn : TNotifyEvent read FOnStartTurn write SetOnStartTurn;
     property OnTargetInterlocking : TNotifyEvent read FOnTargetInterlocking write SetOnTargetInterlocking;
     property OnWriteReport : TNotifyOnWriteReport read FOnWriteReport write SetOnWriteReport;
+    property OnUpdateGroupPoints : TNotifyEvent read FOnUpdateGroupPoints write SetOnUpdateGroupPoints;
+    property OnCummulativeEffect : TCummulativeEffectEvent read FOnCummulativeEffect write SetOnCummulativeEffect;
   end;
 
 var
@@ -274,6 +286,7 @@ begin
       if Assigned(FOnEndCycle) then FOnEndCycle(Self);
       FEndCycle := True;
       FConsequenceStringFromChoices := GetConsequenceStringFromChoices;
+      CummulativeEffect;
       WriteReportRow;
       FConditions[CurrentConditionI].Turn.Count := 0;
       Inc(FCycles.Global);
@@ -304,15 +317,26 @@ end;
     - #32 -> do nothing
 }
 function TExperiment.GetNextCondition: string;
+var
+  i : integer;
+  LSum : integer = 0;
 begin
   Result := #32;                               // 'do nothing' envelop item
   if ShouldEndCondition then
     begin
+      Experiment.WriteChatLn('Items acumulados na condição ' +
+        Experiment.CurrentConditionI.ToString + ': ' +
+        Experiment.CurrentCondition.Points.Count.G1.ToString + LineEnding);
+
       if Assigned(FOnEndCondition) then
         FOnEndCondition(Self);
 
       if IsLastCondition then
         begin
+          for i := Low(FConditions) to High(FConditions) do
+            LSum += FConditions[i].Points.Count.G1;
+          WriteChatLn('Total de items acumulados = ' + LSum.ToString);
+
           Result := #27;                      // 'end experiment' envelop item
           EndExperiment;
           Exit;
@@ -328,6 +352,8 @@ begin
       FRegData.SaveData(LineEnding);
       WriteReportRowNames;
       FReportReader.UpdateCols(FLastReportColNames2);
+      FConditions[CurrentConditionI].Points.Count.G1 :=
+      FConditions[CurrentConditionI].Points.OnStart.G1;
       if Assigned(FOnStartCondition) then FOnStartCondition(Self);
       Result := CurrentConditionAsString;     // 'end condition' envelop item
     end;
@@ -408,35 +434,53 @@ var
   LContingencyName : string;
   i : integer;
   c : integer;
+  LContingencyResultsCount : integer;
+  LLastCycles : integer;
   LContingencyResults : TStringList;
+  LTargetMetacontingencies : TStringList;
+  LHighestResult : real;
+  function GetResultOf(AContingencyName : string) : real;
+  var
+    i : integer;
+  begin
+    LContingencyResults := FReportReader.ColumnOf[AContingencyName];
+    LContingencyResultsCount := LContingencyResults.Count;
+    if LContingencyResultsCount > 0 then
+      begin
+        i := 0;
+        for LRow in LContingencyResults do
+          if LRow = '1' then Inc(i);
+        Result := (i*100)/LContingencyResultsCount;
+
+        LLastCycles := Condition[c].EndCriterium.LastCycles;
+        if LContingencyResultsCount = LLastCycles then
+          Exit;
+
+        if LContingencyResultsCount > LLastCycles then
+          Result := 0
+        else
+          Result *= -1;
+      end;
+  end;
+
 begin
   Result := 0;
   c := CurrentConditionI;
+  LTargetMetacontingencies := TStringList.Create;
+  try
+    for i := 0 to ContingenciesCount[c] -1 do
+      if IsTargetMetacontingency(i) then
+        LTargetMetacontingencies.Append(Contingency[c,i].ContingencyName);
 
-  // for now getting the first metacontingency as target
-  for i :=0 to ContingenciesCount[c] -1 do
-    if Contingency[c,i].Meta then
-      begin
-        LContingencyName := Contingency[c,i].ContingencyName;
-        Break;
-      end;
-
-  LContingencyResults := FReportReader.ColumnOf[LContingencyName];
-  if LContingencyResults.Count > 0 then
+    for LContingencyName in LTargetMetacontingencies do
     begin
-      i := 0;
-      for LRow in LContingencyResults do
-        if LRow = '1' then Inc(i);
-      Result := (i*100)/LContingencyResults.Count;
-
-      if LContingencyResults.Count = Condition[c].EndCriterium.LastCycles then
-        Exit;
-
-      if LContingencyResults.Count > Condition[c].EndCriterium.LastCycles then
-        Result := 0
-      else
-        Result *= -1;
+      LHighestResult := GetResultOf(LContingencyName);
+      if LHighestResult > Result then
+        Result := LHighestResult;
     end;
+  finally
+    LTargetMetacontingencies.Free;
+  end;
 end;
 
 function TExperiment.GetConsequenceStringFromChoice(P: TPlayer): string;
@@ -467,13 +511,23 @@ begin
     if Contingency[c,i].Meta then
       if Contingency[c,i].ResponseMeetsCriteriaG(FPlayers) then
         begin
-          // WriteLn(GetPromptStyleString(Contingency[c,i].Style));
+          Contingency[c,i].Consequence.CalculatePoints(
+            FConditions[c].Points.Count.A,
+            FConditions[c].Points.Count.B,
+            FConditions[c].Points.Count.G1,
+            FConditions[c].Points.Count.G2
+          );
           if Contingency[c,i].Style = [] then
-            Result += 'M#'+Contingency[c,i].Consequence.AsString('M')+'+'
+          begin
+            Result += 'M#'+Contingency[c,i].Consequence.AsString('M')+'+';
+          end
           else
             begin
               Contingency[c,i].Consequence.AsString('M');
-              LMessages := GetMessagesFromPromptStyle(Contingency[c,i].Style,CurrentCondition.Contingencies);
+              LMessages := GetMessagesFromPromptStyle(
+                Contingency[c,i].Style,
+                CurrentCondition.Contingencies
+              );
               for j := 0 to LMessages.Count -1 do
                 begin
                   P := PlayerFromID[FirstDelimitedString(LMessages[j])];
@@ -481,6 +535,15 @@ begin
                 end;
             end;
         end;
+  if Assigned(OnUpdateGroupPoints) then OnUpdateGroupPoints(Self);
+end;
+
+function TExperiment.IsTargetMetacontingency(AContigency: integer): Boolean;
+begin
+  Result := False;
+  if Condition[CurrentConditionI].Contingencies[AContigency].Meta and
+     Condition[CurrentConditionI].Contingencies[AContigency].Target then
+    Result := True;
 end;
 
 procedure TExperiment.CheckNeedForRandomTurns;
@@ -639,11 +702,8 @@ procedure TExperiment.SetTargetInterlockingEvent;
 var i : integer;
 begin
   for i:= 0 to ContingenciesCount[CurrentConditionI]-1 do
-    if Condition[CurrentConditionI].Contingencies[i].Meta then
-      begin
-        Condition[CurrentConditionI].Contingencies[i].OnTargetCriteria:=@TargetInterlocking;
-        Break;
-      end;
+    if IsTargetMetacontingency(i) then
+      Condition[CurrentConditionI].Contingencies[i].OnTargetCriteria:=@TargetInterlocking;
 end;
 
 procedure TExperiment.SetContingenciesEvents;
@@ -698,6 +758,27 @@ begin
   FPlayers[High(FPlayers)] := PlayerFromString[AValue];
 end;
 
+procedure TExperiment.CummulativeEffect;
+var
+  LItemsToIncrement : integer;
+  LReadjustPorcentage : integer;
+  LNewReserveItems,
+  LOldReserveItems : integer;
+begin
+  LOldReserveItems := CurrentCondition.Points.Count.G1;
+  LReadjustPorcentage := CurrentCondition.ItemsReadjustPorcentage;
+  if LReadjustPorcentage > 0 then
+  begin
+    LItemsToIncrement := (LReadjustPorcentage*LOldReserveItems) div 100;
+    LNewReserveItems := LOldReserveItems + LItemsToIncrement;
+    FConditions[CurrentConditionI].Points.Count.G1 := LNewReserveItems;
+    Experiment.WriteChatLn('Items reajustados na condição ' +
+      Experiment.CurrentConditionI.ToString + ': ' +
+      LNewReserveItems.ToString + LineEnding);
+    if Assigned(OnCummulativeEffect) then OnCummulativeEffect(LOldReserveItems);
+  end;
+end;
+
 function TExperiment.GetPlayerToKick: string;
 begin
   if FCycles.GenerationCount < FCycles.GenerationValue -1 then
@@ -727,6 +808,12 @@ begin
   MatrixType := GetMatrixTypeFromString(AValue);
 end;
 
+procedure TExperiment.SetOnCummulativeEffect(AValue: TCummulativeEffectEvent);
+begin
+  if FOnCummulativeEffect=AValue then Exit;
+  FOnCummulativeEffect:=AValue;
+end;
+
 procedure TExperiment.SetOnStartCondition(AValue: TNotifyEvent);
 begin
   if FOnStartCondition=AValue then Exit;
@@ -749,6 +836,12 @@ procedure TExperiment.SetOnStartTurn(AValue: TNotifyEvent);
 begin
   if FOnStartTurn=AValue then Exit;
   FOnStartTurn:=AValue;
+end;
+
+procedure TExperiment.SetOnUpdateGroupPoints(AValue: TNotifyEvent);
+begin
+  if FOnUpdateGroupPoints=AValue then Exit;
+  FOnUpdateGroupPoints:=AValue;
 end;
 
 procedure TExperiment.SetOnWriteReport(AValue: TNotifyOnWriteReport);
@@ -941,6 +1034,7 @@ end;
 constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  AllItems:=0;
   FRandomTurns := TStringList.Create;
   with FCycles do
     begin
@@ -956,6 +1050,7 @@ end;
 constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
 begin
   inherited Create(AOwner);
+  AllItems:=0;
   FExperimentPath := AppPath;
   FRandomTurns := TStringList.Create;
   State := xsNone;
@@ -965,6 +1060,7 @@ end;
 constructor TExperiment.Create(AOwner:TComponent;AFilename,AppPath:string);
 begin
   inherited Create(AOwner);
+  AllItems:=0;
   FRandomTurns := TStringList.Create;
   if LoadExperimentFromFile(Self,AFilename) then
     begin
@@ -1065,8 +1161,8 @@ function TExperiment.TargetIntelockingFired: Boolean;
 var i : integer;
 begin
   Result := False;
-  for i:= 0 to ContingenciesCount[CurrentConditionI]-1 do
-    if Condition[CurrentConditionI].Contingencies[i].Meta then
+  for i := 0 to ContingenciesCount[CurrentConditionI]-1 do
+    if IsTargetMetacontingency(i) then
       begin
         Result := Condition[CurrentConditionI].Contingencies[i].Fired;
         Break;
@@ -1110,32 +1206,48 @@ begin
   Result := FReportReader.Dump;
 end;
 
+procedure TExperiment.UpdateGroupItems(AValue: integer);
+begin
+  FConditions[CurrentConditionI].Points.Count.G1 := AValue;
+end;
+
 function TExperiment.ShouldEndCondition: Boolean;
 var
   LInterlocks: Real;
   LCyclesInCurrentCondition: Integer;
+  LMaximumG1 : integer;
+  LEndConditionCriteria : TGameEndConditionCriteria;
 begin
   Result := False;
   // interlockings in the last x cycles
-  LInterlocks := InterlockingsInLastCycles;
+  LInterlocks := GetInterlockingPorcentageInLastCycles;
+  FInterlockingsInLastCycles:= LInterlocks;
 
   // absolute cycles count
   LCyclesInCurrentCondition := CurrentCondition.Cycles.Count;
-  case FConditions[CurrentConditionI].EndCriterium.Style of
-    gecWhichComeFirst:
-      begin
-        if (LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCycles) or
-           (LInterlocks >= CurrentCondition.EndCriterium.InterlockingPorcentage) then
-          Result := True;
 
-      end;
-    gecAbsoluteCycles:
-        if LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCycles then
-          Result := True;
+  LMaximumG1 := FConditions[CurrentConditionI].EndCriterium.MaximumG1;
 
-    gecInterlockingPorcentage:
-        if LInterlocks >= CurrentCondition.EndCriterium.InterlockingPorcentage then
-          Result := True;
+  LEndConditionCriteria := FConditions[CurrentConditionI].EndCriterium.Style;
+  if gecITEMS in LEndConditionCriteria then
+  begin
+    if (CurrentCondition.Points.Count.G1 < 0) or
+       (CurrentCondition.Points.Count.G1 >= LMaximumG1) then
+    begin
+      Result := True;
+    end;
+  end;
+
+  if gecAbsoluteCycles in LEndConditionCriteria then
+  begin
+    if LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCycles then
+      Result := True;
+  end;
+
+  if gecInterlockingPorcentage in LEndConditionCriteria then
+  begin
+    if LInterlocks >= CurrentCondition.EndCriterium.InterlockingPorcentage then
+      Result := True;
   end;
 end;
 

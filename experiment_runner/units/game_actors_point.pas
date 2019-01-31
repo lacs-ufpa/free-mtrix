@@ -82,6 +82,7 @@ begin
   inherited Create(AOwner);
   FValue := AValue;
   FVariation:=0;
+  GetValue;
 end;
 
 constructor TGamePoint.Create(AOwner: TComponent; AValue: array of integer);
@@ -89,6 +90,7 @@ begin
   inherited Create(AOwner);
   FValue := AValue[0];
   FVariation := AValue[1];
+  GetValue;
 end;
 
 constructor TGamePoint.Create(AOwner: TComponent; AResult: string);

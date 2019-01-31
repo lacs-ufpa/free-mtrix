@@ -1,0 +1,197 @@
+
+[Experimento]
+Pesquisador.Nome=Laís
+
+; internamente o programa usa o nome Experimento 1.
+; no Experimento 1, nas condições A1, A2 e A3, o contador de itens escolares não é apresentado.
+; no Experimento 2, o contador é apresentado em todas as condições.
+Nome=Experimento 1
+
+Objetivo=Dominar o mundo.
+TipoDePontuação=1
+TipoDaMatrix=CORES,LINHAS,
+
+; 1 = sim
+; 0 = não
+Jogadores.Novos.Enviar_Histórico_do_BatePapo=0
+Jogadores.GerarAutomaticamente=1
+Rodada.OrdemDeJogadaAleatória=1
+Pesquisador.PodeJogar=0
+Pesquisador.BatePapo=0
+Jogadores.BatePapo=0
+
+[Condição.1]
+; internamente o programa usa o nome da primeira condição para ocultar o contador de itens escolares:
+; nomes de condições disponíveis: A1, A2 e A3.
+
+; internamente o programa usa o nome da primeira condição para apresentar o contador de itens escolares:
+; nomes de condições disponíveis: B1, B2, B3, C1, C2 e C3.
+
+; nome da condição
+Nome=A1
+
+; quantidade inicial de pontos na reserva
+PontosAoIniciarCondição.Itens=0
+
+; se maior do que zero, habilita o sistema de conversas entre participantes
+PodeConversar.Ciclos=5
+
+; se maior do que zero, habilita o reajuste ao final de cada ciclo
+ReajustarItensEscolares.Porcentagem=0
+
+; instrução que estará sempre presente no canto inferior direito da tela da TV
+Instrução=
+
+; mensagem breve apresentada no início da condição em tela cheia no pc de cada participante
+MensagemInicial=
+
+Rodada.NúmeroDeJogadores=3
+Ciclos.MudançaDeGeração=9000
+
+; critério de encerramento misto
+Critério_de_Finalização.Estilo=CICLOS|ENTRELAÇAMENTOS|
+
+; o primeiro critério é o número absoluto de ciclos
+Critério_de_Finalização.Ciclos=100
+
+; o segundo é a porcentagem (80%) de uma metacontingência alvo nos últimos 50 ciclos
+; note-se, se há mais de uma metacontingência alvo, aquela que chegar primeiro em 80% encerra a condição
+Critério_de_Finalização.Porcentagem=80,50
+
+; linha impar
+Contingência.1.Nome=OpOdd
+Contingência.1.Resposta=IMPAR,|LINHAS||
+Contingência.1.Consequência=3,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS I,
+Contingência.1.Consequência.Mensagem.Prefixo=$NICNAME ganhou 3 fichas.
+
+; linha par
+Contingência.2.Nome=OpEven
+Contingência.2.Resposta=PAR,|LINHAS||
+Contingência.2.Consequência=1,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS I,
+Contingência.2.Consequência.Mensagem.Prefixo=$NICNAME ganhou 1 ficha.
+
+; linhas pares
+Metacontingência.1.Nome=EvenRows
+Metacontingência.1.Alvo=1
+Metacontingência.1.Resposta=PAR,|LINHAS||
+Metacontingência.1.Consequência=0,0|,
+Metacontingência.1.Consequência.Mensagem.Prefixo=
+
+; linhas impares
+Metacontingência.2.Nome=OddRows
+Metacontingência.2.Alvo=1
+Metacontingência.2.Resposta=IMPAR,|LINHAS||
+Metacontingência.2.Consequência=0,0|,
+Metacontingência.2.Consequência.Mensagem.Prefixo=
+
+[Condição.2]
+Nome=B1
+PodeConversar.Ciclos=5
+ReajustarItensEscolares.Porcentagem=3
+
+Instrução=A partir de agora vocês continuaram recebendo fichas e também poderão gerenciar uma reserva de itens escolares que serão doados para uma escola pública ao final da pesquisa. Ao final de cada rodada será acrescentado uma taxa de reajuste de 3% no total restante da reserva que vocês irão gerir. Vocês terão 2 minutos a cada 5 ciclos para decidirem em conjunto quais ações devem tomar em relação ao ganho de cada membro do grupo, individualmente, e em relação ao ganho da escola que receberá os itens. No restante do tempo não será permitido conversar.
+
+; quantidade inicial de pontos na reserva
+PontosAoIniciarCondição.Itens=200
+
+; mensagem breve apresentada no início da condição em tela cheia no pc de cada participante
+MensagemInicial=Agora será iniciada uma nova fase.
+
+Rodada.NúmeroDeJogadores=3
+Ciclos.MudançaDeGeração=9000
+
+; critério de encerramento misto
+Critério_de_Finalização.Estilo=CICLOS|ENTRELAÇAMENTOS|ITENS|
+
+; o primeiro critério é o número absoluto de ciclos
+Critério_de_Finalização.Ciclos=100
+
+; o segundo é a porcentagem (80%) de uma metacontingência alvo nos últimos 50 ciclos
+; note-se, se há mais de uma metacontingência alvo, aquela que chegar primeiro em 80% encerra a condição
+Critério_de_Finalização.Porcentagem=80,50
+
+; o terceiro é o número de ciclos, menor do que 0 ou maior do que 312
+Critério_de_Finalização.Itens=312
+
+Contingência.1.Nome=OpOdd
+Contingência.1.Resposta=IMPAR,|LINHAS||
+Contingência.1.Consequência=3,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS I,
+Contingência.1.Consequência.Mensagem.Prefixo=$NICNAME ganhou 3 fichas.
+
+Contingência.2.Nome=OpEven
+Contingência.2.Resposta=PAR,|LINHAS||
+Contingência.2.Consequência=1,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS I,
+Contingência.2.Consequência.Mensagem.Prefixo=$NICNAME ganhou 1 ficha.
+
+; (linhas pares) e (cores diferentes)
+Metacontingência.1.Nome=EvenDiff
+Metacontingência.1.Alvo=1
+Metacontingência.1.Resposta=PAR,|E|DIFERENTES|
+Metacontingência.1.Consequência=-3,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS G1,
+Metacontingência.1.Consequência.Mensagem.Prefixo=Vocês retiraram 3 itens escolares da reserva de itens para doação.
+
+; (alguma linha impar) ou (alguma cor igual) 
+Metacontingência.2.Nome=SomeOddEqual
+Metacontingência.2.Alvo=1
+Metacontingência.2.Resposta=ALGUMA IMPAR,|OU|ALGUMA IGUAL|
+Metacontingência.2.Consequência=-9,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS G1,
+Metacontingência.2.Consequência.Mensagem.Prefixo=Vocês retiraram 9 itens escolares da reserva de itens para doação.
+
+[Condição.3]
+Nome=C1
+PodeConversar.Ciclos=5
+
+; se maior do que zero, habilita o reajuste ao final de cada ciclo
+ReajustarItensEscolares.Porcentagem=0
+
+Instrução=Nesta etapa não há mais a reserva de itens escolares, mas vocês poderão produzir itens escolares a partir das suas escolhas. Mais uma vez vocês deverão decidir em conjunto que ações devem tomar em relação ao ganho de cada membro do grupo, individualmente, e em relação ao ganho da escola que receberá os itens. Vocês terão 2 minutos a cada 5 ciclos para conversar. No restante do tempo não será permitido conversar.
+
+; mensagem breve apresentada no início da condição em tela cheia no pc de cada participante
+MensagemInicial=Agora será iniciada uma nova fase.
+
+; quantidade inicial de pontos na reserva
+PontosAoIniciarCondição.Itens=0
+
+Rodada.NúmeroDeJogadores=3
+Ciclos.MudançaDeGeração=9000
+
+; critério de encerramento misto
+Critério_de_Finalização.Estilo=CICLOS|ENTRELAÇAMENTOS|
+
+; o primeiro critério é o número absoluto de ciclos
+Critério_de_Finalização.Ciclos=100
+
+; o segundo é a porcentagem (80%) de uma metacontingência alvo nos últimos 50 ciclos
+; note-se, se há mais de uma metacontingência alvo, aquela que chegar primeiro em 80% encerra a condição
+Critério_de_Finalização.Porcentagem=80,50
+
+Contingência.1.Nome=OpOdd
+Contingência.1.Resposta=IMPAR,|LINHAS||
+Contingência.1.Consequência=3,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS I,
+Contingência.1.Consequência.Mensagem.Prefixo=$NICNAME ganhou 3 fichas.
+
+Contingência.2.Nome=OpEven
+Contingência.2.Resposta=PAR,|LINHAS||
+Contingência.2.Consequência=1,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS I,
+Contingência.2.Consequência.Mensagem.Prefixo=$NICNAME ganhou 1 ficha.
+
+; (linhas pares) e (cores diferentes)
+Metacontingência.1.Nome=EvenDiff
+Metacontingência.1.Alvo=0
+Metacontingência.1.Resposta=PAR,|E|DIFERENTES|
+Metacontingência.1.Consequência=4,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS G1,
+Metacontingência.1.Consequência.Mensagem.Prefixo=Vocês colocaram 4 itens escolares na reserva de itens para doação.
+
+; todas as linhas pares
+Metacontingência.2.Nome=EvenRows
+Metacontingência.2.Alvo=1
+Metacontingência.2.Resposta=PAR,|LINHAS||
+Metacontingência.2.Consequência=0,0|,
+Metacontingência.2.Consequência.Mensagem.Prefixo=
+
+; todas as linhas impares
+Metacontingência.3.Nome=OddRows
+Metacontingência.3.Alvo=1
+Metacontingência.3.Resposta=IMPAR,|LINHAS||
+Metacontingência.3.Consequência=0,0|,
+Metacontingência.3.Consequência.Mensagem.Prefixo=

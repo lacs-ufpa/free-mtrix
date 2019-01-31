@@ -93,7 +93,7 @@ begin
           EndCriterium.AbsoluteCycles := 15;
           EndCriterium.InterlockingPorcentage := 80;
           EndCriterium.LastCycles := 10;
-          EndCriterium.Style := gecWhichComeFirst;
+          EndCriterium.Style := [gecITEMS, gecAbsoluteCycles, gecInterlockingPorcentage];
 
           SetLength(Contingencies, 4);
           // test contingency
@@ -102,7 +102,7 @@ begin
             1,
             [gscPoints, gscB, gscMessage,gscBroadcastMessage],
             ['$NICNAME','perdeu','queijo','queijos', 'ganhou', 'queijo','queijos','não perdeu nem ganhou queijos']);
-          Contingencies[0] := TContingency.Create(AExperiment,LConcequence,LCriteria1,False);
+          Contingencies[0] := TContingency.Create(AExperiment,LConcequence,LCriteria1,False,False);
           Contingencies[0].ContingencyName := 'CRF 1B';
 
           // test contingency 2
@@ -111,7 +111,7 @@ begin
             3,
             [gscPoints, gscA, gscMessage,gscBroadcastMessage],
             ['$NICNAME','queimou','pão','pães','assou','pão','pães','não cozinhou nada.']);
-          Contingencies[1] := TContingency.Create(AExperiment,LConcequence,LCriteria2,False);
+          Contingencies[1] := TContingency.Create(AExperiment,LConcequence,LCriteria2,False,False);
           Contingencies[1].ContingencyName := 'CRF 3A';
 
           // test contingency 3
@@ -120,7 +120,7 @@ begin
             1,
             [gscPoints, gscG1, gscMessage],
             ['','perderam','item escolar','itens escolares','produziram','item escolar','itens escolares','não produziram nem perderam itens escolares']);
-          Contingencies[2] := TContingency.Create(AExperiment,LConcequence,LCriteria3,True);
+          Contingencies[2] := TContingency.Create(AExperiment,LConcequence,LCriteria3,True,False);
           Contingencies[2].ContingencyName := 'MCRF 1G';
 
           // test contingency 4
@@ -129,7 +129,7 @@ begin
             -1,
             [gscPoints, gscG1, gscMessage],
             ['','perderam','item escolar','itens escolares','produziram','item escolar','itens escolares','não produziram nem perderam itens escolares']);
-          Contingencies[3] := TContingency.Create(AExperiment,LConcequence,LCriteria4,True);
+          Contingencies[3] := TContingency.Create(AExperiment,LConcequence,LCriteria4,True,False);
           Contingencies[3].ContingencyName := 'MPUN -1G';
 
           // test prompt
@@ -204,6 +204,8 @@ var
     LS : string;
     LConsequence : TConsequence;
     LCriteria:TCriteria;
+    LIsTarget:boolean = false;
+    LIsMeta:boolean = false;
 
   begin
     LS := SEC_CONDITION+IntToStr(AConditionIndex+1);
@@ -221,7 +223,9 @@ var
           ReadString(LS, LCK+KEY_CONSEQUE_MESSAGE_APPEND_ZERO, '')
         );
         LCriteria := GetCriteriaFromString(ReadString(LS, LCK+KEY_CRITERIA, ''));
-        Result := TContingency.Create(AExperiment,LConsequence,LCriteria,Pos(KEY_METACONTINGENCY,LCK)>0);
+        LIsMeta := Pos(KEY_METACONTINGENCY,LCK)>0;
+        LIsTarget := ReadBool(LS, LCK+KEY_IS_TARGET, false);
+        Result := TContingency.Create(AExperiment,LConsequence,LCriteria,LIsMeta,LIsTarget);
         Result.ContingencyName := ReadString(LS, LCK+KEY_CONT_NAME, LCK);
         Result.Style:= GetPromptStyleFromString(ReadString(LS,LCK+KEY_STYLE,''));
       end;
@@ -240,8 +244,12 @@ var
         begin
           with C do
             begin
-              ConditionName := ReadString(LS,KEY_COND_NAME,LS);
+              ConditionName := ReadString(LS, KEY_COND_NAME, LS);
               InitialMessage:= ReadString(LS, KEY_INIT_MESSAGE, '');
+              Instruction := ReadString(LS, KEY_INSTRUCTION, '');
+              ItemsReadjustPorcentage := ReadInteger(LS, KEY_ITEMS_READJUST_PORCENTAGE, 0);
+              CyclesToTalk := ReadInteger(LS, KEY_CYCLES_TO_TALK, 0);
+
               Points.Count := GetPointsFromString(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
               Label1 := ReadString(LS, KEY_CULTURANT1_CAPTION, 'Itens escolares para doação');
               Label2 := ReadString(LS, KEY_CULTURANT2_CAPTION, 'Itens escolares para doação');
@@ -250,13 +258,13 @@ var
                   Points.OnStart.A := ReadInteger(LS, KEY_POINTS_ONSTART_A,0);
                   Points.OnStart.B := ReadInteger(LS, KEY_POINTS_ONSTART_B,0);
                   Points.OnStart.G1 := ReadInteger(LS, KEY_POINTS_ONSTART_G1,0);
-                  Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
+                  //Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
                 end
               else
                 begin
                   Points.OnStart.A := ReadInteger(LS, KEY_POINTS_ONSTART_I,0);
                   Points.OnStart.G1 := ReadInteger(LS, KEY_POINTS_ONSTART_G1,0);
-                  Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
+                  //Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
                 end;
 
               Turn.Count:= ReadInteger(LS, KEY_TURN_COUNT,0);
@@ -267,6 +275,7 @@ var
               Cycles.Generation:= ReadInteger(LS, KEY_CYCLES_GEN,0);
               EndCriterium.Style := GetEndCriteriaStyleFromString(ReadString(LS,KEY_ENDCRITERIA,DEF_END_CRITERIA_STYLE));
               EndCriterium.AbsoluteCycles:=ReadInteger(LS,KEY_ENDCRITERIA_CYCLES,20);
+              EndCriterium.MaximumG1:=ReadInteger(LS,KEY_ENDCRITERIA_ITEMS,312);
               s1 := ReadString(LS,KEY_ENDCRITERIA_PORCENTAGE,DEF_END_CRITERIA_PORCENTAGE);
               EndCriterium.InterlockingPorcentage:= GetEndCriteriaPorcentageFromString(s1);
               EndCriterium.LastCycles:= GetEndCriteriaLastCyclesFromString(s1);
@@ -426,13 +435,13 @@ begin
                 WriteInteger(LC, KEY_POINTS_ONSTART_A,Points.OnStart.A);
                 WriteInteger(LC, KEY_POINTS_ONSTART_B,Points.OnStart.B);
                 WriteInteger(LC, KEY_POINTS_ONSTART_G1,Points.OnStart.G1);
-                WriteInteger(LC, KEY_POINTS_ONSTART_G2,Points.OnStart.G2);
+                //WriteInteger(LC, KEY_POINTS_ONSTART_G2,Points.OnStart.G2);
               end
             else
               begin
                 WriteInteger(LC, KEY_POINTS_ONSTART_I,Points.OnStart.A);
                 WriteInteger(LC, KEY_POINTS_ONSTART_G1,Points.OnStart.G1);
-                WriteInteger(LC, KEY_POINTS_ONSTART_G2,Points.OnStart.G2);
+                //WriteInteger(LC, KEY_POINTS_ONSTART_G2,Points.OnStart.G2);
               end;
             WriteInteger(LC, KEY_TURN_COUNT,Turn.Count);
             WriteInteger(LC, KEY_TURN_VALUE,Turn.Value);

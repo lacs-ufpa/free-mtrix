@@ -41,6 +41,9 @@ type
     // For contingencies it means 'a participant choosen an odd row'.
     grOdd,
 
+    // For metacontingencies only. It means 'at least one odd row'.
+    grSomeOdd,
+
     // For metacontingencies only. It means 'all choosen rows are different from each other'.
     grDiff,
 
@@ -66,11 +69,14 @@ type
     // For metacontingencies it specifies colors for the 'gcThis' option.
     gcYellow,gcRed,gcGreen,gcBlue,gcMagenta, // 5 colors
 
-    // For metacontingencies only. It means 'all choosen rows are different from each other'.
+    // For metacontingencies only. It means 'all choosen colors are different from each other'.
     gcDiff,
 
-    // For metacontingencies only. It means 'all choosen rows are different from each other'.
+    // For metacontingencies only. It means 'all choosen colors are different from each other'.
     gcEqual,
+
+    // For metacontingencies only. It means 'at least one pair of equal colors'.
+    gcSomeEqual,
 
     // For metacontingencies only. It meand 'a participant chose a specified color'.
     gcThis,
@@ -85,7 +91,9 @@ type
 
   TGameAColors = array of TGameColor;
 
-  TGameEndCondition = (gecInterlockingPorcentage,gecAbsoluteCycles,gecWhichComeFirst);
+  TGameEndCondition = (gecInterlockingPorcentage,gecAbsoluteCycles,gecITEMS);
+  TGameEndConditionCriteria = set of TGameEndCondition;
+
   //TGameOperator = (goNONE, goAND, goOR);
   TGameStyle = (gtNone, gtRowsOnly, gtColorsOnly, gtRowsAndColors, gtRowsOrColors);
 
@@ -172,10 +180,8 @@ type
      function GenerateMessage(ForGroup: Boolean):string;
      procedure Clean; virtual;
      procedure PresentMessage(AControl : TWinControl);
-     procedure PresentPoints(var A : integer; var B : integer;
+     procedure CalculatePoints(var A : integer; var B : integer;
        var G1 : integer; var G2 : integer);
-     procedure PresentPoints(var G1 : integer;
-       var G2 : integer); overload;
      procedure PresentPoints(var APlayer: TPlayer; APlayerBox: TPlayerBox;
        APlayerLabel : TPlayerCounterLabel); overload;
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
@@ -204,11 +210,13 @@ type
     FOnCriteria: TNotifyEvent;
     FOnTargetCriteria : TNotifyEvent;
     FStyle: TPromptStyle;
+    FTarget: Boolean;
     function RowMod(R:TGameRow):TGameRow;
     procedure CriteriaEvent;
     procedure SetStyle(AValue: TPromptStyle);
   public
-    constructor Create(AOwner:TComponent;AConsequence:TConsequence;ACriteria:TCriteria;IsMeta:Boolean);overload;
+    constructor Create(AOwner:TComponent; AConsequence:TConsequence;
+      ACriteria:TCriteria; IsMeta:Boolean; IsTarget:Boolean); overload;
     function CriteriaString : string;
     function ResponseMeetsCriteriaI(R : TGameRow; C : TGameColor):Boolean; // Does response meets operant criteria?
     function ResponseMeetsCriteriaG(Players : TPlayers):Boolean;
@@ -219,6 +227,7 @@ type
     property Criteria : TCriteria read FCriteria;
     property Fired : Boolean read FFired;
     property Meta : Boolean read FMeta;
+    property Target : Boolean read FTarget;
     property OnCriteria : TNotifyEvent read FOnCriteria write FOncriteria;
     property OnTargetCriteria : TNotifyEvent read FOnTargetCriteria write FOnTargetCriteria;
     property Style : TPromptStyle read FStyle write SetStyle;
@@ -255,10 +264,11 @@ type
   end;
 
   TEndConditionCriterium = record
-    Style : TGameEndCondition;
+    Style : TGameEndConditionCriteria;
     InterlockingPorcentage,
     LastCycles,
-    AbsoluteCycles: integer;
+    AbsoluteCycles,
+    MaximumG1 : integer;
   end;
 
   TPoints = record
@@ -268,6 +278,9 @@ type
   TCondition = record
     ConditionName : string;
     InitialMessage : string;
+    Instruction: string;
+    ItemsReadjustPorcentage: integer;
+    CyclesToTalk: integer;
     Label1 : string;
     Label2 : string;
     Contingencies : TContingencies; // for producing points during the condition
@@ -409,12 +422,14 @@ begin
   FStyle:=AValue;
 end;
 
-constructor TContingency.Create(AOwner:TComponent;AConsequence:TConsequence;ACriteria:TCriteria;IsMeta:Boolean);
+constructor TContingency.Create(AOwner: TComponent; AConsequence: TConsequence;
+  ACriteria: TCriteria; IsMeta: Boolean; IsTarget: Boolean);
 begin
   inherited Create(AOwner);
   FConsequence :=  AConsequence;
   FCriteria := ACriteria;
   FMeta := IsMeta;
+  FTarget := IsTarget;
   FFired := False;
 end;
 
@@ -561,133 +576,14 @@ const
   function RowsResult:Boolean;
   begin
     Result := False;
-    if (grDiff in Criteria.Rows) xor (grEqual in Criteria.Rows) then
-      begin
-        if (not (grOdd in Criteria.Rows)) and (not (grEven in Criteria.Rows)) then
-          begin
-            if (grDiff in Criteria.Rows) then
-              if grNot in Criteria.Rows then
-                Result := RowRelationExists(LEQUL)
-              else
-                Result := not RowRelationExists(LEQUL);
+    if grEven in Criteria.Rows then  // all even
+      Result := not RowExists(grOdd);
 
-            if (grEqual in Criteria.Rows) then
-              if grNot in Criteria.Rows then
-                Result := RowRelationExists(LDIFF)
-              else
-                Result := not RowRelationExists(LDIFF);
+    if grOdd in Criteria.Rows then   // all odd
+      Result := not RowExists(grEven);
 
-            Exit;
-          end;
-
-        if (grDiff in Criteria.Rows) and (grOdd in Criteria.Rows) then
-          begin
-            if grNot in Criteria.Rows then
-              begin
-                if RowExists(grEven) then
-                  Result := True
-                else
-                  if RowRelationExists(LEQUL) then
-                    Result := True;
-              end
-            else
-              begin
-                if RowExists(grEven) then
-                  Exit
-                else
-                  if RowRelationExists(LEQUL) then
-                    Exit
-                  else
-                    Result := True;
-
-              end;
-            Exit;
-          end;
-
-        if (grEqual in Criteria.Rows) and (grOdd in Criteria.Rows) then
-          begin
-            if grNot in Criteria.Rows then
-              begin
-                if RowExists(grEven) then
-                  Result := True
-                else
-                  if RowRelationExists(LDIFF) then
-                    Result := True;
-              end
-            else
-              begin
-                if RowExists(grEven) then
-                  Exit
-                else
-                  if RowRelationExists(LDIFF) then
-                    Exit
-                  else
-                    Result := True;
-
-              end;
-            Exit;
-          end;
-
-        if (grDiff in Criteria.Rows) and (grEven in Criteria.Rows) then
-          begin
-            if grNot in Criteria.Rows then
-              begin
-                if RowExists(grOdd) then
-                  Result := True
-                else
-                  if RowRelationExists(LEQUL) then
-                    Result := True;
-              end
-            else
-              begin
-                if RowExists(grOdd) then
-                  Exit
-                else
-                  if RowRelationExists(LEQUL) then
-                    Exit
-                  else
-                    Result := True;
-              end;
-            Exit;
-          end;
-
-        if (grEqual in Criteria.Rows) and (grEven in Criteria.Rows) then
-          begin
-            if grNot in Criteria.Rows then
-              begin
-                if RowExists(grOdd) then
-                  Result := True
-                else
-                  if RowRelationExists(LDIFF) then
-                    Result := True;
-              end
-            else
-              begin
-                if RowExists(grOdd) then
-                  Exit
-                else
-                  if RowRelationExists(LDIFF) then
-                    Exit
-                  else
-                    Result := True;
-
-              end;
-          end;
-      end
-    else
-      begin
-        if grOdd in Criteria.Rows then
-          if grNot in Criteria.Rows then
-            Result := RowExists(grEven)
-          else
-            Result := not RowExists(grEven);
-
-        if grEven in Criteria.Rows then
-          if grNot in Criteria.Rows then
-            Result := RowExists(grOdd)
-          else
-            Result := not RowExists(grOdd);
-      end;
+    if grSomeOdd in Criteria.Rows then
+      Result := RowExists(grOdd);    // at least one odd
   end;
 
   //function AllDifferent : Boolean;
@@ -696,51 +592,15 @@ const
   //end;
 
   function ColorsResult: Boolean;
-  var
-    i : integer;
-    j : integer;
-    //LColor : TGameColor;
-    LColorSet : TGameAColors;
-    LColorCriteria : TGameAColors;
-    //Results : array of Boolean;
   begin
-    if gcDiff in Criteria.Colors then
-      if gcNot in Criteria.Colors then
-        Result := ColorRelationExists(LEQUL)
-      else
-        Result := not ColorRelationExists(LEQUL);
+    if gcDiff in Criteria.Colors then            // all different
+      Result := not ColorRelationExists(LEQUL);
 
     if gcEqual in Criteria.Colors then
-      if gcNot in Criteria.Colors then
-        Result := ColorRelationExists(LDIFF)
-      else
-        Result := not ColorRelationExists(LDIFF);
+      Result := not ColorRelationExists(LDIFF);
 
-    if gcThis in Criteria.Colors then
-    begin
-      SetLength(LColorSet, 5);
-      LColorSet[0] := gcBlue;
-      LColorSet[1] := gcGreen;
-      LColorSet[2] := gcMagenta;
-      LColorSet[3] := gcYellow;
-      LColorSet[4] := gcRed;
-
-      // colors specified by researchers, LColorSet * Criteria.Colors
-      LColorCriteria := nil;
-      for i := Low(Criteria.Colors) to High(Criteria.Colors) do
-        if Criteria.Colors[i] in LColorSet then
-        begin
-          Len := Length(LColorCriteria);
-          SetLength(LColorCriteria, Len+1);
-          Inc(Len);
-          LColorCriteria[Len-1] := Criteria.Colors[i];
-        end;
-
-      j := fact(Length(Cs));
-      Result := False;
-      for i := 0 to j-1 do
-        Result := Result or EqualAColors(GetCombination(Cs, i, j), LColorCriteria);
-    end;
+    if gcSomeEqual in Criteria.Colors then
+      Result := ColorRelationExists(LEQUL);
   end;
 
 begin
@@ -916,7 +776,7 @@ end;
 
 function TConsequence.AsString(AID: string): string;
 begin
-  Result := IntToStr(FP.ValueWithVariation) + '|';
+  Result := FP.ValueWithVariation.ToString + '|';
   Result += GetConsequenceStyleString(FStyle)+'|';
   Result += FPrepend +'|';
   Result += FPrependLoss + '|';
@@ -935,7 +795,10 @@ begin
   FMessage.vNotifierForm.Font.Size:=12;
   Result := FP.PointMessage(FPrepend,FPrependLoss,FAppendiceLossSingular,FAppendiceLossPlural,
     FPrependEarn,FAppendiceEarnSingular,FAppendiceEarnPlural,FAppendiceZero, ForGroup);
-  FMessage.Text := Result;
+  if gscMessage in FStyle then
+    FMessage.Text := Result
+  else
+    Result := '';
 end;
 
 procedure TConsequence.Clean;
@@ -968,35 +831,28 @@ begin
     FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
     FTimer.Enabled:=True;
   end;
+
+  if Assigned(FormPoints) then
+  begin
+    FormPoints.UpdateCaptions;
+  end;
 end;
 
-procedure TConsequence.PresentPoints(var A : integer; var B : integer;
-  var G1 : integer; var G2 : integer); // [player_points]
-begin
-  //is gscPoints in FStyle then just in case...
-  if (gscA in FStyle) or (gscI in FStyle) then
-    IncCount(A, FP.ResultAsInteger);
-
-  if gscB in FStyle then
-    IncCount(B, FP.ResultAsInteger);
-
-  if gscG1 in FStyle then
-    IncCount(G1, FP.ResultAsInteger);
-
-  if gscG2 in FStyle then
-    IncCount(G2, FP.ResultAsInteger);
-end;
-
-procedure TConsequence.PresentPoints(  var G1 : integer; var G2 : integer);
+procedure TConsequence.CalculatePoints(var A: integer; var B: integer;
+  var G1: integer; var G2: integer);
 var
   Points : integer;
 begin
   Points := FP.ResultAsInteger;
+  if (gscA in FStyle) or (gscI in FStyle) then
+    IncCount(A, Points);
+
+  if gscB in FStyle then
+    IncCount(B, Points);
+
   if gscG1 in FStyle then
   begin
     IncCount(G1, Points);
-    FormPoints.LabelItemsCount.Caption := G1.ToString;
-    FormPoints.Decrement(Points);
   end;
 
   if gscG2 in FStyle then
@@ -1034,8 +890,10 @@ begin
       APlayerLabel.Caption := LPointsAsString;
     end;
 
-    if LPointsToIncrement > 0 then
-      FormPoints.Decrement(LPointsToIncrement);
+    if Assigned(FormPoints) then
+    begin
+      FormPoints.UpdateCaptions;
+    end;
   end;
 end;
 
