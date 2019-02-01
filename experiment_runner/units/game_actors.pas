@@ -812,7 +812,7 @@ var
 begin
   if gscMessage in FStyle then
   begin
-    PopUpPos.X := 0;
+    PopUpPos.X := AControl.Width;
     if (gscA in FStyle) or (gscI in FStyle) then
       PopUpPos.Y := AControl.Top;
 
