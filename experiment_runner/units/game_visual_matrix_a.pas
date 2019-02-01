@@ -132,11 +132,11 @@ begin
     LRow := ARow;
 
   case LRow of
-    0,7 :Result := ccYellow;
-    1,6 :Result := ccGreen;
-    2,5 :Result := ccRed;
-    3,8 :Result := ccBlue;
-    4,9 :Result := ccMagenta;
+    0,5 :Result := ccYellow;
+    1,4 :Result := ccGreen;
+    2,7 :Result := ccBlue;
+    3,6 :Result := ccRed;
+    //4,9 :Result := ccMagenta;
     else
       Result := 0;
   end;
@@ -312,7 +312,7 @@ begin
   FHasCols:=AValue;
   FRowBase := 1;
   FixedRows := 1;
-  RowCount := 11;
+  RowCount := 9;
   ColCount := 11;
   Options := [goFixedHorzLine, goHorzLine, goVertLine];
 end;
@@ -324,7 +324,7 @@ begin
   FRowBase := 0;
   FixedRows := 0;
   ColCount := 11;
-  RowCount := 10;
+  RowCount := 8;
   Options := [goFixedHorzLine, goHorzLine];
 end;
 
