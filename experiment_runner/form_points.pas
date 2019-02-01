@@ -156,7 +156,7 @@ begin
       if FCanTalkCount = Experiment.CurrentCondition.CyclesToTalk then
       begin
         Play(CanTalkBuffer);
-        FCanTalk := True;
+        //FCanTalk := True;
         FCanTalkCount := 0;
         LabelCanTalkText.Caption := RSCanTalk;
         TimerCanTalk.Enabled := True;
