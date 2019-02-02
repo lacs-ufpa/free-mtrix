@@ -288,10 +288,10 @@ begin
   i := (Screen.Width div 2)-i;
   StringGridMatrix.Left:=i;
 
-  i := StringGridMatrix.Height+GBLastChoice.Height+50;
-  i := i div 2;
-  i := (Screen.Height div 2) - i;
-  StringGridMatrix.Top:=i;
+  //i := StringGridMatrix.Height+GBLastChoice.Height+10;
+  //i := i div 2;
+  //i := (Screen.Height div 2) - i;
+  //StringGridMatrix.Top:=i;
 
   btnConfirmRow.AnchorSideLeft.Control := StringGridMatrix;
   btnConfirmRow.AnchorSideLeft.Side := asrRight;

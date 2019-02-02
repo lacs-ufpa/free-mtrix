@@ -72,7 +72,7 @@ begin
   inherited Create(AOwner);
   FConfirmationButton := nil;
   //FPopUpNotifier := nil;
-  Top := 50;
+  Top := 20;
   Left := 100;
   AutoEdit:=False;
   Enabled := False;

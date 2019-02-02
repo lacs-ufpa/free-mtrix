@@ -812,18 +812,8 @@ var
 begin
   if gscMessage in FStyle then
   begin
-    PopUpPos.X := AControl.Width;
-    if (gscA in FStyle) or (gscI in FStyle) then
-      PopUpPos.Y := AControl.Top;
-
-    if gscB in FStyle then
-      PopUpPos.Y := AControl.Top+FMessage.vNotifierForm.Height;
-
-    if gscG1 in FStyle then
-      PopUpPos.Y := AControl.Top+(FMessage.vNotifierForm.Height*2);
-
-    if gscG2 in FStyle then
-      PopUpPos.Y := AControl.Top+(FMessage.vNotifierForm.Height*4);
+    PopUpPos.X := (AControl.Left div 2) - (FMessage.vNotifierForm.Width div 2);
+    PopUpPos.Y := AControl.Top + AControl.Height;
 
     PopUpPos := AControl.ClientToScreen(PopUpPos);
     FMessage.Color:=clTeal;

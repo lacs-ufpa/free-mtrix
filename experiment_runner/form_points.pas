@@ -100,6 +100,7 @@ begin
   TimerCanTalkLabel.Enabled:=False;
   LabelCanTalkText.Caption := RSCanNotTalk;
   LabelCanTalkCount.Caption := '';
+  // FCanTalk := False;
 end;
 
 procedure TFormPoints.TimerCanTalkLabelTimer(Sender: TObject);
@@ -159,7 +160,7 @@ begin
       if FCanTalkCount = Experiment.CurrentCondition.CyclesToTalk then
       begin
         Play(CanTalkBuffer);
-        //FCanTalk := True;
+        FCanTalk := True;
         FCanTalkCount := 0;
         LabelCanTalkText.Caption := RSCanTalk;
         TimerCanTalk.Enabled := True;
