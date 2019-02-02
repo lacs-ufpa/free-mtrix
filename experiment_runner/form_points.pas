@@ -141,7 +141,10 @@ end;
 procedure TFormPoints.UpdateCummulativeEffect(AValue : integer);
 begin
   FormMatrixGame.SendSystemMessage('REAJUSTE');
-  LabelReserveItemsCount.Caption:=AValue.ToString;
+  if AValue < 0 then
+    LabelReserveItemsCount.Caption:= '0'
+  else
+    LabelReserveItemsCount.Caption:=AValue.ToString;
   LabelReadjustItems.Show;
   TimerReadjustMessage.Enabled:=True;
 end;
