@@ -67,7 +67,8 @@ begin
   FLabel.OnClick := vNotifierForm.OnClick;
   FLabel.Parent := vNotifierForm;
   vNotifierForm.AutoSize:=True;
-  vNotifierForm.Font.Size := 12;
+  vNotifierForm.Font.Size := 15;
+  vNotifierForm.Font.Bold := True;
   Color:=clTeal;
 end;
 

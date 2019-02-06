@@ -763,7 +763,7 @@ begin
   FMessage := TPopupNotifier.Create(Self);
   FTimer := TTimer.Create(Self);
   FTimer.Enabled:=False;
-  FTimer.Interval:=GLOBAL_MESSAGE_INTERVAL;
+  FTimer.Interval := GLOBAL_I_MESSAGE_INTERVAL;
   FTimer.OnTimer:=@SelfDestroy;
   FConsequenceByPlayerID := TStringList.Create;
 end;

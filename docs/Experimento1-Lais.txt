@@ -130,7 +130,7 @@ Metacontingência.1.Resposta=PAR,|E|DIFERENTES|
 Metacontingência.1.Consequência=-3,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS G1,
 Metacontingência.1.Consequência.Mensagem.Prefixo=Vocês retiraram 3 itens escolares da reserva de itens para doação.
 
-; (alguma linha impar) ou (alguma cor igual) 
+; (alguma linha impar) ou (alguma cor igual)
 Metacontingência.2.Nome=SomeOddEqual
 Metacontingência.2.Alvo=1
 Metacontingência.2.Resposta=ALGUMA IMPAR,|OU|ALGUMA IGUAL|
@@ -177,21 +177,14 @@ Contingência.2.Consequência.Mensagem.Prefixo=$NICNAME ganhou 1 ficha.
 
 ; (linhas pares) e (cores diferentes)
 Metacontingência.1.Nome=EvenDiff
-Metacontingência.1.Alvo=0
+Metacontingência.1.Alvo=1
 Metacontingência.1.Resposta=PAR,|E|DIFERENTES|
 Metacontingência.1.Consequência=4,0|MENSAGEM,MENSAGEM A TODOS,PONTOS,PONTOS G1,
 Metacontingência.1.Consequência.Mensagem.Prefixo=Vocês colocaram 4 itens escolares na reserva de itens para doação.
 
-; todas as linhas pares
-Metacontingência.2.Nome=EvenRows
+; (alguma linha impar) ou (alguma cor igual)
+Metacontingência.2.Nome=SomeOddEqual
 Metacontingência.2.Alvo=1
-Metacontingência.2.Resposta=PAR,|LINHAS||
+Metacontingência.2.Resposta=ALGUMA IMPAR,|OU|ALGUMA IGUAL|
 Metacontingência.2.Consequência=0,0|,
 Metacontingência.2.Consequência.Mensagem.Prefixo=
-
-; todas as linhas impares
-Metacontingência.3.Nome=OddRows
-Metacontingência.3.Alvo=1
-Metacontingência.3.Resposta=IMPAR,|LINHAS||
-Metacontingência.3.Consequência=0,0|,
-Metacontingência.3.Consequência.Mensagem.Prefixo=

@@ -22,9 +22,15 @@ type
 
   TAnnouncerStartEvent = procedure (AMessage : array of string) of object;
 
+  { TAnnoucerMessage }
+  TAnnoucerMessage = record
+    Message : array of string;
+    Interval : integer;
+  end;
+
   { TAnnoucerMessages }
 
-  TAnnoucerMessages = array of array of string;
+  TAnnoucerMessages = array of TAnnoucerMessage;
 
   { TIntervalarAnnouncer }
 
@@ -34,19 +40,16 @@ type
     FTimer : TTimer;
     FOnStart: TAnnouncerStartEvent;
     function GetEnabled: Boolean;
-    function GetInterval: LongWord;
     procedure NextMessage;
     procedure SetEnabled(AValue: Boolean);
     procedure SelfDestroy(Sender: TObject);
-    procedure SetInterval(AValue: LongWord);
     procedure StartTimer(Sender:TObject);
   public
     constructor Create(AOwner : TComponent); override;
-    procedure Append(M : array of string);
+    procedure Append(M : array of string; AInterval: integer);
     procedure Reversed;
     property Messages : TAnnoucerMessages read FMessages write FMessages;
     property OnStart : TAnnouncerStartEvent read FOnStart write FOnStart;
-    property Interval : LongWord read GetInterval write SetInterval;
     property Enabled : Boolean read GetEnabled write SetEnabled;
   end;
 
@@ -54,25 +57,25 @@ implementation
 
 { TIntervalarAnnouncer }
 
-procedure TIntervalarAnnouncer.SetEnabled(AValue: Boolean);
-begin
-  if FTimer.Enabled=AValue then Exit;
-  FTimer.Enabled:= AValue;
-end;
-
 function TIntervalarAnnouncer.GetEnabled: Boolean;
 begin
   Result := FTimer.Enabled;
 end;
 
-function TIntervalarAnnouncer.GetInterval: LongWord;
-begin
-  Result := FTimer.Interval;
-end;
-
 procedure TIntervalarAnnouncer.NextMessage;
 begin
   SetLength(FMessages,Length(FMessages)-1);
+  if Length(FMessages) > 0 then
+    FTimer.Interval := FMessages[High(FMessages)].Interval;
+end;
+
+procedure TIntervalarAnnouncer.SetEnabled(AValue: Boolean);
+begin
+  if AValue = FTimer.Enabled then Exit;
+  FTimer.Enabled:=AValue;
+
+  if AValue and (Length(FMessages) > 0) then
+    FTimer.Interval := FMessages[High(FMessages)].Interval;
 end;
 
 procedure TIntervalarAnnouncer.SelfDestroy(Sender : TObject);
@@ -81,26 +84,20 @@ begin
   if Length(FMessages) > 0 then
     begin
       LAnnouncer := TIntervalarAnnouncer.Create(nil);
-      LAnnouncer.Interval:= Interval;
       LAnnouncer.Messages := FMessages;
-      LAnnouncer.OnStart:= FOnStart;
-      LAnnouncer.Enabled:=True;
+      LAnnouncer.OnStart := FOnStart;
+      LAnnouncer.Enabled := True;
     end;
   Free;
 end;
 
-procedure TIntervalarAnnouncer.SetInterval(AValue: LongWord);
-begin
-  if FTimer.Interval=AValue then Exit;
-  FTimer.Interval:= AValue;
-end;
-
 procedure TIntervalarAnnouncer.StartTimer(Sender: TObject);
-var M : array of string;
+var
+  M : array of string;
 begin
   if Length(FMessages) > 0 then
     begin
-      M := FMessages[High(FMessages)];
+      M := FMessages[High(FMessages)].Message;
       NextMessage;
       if Assigned(FOnStart) then FOnStart(M);
     end;
@@ -117,15 +114,16 @@ begin
   FTimer.OnStartTimer:=@StartTimer;
 end;
 
-procedure TIntervalarAnnouncer.Append(M: array of string);
+procedure TIntervalarAnnouncer.Append(M: array of string; AInterval: integer);
 var
   H : TAnnoucerMessages;
   i: Integer;
 begin
-  SetLength(H,1,Length(M));
-
+  SetLength(H, 1);
+  H[0].Interval := AInterval;
+  SetLength(H[0].Message, Length(M));
   for i := Low(M) to High(M) do
-    H[0,i] := M[i];
+    H[0].Message[i] := M[i];
 
   SetLength(FMessages,Length(FMessages)+1);
   FMessages[High(FMessages)] := H[0];
@@ -136,6 +134,7 @@ var
   i : integer;
   M : TAnnoucerMessages;
 begin
+  SetLength(M, 0);
   for i := High(FMessages) downto Low(FMessages) do
     begin
       SetLength(M,Length(M)+1);

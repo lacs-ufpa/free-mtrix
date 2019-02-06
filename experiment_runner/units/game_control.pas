@@ -1278,7 +1278,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                   if AMessage.Count > 1 then
                     LTime := GLOBAL_MESSAGES_INTERVAL
                   else
-                    LTime:= GLOBAL_MESSAGE_INTERVAL;
+                    LTime:= GLOBAL_I_MESSAGE_INTERVAL;
 
                   LPopUpHack := TPopupNotifierHack.Create(nil);
                   if Assigned(FormMatrixGame) then
@@ -1313,7 +1313,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     if LCount > 1 then
       LTime := GLOBAL_MESSAGES_INTERVAL*LCount
     else
-      LTime:= GLOBAL_MESSAGE_INTERVAL;
+      LTime:= GLOBAL_MESSAGES_INTERVAL;
 
     if LCount > 0 then
       for i := 1 to LCount do
@@ -1678,10 +1678,10 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         // inform other players about self.id choice
         FZMQActor.SendMessage([K_CHOICE,AReply[0],AReply[3],AReply[4],AReply[5]]);
 
-        // The Announcer sends a message, waits interval time until all messages have been sent and then destroys itself.
+        // The Announcer sends a message and waits its interval,
+        // until all messages have been sent and then destroys itself.
         LAnnouncer := TIntervalarAnnouncer.Create(nil);
         LAnnouncer.OnStart := @FZMQActor.SendMessage;
-        LAnnouncer.Interval := 500;
 
         // individual consequences
         LCount := WordCount(AReply[6],['+']);
@@ -1693,7 +1693,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
                                  Self.ID,
                                  ExtractDelimited(i,AReply[6],['+']),
                                  BoolToStr(False),
-                                 BoolToStr(LConsequence.ShouldPublishMessage)]);
+                                 BoolToStr(LConsequence.ShouldPublishMessage)], 500);
             end;
         LConsequence.Free;
 
@@ -1702,23 +1702,21 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
             // meta/ group consequence
             LCount := WordCount(AReply[7],['+']);
             if LCount > 0 then
-              LAnnouncer.Append([K_GMESSAGE,AReply[7]]);
+              LAnnouncer.Append([K_GMESSAGE,AReply[7]], 500);
 
             // should ask question or just resume (going to the next turn)?
             if AReply[8] <> #32 then
-              LAnnouncer.Append([K_QUESTION,AReply[8],AReply[9],AReply[10]])
+              LAnnouncer.Append([K_QUESTION,AReply[8],AReply[9],AReply[10]],500)
             else
-              LAnnouncer.Append([K_RESUME,AReply[9],AReply[10]]);
+              LAnnouncer.Append([K_RESUME,AReply[9],AReply[10]], 500);
 
             // should end experiment or go to the next condition?
             if (AReply[10] = #27) and (AReply[8] = #32) then
-              LAnnouncer.Append([K_END])
+              LAnnouncer.Append([K_END],500)
             else
               if (AReply[10] <> #32) then
-                LAnnouncer.Append([K_NXTCND,AReply[10]])
-
+                LAnnouncer.Append([K_NXTCND,AReply[10]],500)
           end;
-
         LAnnouncer.Reversed;
         LAnnouncer.Enabled := True;
       end;

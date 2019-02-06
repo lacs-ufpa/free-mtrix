@@ -2152,7 +2152,7 @@ object FormPoints: TFormPoints
   end
   object TimerReadjustMessage: TTimer
     Enabled = False
-    Interval = 2000
+    Interval = 3000
     OnTimer = TimerReadjustMessageTimer
     left = 64
     top = 576

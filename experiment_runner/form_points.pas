@@ -100,7 +100,7 @@ begin
   TimerCanTalkLabel.Enabled:=False;
   LabelCanTalkText.Caption := RSCanNotTalk;
   LabelCanTalkCount.Caption := '';
-  // FCanTalk := False;
+  FCanTalk := False;
 end;
 
 procedure TFormPoints.TimerCanTalkLabelTimer(Sender: TObject);
@@ -141,7 +141,7 @@ end;
 
 procedure TFormPoints.UpdateCummulativeEffect(AValue : integer);
 begin
-  FormMatrixGame.SendSystemMessage('REAJUSTE');
+  FormMatrixGame.SendSystemMessage('');
   if AValue < 0 then
     LabelReserveItemsCount.Caption:= '0'
   else
