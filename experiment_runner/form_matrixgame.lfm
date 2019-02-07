@@ -1,21 +1,21 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 64
-  Height = 682
-  Top = 45
-  Width = 1234
-  HorzScrollBar.Page = 1234
+  Left = 91
+  Height = 729
+  Top = 40
+  Width = 1237
+  HorzScrollBar.Page = 1237
   VertScrollBar.Page = 594
   AutoScroll = True
   Caption = 'Matrix'
-  ClientHeight = 672
-  ClientWidth = 1234
+  ClientHeight = 719
+  ClientWidth = 1237
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   OnCreate = FormCreate
   LCLVersion = '1.8.4.0'
   object GBPoints: TGroupBox
     AnchorSideLeft.Side = asrBottom
-    Left = 768
+    Left = 712
     Height = 586
     Top = 8
     Width = 473
@@ -6322,8 +6322,8 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 5
     Height = 150
-    Top = 522
-    Width = 758
+    Top = 569
+    Width = 702
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
     BorderSpacing.Left = 5
@@ -6347,12 +6347,12 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideLeft.Control = ChatPanel
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = ChatPanel
-    Left = 1641
+    Left = 1585
     Height = 448
     Top = 8
     Width = 436
     BorderSpacing.Left = 5
-    Caption = 'Pesquisador'
+    Caption = 'Researcher'
     ClientHeight = 431
     ClientWidth = 432
     TabOrder = 2
@@ -6362,7 +6362,7 @@ object FormMatrixGame: TFormMatrixGame
       Height = 25
       Top = 0
       Width = 128
-      Caption = 'Começar'
+      Caption = 'Start'
       OnClick = ButtonExpStartClick
       TabOrder = 0
     end
@@ -6371,7 +6371,7 @@ object FormMatrixGame: TFormMatrixGame
       Height = 25
       Top = 0
       Width = 128
-      Caption = 'Pausar'
+      Caption = 'Pause'
       Enabled = False
       OnClick = ButtonExpPauseClick
       TabOrder = 1
@@ -6381,7 +6381,7 @@ object FormMatrixGame: TFormMatrixGame
       Height = 25
       Top = 0
       Width = 128
-      Caption = 'Cancelar'
+      Caption = 'Cancel'
       Enabled = False
       OnClick = ButtonExpCancelClick
       TabOrder = 2
@@ -6405,7 +6405,7 @@ object FormMatrixGame: TFormMatrixGame
       Top = 328
       Width = 136
       AutoSize = False
-      Caption = 'Jogadores Antigos'
+      Caption = 'Old Players'
       Layout = tlCenter
       ParentColor = False
     end
@@ -6426,7 +6426,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideRight.Control = GBPoints
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Side = asrBottom
-    Left = 1246
+    Left = 1190
     Height = 386
     Top = 8
     Width = 390
