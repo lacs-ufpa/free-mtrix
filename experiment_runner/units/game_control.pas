@@ -1121,8 +1121,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor.Style := K_LEFT;
               FormChooseActor.ShowPoints(
                 'The task is over, thank you for your collaboration!'+LineEnding+
-                'You produced ' + Pts + ' tokens and ' +
-                LabelGroup1.Caption + ' toys for donation to children at cancer hospitals.'
+                'You produced ' + Pts + ' tokens for you and ' +
+                LabelGroup1.Caption + ' toys to be sent as a gift to children at cancer hospitals.'
               );
 
               if FormChooseActor.ShowModal = 1 then
@@ -1166,8 +1166,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
           FormChooseActor.ShowPoints(
           'The task is over, thank you for your collaboration!'+LineEnding+
-          'You produced ' + Pts + ' tokens and ' +
-          LabelGroup1.Caption + ' toys for donation to children at cancer hospitals.');
+          'You produced ' + Pts + ' tokens for you and ' +
+          LabelGroup1.Caption + ' toys to be sent as a gift to children at cancer hospitals.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
 
