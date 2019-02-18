@@ -926,7 +926,8 @@ end;
 
 function TConsequence.GenerateMessage(ForGroup: Boolean): string;
 begin
-  FMessage.vNotifierForm.Font.Size:=12;
+  FMessage.vNotifierForm.Font.Size:=15;
+  FMessage.vNotifierForm.Font.Bold:=True;
   Result := FP.PointMessage(FPrepend,FPrependLoss,FAppendiceLossSingular,FAppendiceLossPlural,
     FPrependEarn,FAppendiceEarnSingular,FAppendiceEarnPlural,FAppendiceZero, ForGroup);
   FMessage.Text := Result;
@@ -955,7 +956,7 @@ begin
     PopUpPos.Y := AControl.Top+AControl.Height+(FMessage.vNotifierForm.Height*4);
 
   PopUpPos := AControl.ClientToScreen(PopUpPos);
-  FMessage.Color:=clTeal;
+  FMessage.Color:=clDefault;
   FMessage.Title:='';
   FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
   FTimer.Enabled:=True;
