@@ -1290,7 +1290,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     if LCount > 1 then
       LTime := GLOBAL_MESSAGES_INTERVAL*LCount
     else
-      LTime:= GLOBAL_MESSAGE_INTERVAL;
+      LTime:= 6000;
 
     if LCount > 0 then
       for i := 1 to LCount do
@@ -1630,7 +1630,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         // The Announcer sends a message, waits interval time until all messages have been sent and then destroys itself.
         LAnnouncer := TIntervalarAnnouncer.Create(nil);
         LAnnouncer.OnStart := @FZMQActor.SendMessage;
-        LAnnouncer.Interval := GLOBAL_MESSAGE_INTERVAL;
+        LAnnouncer.Interval := 500;
 
         // individual consequences
         LCount := WordCount(AReply[6],['+']);
