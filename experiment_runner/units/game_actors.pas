@@ -294,7 +294,7 @@ operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boole
 
 implementation
 
-uses Graphics,strutils, string_methods, game_actors_helpers, game_resources;
+uses Graphics,strutils, string_methods, game_actors_helpers, game_resources, PlaySound;
 
 operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boolean;
 var
@@ -975,10 +975,16 @@ begin
     IncLabel(B, FP.ResultAsInteger);
 
   if gscG1 in FStyle then
+  begin
+    Play(SoundImpusive);
     IncLabel(G1, FP.ResultAsInteger);
+  end;
 
   if gscG2 in FStyle then
+  begin
+    Play(SoundAutoCont);
     IncLabel(G2, FP.ResultAsInteger);
+  end;
 end;
 
 procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G1, G2: TLabel); // [player_points]

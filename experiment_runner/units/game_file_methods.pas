@@ -287,20 +287,20 @@ var
                     SetLength(Contingencies,Length(Contingencies)+1);
                     Contingencies[Length(Contingencies)-1] := ReadContingency(i,KEY_METACONTINGENCY+IntToStr(j+1));
                   end;
-
-              LPromptStyle := ReadString(LS,KEY_PROMPT_STYLE,'');
-              LPromptMessa := ReadString(LS,KEY_PROMPT_MESSAGE,'');
-              LPromptTarget := ReadString(LS,KEY_PROMPT_TARGET,'');
-              if (LPromptMessa <> '') and
-                 (LPromptStyle <> '') and
-                 (LPromptTarget <> '') then
-                Prompt := TPrompt.Create(
-                  AExperiment
-                  , GetPromptStyleFromString(LPromptStyle)
-                  , Contingencies
-                  , LPromptMessa
-                  , LPromptTarget
-                );
+              Prompt := nil;
+              //LPromptStyle := ReadString(LS,KEY_PROMPT_STYLE,'');
+              //LPromptMessa := ReadString(LS,KEY_PROMPT_MESSAGE,'');
+              //LPromptTarget := ReadString(LS,KEY_PROMPT_TARGET,'');
+              //if (LPromptMessa <> '') and
+              //   (LPromptStyle <> '') and
+              //   (LPromptTarget <> '') then
+              //  Prompt := TPrompt.Create(
+              //    AExperiment
+              //    , GetPromptStyleFromString(LPromptStyle)
+              //    , Contingencies
+              //    , LPromptMessa
+              //    , LPromptTarget
+              //  );
             end;
             AExperiment.Condition[AExperiment.AppendCondition]:= C;
             Inc(i);

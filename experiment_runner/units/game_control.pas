@@ -672,11 +672,17 @@ begin
       G2 := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
     end;
 
+  LabelGroup1.Caption := '0';
   if G1 > 0 then
+  begin
     IncLabel(LabelGroup1, G1);
+  end;
 
+  LabelGroup2.Caption := '0';
   if G2 > 0 then
+  begin
     IncLabel(LabelGroup2, G2);
+  end;
 
   case FActor of
     gaPlayer:
