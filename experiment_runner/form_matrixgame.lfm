@@ -7,12 +7,12 @@ object FormMatrixGame: TFormMatrixGame
   VertScrollBar.Page = 594
   AutoScroll = True
   Caption = 'Matrix'
-  ClientHeight = 669
+  ClientHeight = 672
   ClientWidth = 1234
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   OnCreate = FormCreate
-  LCLVersion = '1.8.2.0'
+  LCLVersion = '1.8.4.0'
   object GBPoints: TGroupBox
     AnchorSideLeft.Side = asrBottom
     Left = 768
@@ -45,6 +45,8 @@ object FormMatrixGame: TFormMatrixGame
       Width = 100
       Constraints.MaxHeight = 100
       Constraints.MaxWidth = 100
+      Constraints.MinHeight = 100
+      Constraints.MinWidth = 100
       Picture.Data = {
         07544269746D617066750000424D667500000000000036000000280000006400
         000064000000010018000000000030750000C40E0000C40E0000000000000000
@@ -1032,6 +1034,8 @@ object FormMatrixGame: TFormMatrixGame
       Width = 100
       Constraints.MaxHeight = 100
       Constraints.MaxWidth = 100
+      Constraints.MinHeight = 100
+      Constraints.MinWidth = 100
       Picture.Data = {
         07544269746D6170D6730000424DD67300000000000036000000280000006200
         0000640000000100180000000000A0730000C40E0000C40E0000000000000000
@@ -2007,6 +2011,8 @@ object FormMatrixGame: TFormMatrixGame
       Width = 100
       Constraints.MaxHeight = 100
       Constraints.MaxWidth = 100
+      Constraints.MinHeight = 100
+      Constraints.MinWidth = 100
       Picture.Data = {
         07544269746D61703A740000424D3A7400000000000036000000280000006400
         000063000000010018000000000004740000C40E0000C40E0000000000000000
@@ -2988,6 +2994,8 @@ object FormMatrixGame: TFormMatrixGame
       Width = 100
       Constraints.MaxHeight = 100
       Constraints.MaxWidth = 100
+      Constraints.MinHeight = 100
+      Constraints.MinWidth = 100
       Picture.Data = {
         07544269746D6170AA750000424DAA750000000000007A0000006C0000006400
         0000640000000100180000000000307500001217000012170000000000000000
@@ -3977,6 +3985,8 @@ object FormMatrixGame: TFormMatrixGame
       Width = 100
       Constraints.MaxHeight = 100
       Constraints.MaxWidth = 100
+      Constraints.MinHeight = 100
+      Constraints.MinWidth = 100
       Picture.Data = {
         07544269746D6170AA750000424DAA750000000000007A0000006C0000006400
         0000640000000100180000000000307500001217000012170000000000000000
@@ -4967,7 +4977,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 5
     Height = 150
-    Top = 519
+    Top = 522
     Width = 758
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
