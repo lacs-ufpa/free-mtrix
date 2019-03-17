@@ -250,6 +250,7 @@ type
   end;
 
   TEndConditionCriterium = record
+    ReachZero : boolean;
     Style : TGameEndCondition;
     InterlockingPorcentage,
     LastCycles,

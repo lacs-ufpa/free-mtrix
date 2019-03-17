@@ -1162,8 +1162,9 @@ end;
 
 procedure TExperiment.ForceEndCondition;
 begin
-  FConditions[CurrentConditionI].Cycles.Count :=
-    CurrentCondition.EndCriterium.AbsoluteCycles-1;
+  if CurrentCondition.EndCriterium.ReachZero then
+    FConditions[CurrentConditionI].Cycles.Count :=
+      CurrentCondition.EndCriterium.AbsoluteCycles-1;
 end;
 
 //procedure TExperiment.TargetInterlocking;

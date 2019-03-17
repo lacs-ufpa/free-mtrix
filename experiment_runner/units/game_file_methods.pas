@@ -276,7 +276,7 @@ var
               s1 := ReadString(LS,KEY_ENDCRITERIA_PORCENTAGE,DEF_END_CRITERIA_PORCENTAGE);
               EndCriterium.InterlockingPorcentage:= GetEndCriteriaPorcentageFromString(s1);
               EndCriterium.LastCycles:= GetEndCriteriaLastCyclesFromString(s1);
-
+              EndCriterium.ReachZero := ReadBool(LS, KEY_ENDCRITERIA_REACH_ZERO, False);
               LContingenciesCount := ReadContingenciesCount(i,KEY_CONTINGENCY);
               LMetaContingenCount := ReadContingenciesCount(i,KEY_METACONTINGENCY);
 

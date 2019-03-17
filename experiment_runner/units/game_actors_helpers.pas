@@ -149,6 +149,7 @@ const
 
       Prompt : nil;
       EndCriterium : (
+        ReachZero : False;
         Style : gecWhichComeFirst;
         InterlockingPorcentage : 50;
         LastCycles : 4;

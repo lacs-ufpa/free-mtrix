@@ -72,7 +72,7 @@ resourcestring
   KEY_ENDCRITERIA = 'Critério_de_Finalização.Estilo'; //2,50,10,30,
   KEY_ENDCRITERIA_CYCLES = 'Critério_de_Finalização.Ciclos'; // 20
   KEY_ENDCRITERIA_PORCENTAGE = 'Critério_de_Finalização.Porcentagem'; // 80|10
-
+  KEY_ENDCRITERIA_REACH_ZERO = 'Critério_de_Finalização.EncerrarAoZerar';
 
   KEY_CONTINGENCY = 'Contingência.';
   KEY_METACONTINGENCY = 'Metacontingência.';
