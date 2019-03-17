@@ -633,6 +633,9 @@ begin
         // LabelGroupCount is ignored for player points
         LConsequence.PresentPoints(GetPlayerBox(AID),
           LabelGroup1, LabelGroup2);
+
+        if StrToIntDef(LabelGroup1.Caption, 1) < 1 then
+          FExperiment.ForceEndCondition;
       end;
   end;
 

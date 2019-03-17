@@ -195,6 +195,7 @@ type
   public // standard control
     function ShouldEndCondition:Boolean;
     function CurrentConditionAsString:string;
+    procedure ForceEndCondition;
     procedure Clean;
     procedure Play;
     procedure WriteReportRowPrompt;
@@ -1157,6 +1158,12 @@ begin
       IntToStr(Condition[CurrentConditionI].Points.OnStart.A)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.G1)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.G2);
+end;
+
+procedure TExperiment.ForceEndCondition;
+begin
+  FConditions[CurrentConditionI].Cycles.Count :=
+    CurrentCondition.EndCriterium.AbsoluteCycles-1;
 end;
 
 //procedure TExperiment.TargetInterlocking;
