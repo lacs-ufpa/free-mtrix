@@ -990,10 +990,16 @@ end;
 procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G1, G2: TLabel); // [player_points]
 begin
   if gscG1 in FStyle then
+  begin
+    Play(SoundImpusive);
     IncLabel(G1, FP.ResultAsInteger);
+  end;
 
   if gscG2 in FStyle then
+  begin
+    Play(SoundAutoCont);
     IncLabel(G2, FP.ResultAsInteger);
+  end;
 
   if (gscI in FStyle) or (gscA in FStyle) or (gscB in FStyle) then
     if Assigned(APlayerBox) then
