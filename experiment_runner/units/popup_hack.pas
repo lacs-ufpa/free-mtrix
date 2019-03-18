@@ -102,8 +102,8 @@ begin
   vNotifierForm.Height:=r.Bottom-r.Top + 52;
   if Assigned(AControl) then
     begin
-      PopUpPos.X := (AControl.Width div 2) - (vNotifierForm.Width div 2);
-      PopUpPos.Y := (AControl.Height div 2) - (vNotifierForm.Height div 2);
+      PopUpPos.X := AControl.Left;
+      PopUpPos.Y := AControl.Top + AControl.Height;
       ShowAtPos(PopUpPos.X, PopUpPos.Y);
     end
   else
