@@ -53,7 +53,7 @@ if __name__ == "__main__":
     print(root_path)
 
     runner_src_win32_libraries = [
-        os.path.join(root_path, 'dependencies/libzmq-builds/windows/32/libzmq.dll')
+        os.path.join(root_path, 'dependencies/libzmq-builds/windows/32/libzmq.dll'),
         os.path.join(root_path, 'dependencies/openal/windows/32/OpenAL32.dll'),
         os.path.join(root_path, 'dependencies/openal/windows/32/wrap_oal.dll')      
     ]
