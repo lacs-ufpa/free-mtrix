@@ -991,13 +991,13 @@ procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G1, G2: TLabel); //
 begin
   if gscG1 in FStyle then
   begin
-    Play(SoundImpusive);
+    //Play(SoundImpusive);
     IncLabel(G1, FP.ResultAsInteger);
   end;
 
   if gscG2 in FStyle then
   begin
-    Play(SoundAutoCont);
+    //Play(SoundAutoCont);
     IncLabel(G2, FP.ResultAsInteger);
   end;
 
