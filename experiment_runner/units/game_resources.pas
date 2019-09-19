@@ -1,4 +1,4 @@
-/*   
+{   
   Free-mtrix - Free cultural selection and social behavior experiments.   
   Copyright (C) 2016-2019 Carlos Rafael Fernandes Picanço.   
   Copyright (C) 2016-2019 Thais Maria Monteiro Guimarães.   
@@ -8,7 +8,7 @@
 
   You should have received a copy of the GNU General Public License   
   along with this program. If not, see <http://www.gnu.org/licenses/>.   
-*/
+}
 unit game_resources;
 
 {$mode objfpc}{$H+}
