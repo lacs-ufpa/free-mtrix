@@ -22,9 +22,19 @@
 
    1. Download and install Visual C++ Redistributable for Visual Studio 2015. You may find it here: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-   2. Copy the `libzmq.dll` (v3.2.5, 32bits, dynamic, compiled with VS 2015) library to the same folder as the `experiment_runner.exe` file. 
+   2. Compile or download a compiled version of the program. You can find some ready to use compiled versions of the program at the following places:
+   
+   - [The Thais' Experiment (with the Graphical User Interface traslated to English)](https://github.com/lacs-ufpa/free-mtrix/files/2975876/experiment_runner_windows_32bits_v0.2.0.14-30-ga48cff1.zip)
+   - [The release page (PT-BR Graphical User Interface)](https://github.com/lacs-ufpa/free-mtrix/releases)
+   - In the [issues page](https://github.com/lacs-ufpa/free-mtrix/issues)
 
    3. Done!
+
+`OBS. 1`: Remember that to run an experiment you will need to write or receive a `Configuration File` containing the configuration of your experiment. Then you will be able to load this configuration file and start the data gathering protocol.
+
+
+`OBS. 2`: If necessary, copy the `libzmq.dll` (v3.2.5, 32bits, dynamic, compiled with VS 2015) library to the same folder as the `experiment_runner.exe` file. This library is the dependency we need to the network communication.
+
 
 ## How to setup?
 
