@@ -22,7 +22,7 @@
 
    1. Download and install Visual C++ Redistributable for Visual Studio 2015. You may find it here: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-   2. Copy the `libzmq.dll` (v3.2.5, 32bits, dynamic, compiled with VS 2015) library to the same folder as the `cultural_matrix.exe` file. 
+   2. Copy the `libzmq.dll` (v3.2.5, 32bits, dynamic, compiled with VS 2015) library to the same folder as the `experiment_runner.exe` file. 
 
    3. Done!
 
