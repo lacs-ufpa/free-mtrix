@@ -1,6 +1,6 @@
 [submodule "dependencies/fpc-zmq"]
 	path = dependencies/fpc-zmq
 	url = git@github.com:cpicanco/fpc-zmq.git
-[submodule "dependencies/libzmq"]
-	path = dependencies/libzmq
-	url = https://github.com/zeromq/libzmq.git
+[submodule "dependencies/zeromq3-x"]
+	path = dependencies/zeromq3-x
+	url = https://github.com/zeromq/zeromq3-x.git
