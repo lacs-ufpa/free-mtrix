@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="10"/>
+    <Version Value="11"/>
     <General>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
@@ -9,6 +9,10 @@
       <Title Value="experiment_runner"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
+      <Resources Count="2">
+        <Resource_0 FileName="media/non-sustainable.jpg" Type="RCDATA" ResourceName="NON-SUSTAINABLE"/>
+        <Resource_1 FileName="media/sustainable.jpeg" Type="RCDATA" ResourceName="SUSTAINABLE"/>
+      </Resources>
     </General>
     <i18n>
       <EnableI18N LFM="False"/>
@@ -21,7 +25,7 @@
       <Language Value="0416"/>
       <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_runner" ProductName="Free-mtrix" ProductVersion="0.2.0"/>
     </VersionInfo>
-    <BuildModes Count="5">
+    <BuildModes Count="4">
       <Item1 Name="linux_64bits_debug" Default="True"/>
       <Item2 Name="linux_64bits">
         <CompilerOptions>
@@ -31,11 +35,23 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/6/"/>
             <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
+          <Parsing>
+            <SyntaxOptions>
+              <IncludeAssertionCode Value="True"/>
+            </SyntaxOptions>
+          </Parsing>
           <CodeGeneration>
+            <Checks>
+              <IOChecks Value="True"/>
+              <RangeChecks Value="True"/>
+              <OverflowChecks Value="True"/>
+              <StackChecks Value="True"/>
+            </Checks>
+            <VerifyObjMethodCallValidity Value="True"/>
             <TargetCPU Value="x86_64"/>
             <TargetOS Value="linux"/>
           </CodeGeneration>
@@ -50,8 +66,11 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dUseCThreads
--dZMQ_STATIC_LINK"/>
+            <CustomOptions Value="-dUseCThreads"/>
+            <OtherDefines Count="2">
+              <Define0 Value="UseCThreads"/>
+              <Define1 Value="ZMQ_STATIC_LINK"/>
+            </OtherDefines>
           </Other>
         </CompilerOptions>
       </Item2>
@@ -110,44 +129,23 @@
               </Win32>
             </Options>
           </Linking>
+          <Other>
+            <OtherDefines Count="2">
+              <Define0 Value="UseCThreads"/>
+              <Define1 Value="ZMQ_STATIC_LINK"/>
+            </OtherDefines>
+          </Other>
         </CompilerOptions>
       </Item4>
-      <Item5 Name="windows_64bits">
-        <CompilerOptions>
-          <Version Value="11"/>
-          <Target>
-            <Filename Value="experiment_runner_$(BuildMode)"/>
-          </Target>
-          <SearchPaths>
-            <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="../dependencies/libzmq-builds/windows/64"/>
-            <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
-            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
-          </SearchPaths>
-          <CodeGeneration>
-            <TargetCPU Value="x86_64"/>
-            <TargetOS Value="win64"/>
-          </CodeGeneration>
-          <Linking>
-            <Debugging>
-              <UseExternalDbgSyms Value="True"/>
-            </Debugging>
-            <Options>
-              <Win32>
-                <GraphicApplication Value="True"/>
-              </Win32>
-            </Options>
-          </Linking>
-        </CompilerOptions>
-      </Item5>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
-      <local>
-        <FormatVersion Value="1"/>
-      </local>
+      <FormatVersion Value="2"/>
+      <Modes Count="1">
+        <Mode0 Name="default"/>
+      </Modes>
     </RunParams>
     <RequiredPackages Count="2">
       <Item1>

@@ -124,6 +124,7 @@ const
       ConditionName : '';
       Label1:'';
       Label2:'';
+      Picture1:'';
       Contingencies : nil;
       //Interlocks : (
       //  Count : 0;

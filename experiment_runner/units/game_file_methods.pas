@@ -23,12 +23,12 @@ uses
   procedure SaveExperimentToFile(AExperiment: TExperiment; AFilename : string);
 
 resourcestring
-  ERROR_SECTION_NOT_FOUND = 'O arquivo não pode ser aberto, pois a secção não foi encontrada: ';
-  ERROR_FILE_NOT_FOUND = 'O arquivo não pode ser aberto, pois ele não existe.';
-  ERROR_NO_CONTINGENCIES = 'O experimento não pode ser aberto, pois uma condição sem contingências foi encontrada: ';
-  ERROR_NO_CONDITIONS = 'O experimento não pode ser aberto, pois nenhuma condição foi encontrada.';
-  WARN_CONDITION_WITH_NO_END = 'Condição sem critério de encerramento: ';
-  WARN_END = ' será usado.';
+  ERROR_SECTION_NOT_FOUND = 'Section not found: ';
+  ERROR_FILE_NOT_FOUND = 'File not found.';
+  ERROR_NO_CONTINGENCIES = 'Contingencies not found: ';
+  ERROR_NO_CONDITIONS = 'Conditions not found.';
+  WARN_CONDITION_WITH_NO_END = 'Condition end criterium not found: ';
+  WARN_END = ' will be used.';
 
 implementation
 
@@ -242,6 +242,7 @@ var
           with C do
             begin
               ConditionName := ReadString(LS,KEY_COND_NAME,LS);
+              Picture1:=ReadString(LS,KEY_CULTURANT1_PICTURE,LS);
               Points.Count := GetPointsFromString(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
               Label1 := ReadString(LS, KEY_CULTURANT1_CAPTION,
                                   'Toys for donation'+LineEnding+

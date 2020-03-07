@@ -152,15 +152,15 @@ begin
     grEight : Result := '8';
     grNine : Result := '9';
     grTen : Result := '10';
-    grNot : Result := 'EXCETO';
+    grNot : Result := 'EXCEPT';
 
-    grEven : Result := 'PAR';
-    grOdd : Result := 'IMPAR';
-    grNot_EVEN_ODD_ONLY : Result := 'EXCETO_PAR_IMP';
+    grEven : Result := 'EVEN';
+    grOdd : Result := 'ODD';
+    grNot_EVEN_ODD_ONLY : Result := 'EXCEPT_EVEN_IMP';
 
-    grEqual : Result := 'IGUAIS';
-    grDiff : Result := 'DIFERENTES';
-    grNot_DIFF_EQUAL_ONLY : Result := 'EXCETO_IGL_DIF';
+    grEqual : Result := 'EQUAL';
+    grDiff : Result := 'DIFFERENT';
+    grNot_DIFF_EQUAL_ONLY : Result := 'EXCEPT_EQUAL_DIF';
   end;
 end;
 
@@ -178,15 +178,15 @@ begin
     '08', '8', 'OITO', 'EIGHT'  : Result := grEight;
     '09', '9', 'NOVE', 'NINE'   : Result := grNine;
     '10', 'DEZ', 'TEN'    : Result := grTen;
-    'EXCETO'              : Result := grNot;
+    'EXCETO','EXCEPT'     : Result := grNot;
 
     'PAR', 'EVEN'         : Result := grEven;
     'IMPAR', 'ODD'        : Result := grOdd;
-    'EXCETO_PAR_IMP'      : Result := grNot_EVEN_ODD_ONLY;
+    'EXCETO_PAR_IMP','EXCEPT_EVEN_IMP' : Result := grNot_EVEN_ODD_ONLY;
 
-    'IGUAIS'              : Result := grEqual;
-    'DIFERENTES'          : Result := grDiff;
-    'EXCETO_IGL_DIF'      : Result := grNot_DIFF_EQUAL_ONLY;
+    'IGUAIS', 'EQUAL'     : Result := grEqual;
+    'DIFERENTES','DIFFERENT' : Result := grDiff;
+    'EXCETO_IGL_DIF', 'EXCEPT_EQUAL_DIF'      : Result := grNot_DIFF_EQUAL_ONLY;
   end;
 end;
 
@@ -194,16 +194,16 @@ function GetColorString(AColor: TGameColor): string;
 begin
   Result := '';
   case AColor of
-    gcNone :Result  :=  'INDIFERENTE';
-    gcYellow :Result  :=  'AMARELO';
-    gcRed :Result  :=  'VERMELHO';
-    gcMagenta :Result  :=  'ROXO';
-    gcBlue :Result  :=  'AZUL';
-    gcGreen :Result  :=  'VERDE';
-    gcDiff :Result  :=  'DIFERENTES';
-    gcEqual :Result  :=  'IGUAIS';
-    gcThis  :Result  := 'ESPECIFICAMENTE';
-    gcNot : Result := 'EXCETO';
+    gcNone :Result  :=  'NOTHINGELSE';
+    gcYellow :Result  :=  'YELLOW';
+    gcRed :Result  :=  'RED';
+    gcMagenta :Result  :=  'PURPLE';
+    gcBlue :Result  :=  'BLUE';
+    gcGreen :Result  :=  'GREEN';
+    gcDiff :Result  :=  'DIFFERENT';
+    gcEqual :Result  :=  'EQUAL';
+    gcThis  :Result  := 'THIS';
+    gcNot : Result := 'EXCEPT';
   end;
 end;
 
@@ -215,11 +215,11 @@ begin
     'B', 'AZUL', 'BLUE' : Result := gcBlue;
     'G', 'VERDE', 'GREEN' : Result := gcGreen;
     'R', 'VERMELHO', 'RED'   : Result := gcRed;
-    'M', 'ROXO','MAGENTA', 'VIOLETA' : Result := gcMagenta;
+    'M', 'ROXO','MAGENTA', 'VIOLETA', 'PURPLE' : Result := gcMagenta;
     '!','<>','DIFERENTES', 'DIFFERENT' : Result := gcDiff;
     '=','IGUAIS', 'EQUAL' : Result := gcEqual;
-    'ESPECIFICAMENTE' : Result := gcThis;
-    'EXCETO' : Result := gcNot;
+    'ESPECIFICAMENTE', 'THIS' : Result := gcThis;
+    'EXCETO', 'EXCEPT' : Result := gcNot;
   end;
 end;
 
@@ -229,13 +229,13 @@ begin
   case UpperCase(S) of
     'TODOS', 'ALL' : Result := gsAll;
     'SIM', 'YES','S','Y': Result := gsYes;
-    'NÃO','NAO','N' : Result := gsNo;
+    'NÃO','NAO','N', 'NO' : Result := gsNo;
     'CONTINGÊNCIA','CONTINGENCIA','CONTINGENCY','OPERANTE', 'OPERANT': Result := gsContingency;
     'METACONTINGÊNCIA','METACONTINGENCIA','METACONTINGENCY','META': Result := gsMetacontingency;
-    'REVERTER': Result := gsRevertPoints;
+    'REVERTER', 'EXCHANGE': Result := gsRevertPoints;
     'TIRAR DE A AO INVES DE B','TIRAR DE A AO INVÉS DE B', 'B as A','B->A' : Result := gsBasA;
-    'REVERTER META' : Result := gsRevertMetaPoints;
-    'REVERTER INDI' : Result := gsRevertIndiPoints;
+    'REVERTER META', 'EXCHANGE META' : Result := gsRevertMetaPoints;
+    'REVERTER INDI', 'EXCHANGE INDI' : Result := gsRevertIndiPoints;
   end;
 end;
 
@@ -245,31 +245,31 @@ begin
   Result:='';
   for Style in AStyle do
     case Style of
-      gsAll: Result += 'TODOS'+VV_SEP;
-      gsYes: Result += 'SIM'+VV_SEP;
-      gsNo: Result += 'NÃO'+VV_SEP;
-      gsContingency: Result += 'OPERANTE'+VV_SEP;
+      gsAll: Result += 'ALL'+VV_SEP;
+      gsYes: Result += 'YES'+VV_SEP;
+      gsNo: Result += 'NO'+VV_SEP;
+      gsContingency: Result += 'OPERANT'+VV_SEP;
       gsMetacontingency: Result += 'META'+VV_SEP;
-      gsRevertPoints: Result += 'REVERTER'+VV_SEP;
+      gsRevertPoints: Result += 'EXCHANGE'+VV_SEP;
       gsBasA: Result += 'B->A'+VV_SEP;
-      gsRevertMetaPoints : Result += 'REVERTER META'+VV_SEP;
-      gsRevertIndiPoints : Result += 'REVERTER INDI'+VV_SEP;
+      gsRevertMetaPoints : Result += 'EXCHANGE META'+VV_SEP;
+      gsRevertIndiPoints : Result += 'EXCHANGE INDI'+VV_SEP;
     end;
 end;
 
 function GetGConsequenceStyleFromString(s: string): TGameConsequenceStyle;
 begin
   case UpperCase(S) of
-    'NADA': Result:= gscNone;
-    'MENSAGEM' : Result:= gscMessage;
-    'MENSAGEM A TODOS' : Result:= gscBroadcastMessage;
-    'PONTOS' : Result:= gscPoints;
-    'PONTOS COM VARIAÇÃO' : Result:= gscVariablePoints;
-    'PONTOS A' : Result:= gscA;
-    'PONTOS B' : Result:= gscB;
-    'PONTOS G1' : Result:= gscG1;
-    'PONTOS G2' : Result:= gscG2;
-    'PONTOS I' : Result:= gscI;
+    'NONE', 'NADA': Result:= gscNone;
+    'MESSAGE', 'MENSAGEM' : Result:= gscMessage;
+    'TO EVERYONE', 'MENSAGEM A TODOS' : Result:= gscBroadcastMessage;
+    'POINTS', 'PONTOS' : Result:= gscPoints;
+    'WITH VARIATION', 'PONTOS COM VARIAÇÃO' : Result:= gscVariablePoints;
+    'A' : Result:= gscA;
+    'B' : Result:= gscB;
+    'G1' : Result:= gscG1;
+    'G2' : Result:= gscG2;
+    'I' : Result:= gscI;
   end;
 end;
 
@@ -277,16 +277,16 @@ function GetGConsequenceStyleString(AStyle: TGameConsequenceStyle): string;
 begin
   Result := '';
   case AStyle of
-    gscNone : Result:= 'NADA';
-    gscMessage : Result:= 'MENSAGEM' ;
-    gscBroadcastMessage : Result:= 'MENSAGEM A TODOS';
-    gscPoints : Result:= 'PONTOS' ;
-    gscVariablePoints : Result:= 'PONTOS COM VARIAÇÃO';
-    gscA :  Result:= 'PONTOS A';
-    gscB :  Result:= 'PONTOS B';
-    gscG1 :  Result:= 'PONTOS G1';
-    gscG2 :  Result:= 'PONTOS G2';
-    gscI :  Result:= 'PONTOS I';
+    gscNone : Result:= 'NONE';
+    gscMessage : Result:= 'MESSAGE' ;
+    gscBroadcastMessage : Result:= 'TO EVERYONE';
+    gscPoints : Result:= 'POINTS' ;
+    gscVariablePoints : Result:= 'WITH VARIATION';
+    gscA :  Result:= 'A';
+    gscB :  Result:= 'B';
+    gscG1 :  Result:= 'G1';
+    gscG2 :  Result:= 'G2';
+    gscI :  Result:= 'I';
   end;
 end;
 
@@ -319,11 +319,11 @@ begin
     Result.Rows += [GetRowFromString(ExtractDelimited(i,LS,[',']))];
 
    case ExtractDelimited(2,S,['|'])of
-    'INDIFERENTE':Result.Style:=gtNone;
-    'E':Result.Style:=gtRowsAndColors;
-    'OU':Result.Style:=gtRowsOrColors;
-    'LINHAS':Result.Style:=gtRowsOnly;
-    'CORES':Result.Style:=gtColorsOnly;
+    'NONE':Result.Style:=gtNone;
+    'AND':Result.Style:=gtRowsAndColors;
+    'OR':Result.Style:=gtRowsOrColors;
+    'ROWS':Result.Style:=gtRowsOnly;
+    'COLORS':Result.Style:=gtColorsOnly;
   end;
 
   LS := ExtractDelimited(3,S,['|']);
@@ -336,11 +336,11 @@ end;
 function GetCriteriaStyleString(AStyle: TGameStyle): string;
 begin
   case AStyle of
-    gtNone : Result := 'INDIFERENTE';
-    gtRowsAndColors : Result  := 'E';
-    gtRowsOrColors : Result  := 'OU';
-    gtRowsOnly: Result := 'LINHAS';
-    gtColorsOnly:Result := 'CORES';
+    gtNone : Result := 'NONE';
+    gtRowsAndColors : Result  := 'AND';
+    gtRowsOrColors : Result  := 'OR';
+    gtRowsOnly: Result := 'ROWS';
+    gtColorsOnly:Result := 'COLORS';
   end;
 end;
 
@@ -434,18 +434,18 @@ end;
 function GetEndCriteriaStyleString(AEndCriteriaStyle: TGameEndCondition): string;
 begin
   case AEndCriteriaStyle of
-   gecAbsoluteCycles: Result := 'CICLOS';
-   gecInterlockingPorcentage: Result := 'PORCENTAGEM';
-   gecWhichComeFirst: Result := 'O QUE OCORRER PRIMEIRO';
+   gecAbsoluteCycles: Result := 'CYCLES';
+   gecInterlockingPorcentage: Result := '%';
+   gecWhichComeFirst: Result := 'WHICHEVER OCCURS FIRST';
   end;
 end;
 
 function GetEndCriteriaStyleFromString(S: string): TGameEndCondition;
 begin
   case S of
-   'CICLOS': Result := gecAbsoluteCycles;
-   'PORCENTAGEM': Result := gecInterlockingPorcentage;
-   'O QUE OCORRER PRIMEIRO': Result := gecWhichComeFirst;
+   'CYCLES', 'CICLOS': Result := gecAbsoluteCycles;
+   '%': Result := gecInterlockingPorcentage;
+   'WHICHEVER OCCURS FIRST', 'O QUE OCORRER PRIMEIRO': Result := gecWhichComeFirst;
   end;
 end;
 
@@ -573,12 +573,12 @@ begin
   LCount := WordCount(S,[#0,',']);
   for i:= 1 to LCount do
     case ExtractDelimited(i,S,[',']) of
-      'CORES' : Result +=[gmColors];
-      'LINHAS':Result+=[gmRows];
-      'COLUNAS':Result+=[gmColumns];
-      'CÍRCULOS PREENCHIDOS':Result+=[gmDots];
-      'CÍRCULOS VAZADOS':Result+=[gmClearDots];
-      'CÍRCULOS AMBOS':Result+=[gmDotsClearDots];
+      'COLORS' : Result +=[gmColors];
+      'ROWS':Result+=[gmRows];
+      'COLUMNS':Result+=[gmColumns];
+      'CIRCLES FILLED':Result+=[gmDots];
+      'CIRCLES EMPTY':Result+=[gmClearDots];
+      'CIRCLES BOTH':Result+=[gmDotsClearDots];
     end;
 end;
 
@@ -590,12 +590,12 @@ begin
   Result := '';
   for LType in AMatrixType do
     case LType of
-      gmColors : Result += 'CORES,';
-      gmRows : Result += 'LINHAS,';
-      gmColumns : Result += 'COLUNAS,';
-      gmDots : Result += 'CÍRCULOS PREENCHIDOS,';
-      gmClearDots : Result += 'CÍRCULOS VAZADOS,';
-      gmDotsClearDots : Result += 'CÍRCULOS AMBOS,';
+      gmColors : Result += 'COLORS,';
+      gmRows : Result += 'ROWS,';
+      gmColumns : Result += 'COLUMNS,';
+      gmDots : Result += 'CIRCLES FILLED,';
+      gmClearDots : Result += 'CIRCLES EMPTY,';
+      gmDotsClearDots : Result += 'CIRCLES BOTH,';
     end;
 end;
 

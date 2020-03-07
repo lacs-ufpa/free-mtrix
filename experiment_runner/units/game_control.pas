@@ -14,7 +14,7 @@ unit game_control;
 interface
 
 uses
-  Classes, SysUtils, Graphics, StdCtrls, PopupNotifier, Grids
+  Classes, SysUtils, Graphics, StdCtrls, PopupNotifier, Grids, ExtCtrls
   , game_zmq_actors
   , game_experiment
   , game_actors
@@ -73,6 +73,7 @@ type
     FOnStartGeneration: TNotifyEvent;
     FOnStartTurn: TNotifyEvent;
     FOnTargetInterlocking: TNotifyEvent;
+    FPictureGroup1: TImage;
     FSystemPopUp: TPopupNotifier;
     procedure Interlocking(Sender: TObject);
     procedure SetGroupBoxPlayers(AValue: TGroupBox);
@@ -95,6 +96,7 @@ type
     procedure SetOnStartTurn(AValue: TNotifyEvent);
     procedure SetOnTargetInterlocking(AValue: TNotifyEvent);
     procedure EndExperiment(Sender : TObject);
+    procedure SetPictureGroup1(AValue: TImage);
     procedure SetSystemPopUp(AValue: TPopupNotifier);
     procedure StartCondition(Sender: TObject);
     procedure StartCycle(Sender: TObject);
@@ -125,6 +127,7 @@ type
     property LabelPointA : TLabel read FLabelPointA write SetLabelPointA;
     property LabelPointB : TLabel read FLabelPointB write SetLabelPointB;
     property LabelPointI : TLabel read FLabelPointI write SetLabelPointI;
+    property ImageGroup1 : TImage read FPictureGroup1 write SetPictureGroup1;
     property LabelGroup1Name : TLabel read FLabelGroup1Name write SetLabelGroup1Name;
     property LabelGroup2Name : TLabel read FLabelGroup2Name write SetLabelGroup2Name;
     property GroupBoxPlayers : TGroupBox read FGroupBoxPlayers write SetGroupBoxPlayers;
@@ -168,7 +171,7 @@ const
 
 implementation
 
-uses ButtonPanel,Controls,ExtCtrls, LazUTF8, Forms, Dialogs, strutils
+uses ButtonPanel,Controls, LazUTF8, Forms, Dialogs, strutils
      , game_visual_matrix_a
      , popup_hack
      , form_matrixgame
@@ -195,6 +198,12 @@ procedure TGameControl.EndExperiment(Sender: TObject);
 begin
   ShowSystemPopUp('The experiment ended.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
+end;
+
+procedure TGameControl.SetPictureGroup1(AValue: TImage);
+begin
+  if FPictureGroup1=AValue then Exit;
+  FPictureGroup1:=AValue;
 end;
 
 procedure TGameControl.SetSystemPopUp(AValue: TPopupNotifier);
@@ -661,18 +670,19 @@ var
 begin
   LabelGroup1Name.Caption := Sanitize(ExtractDelimited(1,S,['|']));
   LabelGroup2Name.Caption := Sanitize(ExtractDelimited(2,S,['|']));
+  ImageGroup1.Picture.LoadFromResourceName(HInstance,ExtractDelimited(3,S,['|']));
   if FExperiment.ABPoints then
     begin
-      A := StrToInt(ExtractDelimited(3,S,['|']));
-      B := StrToInt(ExtractDelimited(4,S,['|']));
-      G1 := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
-      G2 := StrToIntDef(ExtractDelimited(6,S,['|']), 0);
+      A := StrToInt(ExtractDelimited(4,S,['|']));
+      B := StrToInt(ExtractDelimited(5,S,['|']));
+      G1 := StrToIntDef(ExtractDelimited(6,S,['|']), 0);
+      G2 := StrToIntDef(ExtractDelimited(7,S,['|']), 0);
     end
   else
     begin
-      A := StrToInt(ExtractDelimited(3,S,['|']));
-      G1 := StrToIntDef(ExtractDelimited(4,S,['|']), 0);
-      G2 := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
+      A := StrToInt(ExtractDelimited(4,S,['|']));
+      G1 := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
+      G2 := StrToIntDef(ExtractDelimited(6,S,['|']), 0);
     end;
 
   if G1 > 0 then

@@ -265,6 +265,7 @@ type
     ConditionName : string;
     Label1 : string;
     Label2 : string;
+    Picture1 : string;
     Contingencies : TContingencies; // for producing points during the condition
     //Interlocks : record
     //  Count : integer; // culturant,
@@ -694,10 +695,8 @@ const
   var
     i : integer;
     j : integer;
-    LColor : TGameColor;
     LColorSet : TGameAColors;
     LColorCriteria : TGameAColors;
-    Results : array of Boolean;
   begin
     if gcDiff in Criteria.Colors then
       if gcNot in Criteria.Colors then

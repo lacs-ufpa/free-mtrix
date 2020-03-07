@@ -180,6 +180,7 @@ begin
   FGameControl.LabelPointI := LabelIndCount;
   FGameControl.LabelGroup1Name := LabelGroup1;
   FGameControl.LabelGroup2Name := LabelGroup2;
+  FGameControl.ImageGroup1 := ImageGroup1;
   FGameControl.GroupBoxPlayers := GBLastChoice;
   FGameControl.OnInterlocking := @FExperimentBox.Interlocking;
   FGameControl.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;

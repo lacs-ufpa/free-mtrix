@@ -312,7 +312,7 @@ begin
   FHasCols:=AValue;
   FRowBase := 1;
   FixedRows := 1;
-  RowCount := 5;
+  RowCount := 11;
   ColCount := 11;
   Options := [goFixedHorzLine, goHorzLine, goVertLine];
 end;
@@ -324,7 +324,7 @@ begin
   FRowBase := 0;
   FixedRows := 0;
   ColCount := 11;
-  RowCount := 4;
+  RowCount := 10;
   Options := [goFixedHorzLine, goHorzLine];
 end;
 
