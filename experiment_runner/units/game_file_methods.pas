@@ -90,10 +90,12 @@ begin
           Cycles.Count:=0;
           Cycles.Value:=2;
           Cycles.Generation:=0;
-          EndCriterium.AbsoluteCycles := 15;
-          EndCriterium.InterlockingPorcentage := 80;
-          EndCriterium.LastCycles := 10;
-          EndCriterium.Style := gecWhichComeFirst;
+          EndCriterium.AbsoluteCyclesMax := 15;
+          EndCriterium.AbsoluteCyclesMin := 5;
+          EndCriterium.UpperInterlockingPorcentage := 80;
+          EndCriterium.LowerInterlockingPorcentage := 20;
+          EndCriterium.LastCycles := 20;
+          EndCriterium.Style := gecWhichComesFirst;
 
           SetLength(Contingencies, 4);
           // test contingency
@@ -244,14 +246,8 @@ var
               ConditionName := ReadString(LS,KEY_COND_NAME,LS);
               Picture1:=ReadString(LS,KEY_CULTURANT1_PICTURE,LS);
               Points.Count := GetPointsFromString(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
-              Label1 := ReadString(LS, KEY_CULTURANT1_CAPTION,
-                                  'Toys for donation'+LineEnding+
-                                  'to children'+LineEnding+
-                                  'at cancer hospitals');
-              Label2 := ReadString(LS, KEY_CULTURANT2_CAPTION,
-                                  'Toys for donation'+LineEnding+
-                                  'to children'+LineEnding+
-                                  'at cancer hospitals');
+              Label1 := ReadString(LS, KEY_CULTURANT1_CAPTION, 'Items 1');
+              Label2 := ReadString(LS, KEY_CULTURANT2_CAPTION, 'Items 2');
               if AExperiment.ABPoints then
                 begin
                   Points.OnStart.A := ReadInteger(LS, KEY_POINTS_ONSTART_A,0);
@@ -273,9 +269,12 @@ var
               Cycles.Value:= ReadInteger(LS, KEY_CYCLES_VALUE,10);
               Cycles.Generation:= ReadInteger(LS, KEY_CYCLES_GEN,0);
               EndCriterium.Style := GetEndCriteriaStyleFromString(ReadString(LS,KEY_ENDCRITERIA,DEF_END_CRITERIA_STYLE));
-              EndCriterium.AbsoluteCycles:=ReadInteger(LS,KEY_ENDCRITERIA_CYCLES,20);
+              EndCriterium.AbsoluteCyclesMax:=ReadInteger(LS,KEY_ENDCRITERIA_CYCLES_MAX,100);
+              EndCriterium.AbsoluteCyclesMin:=ReadInteger(LS,KEY_ENDCRITERIA_CYCLES_MIN,0);
+
               s1 := ReadString(LS,KEY_ENDCRITERIA_PORCENTAGE,DEF_END_CRITERIA_PORCENTAGE);
-              EndCriterium.InterlockingPorcentage:= GetEndCriteriaPorcentageFromString(s1);
+              EndCriterium.UpperInterlockingPorcentage:= GetEndCriteriaUpperPorcentageFromString(s1);
+              EndCriterium.LowerInterlockingPorcentage:= GetEndCriteriaLowerPorcentageFromString(s1);
               EndCriterium.LastCycles:= GetEndCriteriaLastCyclesFromString(s1);
               EndCriterium.ReachZero := ReadBool(LS, KEY_ENDCRITERIA_REACH_ZERO, False);
               LContingenciesCount := ReadContingenciesCount(i,KEY_CONTINGENCY);

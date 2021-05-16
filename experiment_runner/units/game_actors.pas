@@ -85,7 +85,7 @@ type
 
   TGameAColors = array of TGameColor;
 
-  TGameEndCondition = (gecInterlockingPorcentage,gecAbsoluteCycles,gecWhichComeFirst);
+  TGameEndCondition = (gecInterlockingPorcentage,gecAbsoluteCycles,gecWhichComesFirst);
   //TGameOperator = (goNONE, goAND, goOR);
   TGameStyle = (gtNone, gtRowsOnly, gtColorsOnly, gtRowsAndColors, gtRowsOrColors);
 
@@ -252,9 +252,11 @@ type
   TEndConditionCriterium = record
     ReachZero : boolean;
     Style : TGameEndCondition;
-    InterlockingPorcentage,
+    UpperInterlockingPorcentage,
+    LowerInterlockingPorcentage,
     LastCycles,
-    AbsoluteCycles: integer;
+    AbsoluteCyclesMin,
+    AbsoluteCyclesMax: integer;
   end;
 
   TPoints = record

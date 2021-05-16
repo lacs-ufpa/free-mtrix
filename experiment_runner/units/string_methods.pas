@@ -54,7 +54,8 @@ function GetChoiceString(AChoice : TPlayerChoice) : string;
 function GetChoiceFromString(S:string) : TPlayerChoice;
 
 function GetEndCriteriaLastCyclesFromString(S:string):integer;
-function GetEndCriteriaPorcentageFromString(S:string):integer;
+function GetEndCriteriaUpperPorcentageFromString(S:string):integer;
+function GetEndCriteriaLowerPorcentageFromString(S:string):integer;
 function GetEndCriteriaStyleString(AEndCriteriaStyle : TGameEndCondition):string;
 function GetEndCriteriaStyleFromString(S:string):TGameEndCondition;
 function GetEndCriteriaString(AEndCriterium:TEndConditionCriterium) : string;
@@ -77,11 +78,13 @@ begin
   case StrToIntDef(ExtractDelimited(1,S,[',']),2) of
     0: Result.Style := gecAbsoluteCycles;
     1: Result.Style := gecInterlockingPorcentage;
-    2: Result.Style := gecWhichComeFirst;
+    2: Result.Style := gecWhichComesFirst;
   end;
-  Result.AbsoluteCycles := StrToIntDef(ExtractDelimited(2,S,[',']), 20);
-  Result.InterlockingPorcentage := StrToIntDef(ExtractDelimited(3,S,[',']),10);
-  Result.LastCycles := StrToIntDef(ExtractDelimited(4,S,[',']), 10);
+  Result.AbsoluteCyclesMax := StrToIntDef(ExtractDelimited(2,S,[',']), 100);
+  Result.AbsoluteCyclesMin := StrToIntDef(ExtractDelimited(3,S,[',']), 50);
+  Result.UpperInterlockingPorcentage := StrToIntDef(ExtractDelimited(4,S,[',']),80);
+  Result.LowerInterlockingPorcentage := StrToIntDef(ExtractDelimited(5,S,[',']),20);
+  Result.LastCycles := StrToIntDef(ExtractDelimited(6,S,[',']), 10);
 end;
 
 function GetPointsFromString(S: string) : TPoints;
@@ -413,14 +416,14 @@ end;
 function GetEndCriteriaLastCyclesFromString(S: string): integer;
 begin
   try
-    Result := StrToInt(ExtractDelimited(2,S,[',']));
+    Result := StrToInt(ExtractDelimited(3,S,[',']));
   except
     On E : Exception do
       Result := 0;
   end;
 end;
 
-function GetEndCriteriaPorcentageFromString(S: string): integer;
+function GetEndCriteriaUpperPorcentageFromString(S: string): integer;
 begin
   try
     Result := StrToInt(ExtractDelimited(1,S,[',']));
@@ -430,13 +433,22 @@ begin
   end;
 end;
 
+function GetEndCriteriaLowerPorcentageFromString(S: string): integer;
+begin
+  try
+    Result := StrToInt(ExtractDelimited(2,S,[',']));
+  except
+    On E : Exception do
+      Result := 0;
+  end;
+end;
 
 function GetEndCriteriaStyleString(AEndCriteriaStyle: TGameEndCondition): string;
 begin
   case AEndCriteriaStyle of
    gecAbsoluteCycles: Result := 'CYCLES';
    gecInterlockingPorcentage: Result := '%';
-   gecWhichComeFirst: Result := 'WHICHEVER OCCURS FIRST';
+   gecWhichComesFirst: Result := 'WHICHEVER OCCURS FIRST';
   end;
 end;
 
@@ -445,18 +457,20 @@ begin
   case S of
    'CYCLES', 'CICLOS': Result := gecAbsoluteCycles;
    '%': Result := gecInterlockingPorcentage;
-   'WHICHEVER OCCURS FIRST', 'O QUE OCORRER PRIMEIRO': Result := gecWhichComeFirst;
+   'WHICHEVER OCCURS FIRST', 'O QUE OCORRER PRIMEIRO': Result := gecWhichComesFirst;
   end;
 end;
 
 function GetEndCriteriaString(AEndCriterium: TEndConditionCriterium
   ): string;
 begin
-  // 2,20,10,10,
+  // 100,0,80,20,
   Result := GetEndCriteriaStyleString(AEndCriterium.Style);
   Result := Result + VV_SEP;
-  Result := Result + IntToStr(AEndCriterium.AbsoluteCycles) + VV_SEP;
-  Result := Result + IntToStr(AEndCriterium.InterlockingPorcentage) + VV_SEP;
+  Result := Result + IntToStr(AEndCriterium.AbsoluteCyclesMax) + VV_SEP;
+  Result := Result + IntToStr(AEndCriterium.AbsoluteCyclesMin) + VV_SEP;
+  Result := Result + IntToStr(AEndCriterium.UpperInterlockingPorcentage) + VV_SEP;
+  Result := Result + IntToStr(AEndCriterium.LowerInterlockingPorcentage) + VV_SEP;
   Result := Result + IntToStr(AEndCriterium.LastCycles) + VV_SEP;
 end;
 

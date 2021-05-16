@@ -668,6 +668,8 @@ var
   PB : TPlayerBox;
   C : TCondition;
 begin
+  LabelGroup1.Caption := '0';
+  LabelGroup2.Caption := '0';
   LabelGroup1Name.Caption := Sanitize(ExtractDelimited(1,S,['|']));
   LabelGroup2Name.Caption := Sanitize(ExtractDelimited(2,S,['|']));
   ImageGroup1.Picture.LoadFromResourceName(HInstance,ExtractDelimited(3,S,['|']));
@@ -1135,7 +1137,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               FormChooseActor.ShowPoints(
                 'The task is over, thank you for your collaboration!'+LineEnding+
                 'You produced ' + Pts + ' tokens for you and ' +
-                LabelGroup1.Caption + ' toys to be sent as a gift to children at cancer hospitals.'
+                LabelGroup1.Caption + ' ' + LowerCase(LabelGroup1Name.Caption) + '.'
               );
 
               if FormChooseActor.ShowModal = 1 then
@@ -1180,7 +1182,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor.ShowPoints(
           'The task is over, thank you for your collaboration!'+LineEnding+
           'You produced ' + Pts + ' tokens for you and ' +
-          LabelGroup1.Caption + ' toys to be sent as a gift to children at cancer hospitals.');
+          LabelGroup1.Caption + ' ' + LowerCase(LabelGroup1Name.Caption) + '.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
 

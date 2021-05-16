@@ -151,10 +151,12 @@ const
       Prompt : nil;
       EndCriterium : (
         ReachZero : False;
-        Style : gecWhichComeFirst;
-        InterlockingPorcentage : 50;
-        LastCycles : 4;
-        AbsoluteCycles: 6;
+        Style : gecWhichComesFirst;
+        UpperInterlockingPorcentage : 80;
+        LowerInterlockingPorcentage : 20;
+        LastCycles : 20;
+        AbsoluteCyclesMin: 50;
+        AbsoluteCyclesMax: 100;
       );
     );
 

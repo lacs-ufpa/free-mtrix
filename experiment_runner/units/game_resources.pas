@@ -16,7 +16,7 @@ interface
 uses
   Classes, SysUtils, Graphics;
 
-function GenResourceName(i : integer) : string;
+function GenResourceName(i : integer = -1) : string;
 
 resourcestring
   KV_SEP = '=';
@@ -71,9 +71,10 @@ resourcestring
   KEY_PROMPT_STYLE = 'Question.Style'; // string
   KEY_PROMPT_MESSAGE = 'Question.Message'; // string
   KEY_PROMPT_TARGET = 'Question.TargetMetacontingency';
-  KEY_ENDCRITERIA = 'EndCriterium.Style'; //2,50,10,30,
-  KEY_ENDCRITERIA_CYCLES = 'EndCriterium.Cycles'; // 20
-  KEY_ENDCRITERIA_PORCENTAGE = 'EndCriterium.Porcentage'; // 80|10
+  KEY_ENDCRITERIA = 'EndCriterium.Style';
+  KEY_ENDCRITERIA_CYCLES_MAX = 'EndCriterium.Cycles.Max'; // 100
+  KEY_ENDCRITERIA_CYCLES_MIN = 'EndCriterium.Cycles.Min'; // 50
+  KEY_ENDCRITERIA_PORCENTAGE = 'EndCriterium.Porcentage'; // 80|20|20
   KEY_ENDCRITERIA_REACH_ZERO = 'EndCriterium.OnZeroReached';
 
   KEY_CONTINGENCY = 'Contingency.';
@@ -127,27 +128,27 @@ var
 const
 
   CPlayerNamesMale : array [0..49] of string =
-     ('João','Rodrigo','Francisco','Martim','Santiago',
-     'Tomás','Afonso','Duarte','Miguel','Guilherme','Tiago',
-     'Gonçalo','Diogo','Gabriel','Pedro','Rafael','Salvador',
+     ('John','Rodrigo','Francisco','Martim','Santiago',
+     'Thomas','Afonso','Duarte','Miguel','Guilherme','Tiago',
+     'Goncalo','Diogo','Gabriel','Pedro','Rafael','Salvador',
      'Dinis','Lucas','Simael','Gustavo','David',
-     'José','Vicente','Lourenço','Diego','Daniel',
-     'António','André','Vasco','Manuel','Henrique',
-     'Leonardo','Bernardo','Mateus','Luís','Eduardo',
+     'Joseph','Vicente','Lourenco','Diego','Daniel',
+     'Anthony','Andre','Vasco','Manuel','Henrique',
+     'Leonardo','Bernardo','Mateus','Luis','Eduardo',
      'Alexandre','Leandro','Filipe','Enzo','Ricardo',
-     'Matias','Rúben','Samuel','Bruno','Isaac','Xavier','Nuno','Carlos');
+     'Matias','Ruben','Samuel','Bruno','Isaac','Xavier','Nuno','Carlos');
 
   CPlayerNamesFemale : array [0..49] of string =
     ('Maria','Matilde','Thais','Beatriz','Mariana',
-    'Carolina','Ana','Inês','Sofia','Margarida',
+    'Carolina','Ana','Ines','Sofia','Margarida',
     'Lara','Joana','Laura','Francisca','Diana',
     'Mafalda','Madalena','Clara','Luana','Sara',
-    'Bianca','Alice','Rita','Íris','Constança',
-    'Letícia','Eva','Gabriela','Camila','Yara',
+    'Bianca','Alice','Rita','Iris','Constanca',
+    'Leticia','Eva','Gabriela','Camila','Yara',
     'Benedita','Mara','Catarina','Ariana','Ema',
-    'Vitória','Marta','Carlota','Iara','Yasmin',
-    'Nicole','Luísa','Daniela','Núria','Bruna',
-    'Victória','Alícia','Rafaela','Helena','Miriam');
+    'Vitoria','Marta','Carlota','Iara','Yasmin',
+    'Nicole','Luisa','Daniela','Nuria','Bruna',
+    'Victoria','Alicia','Rafaela','Helena','Miriam');
 
 
 implementation

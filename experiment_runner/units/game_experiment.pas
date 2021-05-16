@@ -226,7 +226,7 @@ type
   end;
 
 resourcestring
-  WARN_CANNOT_SAVE = 'O experimento não pode ser salvo.';
+  WARN_CANNOT_SAVE = 'The experiment could not be saved.';
 
 implementation
 
@@ -516,7 +516,7 @@ begin
           if Length(FPlayers) = LNumberOfPlayers then
             FRandomTurns.Append(FPlayers[i].ID+'|'+LNewRandomOrder[i])
           else
-            FRandomTurns.Append('fisrt_turn_doesnt_matter'+'|'+LNewRandomOrder[i]);
+            FRandomTurns.Append('first_turn_doesnt_matter'+'|'+LNewRandomOrder[i]);
       finally
         LOldRandomOrder.Free;
         LNewRandomOrder.Free;
@@ -697,19 +697,20 @@ end;
 
 function TExperiment.GetPlayerToKick: string;
 begin
-  if FCycles.GenerationCount < FCycles.GenerationValue -1 then
-    begin
-      Result := #32;
-      Inc(FCycles.GenerationCount);
-    end
-  else
-    begin
-      if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
-      Result := FPlayers[0].ID;
-      FCycles.GenerationCount := 0;
-      Inc(FCycles.Generations);
-      if Assigned(FOnStartGeneration) then FOnStartGeneration(Self);
-    end;
+  Result := #32;
+  if CurrentCondition.Cycles.Count > 4 then
+  begin
+    if FCycles.GenerationCount < FCycles.GenerationValue -1 then
+      Inc(FCycles.GenerationCount)
+    else
+      begin
+        if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
+        Result := FPlayers[0].ID;
+        FCycles.GenerationCount := 0;
+        Inc(FCycles.Generations);
+        if Assigned(FOnStartGeneration) then FOnStartGeneration(Self);
+      end;
+  end;
 end;
 
 procedure TExperiment.Interlocking(Sender: TObject);
@@ -806,7 +807,7 @@ begin
       c:= CurrentConditionI;
 
       // column names, line 1
-      LNames1 := 'Experimento'+#9+#9+#9;
+      LNames1 := 'Experiment'+#9+#9+#9;
       for i:=0 to Condition[c].Turn.Value-1 do // player's response
         begin
           LNames1 += FPlayers[i].Nicname+#9+#9;
@@ -822,17 +823,17 @@ begin
 
       if Assigned(Condition[c].Prompt) then
         begin
-          LNames1 += 'Respostas à Pergunta';
+          LNames1 += 'Responses to the question';
           for i:=0 to Condition[c].Turn.Value-1 do
             LNames1 += #9;
         end;
       LNames1 += LineEnding;
 
       // column names, line 2
-      LNames2 := 'Condição'+#9+'Geração'+#9+'Ciclos'+#9;
+      LNames2 := 'Condition'+#9+'Generation'+#9+'Cycles'+#9;
       for i:=0 to Condition[c].Turn.Value-1 do
         begin
-          LNames2 += 'Linha'+#9+'Cor'+#9;
+          LNames2 += 'Row'+#9+'Color'+#9;
           for j:=0 to ContingenciesCount[c]-1 do
             if not Contingency[c,j].Meta then
               LNames2 += Contingency[c,j].ContingencyName+#9;
@@ -1124,20 +1125,32 @@ begin
   // absolute cycles count
   LCyclesInCurrentCondition := CurrentCondition.Cycles.Count;
   case FConditions[CurrentConditionI].EndCriterium.Style of
-    gecWhichComeFirst:
+    gecWhichComesFirst:
       begin
-        if (LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCycles) or
-           (LInterlocks >= CurrentCondition.EndCriterium.InterlockingPorcentage) then
+        if LCyclesInCurrentCondition < CurrentCondition.EndCriterium.AbsoluteCyclesMin then
+          Exit;
+
+        if (LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCyclesMax) or
+           (LInterlocks >= CurrentCondition.EndCriterium.UpperInterlockingPorcentage) or
+           (LInterlocks <= CurrentCondition.EndCriterium.LowerInterlockingPorcentage) then
           Result := True;
 
       end;
     gecAbsoluteCycles:
-        if LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCycles then
+      begin
+        if LCyclesInCurrentCondition < CurrentCondition.EndCriterium.AbsoluteCyclesMin then
+          Exit;
+
+        if LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCyclesMin then
           Result := True;
+      end;
 
     gecInterlockingPorcentage:
-        if LInterlocks >= CurrentCondition.EndCriterium.InterlockingPorcentage then
+      begin
+        if (LInterlocks >= CurrentCondition.EndCriterium.UpperInterlockingPorcentage) or
+           (LInterlocks <= CurrentCondition.EndCriterium.LowerInterlockingPorcentage) then
           Result := True;
+      end;
   end;
 end;
 
@@ -1166,7 +1179,7 @@ procedure TExperiment.ForceEndCondition;
 begin
   if CurrentCondition.EndCriterium.ReachZero then
     FConditions[CurrentConditionI].Cycles.Count :=
-      CurrentCondition.EndCriterium.AbsoluteCycles-1;
+      CurrentCondition.EndCriterium.AbsoluteCyclesMax-1;
 end;
 
 //procedure TExperiment.TargetInterlocking;
