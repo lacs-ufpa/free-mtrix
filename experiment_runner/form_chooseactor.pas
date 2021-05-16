@@ -133,8 +133,8 @@ begin
     Font.Size := 30;
     OnClick := @ShowResumeButton;
     case FStyle of
-      '.Left': btnPlayerResume.Caption := 'Entrar';
-      '.EndX': btnPlayerResume.Caption := 'Sair';
+      '.Left': btnPlayerResume.Caption := 'Enter';
+      '.EndX': btnPlayerResume.Caption := 'Exit';
     end;
   end;
 end;
