@@ -29,3 +29,11 @@ Wiggins, J. A. (1969). Status differentiation, external consequences and alterna
 # How to install and setup the software?
 
 Please, check the INSTALL directory.
+
+# Works that cited Free-mtrix
+
+Guimarães, T. M. M., Picanço, C. R., & Tourinho, E. Z. (2019). Effects of negative punishment on culturants in a situation of concurrence between operant contingencies and metacontingencies. Perspectives on Behavior Science. https://doi.org/10.1007/s40614-019-00224-z
+
+Ribeiro, D. C. M., Guimarães, T. M. M., Picanço, C. R., Caralho Neto, M. B. & Tourinho, E. Z. (2021). Effects of an Analogue of Negative Reinforcement on the Selection of Culturants. Psicologia: Teoria e Pesquisa. https://doi.org/10.1590/0102.3772e3728 
+
+
