@@ -41,7 +41,7 @@ const
   //C_OPERANT_1 : TContingency =
   //  (
   //    Consequence : (
-  //      Style : [gscShowMessage,gscPoints, gscB];
+  //      Style : [gscShowMessage,gscGlobalPoints, gscB];
   //      Message : '<$JOGADOR> produziu 1 ponto do tipo B.';
   //      Value: 1;
   //      Variation:1;
@@ -58,7 +58,7 @@ const
   //C_OPERANT_2 : TContingency =
   //  (
   //    Consequence : (
-  //      Style : [gscShowMessage,gscPoints, gscA];
+  //      Style : [gscShowMessage,gscGlobalPoints, gscA];
   //      Message : '<$JOGADOR> produziu 3 pontos do tipo A.';
   //
   //    Criteria : (
@@ -73,7 +73,7 @@ const
   //C_METACONTINGENCY_A1 : TContingency =
   //  (
   //    Consequence : (
-  //      Style : [gscShowMessage,gscPoints,gscBroadcastMessage];
+  //      Style : [gscShowMessage,gscGlobalPoints,gscBroadcastMessage];
   //      Points :( A : 0;    B : 0;    G : 1;);
   //      Message : 'Vocês produziram 1 item escolar.';    // show first in case of last participant
   //      Cycles : 0;                 // absolute,
@@ -98,7 +98,7 @@ const
     //C_METACONTINGENCY_B2: TContingency =
     //  (
     //    Consequence : (
-    //      Style : [gscShowMessage,gscPoints,gscBroadcastMessage,gscPromptQuestion];
+    //      Style : [gscShowMessage,gscGlobalPoints,gscBroadcastMessage,gscPromptQuestion];
     //      Points :(A :0;    B : 0;    G : -1;);
     //      Message : 'Vocês produziram a perda de 1 item escolar.';
     //      Cycles : 0;                 // absolute,
@@ -189,6 +189,7 @@ begin
     gcMagenta :Result  :=  ccMagenta;
     gcBlue :Result  :=  ccBlue;
     gcGreen :Result  :=  ccGreen;
+    else { do nothing };
   end;
 end;
 

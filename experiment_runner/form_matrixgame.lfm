@@ -1,24 +1,24 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 98
-  Height = 716
-  Top = 29
-  Width = 1237
-  HorzScrollBar.Page = 1237
-  VertScrollBar.Page = 594
+  Left = 238
+  Height = 803
+  Top = 128
+  Width = 1584
+  HorzScrollBar.Page = 1578
+  VertScrollBar.Page = 593
   AutoScroll = True
   Caption = 'Matrix'
-  ClientHeight = 706
-  ClientWidth = 1237
+  ClientHeight = 803
+  ClientWidth = 1584
   Font.Name = 'Monospace'
   OnActivate = FormActivate
   OnCreate = FormCreate
-  LCLVersion = '2.0.6.0'
+  LCLVersion = '2.1.0.0'
   object GBPoints: TGroupBox
     AnchorSideLeft.Side = asrBottom
     Left = 712
-    Height = 586
+    Height = 585
     Top = 8
-    Width = 473
+    Width = 471
     AutoSize = True
     Caption = 'Total of:'
     ChildSizing.LeftRightSpacing = 10
@@ -5552,8 +5552,8 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 5
-    Height = 150
-    Top = 556
+    Height = 220
+    Top = 583
     Width = 702
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
@@ -5566,8 +5566,8 @@ object FormMatrixGame: TFormMatrixGame
     ChildSizing.EnlargeVertical = crsHomogenousChildResize
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 6
-    Constraints.MaxHeight = 150
-    Constraints.MinHeight = 150
+    Constraints.MaxHeight = 220
+    Constraints.MinHeight = 220
     Font.Height = -20
     Font.Name = 'Monospace'
     Font.Style = [fsBold]
@@ -5575,65 +5575,62 @@ object FormMatrixGame: TFormMatrixGame
     TabOrder = 1
   end
   object GBAdmin: TGroupBox
-    AnchorSideLeft.Control = ChatPanel
     AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = ChatPanel
-    Left = 1585
-    Height = 448
+    Left = 8
+    Height = 386
     Top = 8
-    Width = 436
-    BorderSpacing.Left = 5
+    Width = 656
     Caption = 'Researcher'
-    ClientHeight = 431
-    ClientWidth = 432
+    ClientHeight = 368
+    ClientWidth = 654
     TabOrder = 2
     Visible = False
     object ButtonExpStart: TButton
-      Left = 0
+      Left = 24
       Height = 25
-      Top = 0
-      Width = 128
+      Top = 16
+      Width = 88
       Caption = 'Start'
       OnClick = ButtonExpStartClick
       TabOrder = 0
     end
     object ButtonExpPause: TButton
-      Left = 152
+      Left = 136
       Height = 25
-      Top = 0
-      Width = 128
+      Top = 16
+      Width = 88
       Caption = 'Pause'
       Enabled = False
       OnClick = ButtonExpPauseClick
       TabOrder = 1
     end
     object ButtonExpCancel: TButton
-      Left = 304
+      Left = 248
       Height = 25
-      Top = 0
-      Width = 128
+      Top = 16
+      Width = 88
       Caption = 'Cancel'
       Enabled = False
       OnClick = ButtonExpCancelClick
       TabOrder = 2
     end
     object ListBoxOldPlayers: TListBox
-      Left = 8
-      Height = 80
-      Top = 352
-      Width = 420
+      Left = 376
+      Height = 328
+      Top = 24
+      Width = 256
       ClickOnSelChange = False
       ExtendedSelect = False
       ItemHeight = 0
-      ScrollWidth = 418
+      ScrollWidth = 254
       TabOrder = 3
       TabStop = False
       TopIndex = -1
     end
     object LabelOldPlayers: TLabel
-      Left = 8
+      Left = 376
       Height = 15
-      Top = 328
+      Top = 0
       Width = 136
       AutoSize = False
       Caption = 'Old Players'
@@ -5657,7 +5654,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideRight.Control = GBPoints
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Side = asrBottom
-    Left = 1190
+    Left = 1188
     Height = 386
     Top = 8
     Width = 390
@@ -5719,8 +5716,8 @@ object FormMatrixGame: TFormMatrixGame
     FilterIndex = 2
     InitialDir = 'Pesquisadores'
     Options = [ofNoChangeDir, ofFileMustExist, ofNoNetworkButton, ofEnableSizing, ofDontAddToRecent]
-    left = 632
-    top = 392
+    Left = 912
+    Top = 648
   end
   object PopupNotifier: TPopupNotifier
     Color = clDefault
@@ -5729,16 +5726,17 @@ object FormMatrixGame: TFormMatrixGame
     }
     Text = 'Text'
     Title = 'Caption'
+    TitleFont.Style = [fsBold]
     Visible = False
     OnClose = PopupNotifierClose
-    left = 632
-    top = 280
+    Left = 760
+    Top = 648
   end
   object Timer: TTimer
     Enabled = False
     Interval = 8000
     OnTimer = TimerTimer
-    left = 632
-    top = 352
+    Left = 840
+    Top = 648
   end
 end

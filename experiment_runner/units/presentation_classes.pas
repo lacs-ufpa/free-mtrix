@@ -122,6 +122,7 @@ var
   H : TAnnoucerMessages;
   i: Integer;
 begin
+  H := TAnnoucerMessages.Create;
   SetLength(H,1,Length(M));
 
   for i := Low(M) to High(M) do
@@ -136,6 +137,7 @@ var
   i : integer;
   M : TAnnoucerMessages;
 begin
+  M := TAnnoucerMessages.Create;
   for i := High(FMessages) downto Low(FMessages) do
     begin
       SetLength(M,Length(M)+1);

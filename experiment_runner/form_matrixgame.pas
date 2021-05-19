@@ -165,22 +165,47 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
 
 begin
   case AValue of
-    gaAdmin: SetZMQAdmin;
+    gaAdmin:
+      begin
+        SetZMQAdmin;
+        StringGridMatrix.Hide;
+        ImageInd.Hide;
+        LabelInd.Hide;
+        LabelIndCount.Hide;
+
+        ImageIndA.Hide;
+        LabelIndA.Hide;
+        LabelIndACount.Hide;
+
+        ImageIndB.Hide;
+        LabelIndB.Hide;
+        LabelIndBCount.Hide;
+
+        ImageGroup2.Hide;
+        LabelGroup2.Hide;
+        LabelGroup2Count.Hide;
+
+        GBAdmin.Left := 10;
+      end;
     gaPlayer: SetZMQPlayer;
     gaWatcher: SetZMQWatcher;
+    else { do nothing };
   end;
   FGameControl.OnPlayerExit:=@PlayerExit;
   FGameControl.OnEndChoice:=@DisableConfirmationButton;
   FGameControl.OnCleanEvent:=@CleanMatrix;
   FGameControl.SystemPopUp := PopupNotifier;
-  FGameControl.LabelGroup1 := LabelGroup1Count;
-  FGameControl.LabelGroup2 := LabelGroup2Count;
+
   FGameControl.LabelPointA := LabelIndACount;
   FGameControl.LabelPointB := LabelIndBCount;
   FGameControl.LabelPointI := LabelIndCount;
   FGameControl.LabelGroup1Name := LabelGroup1;
+  FGameControl.LabelGroup1Count := LabelGroup1Count;
+
   FGameControl.LabelGroup2Name := LabelGroup2;
+  FGameControl.LabelGroup2Count := LabelGroup2Count;
   FGameControl.ImageGroup1 := ImageGroup1;
+
   FGameControl.GroupBoxPlayers := GBLastChoice;
   FGameControl.OnInterlocking := @FExperimentBox.Interlocking;
   FGameControl.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;
@@ -230,6 +255,7 @@ begin
                 gaAdmin: FormMatrixGame.SetGameActor(gaAdmin);
                 gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
                 gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
+                else Close;
               end
             else
               Close;

@@ -29,7 +29,7 @@ type
 
   TGameControl = class(TComponent)
   private
-    FID: string;
+    FCurrentCause : TGameConsequenceStyle;
     FActor : TGameActor;
     FZMQActor : TZMQActor;
     FExperiment : TExperiment;
@@ -37,7 +37,7 @@ type
     function GetActorNicname(AID:string) : string;
     function MessageHas(const A_CONST : string; AMessage : TStringList; I:ShortInt=0): Boolean;
     procedure CreatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
-    procedure UpdatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
+    procedure UpdatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False; AOldPlayerID:string = '');
     //procedure DeletePlayerBox(AID : string);
     //procedure MovePlayerBox(AID : string);
     procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType);
@@ -47,19 +47,21 @@ type
     procedure MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
   private
     function AskQuestion(AQuestion:string):string;
-    function ShowConsequence(AID,S:string;ForGroup:Boolean;ShowPopUp : Boolean = True) : string;
+    function ShowConsequence(AID,S:string;IsMeta:Boolean;ShowPopUp : Boolean = True) : string;
 
     procedure NextConditionSetup(S : string; IsConditionStart:Boolean=False);
     procedure NextGenerationSetup(AID : string);
     procedure EnablePlayerMatrix(AID:string; ATurn:integer; AEnabled:Boolean);
+    procedure InvalidateLabels;
   private
+    FFallbackMessages: TListBox;
     FGroupBoxPlayers: TGroupBox;
-    FLabelGroup1: TLabel;
-    FLabelGroup2: TLabel;
+    FLabelGroup1Count: TLabel;
+    FLabelGroup2Count: TLabel;
     FLabelGroup1Name : TLabel;
     FLabelGroup2Name : TLabel;
-    FLabelPointA: TLabel;
-    FLabelPointB: TLabel;
+    FLabelPointACount: TLabel;
+    FLabelPointBCount: TLabel;
     FLabelPointI: TLabel;
     FOnCleanEvent: TCleanEvent;
     FOnEndChoice: TNotifyEvent;
@@ -75,7 +77,9 @@ type
     FOnTargetInterlocking: TNotifyEvent;
     FPictureGroup1: TImage;
     FSystemPopUp: TPopupNotifier;
+    function GetID: string;
     procedure Interlocking(Sender: TObject);
+    procedure SetFallbackMessages(AValue: TListBox);
     procedure SetGroupBoxPlayers(AValue: TGroupBox);
     procedure SetLabelGroup1(AValue: TLabel);
     procedure SetLabelGroup1Name(AValue: TLabel);
@@ -118,16 +122,17 @@ type
     procedure Resume;
     procedure Stop;
     property Experiment : TExperiment read FExperiment write FExperiment;
-    property ID : string read FID;
+    property ID : string read GetID;
   public
     procedure ShowSystemPopUp(AText:string;AInterval : integer);
     property SystemPopUp : TPopupNotifier read FSystemPopUp write SetSystemPopUp;
-    property LabelGroup1 : TLabel read FLabelGroup1 write SetLabelGroup1;
-    property LabelGroup2 : TLabel read FLabelGroup2 write SetLabelGroup2;
-    property LabelPointA : TLabel read FLabelPointA write SetLabelPointA;
-    property LabelPointB : TLabel read FLabelPointB write SetLabelPointB;
+    property LabelGroup1Count : TLabel read FLabelGroup1Count write SetLabelGroup1;
+    property LabelGroup2Count : TLabel read FLabelGroup2Count write SetLabelGroup2;
+    property LabelPointA : TLabel read FLabelPointACount write SetLabelPointA;
+    property LabelPointB : TLabel read FLabelPointBCount write SetLabelPointB;
     property LabelPointI : TLabel read FLabelPointI write SetLabelPointI;
     property ImageGroup1 : TImage read FPictureGroup1 write SetPictureGroup1;
+    property FallbackMessages : TListBox read FFallbackMessages write SetFallbackMessages;
     property LabelGroup1Name : TLabel read FLabelGroup1Name write SetLabelGroup1Name;
     property LabelGroup2Name : TLabel read FLabelGroup2Name write SetLabelGroup2Name;
     property GroupBoxPlayers : TGroupBox read FGroupBoxPlayers write SetGroupBoxPlayers;
@@ -173,7 +178,11 @@ implementation
 
 uses ButtonPanel,Controls, LazUTF8, Forms, Dialogs, strutils
      , game_visual_matrix_a
+  {$IFDEF TEST_MODE}
+     { do nothing }
+  {$ELSE}
      , popup_hack
+  {$ENDIF}
      , form_matrixgame
      , form_chooseactor
      , presentation_classes
@@ -195,8 +204,11 @@ const
 //end;
 
 procedure TGameControl.EndExperiment(Sender: TObject);
+var
+  LMessage: String;
 begin
-  ShowSystemPopUp('The experiment ended.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
+  LMessage := 'The experiment ended.';
+  ShowSystemPopUp(LMessage, GLOBAL_SYSTEM_MESSAGE_INTERVAL);
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Sender);
 end;
 
@@ -239,6 +251,17 @@ begin
   if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
 end;
 
+function TGameControl.GetID: string;
+begin
+  Result := FZMQActor.ID;
+end;
+
+procedure TGameControl.SetFallbackMessages(AValue: TListBox);
+begin
+  if FFallbackMessages=AValue then Exit;
+  FFallbackMessages:=AValue;
+end;
+
 procedure TGameControl.SetGroupBoxPlayers(AValue: TGroupBox);
 begin
   if FGroupBoxPlayers=AValue then Exit;
@@ -247,8 +270,8 @@ end;
 
 procedure TGameControl.SetLabelGroup1(AValue: TLabel);
 begin
-  if FLabelGroup1=AValue then Exit;
-  FLabelGroup1:=AValue;
+  if FLabelGroup1Count=AValue then Exit;
+  FLabelGroup1Count:=AValue;
 end;
 
 procedure TGameControl.SetLabelGroup1Name(AValue: TLabel);
@@ -259,8 +282,8 @@ end;
 
 procedure TGameControl.SetLabelGroup2(AValue: TLabel);
 begin
-  if FLabelGroup2=AValue then Exit;
-  FLabelGroup2:=AValue;
+  if FLabelGroup2Count=AValue then Exit;
+  FLabelGroup2Count:=AValue;
 end;
 
 procedure TGameControl.SetLabelGroup2Name(AValue: TLabel);
@@ -271,14 +294,14 @@ end;
 
 procedure TGameControl.SetLabelPointA(AValue: TLabel);
 begin
-  if FLabelPointA=AValue then Exit;
-  FLabelPointA:=AValue;
+  if FLabelPointACount=AValue then Exit;
+  FLabelPointACount:=AValue;
 end;
 
 procedure TGameControl.SetLabelPointB(AValue: TLabel);
 begin
-  if FLabelPointB=AValue then Exit;
-  FLabelPointB:=AValue;
+  if FLabelPointBCount=AValue then Exit;
+  FLabelPointBCount:=AValue;
 end;
 
 procedure TGameControl.SetLabelPointI(AValue: TLabel);
@@ -416,12 +439,14 @@ begin
   Result := '';
   case FActor of
     gaPlayer: begin
-      Result := 'UNKNOWN';
       if FExperiment.Player[AID].ID <> '' then
-        Result := FExperiment.Player[AID].Nicname;
+        Result := FExperiment.Player[AID].Nicname
+      else
+        Exception.Create('TGameControl.GetActorNicname Exception');
     end;
 
     gaAdmin: Result := FExperiment.Researcher;
+    else { do nothing };
   end;
 end;
 
@@ -454,9 +479,19 @@ begin
     end;
 end;
 
-procedure TGameControl.UpdatePlayerBox(P: TPlayer; Me: Boolean; Admin: Boolean);
+procedure TGameControl.UpdatePlayerBox(P: TPlayer; Me: Boolean; Admin: Boolean;
+  AOldPlayerID : string);
+var
+  LPlayerBox : TPlayerBox;
 begin
-  with GetPlayerBox(P.ID) do
+  if AOldPlayerID <> '' then begin
+    LPlayerBox := GetPlayerBox(AOldPlayerID);
+    LPlayerBox.ID := P.ID;
+  end else begin
+    LPlayerBox := GetPlayerBox(P.ID);
+  end;
+
+  with LPlayerBox do
     begin
       if Me then
         Caption := P.Nicname+SysToUtf8(' (You)' )
@@ -464,7 +499,8 @@ begin
         Caption := P.Nicname;
       if Admin then
         begin
-          LabelPointsCount.Caption := '0';
+          LabelPointsRedCount.Caption := '0';
+          LabelPointsBlueCount.Caption := '0';
         end
       else
         begin;
@@ -513,6 +549,40 @@ begin
   TStringGridA(AStringGrid).UpdateSizeAndNames;
 end;
 
+//procedure TGameControl.MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
+//var
+//  P : TPlayer;
+//  procedure CommonSetup;
+//  begin
+//    UpdatePlayerBox(P,Self.ID = P.ID, FActor=gaAdmin, AOldPlayerID);
+//    if FExperiment.ConditionMustBeUpdated <> '' then begin
+//      NextConditionSetup(FExperiment.ConditionMustBeUpdated);
+//      FExperiment.ConditionMustBeUpdated := '';
+//    end;
+//    NextGenerationSetup(P.ID);
+//  end;
+//
+//begin
+//  P := FExperiment.PlayerFromString[ANewPlayerString];
+//  case FActor of
+//    gaPlayer : begin
+//      if Self.ID = AOldPlayerID then
+//        FZMQActor.UpdateID(P.ID);
+//
+//      P.Turn := FExperiment.Player[AOldPlayerID].Turn;
+//      FExperiment.NextGeneration := FExperiment.PlayerAsString[P];
+//
+//      CommonSetup;
+//
+//      EnablePlayerMatrix(Self.ID, 0, True);
+//    end;
+//
+//    gaAdmin :
+//      CommonSetup;
+//    else { do nothing };
+//  end;
+//end;
+
 procedure TGameControl.MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
 var
   P : TPlayer;
@@ -532,6 +602,7 @@ begin
       EnablePlayerMatrix(Self.ID,0, True);
     end;
 end;
+
 // many thanks to howardpc for this:
 // http://forum.lazarus.freepascal.org/index.php/topic,34559.msg227585.html#msg227585
 function TGameControl.AskQuestion(AQuestion: string): string;
@@ -583,13 +654,20 @@ begin
 end;
 
 procedure TGameControl.ShowSystemPopUp(AText: string; AInterval: integer);
+{$IFDEF TEST_MODE}
+  { do nothing }
+{$ELSE}
 var
   PopUpPos : TPoint;
   // temporary hack
   L : TLabel;
   r: TRect;
   w:integer;
+{$ENDIF}
 begin
+{$IFDEF TEST_MODE}
+  FallbackMessages.Items.Append(AText);
+{$ELSE}
   SystemPopUp.vNotifierForm.AutoSize:=True;
   L := TLabel(SystemPopUp.vNotifierForm.FindComponent('UglyHack'));
   L.Caption := AText;
@@ -616,171 +694,221 @@ begin
     end
   else
     SystemPopUp.ShowAtPos(0,0);
+{$ENDIF}
 end;
 
 function TGameControl.ShowConsequence(AID, S: string;
-  ForGroup: Boolean; ShowPopUp: Boolean):string;
+  IsMeta: Boolean; ShowPopUp: Boolean):string;
 var
   LConsequence : TConsequence;
-begin
-  Result := '';
-  LConsequence := TConsequence.Create(nil,S);
-  Result := LConsequence.GenerateMessage(ForGroup);
-  case FActor of
-    gaPlayer:
-      if ForGroup then
-        LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,
-          LabelGroup1, LabelGroup2)
-      else
-        if Self.ID = AID then
-          LConsequence.PresentPoints(LabelPointA,LabelPointB,LabelPointI,
-            LabelGroup1, LabelGroup2);
+  LStyle : TGameConsequenceStyle;
 
-    gaAdmin:
-      begin
-        // player box is ignored for group points
-        // LabelGroupCount is ignored for player points
-        LConsequence.PresentPoints(GetPlayerBox(AID),
-          LabelGroup1, LabelGroup2);
-
-        if StrToIntDef(LabelGroup1.Caption, 1) < 1 then
-          FExperiment.ForceEndCondition;
+  procedure PresentMetaPoints;
+  begin
+    for LStyle in LConsequence.Style do
+      case LStyle of
+          gscG1, gscG2 : //same visual control for both types
+            FLabelGroup1Count.Caption :=
+              FExperiment.GlobalPoints(LStyle).ToString;
+          else { do nothing };
       end;
   end;
 
-  if ShowPopUp then
-    begin
-      if Assigned(FormMatrixGame) then
-        LConsequence.PresentMessage(FormMatrixGame.GBPoints)
+  procedure PresentPointsPlayer;
+  begin
+    for LStyle in LConsequence.Style do
+      case LStyle of
+          gscA :
+            FLabelPointACount.Caption :=
+              FExperiment.PlayerPointsFromID(Self.ID).A.ToString;
+
+          gscB :
+            FLabelPointBCount.Caption :=
+              FExperiment.PlayerPointsFromID(Self.ID).B.ToString;
+
+          else { do nothing };
+      end;
+  end;
+
+  procedure PresentPointsAdmin;
+  var
+    PB : TPlayerBox;
+  begin
+    for LStyle in LConsequence.Style do
+      case LStyle of
+          gscA :
+            begin
+              PB := GetPlayerBox(AID);
+              PB.LabelPointsRedCount.Caption :=
+                FExperiment.PlayerPointsFromID(AID).A.ToString;
+            end;
+          gscB :
+            begin
+              PB := GetPlayerBox(AID);
+              PB.LabelPointsBlueCount.Caption :=
+                FExperiment.PlayerPointsFromID(AID).B.ToString;
+            end;
+
+          gscG1, gscG2 :
+            PresentMetaPoints;
+          else { do nothing };
+      end;
+  end;
+begin
+  Result := '';
+  LConsequence := TConsequence.Create(nil,S);
+  Result := LConsequence.GenerateMessage(IsMeta);
+  for LStyle in LConsequence.Style do
+    case LStyle of
+      gscA, gscB :
+        FExperiment.IncPlayerPoints(LStyle, LConsequence.AsInteger, AID);
+      gscG1, gscG2 :
+        FExperiment.IncMetaPoints(LStyle, LConsequence.AsInteger);
+      else { do nothing };
+    end;
+
+  case FActor of
+    gaPlayer:
+      if IsMeta then
+        PresentMetaPoints
       else
-        LConsequence.PresentMessage(TWinControl(Owner.Owner))
-    end
-  else
-    LConsequence.Free;
+        if Self.ID = AID then
+          PresentPointsPlayer;
+
+    gaAdmin:
+      PresentPointsAdmin;
+    else { do nothing };
+  end;
+
+{$IFDEF TEST_MODE}
+  FFallbackMessages.Items.Append(Result);
+{$ELSE}
+  if ShowPopUp then begin
+    if Assigned(FormMatrixGame) then
+      LConsequence.PresentMessage(FormMatrixGame.GBPoints)
+    else
+      LConsequence.PresentMessage(TWinControl(Owner.Owner))
+  end;
+{$ENDIF}
+  LConsequence.Free;
 end;
 
 procedure TGameControl.NextConditionSetup(S: string; IsConditionStart: Boolean); // [player_points]
 var
   A, B, G1, G2 : integer;
-  LNewA : integer = 0;
-  LNewB : integer = 0;
   P : TPlayer;
-  PB : TPlayerBox;
   C : TCondition;
+  LCause : string;
 begin
-  LabelGroup1.Caption := '0';
-  LabelGroup2.Caption := '0';
-  LabelGroup1Name.Caption := Sanitize(ExtractDelimited(1,S,['|']));
-  LabelGroup2Name.Caption := Sanitize(ExtractDelimited(2,S,['|']));
-  ImageGroup1.Picture.LoadFromResourceName(HInstance,ExtractDelimited(3,S,['|']));
+  if Assigned(LabelGroup1Name) then
+    LabelGroup1Name.Caption := Sanitize(ExtractDelimited(1,S,['|']));
+
+  if Assigned(LabelGroup2Name) then
+    LabelGroup2Name.Caption := Sanitize(ExtractDelimited(2,S,['|']));
+  LCause := ExtractDelimited(3,S,['|']);
+
+  if Assigned(ImageGroup1) then
+    ImageGroup1.Picture.LoadFromResourceName(HInstance, LCause);
+
+  // workaround to present points
+  // TODO: send TExperiment to player through zmq and load from configuration directly
+  if LCause = 'SUSTAINABLE' then FCurrentCause := gscG1;
+  if LCause = 'NON-SUSTAINABLE' then FCurrentCause := gscG2;
+
   if FExperiment.ABPoints then
     begin
-      A := StrToInt(ExtractDelimited(4,S,['|']));
-      B := StrToInt(ExtractDelimited(5,S,['|']));
+      A := StrToIntDef(ExtractDelimited(4,S,['|']), 0);
+      B := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
       G1 := StrToIntDef(ExtractDelimited(6,S,['|']), 0);
       G2 := StrToIntDef(ExtractDelimited(7,S,['|']), 0);
     end
   else
     begin
-      A := StrToInt(ExtractDelimited(4,S,['|']));
+      A := StrToIntDef(ExtractDelimited(4,S,['|']), 0);
       G1 := StrToIntDef(ExtractDelimited(5,S,['|']), 0);
       G2 := StrToIntDef(ExtractDelimited(6,S,['|']), 0);
     end;
 
-  if G1 > 0 then
-    IncLabel(LabelGroup1, G1);
-
-  if G2 > 0 then
-    IncLabel(LabelGroup2, G2);
-
   case FActor of
     gaPlayer:
       begin
-        C := FExperiment.Condition[0];
-        //P := FExperiment.PlayerFromID[ID]; should refactor this to use inc instead inclabel
+        if IsConditionStart then
+        begin
+          // we need at least one valid fake condition
+          // in memory for player internals (on start, on generation points).
+          FExperiment.AppendCondition(C_CONDITION_TEMPLATE);
+        end;
+        C := FExperiment.Condition[FExperiment.ConditionsCount-1];
         with C.Points do
           begin
             OnStart.A := A;
             OnStart.B := B;
           end;
-        FExperiment.Condition[0] := C;
-        {$IFDEF DEBUG}
-        FormMatrixGame.ChatMemoRecv.Append(IntToStr(FExperiment.CurrentCondition.Points.OnStart.A));
-        {$ENDIF}
-        if IsConditionStart then
-          if FExperiment.ABPoints then
-            begin
-              //Inc(P.Points.A, A);
-              //Inc(P.Points.B, B);
-              IncLabel(LabelPointA,A);
-              IncLabel(LabelPointB,B);
-            end
-          else
-            begin
-              //Inc(P.Points.A, A);
-              IncLabel(LabelPointA,A);
-            end;
-        //FExperiment.PlayerFromID[ID] := P;
+        FExperiment.Condition[FExperiment.ConditionsCount-1] := C;
+      end;
+    else { do nothing };
+  end;
+
+  if IsConditionStart then
+    for P in FExperiment.Players do
+      begin
+        if A > 0 then
+          FExperiment.IncPlayerPoints(gscA,A,P.ID);
+
+        if B > 0 then
+          FExperiment.IncPlayerPoints(gscB,B,P.ID);
       end;
 
-    gaAdmin:
-      if IsConditionStart then
-        for P in FExperiment.Players do
-          begin
-            PB := GetPlayerBox(P.ID);
-            LNewA := A;
-            LNewB := B;
-            if FExperiment.ABPoints then
-              begin
-                LNewA += LNewB;
-                IncLabel(PB.LabelPointsCount,LNewA);
-              end
-            else
-              IncLabel(PB.LabelPointsCount,LNewA);
-          end;
-  end;
+  if G1 > 0 then
+    FExperiment.IncMetaPoints(gscG1, G1);
+
+  if G2 > 0 then
+    FExperiment.IncMetaPoints(gscG2, G2);
+
+  InvalidateLabels;
 end;
 
 procedure TGameControl.NextGenerationSetup(AID: string); // [player_points]
 var
   A : integer;
   B : integer;
-  LNewA : integer = 0;
-  LNewB : integer = 0;
-  PB : TPlayerBox;
+  P  : TPlayer;
 begin
   with FExperiment.CurrentCondition.Points do
     begin
       A := OnStart.A;
       B := OnStart.B;
-      LNewA := A;
-      LNewB := B;
     end;
 
   case FActor of
     gaPlayer:
-      if Self.ID = AID then
-        if FExperiment.ABPoints then
-          begin
-            IncLabel(LabelPointA,A);
-            IncLabel(LabelPointB,B);
-          end
-        else
-          IncLabel(LabelPointA,A);
+      if Self.ID = AID then begin
+        P := FExperiment.PlayerFromID[AID];
+        if A > 0 then
+          Inc(P.Points.A, A);
+
+        if B > 0 then
+          Inc(P.Points.B, B);
+        FExperiment.PlayerFromID[AID] := P;
+      end;
 
     gaAdmin:
       begin
-        PB := GetPlayerBox(AID);
-        LNewA := A;
-        LNewB := B;
-        if FExperiment.ABPoints then
-          LNewA += LNewB;
-        IncLAbel(PB.LabelPointsCount,LNewA);
+        P := FExperiment.PlayerFromID[AID];
+        if A > 0 then
+          Inc(P.Points.A, A);
+
+        if B > 0 then
+          Inc(P.Points.B, B);
+        FExperiment.PlayerFromID[AID] := P;
       end;
+    else { do nothing };
   end;
 end;
 
 procedure TGameControl.EnablePlayerMatrix(AID:string; ATurn:integer; AEnabled:Boolean);
+const
+  LMessage : string = 'It is your turn! Click at a row and confirm your choice.';
 begin
   if FExperiment.PlayerFromID[AID].Turn = ATurn then
     begin
@@ -789,10 +917,7 @@ begin
 
       if AEnabled then
         begin
-          ShowSystemPopUp(
-            'It is your turn! Click at a row and confirm your choice.',
-            GLOBAL_SYSTEM_MESSAGE_INTERVAL
-          );
+          ShowSystemPopUp(LMessage, GLOBAL_SYSTEM_MESSAGE_INTERVAL);
           {$IFDEF DEBUG}
             {$IFDEF WINDOWS}
               // todo:
@@ -804,11 +929,48 @@ begin
     end;
 end;
 
+procedure TGameControl.InvalidateLabels;
+var
+  P : TPlayer;
+  PB : TPlayerBox;
+begin
+  if Assigned(FLabelGroup1Count) then
+    FLabelGroup1Count.Caption :=
+      FExperiment.CurrentCondition.Points.Count.G1.ToString;
+  if Assigned(FLabelGroup2Count) then
+    FLabelGroup2Count.Caption :=
+      FExperiment.CurrentCondition.Points.Count.G2.ToString;
+
+  case FActor of
+    gaAdmin:begin
+        for P in FExperiment.Players do
+        begin
+          PB := GetPlayerBox(P.ID);
+          PB.LabelPointsRedCount.Caption :=
+            FExperiment.PlayerFromID[Self.ID].Points.A.ToString;
+          PB.LabelPointsBlueCount.Caption :=
+            FExperiment.PlayerFromID[Self.ID].Points.B.ToString;
+          if FExperiment.ABPoints then begin
+            { do nothing }
+          end else begin
+            PB.LabelPointsBlueCount.Caption := 'NA';
+          end;
+        end;
+    end;
+
+    gaPlayer:begin
+      P := FExperiment.PlayerFromID[Self.ID];
+      FLabelPointACount.Caption := P.Points.A.ToString;
+      FLabelPointBCount.Caption := P.Points.B.ToString;
+    end;
+    else { do nothing };
+  end;
+end;
+
 constructor TGameControl.Create(AOwner: TComponent;AppPath:string);
 begin
   inherited Create(AOwner);
   FZMQActor := TZMQActor(AOwner);
-  FID := FZMQActor.ID;
   FZMQActor.OnMessageReceived:=@ReceiveMessage;
   FZMQActor.OnRequestReceived:=@ReceiveRequest;
   FZMQActor.OnReplyReceived:=@ReceiveReply;
@@ -822,9 +984,10 @@ begin
     FActor := gaWatcher;
 
   case FActor of
-    gaAdmin:FExperiment := TExperiment.Create(FZMQActor.Owner,AppPath);
-    gaPlayer:FExperiment := TExperiment.Create(FZMQActor.Owner);
-    gaWatcher:FExperiment := TExperiment.Create(FZMQActor.Owner);
+    gaNone: Exception.Create('TGameControl.Create exception. FActor = gaNone');
+    gaAdmin:FExperiment := TExperiment.Create(FZMQActor.Owner, FActor, AppPath);
+    gaPlayer:FExperiment := TExperiment.Create(FZMQActor.Owner, FActor);
+    gaWatcher:FExperiment := TExperiment.Create(FZMQActor.Owner, FActor);
   end;
   FExperiment.OnStartTurn:=@StartTurn;
   FExperiment.OnStartCondition:=@StartCondition;
@@ -872,21 +1035,20 @@ end;
 procedure TGameControl.SetLabels;
 begin
   if Assigned(FormMatrixGame) then
-    with FormMatrixGame do
-      begin
-        // a b points
-        LabelIndA.Visible := FExperiment.ABPoints;
-        LabelIndB.Visible := FExperiment.ABPoints;
-        LabelIndACount.Visible := FExperiment.ABPoints;
-        LabelIndBCount.Visible := FExperiment.ABPoints;
-        ImageIndA.Visible := FExperiment.ABPoints;
-        ImageIndB.Visible := FExperiment.ABPoints;
+  with FormMatrixGame do begin
+    // a b points
+    LabelIndA.Visible := FExperiment.ABPoints and (FActor = gaPlayer);
+    LabelIndB.Visible := FExperiment.ABPoints and (FActor = gaPlayer);
+    LabelIndACount.Visible := FExperiment.ABPoints and (FActor = gaPlayer);
+    LabelIndBCount.Visible := FExperiment.ABPoints and (FActor = gaPlayer);
+    ImageIndA.Visible := FExperiment.ABPoints and (FActor = gaPlayer);
+    ImageIndB.Visible := FExperiment.ABPoints and (FActor = gaPlayer);
 
-        // i points
-        LabelInd.Visible := not FExperiment.ABPoints;
-        LabelIndCount.Visible := not FExperiment.ABPoints;
-        ImageInd.Visible:= not FExperiment.ABPoints;;
-      end;
+    // i points
+    LabelInd.Visible := (not FExperiment.ABPoints) and (FActor = gaPlayer);
+    LabelIndCount.Visible := (not FExperiment.ABPoints) and (FActor = gaPlayer);
+    ImageInd.Visible := (not FExperiment.ABPoints) and (FActor = gaPlayer);
+  end;
 end;
 
 // called from outside
@@ -929,6 +1091,7 @@ begin
     end;
     //gaWatcher:begin
     //  M[0] := GA_WATCHER+M[0];
+    else { do nothing };
   end;
   FZMQActor.Request(M);
 end;
@@ -973,6 +1136,7 @@ begin
     end;
     //gaWatcher:begin
     //  M[0] := GA_WATCHER+M[0];
+    else { do nothing };
   end;
   FZMQActor.SendMessage(M);
 end;
@@ -999,6 +1163,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FExperiment.AppendPlayer(P);
           CreatePlayerBox(P, Self.ID = P.ID)
         end;
+      else { do nothing };
     end;
   end;
 
@@ -1017,6 +1182,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
         , AMessage[2] // generation
         , AMessage[3] // conditions
       ]);
+      else { do nothing };
     end;
 
   end;
@@ -1061,11 +1227,6 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
               if Assigned(OnCleanEvent) then
                 OnCleanEvent(Self, False);
 
-              // do not wait for server
-              // if should continue then
-              // if StrToBool(AMessage[6]) then
-              // EnablePlayerMatrix(Self.ID,0, True)
-
               // wait for server
               FExperiment.PlayerTurn := 0;
               Exit;
@@ -1080,21 +1241,25 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           else
             EnablePlayerMatrix(Self.ID,FExperiment.PlayerTurn, True);
       end;
+     else { do nothing };
     end;
   end;
 
   procedure NotifyPlayers;
+  var
+    LMessage: String;
   begin
     case FActor of
       gaPlayer:
           if FExperiment.PlayerFromID[Self.ID].Turn = 0 then
-              EnablePlayerMatrix(Self.ID, 0, True)
-          else
-              ShowSystemPopUp('It is started! Wait for your turn.',GLOBAL_SYSTEM_MESSAGE_INTERVAL);
-
+            EnablePlayerMatrix(Self.ID, 0, True)
+          else begin
+            LMessage := 'It is started! Wait for your turn.';
+            ShowSystemPopUp(LMessage, GLOBAL_SYSTEM_MESSAGE_INTERVAL);
+          end;
       gaAdmin:
         NextConditionSetup(FExperiment.CurrentConditionAsString,True);
-
+      else { do nothing };
     end;
   end;
 
@@ -1110,56 +1275,70 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   end;
 
   procedure SayGoodBye(AID:string); // [player_points]
-  var Pts : string;
+  var Pts , LMessage: string;
   begin
     case FActor of
       gaPlayer:
         begin
           //DeletePlayerBox(AID); // old player
-          if Self.ID = AID then
-            begin
-              if FExperiment.ABPoints then
-                begin
-                  Pts := IntToStr(StrToInt(LabelPointA.Caption)+StrToInt(LabelPointB.Caption));
-                  LabelPointA.Caption := '0';
-                  LabelPointB.Caption := '0';
-                end
-              else
-                begin
-                  Pts := LabelPointI.Caption;
-                  LabelPointI.Caption := '0';
-                end;
+          if Self.ID = AID then begin
+            if FExperiment.ABPoints then
+              begin
+                Pts := FExperiment.PlayerPointsSummationFromID(Self.ID).ToString;
+                LabelPointA.Caption := '0';
+                LabelPointB.Caption := '0';
+              end
+            else
+              begin
+                Pts := LabelPointI.Caption;
+                LabelPointI.Caption := '0';
+              end;
 
+            // TODO: EXPERIMENT2, remove G2 from LMessage
+            LMessage :=
+              'The task is over, thank you for your collaboration!'+LineEnding+
+              'You produced ' + Pts + ' tokens for you, ' +
+              FExperiment.GlobalPoints(gscG1).ToString +
+              ' tokens for a cause and ' +
+              FExperiment.GlobalPoints(gscG2).ToString +
+              ' tokens for another cause.';
+          {$IFDEF TEST_MODE}
+            FallbackMessages.Items.Append(LMessage);
+            FZMQActor.Request([AID,' ',K_RESUME]);
+          {$ELSE}
+            if Assigned(FormMatrixGame) then
+              FormMatrixGame.Visible := False;
+            FormChooseActor := TFormChooseActor.Create(nil);
+            FormChooseActor.Style := K_LEFT;
+            FormChooseActor.ShowPoints(LMessage);
+
+            if FormChooseActor.ShowModal = 1 then begin
               if Assigned(FormMatrixGame) then
-                FormMatrixGame.Visible := False;
-              FormChooseActor := TFormChooseActor.Create(nil);
-              FormChooseActor.Style := K_LEFT;
-              FormChooseActor.ShowPoints(
-                'The task is over, thank you for your collaboration!'+LineEnding+
-                'You produced ' + Pts + ' tokens for you and ' +
-                LabelGroup1.Caption + ' ' + LowerCase(LabelGroup1Name.Caption) + '.'
-              );
+                FormMatrixGame.Visible := True;
+              FZMQActor.Request([AID,' ',K_RESUME]);
+            end;
 
-              if FormChooseActor.ShowModal = 1 then
-                begin
-                  if Assigned(FormMatrixGame) then
-                    FormMatrixGame.Visible := True;
-                  FZMQActor.Request([AID,' ',K_RESUME]);
-                end
-              else;
-              FormChooseActor.Free;
-            end
-          else
-            ShowSystemPopUp(
-              FExperiment.PlayerFromID[AID].Nicname+ ' exited. Please, wait for someone else to arrive.',
-              GLOBAL_SYSTEM_MESSAGE_INTERVAL
-            );
+            FormChooseActor.Free;
+          {$ENDIF}
+          end else begin
+            LMessage := FExperiment.PlayerFromID[AID].Nicname +
+              ' exited. Please, wait for someone else to arrive.';
+          {$IFDEF TEST_MODE}
+            FallbackMessages.Items.Append(LMessage);
+          {$ELSE}
+            ShowSystemPopUp(LMessage, GLOBAL_SYSTEM_MESSAGE_INTERVAL);
+          {$ENDIF}
+          end;
         end;
+      else { do nothing };
     end;
   end;
 
   procedure EndExperimentMessage;
+{$IFDEF TEST_MODE}
+{$ELSE}
   var Pts : string;
+{$ENDIF}
   begin
     case FActor of
       gaPlayer:
@@ -1182,7 +1361,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           FormChooseActor.ShowPoints(
           'The task is over, thank you for your collaboration!'+LineEnding+
           'You produced ' + Pts + ' tokens for you and ' +
-          LabelGroup1.Caption + ' ' + LowerCase(LabelGroup1Name.Caption) + '.');
+          LabelGroup1Count.Caption + ' ' + LowerCase(LabelGroup1Name.Caption) + '.');
           FormChooseActor.ShowModal;
           FormChooseActor.Free;
 
@@ -1191,6 +1370,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           {$ENDIF}
         end;
       gaAdmin:Stop;
+      else { do nothing };
     end;
   end;
 
@@ -1198,6 +1378,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   var
     LPlayerBox : TPlayerBox;
     P : TPlayer;
+    LMessage: String;
   begin
     if AMessage[2] <> #27 then
       begin
@@ -1217,15 +1398,19 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
                   LPlayerBox := GetPlayerBox(AMessage[1]);
                   P := FExperiment.PlayerFromID[AMessage[1]];
                   if Assigned(OnPlayerExit) then
-                    OnPlayerExit(P, LPlayerBox.Caption+','+LPlayerBox.LabelPointsCount.Caption);
+                    OnPlayerExit(P, AMessage[1]);
                   //DeletePlayerBox(AMessage[1]);
-                  ShowSystemPopUp(
-                          'Participant '+ P.Nicname +
-                          ' exited. Waiting for the next participant to arrive.',
-                          GLOBAL_SYSTEM_MESSAGE_INTERVAL
-                        );
+
+                  LMessage := 'Participant '+ P.Nicname +
+                    ' exited. Waiting for the next participant to arrive.';
+                {$IFDEF TEST_MODE}
+                  FallbackMessages.Items.Append(LMessage);
+                {$ELSE}
+                  ShowSystemPopUp(LMessage, GLOBAL_SYSTEM_MESSAGE_INTERVAL);
+                {$ENDIF}
                 end;
             end;
+          else { do nothing };
         end;
 
         if AMessage[1] = #32 then
@@ -1246,8 +1431,12 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     i : integer;
     MID : string;
     LQConsequence : string;
+  {$IFDEF TEST_MODE}
+    { do nothing }
+  {$ELSE}
     LPopUpHack : TPopupNotifierHack;
     LTime : integer;
+  {$ENDIF}
   begin
     if AMessage[2] <> #27 then
       begin
@@ -1265,16 +1454,19 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             if LQConsequence <> '' then
               begin
                 begin
+                {$IFDEF TEST_MODE}
+                  FallbackMessages.Items.Append(LQConsequence);
+                {$ELSE}
                   if AMessage.Count > 1 then
                     LTime := GLOBAL_MESSAGES_INTERVAL
                   else
                     LTime:= GLOBAL_MESSAGE_INTERVAL;
-
                   LPopUpHack := TPopupNotifierHack.Create(nil);
                   if Assigned(FormMatrixGame) then
                     LPopUpHack.ShowAndAutoDestroy(LQConsequence,FormMatrixGame,AMessage.Count*LTime)
                   else
                     LPopUpHack.ShowAndAutoDestroy(LQConsequence,nil,AMessage.Count*LTime);
+                {$ENDIF}
 
                 end;
               end;
@@ -1288,38 +1480,46 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
   procedure ShowGroupedMessage(AMessage:string);
   var
-    LCount,
-    LTime,
+    LCount : integer;
     i : integer;
     MID : string;
     LConsequence : string;
     LGConsequence : string;
+  {$IFDEF TEST_MODE}
+    { do nothing }
+  {$ELSE}
     LPopUpHack : TPopupNotifierHack;
+    LTime : integer;
+  {$ENDIF}
   begin
     // present only one popup with all messages
     LConsequence := '';
     LGConsequence := '';
     LCount := WordCount(AMessage,['+']);
-    if LCount > 1 then
-      LTime := GLOBAL_MESSAGES_INTERVAL*LCount
-    else
-      LTime:= GLOBAL_MESSAGE_INTERVAL;
-
     if LCount > 0 then
       for i := 1 to LCount do
         begin
           LConsequence := ExtractDelimited(i,AMessage,['+']);
           MID := ExtractDelimited(1,LConsequence,['#']);
-          LGConsequence += ShowConsequence(MID, ExtractDelimited(2,LConsequence,['#']),MID = 'M',False)+LineEnding;
+          LGConsequence += ShowConsequence(MID,
+            ExtractDelimited(2,LConsequence,['#']),MID = 'M',False)+LineEnding;
         end;
 
     if LGConsequence <> '' then
       begin
+        {$IFDEF TEST_MODE}
+          FallbackMessages.Items.Append(LGConsequence);
+        {$ELSE}
+        if LCount > 1 then
+          LTime := GLOBAL_MESSAGES_INTERVAL*LCount
+        else
+          LTime:= GLOBAL_MESSAGE_INTERVAL;
         LPopUpHack := TPopupNotifierHack.Create(nil);
         if Assigned(FormMatrixGame) then
           LPopUpHack.ShowAndAutoDestroy(LGConsequence,FormMatrixGame,LTime)
         else
           LPopUpHack.ShowAndAutoDestroy(LGConsequence,nil,LTime);
+        {$ENDIF}
       end;
   end;
 
@@ -1372,6 +1572,10 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
               begin
                 // if not then generate and save p data
                 i := FExperiment.AppendPlayer;
+
+                {$IFDEF TEST_MODE}
+                  P.Nicname := GenResourceName(-1);
+                {$ELSE}
                 if FExperiment.GenPlayersAsNeeded then
                   P.Nicname := GenResourceName(i)
                 else
@@ -1381,6 +1585,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
                       'What is his/her nickname?',
                       GenResourceName(i)
                     );
+                {$ENDIF}
                 P.Points.A:=0;
                 P.Points.B:=0;
                 P.Status:=gpsPlaying;
@@ -1536,16 +1741,22 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   begin
     P := FExperiment.PlayerFromID[ARequest[0]];
     ARequest[2] := K_RESUME+K_ARRIVED;
+
+
+  {$IFDEF TEST_MODE}
+    P.Nicname := GenResourceName(-1);
+  {$ELSE}
     if FExperiment.GenPlayersAsNeeded then
       P.Nicname := GenResourceName(-1)
     else
       P.Nicname := InputBox
         (
-          'A new generation has started',
+          'A new generation has started.',
           'A new participant replaced the oldest one. What is the nickname of the new participant?',
           GenResourceName(-1)
         );
-
+  {$ENDIF}
+    TZMQActor.NewRandomID;
     S := FExperiment.PlayerAsString[P];
     FExperiment.NextGeneration := S;
     MovePlayerQueue(S,ARequest[0]);
@@ -1608,8 +1819,9 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
         FExperiment.ABPoints := StrToBool(AReply[AReply.Count-2]);
         SetLabels;
 
-        // we need a valid fake condition in memory for player internals (on start, on generation points).
-        FExperiment.AppendCondition(C_CONDITION_TEMPLATE);
+        //// we need at least one valid fake condition
+        //// in memory for player internals (on start, on generation points).
+        //FExperiment.AppendCondition(C_CONDITION_TEMPLATE);
 
         // set condition specific configurations
         NextConditionSetup(AReply[AReply.Count-1], True);
@@ -1688,7 +1900,9 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
 
   procedure ResumePlayer;
   begin
-    FZMQActor.SendMessage([K_MOVQUEUE, AReply[3],AReply[0]]); //new player,old player (self.id)
+    // inform all players about the new player
+    //new player,old player (self.id)
+    FZMQActor.SendMessage([K_MOVQUEUE, AReply[3],AReply[0]]);
   end;
 
 begin

@@ -36,6 +36,10 @@ type
     LabelInterlock,
     LabelInterlockCount,
     LabelTargetInterlock,
+    LabelGroup1,
+    LabelGroup1Count,
+    LabelGroup1Global,
+    LabelGroup1GlobalCount,
     LabelTargetInterlockCount: TLabel;
   private
     function GetInterlockString(Sender: TObject):string;
@@ -73,6 +77,7 @@ resourcestring
 implementation
 
 uses
+  game_actors,
   game_experiment;
 
 { TExperimentBox }
@@ -93,7 +98,6 @@ var
 begin
   S := LabelInterlockCount.Caption;
   LabelInterlockCount.Caption := IntToStr((StrToInt(S)+1));
-
   LabelTargetInterlockCount.Caption := GetInterlockString(TComponent(Sender).Owner);
 end;
 
@@ -104,6 +108,8 @@ begin
   LabelGeneration.Caption := CAP_GENERATION + ' ('+IntToStr(TExperiment(Sender).Cycles.GenerationValue)+')';
   LabelTargetInterlockCount.Caption := '0 %';
   LabelInterlockCount.Caption := '0';
+  //LabelGroup1Count.Caption := TExperiment(Sender).CurrentCondition.Points.Count.G1.ToString;
+  //LabelGroup1GlobalCount.Caption := TExperiment(Sender).CurrentCondition.Points.Count.G2.ToString;
 end;
 
 procedure TExperimentBox.StartCycle(Sender: TObject);
@@ -111,16 +117,23 @@ begin
   LabelCycleCount.Caption := IntToStr(TExperiment(Sender).Cycles.Global+1);
   LabelConditionCycleCount.Caption := IntToStr(TExperiment(Sender).CurrentCondition.Cycles.Count+1);
   LabelTargetInterlockCount.Caption := GetInterlockString(Sender);
+  LabelGroup1Count.Caption := TExperiment(Sender).CurrentCondition.Points.Count.G1.ToString;
+  LabelGroup1GlobalCount.Caption := TExperiment(Sender).GlobalPoints(gscG1).ToString;
 end;
 
 procedure TExperimentBox.StartExperiment(Sender: TObject);
 begin
   LabelConditionCount.Caption := TExperiment(Sender).CurrentCondition.ConditionName;
-  LabelConditionCycleCount.Caption := IntToStr(TExperiment(Sender).CurrentCondition.Cycles.Count+1);
-  LabelCycleCount.Caption := IntToStr(TExperiment(Sender).Cycles.Global+1);
-  LabelGeneration.Caption :=  CAP_GENERATION + ' ('+IntToStr(TExperiment(Sender).Cycles.GenerationValue)+')';
-  LabelGenerationCount.Caption := IntToStr(TExperiment(Sender).Cycles.Generations+1);
-  LabelTurnCount.Caption := IntToStr(TExperiment(Sender).CurrentCondition.Turn.Count+1);
+  LabelConditionCycleCount.Caption := (TExperiment(Sender).CurrentCondition.Cycles.Count+1).ToString;
+  LabelCycleCount.Caption := (TExperiment(Sender).Cycles.Global+1).ToString;
+  LabelGeneration.Caption :=  CAP_GENERATION + ' ('+TExperiment(Sender).Cycles.GenerationValue.ToString+')';
+  LabelGenerationCount.Caption := (TExperiment(Sender).Cycles.Generations+1).ToString;
+  LabelTurnCount.Caption := (TExperiment(Sender).CurrentCondition.Turn.Count+1).ToString;
+
+
+  LabelGroup1Count.Caption := TExperiment(Sender).CurrentCondition.Points.Count.G1.ToString;
+  LabelGroup1GlobalCount.Caption := TExperiment(Sender).GlobalPoints(gscG1).ToString;
+
   LabelInterlockCount.Caption := '0';
   LabelTargetInterlockCount.Caption := '0 %';
 end;
@@ -150,6 +163,8 @@ begin
   LabelTargetInterlockCount.Caption := 'NA';
   LabelConditionCycle.Caption := 'NA';
   LabelConditionCycleCount.Caption:= 'NA';
+  LabelGroup1Count.Caption:='NA';
+  LabelGroup1GlobalCount.Caption:='NA';
 end;
 
 constructor TExperimentBox.Create(AOwner: TComponent);
@@ -227,6 +242,24 @@ begin
   LabelTargetInterlockCount := TLabel.Create(Self);
   LabelTargetInterlockCount.Caption := 'NA';
   LabelTargetInterlockCount.Parent := Self;
+
+  LabelGroup1 := TLabel.Create(Self);
+  LabelGroup1.Caption := 'Group Points (Condition)';
+  LabelGroup1.Parent := Self;
+
+  LabelGroup1Count := TLabel.Create(Self);
+  LabelGroup1Count.Caption := 'NA';
+  LabelGroup1Count.Parent := Self;
+
+  LabelGroup1Global := TLabel.Create(Self);
+  LabelGroup1Global.Caption := 'Group Points (Global)';
+  LabelGroup1Global.Parent := Self;
+
+  LabelGroup1GlobalCount := TLabel.Create(Self);
+  LabelGroup1GlobalCount.Caption := 'NA';
+  LabelGroup1GlobalCount.Parent := Self;
+
+
 end;
 
 end.

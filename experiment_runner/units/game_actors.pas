@@ -91,7 +91,7 @@ type
 
   TGameConsequenceStyle = (
     gscNone, gscMessage, gscBroadcastMessage,
-    gscPoints, gscVariablePoints,
+    gscGlobalPoints, gscVariablePoints,
     gscA, gscB,gscG1,gscG2,gscI
   );
   TConsequenceStyle = set of TGameConsequenceStyle;
@@ -152,14 +152,21 @@ type
      FPrepend: string;
      FStyle : TConsequenceStyle;
      FP : TGamePoint;
+     {$IFDEF TEST_MODE}
+       { do nothing }
+     {$ELSE}
      FTimer : TTimer;
      FMessage : TPopupNotifier;
+     {$ENDIF}
      function GetCsqString: string;
      function GetShouldPublishMessage: Boolean;
    protected
      FConsequenceByPlayerID : TStringList;
-     procedure StopTimer(Sender:TObject;var ACloseAction:TCloseAction);
+     {$IFDEF TEST_MODE}
+       { do nothing }
+     {$ELSE}
      procedure SelfDestroy(Sender:TOBject);virtual;
+     {$ENDIF}
    public
      constructor Create(AOwner:TComponent; ACsqString, APrepend,
        APrependLoss,AAppendiceLossSingular,AAppendiceLossPlural,
@@ -168,11 +175,14 @@ type
      constructor Create(AOwner:TComponent; AConsequenceString: string);virtual;overload;
      destructor Destroy;override;
      function AsString(AID :string): string;
+     function AsInteger : integer;
      function GenerateMessage(ForGroup: Boolean):string;
      procedure Clean; virtual;
+     {$IFDEF TEST_MODE}
+       { do nothing }
+     {$ELSE}
      procedure PresentMessage(AControl : TWinControl);
-     procedure PresentPoints(A, B, I, G1, G2 : TLabel);
-     procedure PresentPoints(APlayerBox: TPlayerBox; G1, G2: TLabel); overload;
+     {$ENDIF}
      property ShouldPublishMessage : Boolean read GetShouldPublishMessage;
      property Prepend : string read FPrepend;
      property AppendiceLossSingular : string read FAppendiceLossSingular;
@@ -312,10 +322,10 @@ end;
 
 function fact(n: integer): longint;
 begin
-    if (n = 0) then
-        fact := 1
-    else
-        fact := n * fact(n - 1);
+  if (n = 0) then
+      fact := 1
+  else
+      fact := n * fact(n - 1);
 end;
 
 // hardcoded for now
@@ -323,6 +333,7 @@ function GetCombination(AArrayOfColors: TGameAColors; AN, ATotal : integer): TGa
 begin
   if ATotal <> 6 then
       raise Exception.Create('game_actors.GetCombinations '+IntToStr(ATotal)+' not implemented');
+  Result := TGameAColors.Create;
   SetLength(Result, Length(AArrayOfColors));
   case AN of
     0 :
@@ -858,8 +869,11 @@ begin
 
   // consequesen style string
   FStyle := GetConsequenceStyleFromString(ExtractDelimited(2,ACsqString,['|']));
-
+{$IFDEF TEST_MODE}
+  { do nothing }
+{$ELSE}
   FMessage := TPopupNotifier.Create(AOwner);
+{$ENDIF}
   FConsequenceByPlayerID := TStringList.Create;
 end;
 
@@ -877,7 +891,11 @@ begin
   FAppendiceEarnSingular:=AMessage[5];
   FAppendiceEarnPlural:=AMessage[6];
   FAppendiceZero:=AMessage[7];
+  {$IFDEF TEST_MODE}
+    { do nothing }
+  {$ELSE}
   FMessage := TPopupNotifier.Create(AOwner);
+  {$ENDIF}
   FConsequenceByPlayerID := TStringList.Create;
 end;
 
@@ -895,12 +913,15 @@ begin
   FAppendiceEarnSingular:=ExtractDelimited(8,AConsequenceString,['|']);
   FAppendiceEarnPlural:=ExtractDelimited(9,AConsequenceString,['|']);
   FAppendiceZero:=ExtractDelimited(10,AConsequenceString,['|']);
-
+  {$IFDEF TEST_MODE}
+    { do nothing }
+  {$ELSE}
   FMessage := TPopupNotifier.Create(Self);
   FTimer := TTimer.Create(Self);
   FTimer.Enabled:=False;
   FTimer.Interval:=GLOBAL_MESSAGE_INTERVAL;
   FTimer.OnTimer:=@SelfDestroy;
+  {$ENDIF}
   FConsequenceByPlayerID := TStringList.Create;
 end;
 
@@ -912,7 +933,7 @@ end;
 
 function TConsequence.AsString(AID: string): string;
 begin
-  Result := IntToStr(FP.ValueWithVariation) + '|';
+  Result := IntToStr(FP.CalculateResult) + '|';
   Result += GetConsequenceStyleString(FStyle)+'|';
   Result += FPrepend +'|';
   Result += FPrependLoss + '|';
@@ -926,12 +947,21 @@ begin
   FConsequenceByPlayerID.Values[AID]:=Result;
 end;
 
+function TConsequence.AsInteger: integer;
+begin
+  Result := FP.AsInteger;
+end;
+
 function TConsequence.GenerateMessage(ForGroup: Boolean): string;
 begin
-  FMessage.vNotifierForm.Font.Size:=12;
   Result := FP.PointMessage(FPrepend,FPrependLoss,FAppendiceLossSingular,FAppendiceLossPlural,
     FPrependEarn,FAppendiceEarnSingular,FAppendiceEarnPlural,FAppendiceZero, ForGroup);
+  {$IFDEF TEST_MODE}
+    { do nothing }
+  {$ELSE}
+  FMessage.vNotifierForm.Font.Size:=12;
   FMessage.Text := Result;
+  {$ENDIF}
 end;
 
 procedure TConsequence.Clean;
@@ -939,6 +969,9 @@ begin
   FConsequenceByPlayerID.Clear;
 end;
 
+{$IFDEF TEST_MODE}
+  { do nothing }
+{$ELSE}
 procedure TConsequence.PresentMessage(AControl : TWinControl);
 var
   PopUpPos : TPoint;
@@ -962,38 +995,7 @@ begin
   FMessage.ShowAtPos(PopUpPos.X, PopUpPos.Y);
   FTimer.Enabled:=True;
 end;
-
-procedure TConsequence.PresentPoints(A, B, I, G1, G2: TLabel); // [player_points]
-begin
-  //is gscPoints in FStyle then just in case...
-  if gscI in FStyle then
-    IncLabel(I, FP.ResultAsInteger);
-
-  if gscA in FStyle then
-    IncLabel(A, FP.ResultAsInteger);
-
-  if gscB in FStyle then
-    IncLabel(B, FP.ResultAsInteger);
-
-  if gscG1 in FStyle then
-    IncLabel(G1, FP.ResultAsInteger);
-
-  if gscG2 in FStyle then
-    IncLabel(G2, FP.ResultAsInteger);
-end;
-
-procedure TConsequence.PresentPoints(APlayerBox: TPlayerBox; G1, G2: TLabel); // [player_points]
-begin
-  if gscG1 in FStyle then
-    IncLabel(G1, FP.ResultAsInteger);
-
-  if gscG2 in FStyle then
-    IncLabel(G2, FP.ResultAsInteger);
-
-  if (gscI in FStyle) or (gscA in FStyle) or (gscB in FStyle) then
-    if Assigned(APlayerBox) then
-      IncLabel(APlayerBox.LabelPointsCount, FP.ResultAsInteger);
-end;
+{$ENDIF}
 
 function TConsequence.GetShouldPublishMessage: Boolean; // for players only
 begin
@@ -1006,17 +1008,15 @@ begin
   Result += GetConsequenceStyleString(FStyle);
 end;
 
-procedure TConsequence.StopTimer(Sender: TObject; var ACloseAction: TCloseAction
-  );
-begin
-  //FormMatrixGame.Timer.Enabled:=False;
-end;
-
+{$IFDEF TEST_MODE}
+  { do nothing }
+{$ELSE}
 procedure TConsequence.SelfDestroy(Sender: TOBject);
 begin
   FMessage.Visible:=False;
   Free;
 end;
+{$ENDIF}
 
 
 end.

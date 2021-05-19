@@ -24,7 +24,7 @@ uses
 
 resourcestring
   ERROR_SECTION_NOT_FOUND = 'Section not found: ';
-  ERROR_FILE_NOT_FOUND = 'File not found.';
+  ERROR_FILE_NOT_FOUND = 'File not found:';
   ERROR_NO_CONTINGENCIES = 'Contingencies not found: ';
   ERROR_NO_CONDITIONS = 'Conditions not found.';
   WARN_CONDITION_WITH_NO_END = 'Condition end criterium not found: ';
@@ -79,7 +79,6 @@ begin
       ABPoints := True;
       //AppendPlayer(C_PLAYER_TEMPLATE);
       //AppendPlayer(C_PLAYER_TEMPLATE);
-
       C := C_CONDITION_TEMPLATE;
       with C  do
         begin
@@ -102,7 +101,7 @@ begin
           LConcequence := TConsequence.Create(
             AExperiment,
             1,
-            [gscPoints, gscB, gscMessage,gscBroadcastMessage],
+            [gscGlobalPoints, gscB, gscMessage,gscBroadcastMessage],
             ['$NICNAME','perdeu','queijo','queijos', 'ganhou', 'queijo','queijos','não perdeu nem ganhou queijos']);
           Contingencies[0] := TContingency.Create(AExperiment,LConcequence,LCriteria1,False);
           Contingencies[0].ContingencyName := 'CRF 1B';
@@ -111,7 +110,7 @@ begin
           LConcequence := TConsequence.Create(
             AExperiment,
             3,
-            [gscPoints, gscA, gscMessage,gscBroadcastMessage],
+            [gscGlobalPoints, gscA, gscMessage,gscBroadcastMessage],
             ['$NICNAME','queimou','pão','pães','assou','pão','pães','não cozinhou nada.']);
           Contingencies[1] := TContingency.Create(AExperiment,LConcequence,LCriteria2,False);
           Contingencies[1].ContingencyName := 'CRF 3A';
@@ -120,7 +119,7 @@ begin
           LConcequence := TConsequence.Create(
             AExperiment,
             1,
-            [gscPoints, gscG1, gscMessage],
+            [gscGlobalPoints, gscG1, gscMessage],
             ['','perderam','item escolar','itens escolares','produziram','item escolar','itens escolares','não produziram nem perderam itens escolares']);
           Contingencies[2] := TContingency.Create(AExperiment,LConcequence,LCriteria3,True);
           Contingencies[2].ContingencyName := 'MCRF 1G';
@@ -129,7 +128,7 @@ begin
           LConcequence := TConsequence.Create(
             AExperiment,
             -1,
-            [gscPoints, gscG1, gscMessage],
+            [gscGlobalPoints, gscG1, gscMessage],
             ['','perderam','item escolar','itens escolares','produziram','item escolar','itens escolares','não produziram nem perderam itens escolares']);
           Contingencies[3] := TContingency.Create(AExperiment,LConcequence,LCriteria4,True);
           Contingencies[3].ContingencyName := 'MPUN -1G';
@@ -248,20 +247,10 @@ var
               Points.Count := GetPointsFromString(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
               Label1 := ReadString(LS, KEY_CULTURANT1_CAPTION, 'Items 1');
               Label2 := ReadString(LS, KEY_CULTURANT2_CAPTION, 'Items 2');
-              if AExperiment.ABPoints then
-                begin
-                  Points.OnStart.A := ReadInteger(LS, KEY_POINTS_ONSTART_A,0);
-                  Points.OnStart.B := ReadInteger(LS, KEY_POINTS_ONSTART_B,0);
-                  Points.OnStart.G1 := ReadInteger(LS, KEY_POINTS_ONSTART_G1,0);
-                  Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
-                end
-              else
-                begin
-                  Points.OnStart.A := ReadInteger(LS, KEY_POINTS_ONSTART_I,0);
-                  Points.OnStart.G1 := ReadInteger(LS, KEY_POINTS_ONSTART_G1,0);
-                  Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
-                end;
-
+              Points.OnStart.A := ReadInteger(LS, KEY_POINTS_ONSTART_A,0);
+              Points.OnStart.B := ReadInteger(LS, KEY_POINTS_ONSTART_B,0);
+              Points.OnStart.G1 := ReadInteger(LS, KEY_POINTS_ONSTART_G1,0);
+              Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
               Turn.Count:= ReadInteger(LS, KEY_TURN_COUNT,0);
               Turn.Value:= ReadInteger(LS, KEY_TURN_VALUE,2);
               Turn.Random:= ReadBool(LS, KEY_TURN_RANDOM,False);
@@ -386,7 +375,7 @@ begin
       LIniFile.Free;
     end
   else
-    ShowMessage(ERROR_FILE_NOT_FOUND);
+    ShowMessage(ERROR_FILE_NOT_FOUND + #32 + AFileName);
 end;
 
 procedure SaveExperimentToFile(AExperiment: TExperiment; AFilename: string);

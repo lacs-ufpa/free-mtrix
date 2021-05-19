@@ -27,6 +27,7 @@ type
     FOnMessageReceived : TMessRecvProc;
     FOnReplyReceived: TMessRecvProc;
     FOnRequestReceived: TReqRecvProc;
+    function GetID: string;
   protected
     FID: string;
     procedure MessageReceived(AMultipartMessage : TStringList);
@@ -34,13 +35,16 @@ type
     procedure RequestReceived(var AMultipartMessage : TStringList);
   public
     constructor Create(AOwner : TComponent; AID : string); virtual; overload;
+    class function GenerateID(out AID:string; AFilename:string):Boolean; static;
+    class function NewRandomID : string; static;
+    procedure UpdateID(ANewID : string);
     procedure Start; virtual;
     procedure SendMessage(AMessage : array of string);virtual;
     procedure Request(ARequest : array of string);virtual;
     property OnMessageReceived : TMessRecvProc read FOnMessageReceived write FOnMessageReceived;
     property OnRequestReceived : TReqRecvProc read FOnRequestReceived write FOnRequestReceived;
     property OnReplyReceived : TMessRecvProc read FOnReplyReceived write FOnReplyReceived;
-    property ID : string read FID;
+    property ID : string read GetID;
   end;
 
   { TZMQPlayer }
@@ -77,6 +81,10 @@ type
     procedure Start; override;
   end;
 
+var
+  LastID         : string;
+  LastIDFilename : string = 'lastid';
+
 implementation
 
 { TZMQWatcher }
@@ -95,7 +103,6 @@ end;
 constructor TZMQAdmin.Create(AOwner: TComponent; AID: string);
 begin
   inherited Create(AOwner);
-  FID:=AID;
   FZMQServer := TZMQServerThread.Create(AID);
   FZMQServer.OnMessageReceived:=@MessageReceived;
   FZMQServer.OnRequestReceived:=@RequestReceived;
@@ -145,8 +152,7 @@ end;
 
 constructor TZMQPlayer.Create(AOwner: TComponent; AID: string);
 begin
-  inherited Create(AOwner);
-  FID:=AID;
+  inherited Create(AOwner, AID);
   FZMQMessages := TZMQMessagesThread.Create(AID);
   FZMQMessages.OnMessageReceived:=@MessageReceived;
 
@@ -169,6 +175,11 @@ begin
 end;
 
 { TZMQActor }
+
+function TZMQActor.GetID: string;
+begin
+  Result := FID;
+end;
 
 procedure TZMQActor.MessageReceived(AMultipartMessage: TStringList);
 {$IFDEF DEBUG}
@@ -212,6 +223,46 @@ end;
 constructor TZMQActor.Create(AOwner: TComponent; AID: string);
 begin
   inherited Create(AOwner);
+  FID := AID;
+end;
+
+class function TZMQActor.GenerateID(out AID: string; AFilename: string): Boolean;
+var LStringList : TStringList;
+begin
+  Result := False;
+  LStringList := TStringList.Create;
+  LStringList.Clear;
+  try
+    if FileExists(AFilename) then
+      LStringList.LoadFromFile(AFilename)
+    else
+      try
+        LStringList.Append(
+          Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)]));
+        LStringList.SaveToFile(AFilename);
+      except
+        on E: Exception do
+          Result := False;
+      end;
+    AID := LStringList[0];
+    Result := True;
+  finally
+    LStringList.Free;
+  end
+end;
+
+class function TZMQActor.NewRandomID: string;
+begin
+  NewRandomID := '';
+  if GenerateID(LastID, LastIDFilename) then
+    NewRandomID := LastID
+  else
+    Exception.Create('TZMQActor.RenewID Exception');
+end;
+
+procedure TZMQActor.UpdateID(ANewID: string);
+begin
+  FID := ANewID;
 end;
 
 procedure TZMQActor.Start;

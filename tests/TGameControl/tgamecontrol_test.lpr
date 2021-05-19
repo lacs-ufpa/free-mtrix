@@ -16,7 +16,11 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, form_main
+  Forms, form_main, game_actors, game_control, game_experiment,
+  game_file_methods, game_visual_elements, game_actors_helpers, string_methods,
+  game_visual_matrix_a, game_visual_experiment, game_actors_point,
+  presentation_classes, helpers, game_resources, zmq_network, popup_hack,
+  game_zmq_actors, report_reader, regdata
   { you can add units after this };
 
 {$R *.res}

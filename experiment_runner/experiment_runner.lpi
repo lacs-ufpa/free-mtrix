@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="11"/>
+    <Version Value="12"/>
     <General>
+      <Flags>
+        <CompatibilityMode Value="True"/>
+      </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <MainUnit Value="0"/>
       <AutoCreateForms Value="False"/>
       <Title Value="experiment_runner"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <Resources Count="2">
-        <Resource_0 FileName="media/non-sustainable.jpg" Type="RCDATA" ResourceName="NON-SUSTAINABLE"/>
-        <Resource_1 FileName="media/sustainable.jpeg" Type="RCDATA" ResourceName="SUSTAINABLE"/>
+        <Resource_0 FileName="media/non-sustainable.jpeg" Type="RCDATA" ResourceName="NON-SUSTAINABLE"/>
+        <Resource_1 FileName="media/sustainable.jpg" Type="RCDATA" ResourceName="SUSTAINABLE"/>
       </Resources>
     </General>
     <i18n>
@@ -21,7 +23,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="2"/>
-      <BuildNr Value="15"/>
+      <BuildNr Value="16"/>
       <Language Value="0416"/>
       <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_runner" ProductName="Free-mtrix" ProductVersion="0.2.0"/>
     </VersionInfo>

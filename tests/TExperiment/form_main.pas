@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ComCtrls
+  ComCtrls, Spin
   , game_experiment
   , game_visual_experiment
   ;
@@ -25,6 +25,8 @@ type
   { TForm1 }
 
   TForm1 = class(TForm)
+    Button1: TButton;
+    ButtonRandomChoice: TButton;
     ButtonQY1: TButton;
     ButtonQY2: TButton;
     ButtonChoice1: TButton;
@@ -42,19 +44,24 @@ type
     ButtonQN1: TButton;
     ButtonQN2: TButton;
     ButtonQN3: TButton;
+    Label1: TLabel;
     ListBox1: TListBox;
     ListBox2: TListBox;
     PageControl1: TPageControl;
+    SpinEdit1: TSpinEdit;
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
+    procedure Button1Click(Sender: TObject);
     procedure ButtonChoice1Click(Sender: TObject);
     procedure ButtonLoginClick(Sender: TObject);
     procedure ButtonQY1Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
   private
     FExperiment : TExperiment;
     FExperimentBox : TExperimentBox;
     procedure WriteReport(S: string);
+    procedure EnableButtons;
   public
     { public declarations }
   end;
@@ -69,7 +76,6 @@ uses
   , game_resources
   , string_methods
   , strutils
-  , helpers
   , game_actors_helpers
   ;
 
@@ -99,7 +105,7 @@ begin
 
   FExperiment.OnWriteReport:=@WriteReport;
   //FExperiment.LoadFromFile('C:\Users\User\Documents\GitHub\free-mtrix\experiment_runner\Pesquisadores\Pesquisador_X\Teste 2.Estudo 2.MC3.ini');
-  FExperiment.LoadFromFile('/home/rafael/git/free-mtrix/experiment_runner/Pesquisadores/Thais/TESTE.ini');
+  //FExperiment.LoadFromFile('/home/cpicanco/Code/git/free-mtrix/experiment_runner/Participant0/Experiment1.ini');
   //for j := 0 to FExperiment.ConditionsCount-1 do
   //  for i := 0 to Length(FExperiment.Condition[j].Contingencies)-1 do
   //    begin
@@ -114,7 +120,7 @@ var
   P : TPlayer;
   i: LongInt;
 begin
-  PID := RandomString(32);
+  PID := Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)]);
   // validate login request
   if not FExperiment.PlayerIsPlaying[PID] then
     begin
@@ -192,7 +198,10 @@ begin
 
           // start Experiment
           if FExperiment.ShouldStartExperiment then
-            FExperiment.Play;
+            begin
+              FExperiment.Play;
+              EnableButtons;
+            end;
           ListBox1.Items.Append('');
 
         end
@@ -274,6 +283,11 @@ begin
     end;
 end;
 
+procedure TForm1.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  //FExperiment.Clean;
+end;
+
 procedure TForm1.ButtonChoice1Click(Sender: TObject);
 var
   P,PtoKick : TPlayer;
@@ -342,6 +356,14 @@ begin
       P.Choice.Color := gcMagenta;
     end;
 
+  if Sender = ButtonRandomChoice then
+    begin
+      P.Choice.Row := TGameRow(Random(Succ(Ord(High(TGameRow)))));
+      P.Choice.Color := TGameColor(Random(Succ(Ord(High(TGameColor)))));
+    end;
+
+  //ShowMessage(TComponent(Sender).Name);
+  //Sleep(500);
   ListBox1.Items.Append('Player:'+P.Nicname +' : ' + GetRowString(P.Choice.Row)+' : '+GetColorString(P.Choice.Color));
 
   // individual consequences from player choice
@@ -393,9 +415,36 @@ begin
   ListBox1.MakeCurrentVisible;
 end;
 
+procedure TForm1.Button1Click(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := 0 to SpinEdit1.Value-1 do begin
+    ButtonRandomChoice.Click;
+  end;
+end;
+
 procedure TForm1.WriteReport(S: string);
 begin
   ListBox2.Items.Append(S);
+end;
+
+procedure TForm1.EnableButtons;
+begin
+  ButtonChoice1.Enabled:=True;
+  ButtonChoice2.Enabled:=True;
+  ButtonChoice3.Enabled:=True;
+  ButtonChoice4.Enabled:=True;
+  ButtonChoice5.Enabled:=True;
+  ButtonChoice6.Enabled:=True;
+  ButtonChoice7.Enabled:=True;
+  ButtonChoice8.Enabled:=True;
+  ButtonChoice9.Enabled:=True;
+  ButtonChoice10.Enabled:=True;
+  ButtonRandomChoice.Enabled:=True;
+  Button1.Enabled:=True;
+  SpinEdit1.Enabled:=True;
+  ButtonLogin.Enabled:=False;
 end;
 
 

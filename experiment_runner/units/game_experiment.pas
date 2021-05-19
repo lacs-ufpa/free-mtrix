@@ -39,6 +39,7 @@ type
 
   TExperiment = class(TComponent)
   private
+    FGameActor : TGameActor;
     FABPoints: Boolean;
     //FChangeGeneration: string;
     FExperimentAim,
@@ -59,6 +60,7 @@ type
     FRegChat : TRegData;
     FReportReader : TReportReader;
     FPlayers : TPlayers;
+    FOldPlayers : TPlayers;
     FCurrentCondition : integer;
     FConditions : TConditions;
     FState: TExperimentState;
@@ -140,9 +142,10 @@ type
     procedure SetOnEndTurn(AValue: TNotifyEvent);
     procedure SetOnInterlocking(AValue: TNotifyEvent);
   public // creation/ destruction
-    constructor Create(AOwner:TComponent);override;
-    constructor Create(AOwner:TComponent; AppPath:string);overload;
-    constructor Create(AOwner:TComponent; AFilename, AppPath:string); overload;
+    constructor Create(AOwner:TComponent); override;
+    constructor Create(AOwner:TComponent; AActor : TGameActor); reintroduce;
+    constructor Create(AOwner:TComponent; AActor : TGameActor; AppPath:string);overload;
+    constructor Create(AOwner:TComponent; AActor : TGameActor; AFilename, AppPath:string); overload;
     destructor Destroy; override;
     function LoadFromFile(AFilename: string):Boolean;
     function LoadFromGenerator:Boolean;
@@ -162,12 +165,16 @@ type
     property MatrixTypeAsString : string read GetMatrixTypeAsString write SetMatrixTypeFromString;
   public // manipulation/ self awareness
     PlayerTurn : integer;
+    function GlobalPoints(AGameConsequencestyle: TGameConsequenceStyle;
+      AID : string = '') : integer;
     function AppendCondition : integer; overload;
     function AppendCondition(ACondition : TCondition) : integer;overload;
     function AppendContingency(ACondition : integer) : integer;overload;
     function AppendContingency(ACondition : integer;AContingency : TContingency) : integer;overload;
     function AppendPlayer : integer;overload;
     function AppendPlayer(APlayer : TPlayer) : integer; overload;
+    function PlayerPointsSummationFromID(AID : string) : integer;
+    function PlayerPointsFromID(AID : string) : TPLayerPoints;
     function IsLastCondition: Boolean;
     function TargetIntelockingFired : Boolean;
     function ShouldAskQuestion : string;
@@ -200,6 +207,11 @@ type
     procedure Play;
     procedure WriteReportRowPrompt;
     procedure WriteChatLn(ALn : string);
+    procedure IncMetaPoints(AGameConsequenceStyle: TGameConsequenceStyle;
+      AValue: integer);
+    procedure IncPlayerPoints(AGameConsequenceStyle: TGameConsequenceStyle;
+      AValue: integer; AID: string);
+    procedure ResetGroupPoints;
     property ConsequenceStringFromChoice[P:TPlayer]:string read GetConsequenceStringFromChoice;
     property ConsequenceStringFromChoices: string read FConsequenceStringFromChoices;
     property NextTurnPlayerID : string read GetNextTurnPlayerID;
@@ -358,6 +370,7 @@ begin
           Result := FPlayers[i];
           Break;
         end;
+  // Exception.Create('TExperiment.GetPlayer Exception');
 end;
 
 // fewer as possible data
@@ -589,7 +602,6 @@ begin
   FOnInterlocking:=AValue;
 end;
 
-
 procedure TExperiment.SetPlayer(I : integer; AValue: TPlayer);
 begin
   FPlayers[I] := AValue;
@@ -688,10 +700,13 @@ procedure TExperiment.SetPlayersQueue(AValue: string);
 var
   i : integer;
 begin
+  SetLength(FOldPlayers, Length(FOldPlayers)+1);
+  FOldPlayers[High(FOldPlayers)] := FPlayers[0];
+
+  // move left
   for i := 0 to PlayersCount-2 do
-    begin
-      FPlayers[i] := FPlayers[i+1];
-    end;
+    FPlayers[i] := FPlayers[i+1];
+
   FPlayers[High(FPlayers)] := PlayerFromString[AValue];
 end;
 
@@ -705,6 +720,7 @@ begin
     else
       begin
         if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
+
         Result := FPlayers[0].ID;
         FCycles.GenerationCount := 0;
         Inc(FCycles.Generations);
@@ -936,9 +952,57 @@ begin
     end;
 end;
 
+procedure TExperiment.IncMetaPoints(
+  AGameConsequenceStyle: TGameConsequenceStyle; AValue: integer);
+begin
+  case AGameConsequenceStyle of
+    gscG1 :
+      begin
+        Inc(FConditions[CurrentConditionI].Points.Count.G1, AValue);
+      end;
+    gscG2 :
+      begin
+        Inc(FConditions[CurrentConditionI].Points.Count.G2, AValue);
+      end;
+  end;
+end;
+
+procedure TExperiment.IncPlayerPoints(
+  AGameConsequenceStyle: TGameConsequenceStyle; AValue: integer; AID: string);
+var
+  P : TPlayer;
+begin
+  case AGameConsequenceStyle of
+    gscA :
+      begin
+        if AID = '' then Exception.Create('TExperiment.IncPoint Exception');
+        P := PlayerFromID[AID];
+        Inc(P.Points.A, AValue);
+        PlayerFromID[AID] := P;
+      end;
+    gscB :
+      begin
+        if AID = '' then Exception.Create('TExperiment.IncPoint Exception');
+        P := PlayerFromID[AID];
+        Inc(P.Points.B, AValue);
+        PlayerFromID[AID] := P;
+      end
+    else { do nothing };
+  end;
+end;
+
+// only for players
+procedure TExperiment.ResetGroupPoints;
+begin
+  FConditions[CurrentConditionI].Points.Count.G1 := 0;
+  FConditions[CurrentConditionI].Points.Count.G2 := 0;
+end;
+
 constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FCurrentCondition := 0;
+  FGameActor := gaAdmin;
   FRandomTurns := TStringList.Create;
   with FCycles do
     begin
@@ -951,18 +1015,39 @@ begin
   PlayerTurn := 0;
 end;
 
-constructor TExperiment.Create(AOwner: TComponent;AppPath:string);
+constructor TExperiment.Create(AOwner: TComponent; AActor : TGameActor);
 begin
   inherited Create(AOwner);
+  FCurrentCondition := 0;
+  FGameActor := AActor;
+  FRandomTurns := TStringList.Create;
+  with FCycles do
+    begin
+      Global := 0;
+      Generations := 0;
+      GenerationCount := 0;
+      GenerationValue:=0;
+    end;
+  State := xsNone;
+  PlayerTurn := 0;
+end;
+
+constructor TExperiment.Create(AOwner: TComponent; AActor : TGameActor; AppPath:string);
+begin
+  inherited Create(AOwner);
+  FCurrentCondition := 0;
+  FGameActor := AActor;
   FExperimentPath := AppPath;
   FRandomTurns := TStringList.Create;
   State := xsNone;
   PlayerTurn := 0;
 end;
 
-constructor TExperiment.Create(AOwner:TComponent;AFilename,AppPath:string);
+constructor TExperiment.Create(AOwner:TComponent; AActor : TGameActor; AFilename,AppPath:string);
 begin
   inherited Create(AOwner);
+  FCurrentCondition := 0;
+  FGameActor := AActor;
   FRandomTurns := TStringList.Create;
   if LoadExperimentFromFile(Self,AFilename) then
     begin
@@ -975,7 +1060,8 @@ end;
 
 destructor TExperiment.Destroy;
 begin
-  FReportReader.Free;
+  if Assigned(FReportReader) then
+    FReportReader.Free;
   FRandomTurns.Free;
   inherited Destroy;
 end;
@@ -1052,6 +1138,25 @@ begin
   SetLength(FPlayers, Length(FPlayers)+1);
   Result := High(FPlayers);
   FPlayers[Result] := APlayer;
+end;
+
+function TExperiment.PlayerPointsSummationFromID(AID: string): integer;
+var
+  P : TPlayer;
+begin
+  P := PlayerFromID[AID];
+  if ABPoints then
+    Result := P.Points.A + P.Points.B
+  else
+    Result := P.Points.A;
+end;
+
+function TExperiment.PlayerPointsFromID(AID: string): TPLayerPoints;
+var
+  P : TPlayer;
+begin
+  P := PlayerFromID[AID];
+  Result := P.Points;
 end;
 
 function TExperiment.IsLastCondition: Boolean;
@@ -1197,6 +1302,62 @@ begin
   if FFilename <> '' then
     SaveExperimentToFile(Self,FFilename)
   else;
+end;
+
+function TExperiment.GlobalPoints(AGameConsequencestyle: TGameConsequenceStyle;
+  AID: string): integer;
+var
+  i : integer;
+  P : TPlayer;
+begin
+  Result := 0;
+
+  // grupos 1 e 2 ocupam o mesmo controle visual externo, mas
+  // precisam ser contados separadamente dentro do TExperiment
+
+  case AGameConsequenceStyle of
+    gscG1 :
+      begin
+        for i := 0 to ConditionsCount-1 do
+          Result += FConditions[i].Points.Count.G1;
+      end;
+    gscG2 :
+      begin
+        for i := 0 to ConditionsCount-1 do
+          Result += FConditions[i].Points.Count.G2;
+      end;
+    gscA :
+      begin
+        if AID = '' then begin
+          if Length(FOldPlayers) > 0 then
+            for i := Low(FOldPlayers) to High(FOldPlayers) do
+              Result += FOldPlayers[i].Points.A;
+
+          for i := Low(FPlayers) to High(FPlayers) do
+            Result += FPlayers[i].Points.A;
+
+        end else begin
+          P := PlayerFromID[AID];
+          Result := P.Points.A;
+        end;
+      end;
+    gscB :
+      begin
+        if AID = '' then begin
+          if Length(FOldPlayers) > 0 then
+            for i := Low(FOldPlayers) to High(FOldPlayers) do
+              Result += FOldPlayers[i].Points.B;
+
+          for i := Low(FPlayers) to High(FPlayers) do
+            Result += FPlayers[i].Points.B;
+
+        end else begin
+          P := PlayerFromID[AID];
+          Result := P.Points.B;
+        end;
+      end
+    else { do nothing };
+  end;
 end;
 
 procedure TExperiment.Clean;

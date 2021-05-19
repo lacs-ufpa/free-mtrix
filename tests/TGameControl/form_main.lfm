@@ -1,98 +1,115 @@
 object Form1: TForm1
-  Left = 35
-  Height = 683
-  Top = 47
+  Left = 258
+  Height = 779
+  Top = 124
   Width = 1190
   Caption = 'Form1'
-  ClientHeight = 683
+  ClientHeight = 779
   ClientWidth = 1190
   OnCreate = FormCreate
-  LCLVersion = '1.8.0.4'
+  LCLVersion = '2.1.0.0'
   object ButtonLogin: TButton
-    Left = 912
-    Height = 20
-    Top = 616
-    Width = 96
-    Caption = 'ButtonLogin'
+    Left = 936
+    Height = 33
+    Top = 336
+    Width = 191
+    AutoSize = True
+    Caption = 'Login 3 times before choices'
     OnClick = ButtonLoginClick
     TabOrder = 0
   end
   object ButtonChoice1: TButton
-    Left = 952
+    Left = 896
     Height = 20
-    Top = 459
-    Width = 113
-    Caption = 'ButtonChoice1'
+    Top = 544
+    Width = 129
+    Caption = 'Choice1'
     OnClick = ButtonChoice1Click
     TabOrder = 1
   end
   object ButtonChoice2: TButton
-    Left = 1072
+    Left = 1040
     Height = 20
-    Top = 459
-    Width = 113
-    Caption = 'ButtonChoice2'
+    Top = 544
+    Width = 129
+    Caption = 'Choice2'
     OnClick = ButtonChoice1Click
     TabOrder = 2
   end
   object ButtonChoice3: TButton
-    Left = 952
+    Left = 896
     Height = 20
-    Top = 485
-    Width = 113
-    Caption = 'ButtonChoice3'
+    Top = 570
+    Width = 129
+    Caption = 'Choice3'
     OnClick = ButtonChoice1Click
     TabOrder = 3
   end
   object PageControl1: TPageControl
     Left = 0
-    Height = 665
+    Height = 768
     Top = 0
     Width = 888
-    ActivePage = TabSheet4
+    ActivePage = TabSheet6
     Anchors = [akTop, akLeft, akRight]
-    TabIndex = 2
+    TabIndex = 5
     TabOrder = 4
     object TabSheet1: TTabSheet
       Caption = 'Experiment'
-      ClientHeight = 632
-      ClientWidth = 882
-      object ListBox1: TListBox
+      ClientHeight = 735
+      ClientWidth = 878
+      object ListBoxExperiment: TListBox
         Left = 0
-        Height = 632
-        Top = 0
-        Width = 882
+        Height = 677
+        Top = 58
+        Width = 878
         Align = alClient
         ItemHeight = 0
-        ScrollWidth = 880
+        ScrollWidth = 876
         TabOrder = 0
         TopIndex = -1
       end
+      object LabelExperimentNotFound: TLabel
+        Left = 10
+        Height = 38
+        Top = 10
+        Width = 858
+        Align = alTop
+        Alignment = taCenter
+        BorderSpacing.Around = 10
+        Caption = 'Experiment is loaded from file "Experiment1.ini" localized at the program''s executable folder.'#10'Close and try again.'
+        Color = clHighlight
+        Font.Style = [fsBold]
+        Layout = tlCenter
+        ParentColor = False
+        ParentFont = False
+        Transparent = False
+      end
     end
     object TabSheet3: TTabSheet
-      Caption = 'GroupBoxes'
-      ClientHeight = 632
-      ClientWidth = 882
+      Caption = 'Last Choices'
+      ClientHeight = 735
+      ClientWidth = 878
       object GBLastChoiceServer: TGroupBox
         AnchorSideLeft.Control = TabSheet3
         AnchorSideRight.Control = TabSheet3
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 150
-        Top = 0
-        Width = 882
+        Height = 220
+        Top = 8
+        Width = 878
         Anchors = [akTop, akLeft, akRight]
         AutoSize = True
-        Caption = 'Escolhas na última jogada - Servidor'
+        Caption = 'Server'
         ChildSizing.LeftRightSpacing = 10
         ChildSizing.TopBottomSpacing = 5
         ChildSizing.HorizontalSpacing = 10
         ChildSizing.EnlargeVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 6
-        Constraints.MaxHeight = 150
-        Constraints.MinHeight = 150
+        Constraints.MaxHeight = 220
+        Constraints.MinHeight = 220
         Font.Height = -20
         Font.Name = 'Monospace'
         Font.Style = [fsBold]
@@ -106,11 +123,11 @@ object Form1: TForm1
         AnchorSideBottom.Side = asrBottom
         Left = 0
         Height = 150
-        Top = 160
-        Width = 882
+        Top = 240
+        Width = 878
         Anchors = [akTop, akLeft, akRight]
         AutoSize = True
-        Caption = 'Escolhas na última jogada - P1'
+        Caption = 'P1'
         ChildSizing.LeftRightSpacing = 10
         ChildSizing.TopBottomSpacing = 5
         ChildSizing.HorizontalSpacing = 10
@@ -132,11 +149,11 @@ object Form1: TForm1
         AnchorSideBottom.Side = asrBottom
         Left = 0
         Height = 150
-        Top = 320
-        Width = 882
+        Top = 408
+        Width = 878
         Anchors = [akTop, akLeft, akRight]
         AutoSize = True
-        Caption = 'Escolhas na última jogada - P2'
+        Caption = 'P2'
         ChildSizing.LeftRightSpacing = 10
         ChildSizing.TopBottomSpacing = 5
         ChildSizing.HorizontalSpacing = 10
@@ -158,11 +175,11 @@ object Form1: TForm1
         AnchorSideBottom.Side = asrBottom
         Left = 0
         Height = 150
-        Top = 480
-        Width = 882
+        Top = 576
+        Width = 878
         Anchors = [akTop, akLeft, akRight]
         AutoSize = True
-        Caption = 'Escolhas na última jogada - P3'
+        Caption = 'P3'
         ChildSizing.LeftRightSpacing = 10
         ChildSizing.TopBottomSpacing = 5
         ChildSizing.HorizontalSpacing = 10
@@ -179,15 +196,15 @@ object Form1: TForm1
       end
     end
     object TabSheet4: TTabSheet
-      Caption = 'Labels'
-      ClientHeight = 632
-      ClientWidth = 882
+      Caption = 'Count Labels'
+      ClientHeight = 735
+      ClientWidth = 878
       object GBPoints: TGroupBox
         AnchorSideLeft.Side = asrBottom
         Left = 8
-        Height = 316
+        Height = 315
         Top = 0
-        Width = 417
+        Width = 415
         AutoSize = True
         Caption = 'Servidor'
         ChildSizing.LeftRightSpacing = 10
@@ -200,7 +217,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 290
+        ClientHeight = 295
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -1167,7 +1184,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas Azuis'
+          Caption = 'Blue'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -2141,7 +2158,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas Vermelhas'
+          Caption = 'Red'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -3119,7 +3136,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas'
+          Caption = 'Tokens'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -4109,7 +4126,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Itens escolares para doação'
+          Caption = 'Group Consequence/Culturant'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -4139,9 +4156,9 @@ object Form1: TForm1
       object GBPoints1: TGroupBox
         AnchorSideLeft.Side = asrBottom
         Left = 432
-        Height = 316
+        Height = 315
         Top = 0
-        Width = 417
+        Width = 415
         AutoSize = True
         Caption = 'P1'
         ChildSizing.LeftRightSpacing = 10
@@ -4154,7 +4171,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 290
+        ClientHeight = 295
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -5121,7 +5138,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas Azuis'
+          Caption = 'Blue'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -6095,7 +6112,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas Vermelhas'
+          Caption = 'Red'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -7073,7 +7090,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas'
+          Caption = 'Tokens'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -8063,7 +8080,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Itens escolares para doação'
+          Caption = 'Group Consequence/Culturant'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -8093,9 +8110,9 @@ object Form1: TForm1
       object GBPoints2: TGroupBox
         AnchorSideLeft.Side = asrBottom
         Left = 8
-        Height = 316
+        Height = 315
         Top = 320
-        Width = 417
+        Width = 415
         AutoSize = True
         Caption = 'P2'
         ChildSizing.LeftRightSpacing = 10
@@ -8108,7 +8125,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 290
+        ClientHeight = 295
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -9075,7 +9092,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas Azuis'
+          Caption = 'Blue'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -10049,7 +10066,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas Vermelhas'
+          Caption = 'Red'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -11027,7 +11044,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas'
+          Caption = 'Tokens'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -12017,7 +12034,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Itens escolares para doação'
+          Caption = 'Group Consequence/Culturant'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -12047,9 +12064,9 @@ object Form1: TForm1
       object GBPoints3: TGroupBox
         AnchorSideLeft.Side = asrBottom
         Left = 432
-        Height = 316
+        Height = 315
         Top = 320
-        Width = 417
+        Width = 415
         AutoSize = True
         Caption = 'P3'
         ChildSizing.LeftRightSpacing = 10
@@ -12062,7 +12079,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 290
+        ClientHeight = 295
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -13029,7 +13046,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas Azuis'
+          Caption = 'Blue'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -14003,7 +14020,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas Vermelhas'
+          Caption = 'Red'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -14981,7 +14998,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Fichas'
+          Caption = 'Tokens'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -15971,7 +15988,7 @@ object Form1: TForm1
           Width = 243
           Alignment = taCenter
           AutoSize = False
-          Caption = 'Itens escolares para doação'
+          Caption = 'Group Consequence/Culturant'
           Color = clDefault
           Font.Name = 'Monospace'
           Font.Style = [fsBold]
@@ -15999,178 +16016,346 @@ object Form1: TForm1
         end
       end
     end
+    object TabSheet5: TTabSheet
+      Caption = 'Messages'
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 2
+      ClientHeight = 735
+      ClientWidth = 878
+      object Label1: TLabel
+        Left = 0
+        Height = 19
+        Top = 0
+        Width = 440
+        Caption = 'Server'
+        ParentColor = False
+      end
+      object Label2: TLabel
+        Left = 440
+        Height = 19
+        Top = 0
+        Width = 440
+        Caption = 'P1'
+        ParentColor = False
+      end
+      object ListBoxMessages: TListBox
+        Left = 0
+        Height = 300
+        Top = 19
+        Width = 440
+        Constraints.MinHeight = 300
+        Constraints.MinWidth = 440
+        ItemHeight = 0
+        ScrollWidth = 438
+        TabOrder = 0
+        TopIndex = -1
+      end
+      object ListBoxMessages1: TListBox
+        Left = 440
+        Height = 300
+        Top = 19
+        Width = 440
+        Constraints.MinHeight = 300
+        Constraints.MinWidth = 440
+        ItemHeight = 0
+        ScrollWidth = 438
+        TabOrder = 1
+        TopIndex = -1
+      end
+      object Label3: TLabel
+        Left = 0
+        Height = 19
+        Top = 319
+        Width = 440
+        Caption = 'P2'
+        ParentColor = False
+      end
+      object Label4: TLabel
+        Left = 440
+        Height = 19
+        Top = 319
+        Width = 440
+        Caption = 'P3'
+        ParentColor = False
+      end
+      object ListBoxMessages2: TListBox
+        Left = 0
+        Height = 300
+        Top = 338
+        Width = 440
+        Constraints.MinHeight = 300
+        Constraints.MinWidth = 440
+        ItemHeight = 0
+        ScrollWidth = 438
+        TabOrder = 2
+        TopIndex = -1
+      end
+      object ListBoxMessages3: TListBox
+        Left = 440
+        Height = 300
+        Top = 338
+        Width = 440
+        Constraints.MinHeight = 300
+        Constraints.MinWidth = 440
+        ItemHeight = 0
+        ScrollWidth = 438
+        TabOrder = 3
+        TopIndex = -1
+      end
+    end
     object TabSheet2: TTabSheet
       Caption = 'Report'
-      ClientHeight = 632
-      ClientWidth = 882
-      object ListBox2: TListBox
+      ClientHeight = 735
+      ClientWidth = 878
+      object ListBoxReport: TListBox
         Left = 0
-        Height = 527
+        Height = 735
         Top = 0
-        Width = 882
+        Width = 878
         Align = alClient
         ItemHeight = 0
-        ScrollWidth = 880
+        ScrollWidth = 876
+        TabOrder = 0
+        TopIndex = -1
+      end
+    end
+    object TabSheet6: TTabSheet
+      Caption = 'Old Participants'
+      ClientHeight = 735
+      ClientWidth = 878
+      object ListBoxOldParticipants: TListBox
+        Left = 0
+        Height = 735
+        Top = 0
+        Width = 878
+        Align = alClient
+        ItemHeight = 0
+        ScrollWidth = 876
         TabOrder = 0
         TopIndex = -1
       end
     end
   end
   object ButtonChoice4: TButton
-    Left = 1072
+    Left = 1040
     Height = 20
-    Top = 485
-    Width = 113
-    Caption = 'ButtonChoice4'
+    Top = 570
+    Width = 129
+    Caption = 'Choice4'
     OnClick = ButtonChoice1Click
     TabOrder = 5
   end
   object ButtonChoice5: TButton
-    Left = 952
+    Left = 896
     Height = 20
-    Top = 511
-    Width = 113
-    Caption = 'ButtonChoice5'
+    Top = 596
+    Width = 129
+    Caption = 'Choice5'
     OnClick = ButtonChoice1Click
     TabOrder = 6
   end
   object ButtonChoice6: TButton
-    Left = 1072
+    Left = 1040
     Height = 20
-    Top = 511
-    Width = 113
-    Caption = 'ButtonChoice6'
+    Top = 596
+    Width = 129
+    Caption = 'Choice6'
     OnClick = ButtonChoice1Click
     TabOrder = 7
   end
   object ButtonChoice7: TButton
-    Left = 952
+    Left = 896
     Height = 20
-    Top = 537
-    Width = 113
-    Caption = 'ButtonChoice7'
+    Top = 622
+    Width = 129
+    Caption = 'Choice7'
     OnClick = ButtonChoice1Click
     TabOrder = 8
   end
   object ButtonChoice8: TButton
-    Left = 1072
+    Left = 1040
     Height = 20
-    Top = 537
-    Width = 113
-    Caption = 'ButtonChoice8'
+    Top = 622
+    Width = 129
+    Caption = 'Choice8'
     OnClick = ButtonChoice1Click
     TabOrder = 9
   end
   object ButtonChoice9: TButton
-    Left = 952
+    Left = 896
     Height = 20
-    Top = 563
-    Width = 113
-    Caption = 'ButtonChoice9'
+    Top = 648
+    Width = 129
+    Caption = 'Choice9'
     OnClick = ButtonChoice1Click
     TabOrder = 10
   end
   object ButtonChoice10: TButton
-    Left = 1072
+    Left = 1040
     Height = 20
-    Top = 563
-    Width = 113
-    Caption = 'ButtonChoice10'
+    Top = 648
+    Width = 129
+    Caption = 'Choice10'
     OnClick = ButtonChoice1Click
     TabOrder = 11
   end
   object ButtonQY1: TButton
-    Left = 1024
+    Left = 960
     Height = 20
-    Top = 596
+    Top = 686
     Width = 75
     Caption = 'ButtonQY1'
     OnClick = ButtonQY1Click
     TabOrder = 12
+    Visible = False
   end
   object ButtonQY2: TButton
-    Left = 1024
+    Left = 960
     Height = 20
-    Top = 622
+    Top = 706
     Width = 75
     Caption = 'ButtonQY2'
     OnClick = ButtonQY1Click
     TabOrder = 13
+    Visible = False
   end
   object ButtonQY3: TButton
-    Left = 1024
+    Left = 960
     Height = 20
-    Top = 642
+    Top = 732
     Width = 75
     Caption = 'ButtonQY3'
     OnClick = ButtonQY1Click
     TabOrder = 14
+    Visible = False
   end
   object ButtonQN1: TButton
-    Left = 1104
+    Left = 1040
     Height = 20
-    Top = 596
+    Top = 686
     Width = 75
     Caption = 'ButtonQN1'
     OnClick = ButtonQY1Click
     TabOrder = 15
+    Visible = False
   end
   object ButtonQN2: TButton
-    Left = 1104
+    Left = 1040
     Height = 20
-    Top = 616
+    Top = 706
     Width = 75
     Caption = 'ButtonQN2'
     OnClick = ButtonQY1Click
     TabOrder = 16
+    Visible = False
   end
   object ButtonQN3: TButton
-    Left = 1104
+    Left = 1040
     Height = 20
-    Top = 642
+    Top = 732
     Width = 75
     Caption = 'ButtonQN3'
     OnClick = ButtonQY1Click
     TabOrder = 17
+    Visible = False
   end
   object chkP1: TCheckBox
-    Left = 904
-    Height = 21
-    Top = 424
-    Width = 67
+    Left = 896
+    Height = 23
+    Top = 480
+    Width = 73
     Caption = 'P1 Turn'
+    Enabled = False
     TabOrder = 18
   end
   object chkP2: TCheckBox
-    Left = 1008
-    Height = 21
-    Top = 424
-    Width = 67
+    Left = 1000
+    Height = 23
+    Top = 480
+    Width = 73
     Caption = 'P2 Turn'
+    Enabled = False
     TabOrder = 19
   end
   object chkP3: TCheckBox
-    Left = 1104
-    Height = 21
-    Top = 424
-    Width = 67
+    Left = 1096
+    Height = 23
+    Top = 480
+    Width = 73
     Caption = 'P3 Turn'
+    Enabled = False
     TabOrder = 20
   end
   object CheckBoxAutoPlay: TCheckBox
-    Left = 904
-    Height = 21
-    Top = 400
-    Width = 132
-    Caption = 'CheckBoxAutoPlay'
+    Left = 896
+    Height = 23
+    Top = 456
+    Width = 221
+    Caption = 'Check this box for Random Play'
     OnChange = CheckBoxAutoPlayChange
     TabOrder = 21
   end
+  object TrackBarRandomBias: TTrackBar
+    AnchorSideLeft.Control = LabelRandomBias1
+    AnchorSideTop.Control = LabelRandomBias1
+    AnchorSideTop.Side = asrBottom
+    Left = 896
+    Height = 40
+    Top = 411
+    Width = 276
+    Max = 100
+    PageSize = 5
+    Position = 50
+    TabOrder = 22
+  end
+  object LabelRandomBias: TLabel
+    AnchorSideTop.Control = LabelRandomBias1
+    AnchorSideRight.Control = TrackBarRandomBias
+    AnchorSideRight.Side = asrBottom
+    Left = 1142
+    Height = 19
+    Top = 392
+    Width = 30
+    Alignment = taRightJustify
+    Anchors = [akTop, akRight]
+    Caption = 'Even'
+    ParentColor = False
+  end
+  object LabelRandomBias1: TLabel
+    AnchorSideRight.Side = asrBottom
+    Left = 896
+    Height = 19
+    Top = 392
+    Width = 26
+    Caption = 'Odd'
+    ParentColor = False
+  end
+  object LabelRandomBias2: TLabel
+    AnchorSideLeft.Control = TrackBarRandomBias
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideTop.Control = LabelRandomBias1
+    AnchorSideRight.Side = asrBottom
+    Left = 993
+    Height = 19
+    Top = 392
+    Width = 82
+    Caption = 'Random Bias'
+    ParentColor = False
+  end
+  object ButtonRandom: TButton
+    Left = 896
+    Height = 20
+    Top = 512
+    Width = 273
+    Caption = 'Random Choice'
+    OnClick = ButtonChoice1Click
+    TabOrder = 23
+  end
   object Timer1: TTimer
     Enabled = False
-    Interval = 100
+    Interval = 50
     OnTimer = Timer1Timer
-    left = 1080
-    top = 384
+    Left = 896
+    Top = 248
   end
 end

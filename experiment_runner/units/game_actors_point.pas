@@ -22,23 +22,24 @@ type
 
   TGamePoint = class(TComponent)
   private
+    FResultCalculated : Boolean;
     FResult: integer;
     FValue,
     FVariation : integer;
+    function GetCalculatedResultAsInteger: integer;
+    function GetCalculatedResultAsString: string;
     function GetResult: integer;
-    function GetResultAsString: string;
-    function GetValue: integer;
   public
     constructor Create(AOwner:TComponent;AValue : integer);overload;
     constructor Create(AOwner:TComponent;AValue : array of integer); overload;
     constructor Create(AOwner:TComponent;AResult : string); overload;
     function PointMessage(APrepend, APrependLoss, AAppendiceLossSingular,AAppendiceLossPlural,
       APrependEarn,AAppendiceEarnSingular,AAppendiceEarnPlural,AAppendiceZero: string; IsGroupPoint: Boolean) : string;
-    property ValueWithVariation : integer read GetValue write FValue;
+    property CalculateResult : integer read GetResult;
     property Value : integer read FValue;
     property Variation : integer read FVariation;
-    property AsString : string read GetResultAsString;
-    property ResultAsInteger : integer read GetResult;
+    property AsString : string read GetCalculatedResultAsString;
+    property AsInteger : integer read GetCalculatedResultAsInteger;
   end;
 
 //operator :=(I :integer) : TGamePoint;
@@ -61,25 +62,31 @@ uses strutils;
 
 { TCsqPoint }
 
-function TGamePoint.GetValue: integer;
+function TGamePoint.GetResult: integer;
 begin
   Result := FValue - FVariation + Random((2 * FVariation) + 1);
   FResult := Result;
+  FResultCalculated := True;
 end;
 
-function TGamePoint.GetResult: integer;
+function TGamePoint.GetCalculatedResultAsInteger: integer;
 begin
+  if not FResultCalculated then
+    FResult := GetResult;
   Result := FResult;
 end;
 
-function TGamePoint.GetResultAsString: string;
+function TGamePoint.GetCalculatedResultAsString: string;
 begin
+  if not FResultCalculated then
+    Exception.Create('TGamePoint.GetCalculatedResultAsString Exception');
   Result := IntToStr(abs(FResult));
 end;
 
 constructor TGamePoint.Create(AOwner: TComponent; AValue: integer);
 begin
   inherited Create(AOwner);
+  FResultCalculated := False;
   FValue := AValue;
   FVariation:=0;
 end;
@@ -87,6 +94,7 @@ end;
 constructor TGamePoint.Create(AOwner: TComponent; AValue: array of integer);
 begin
   inherited Create(AOwner);
+  FResultCalculated := False;
   FValue := AValue[0];
   FVariation := AValue[1];
 end;
@@ -97,6 +105,7 @@ begin
   FValue := 0;//does not matter here, this creation method is called by a player, result is sent by the admin
   FVariation := 0;
   FResult := StrToInt(AResult);
+  FResultCalculated := True;
 end;
 
 function TGamePoint.PointMessage(APrepend,

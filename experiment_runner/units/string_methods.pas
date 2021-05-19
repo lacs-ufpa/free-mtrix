@@ -33,8 +33,8 @@ function GetPromptStyleFromString(S : string) : TPromptStyle;
 function GetPromptStyleString(AStyle : TPromptStyle) : string;
 function GetGamePromptStyleFromString(S : string) : TGamePromptStyle;
 
-function GetGConsequenceStyleFromString(s : string):TGameConsequenceStyle;
-function GetGConsequenceStyleString(AStyle : TGameConsequenceStyle): string;
+//function GetGConsequenceStyleFromString(s : string):TGameConsequenceStyle;
+//function GetGConsequenceStyleString(AStyle : TGameConsequenceStyle): string;
 function GetConsequenceStyleFromString(S : string):TConsequenceStyle;
 function GetConsequenceStyleString(CS : TConsequenceStyle): string;
 
@@ -260,38 +260,38 @@ begin
     end;
 end;
 
-function GetGConsequenceStyleFromString(s: string): TGameConsequenceStyle;
-begin
-  case UpperCase(S) of
-    'NONE', 'NADA': Result:= gscNone;
-    'MESSAGE', 'MENSAGEM' : Result:= gscMessage;
-    'TO EVERYONE', 'MENSAGEM A TODOS' : Result:= gscBroadcastMessage;
-    'POINTS', 'PONTOS' : Result:= gscPoints;
-    'WITH VARIATION', 'PONTOS COM VARIAÇÃO' : Result:= gscVariablePoints;
-    'A' : Result:= gscA;
-    'B' : Result:= gscB;
-    'G1' : Result:= gscG1;
-    'G2' : Result:= gscG2;
-    'I' : Result:= gscI;
-  end;
-end;
+//function GetGConsequenceStyleFromString(s: string): TGameConsequenceStyle;
+//begin
+//  case UpperCase(S) of
+//    'NONE', 'NADA': Result:= gscNone;
+//    'MESSAGE', 'MENSAGEM' : Result:= gscMessage;
+//    'TO EVERYONE', 'MENSAGEM A TODOS' : Result:= gscBroadcastMessage;
+//    'SHOW_POINTS_', 'MOSTRAR PONTOS_GLOBALMENTE' : Result:= gscGlobalPoints;
+//    'WITH VARIATION', 'PONTOS COM VARIAÇÃO' : Result:= gscVariablePoints;
+//    'A' : Result:= gscA;
+//    'B' : Result:= gscB;
+//    'G1' : Result:= gscG1;
+//    'G2' : Result:= gscG2;
+//    'I' : Result:= gscI;
+//  end;
+//end;
 
-function GetGConsequenceStyleString(AStyle: TGameConsequenceStyle): string;
-begin
-  Result := '';
-  case AStyle of
-    gscNone : Result:= 'NONE';
-    gscMessage : Result:= 'MESSAGE' ;
-    gscBroadcastMessage : Result:= 'TO EVERYONE';
-    gscPoints : Result:= 'POINTS' ;
-    gscVariablePoints : Result:= 'WITH VARIATION';
-    gscA :  Result:= 'A';
-    gscB :  Result:= 'B';
-    gscG1 :  Result:= 'G1';
-    gscG2 :  Result:= 'G2';
-    gscI :  Result:= 'I';
-  end;
-end;
+//function GetGConsequenceStyleString(AStyle: TGameConsequenceStyle): string;
+//begin
+//  Result := '';
+//  case AStyle of
+//    gscNone : Result:= 'NONE';
+//    gscMessage : Result:= 'MESSAGE' ;
+//    gscBroadcastMessage : Result:= 'TO EVERYONE';
+//    gscGlobalPoints : Result:= 'GLOBAL POINTS' ;
+//    gscVariablePoints : Result:= 'WITH VARIATION';
+//    gscA :  Result:= 'A';
+//    gscB :  Result:= 'B';
+//    gscG1 :  Result:= 'G1';
+//    gscG2 :  Result:= 'G2';
+//    gscI :  Result:= 'I';
+//  end;
+//end;
 
 function GetCriteriaString(ACriteria: TCriteria): string;
 var R : TGameRow;
@@ -381,12 +381,12 @@ begin
       '0':Result+=[gscNone];
       'M':Result+=[gscMessage];
       'C':Result+=[gscBroadcastMessage];
-      'P':Result+=[gscPoints];
+      'P':Result+=[gscGlobalPoints];
       'V':Result+=[gscVariablePoints];
       'A':Result+=[gscA];
       'B':Result+=[gscB];
-      'G1':Result+=[gscG1];
-      'G2':Result+=[gscG2];
+      '1':Result+=[gscG1];
+      '2':Result+=[gscG2];
       'I':Result+=[gscI];
     end;
 end;
@@ -401,12 +401,12 @@ begin
         gscNone: Result += '0';
         gscMessage:Result += 'M';
         gscBroadcastMessage:Result += 'C';
-        gscPoints:Result += 'P';
+        gscGlobalPoints:Result += 'P';
         gscVariablePoints:Result += 'V';
         gscA:Result += 'A';
         gscB:Result += 'B';
-        gscG1:Result += 'G1';
-        gscG2:Result += 'G2';
+        gscG1:Result += '1';
+        gscG2:Result += '2';
         gscI:Result += 'I';
       end;
       Result += ',';
@@ -418,7 +418,7 @@ begin
   try
     Result := StrToInt(ExtractDelimited(3,S,[',']));
   except
-    On E : Exception do
+    on E : Exception do
       Result := 0;
   end;
 end;
@@ -428,7 +428,7 @@ begin
   try
     Result := StrToInt(ExtractDelimited(1,S,[',']));
   except
-    On E : Exception do
+    on E : Exception do
       Result := 0;
   end;
 end;
@@ -438,7 +438,7 @@ begin
   try
     Result := StrToInt(ExtractDelimited(2,S,[',']));
   except
-    On E : Exception do
+    on E : Exception do
       Result := 0;
   end;
 end;
@@ -496,9 +496,10 @@ end;
 function GetStatusString(AStatus: TGamePlayerStatus): string;
 begin
   case AStatus of
-   gpsWaiting: Result := 'esperando';
-   gpsPlayed: Result := 'jogou';
-   gpsPlaying: Result := 'jogando';
+    gpsWaiting: Result := 'esperando';
+    gpsPlayed: Result := 'jogou';
+    gpsPlaying: Result := 'jogando';
+    else { do nothing };
   end;
 end;
 
@@ -526,6 +527,7 @@ var
       gpsWaiting: Result := '0';
       gpsPlaying: Result := '1';
       gpsPlayed: Result := '2';
+      else { do nothing };
     end;
   end;
 
@@ -545,6 +547,7 @@ var
       grTen : Result := '0';
       grEqual : Result := 'E';
       grDiff : Result := 'D';
+      else { do nothing };
     end;
   end;
 
@@ -557,6 +560,7 @@ var
       gcMagenta :Result  :=  '3';
       gcBlue :Result  :=  '4';
       gcGreen :Result  :=  '5';
+      else { do nothing };
     end;
   end;
 
@@ -610,6 +614,7 @@ begin
       gmDots : Result += 'CIRCLES FILLED,';
       gmClearDots : Result += 'CIRCLES EMPTY,';
       gmDotsClearDots : Result += 'CIRCLES BOTH,';
+      else { do nothing };
     end;
 end;
 

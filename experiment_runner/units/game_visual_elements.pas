@@ -14,7 +14,7 @@ unit game_visual_elements;
 interface
 
 uses
-  Classes, SysUtils, Controls, StdCtrls, ExtCtrls,Graphics;
+  Classes, SysUtils, Controls, StdCtrls, ExtCtrls, Graphics;
 
 type
 
@@ -25,12 +25,15 @@ type
     PanelLastColor : TPanel;
     LabelLastRow : TLabel;
     LabelLastRowCount : TLabel;
-    LabelPoints : TLabel;
-    LabelPointsCount : TLabel;
+    LabelPointsRed : TLabel;
+    LabelPointsRedCount : TLabel;
+    LabelPointsBlue : TLabel;
+    LabelPointsBlueCount : TLabel;
   private
     FID: string;
   public
-    constructor Create(AOwner: TComponent;AID:string;Admin:Boolean=False); reintroduce;
+    constructor Create(AOwner: TComponent;
+      AID:string; Admin:Boolean=False); reintroduce;
     procedure InvisibleLineRow;
     property ID : string read FID write FID;
   end;
@@ -38,7 +41,8 @@ type
 resourcestring
   CAP_ROW = 'Row:';
   CAP_COLOR = 'Color:';
-  CAP_POINTS = 'Tokens:';
+  CAP_POINTS_RED  = 'RTokens:';
+  CAP_POINTS_BLUE = 'BTokens:';
   CAP_NA = 'NA';
   CAP_WAINTING_FOR_PLAYER = 'Waiting for player...';
 
@@ -46,7 +50,8 @@ implementation
 
 { TPlayerBox }
 
-constructor TPlayerBox.Create(AOwner: TComponent; AID: string; Admin: Boolean);
+constructor TPlayerBox.Create(AOwner: TComponent;
+  AID: string; Admin: Boolean);
 begin
   inherited Create(AOwner);
   FID := AID;
@@ -92,7 +97,6 @@ begin
       Parent := Self;
     end;
 
-
   LabelLastRowCount:= TLabel.Create(Self);
   with LabelLastRowCount do
     begin
@@ -101,19 +105,36 @@ begin
       Layout:=tlCenter;
       Parent := Self;
     end;
-  Enabled:= False;
 
-  LabelPoints:= TLabel.Create(Self);
-  with LabelPoints do
+  LabelPointsRed:= TLabel.Create(Self);
+  with LabelPointsRed do
     begin
-      Caption:=CAP_POINTS;
+      Caption:=CAP_POINTS_RED;
       Alignment:=taLeftJustify;
       Layout:=tlCenter;
       Parent := Self;
     end;
 
-  LabelPointsCount:= TLabel.Create(Self);
-  with LabelPointsCount do
+  LabelPointsRedCount:= TLabel.Create(Self);
+  with LabelPointsRedCount do
+    begin
+      Alignment:=taCenter;
+      Layout:=tlCenter;
+      Caption:='0';
+      Parent := Self;
+    end;
+
+  LabelPointsBlue:= TLabel.Create(Self);
+  with LabelPointsBlue do
+    begin
+      Caption:=CAP_POINTS_BLUE;
+      Alignment:=taLeftJustify;
+      Layout:=tlCenter;
+      Parent := Self;
+    end;
+
+  LabelPointsBlueCount:= TLabel.Create(Self);
+  with LabelPointsBlueCount do
     begin
       Alignment:=taCenter;
       Layout:=tlCenter;
@@ -123,14 +144,19 @@ begin
 
   if Admin then
     begin
-      LabelPoints.Visible := True;
-      LabelPointsCount.Visible := True;
+      LabelPointsRed.Visible := True;
+      LabelPointsRedCount.Visible := True;
+      LabelPointsBlue.Visible := True;
+      LabelPointsBlueCount.Visible := True;
     end
   else
     begin
-      LabelPoints.Visible := False;
-      LabelPointsCount.Visible := False;
+      LabelPointsRed.Visible := False;
+      LabelPointsRedCount.Visible := False;
+      LabelPointsBlue.Visible := False;
+      LabelPointsBlueCount.Visible := False;
     end;
+  Enabled:= False;
   //LabelLastRow.AutoSize := False;
 end;
 

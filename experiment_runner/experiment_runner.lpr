@@ -26,27 +26,25 @@ uses
   {$ENDIF}
   , StrUtils, Forms, Classes, SysUtils
   , helpers
+  , game_zmq_actors
   , form_matrixgame
   ;
 
 
 var
   ApplicationPath,
-  InitParameter,
-  F : string;
+  InitParameter : string = '';
 
 const
   PAdmin : array [0..3] of string = ('--admin','--adm','-admin','-adm');
   PPlayer : array [0..3] of string = ('--player','--play','-player','-play');
   PWatcher : array [0..3] of string = ('--watcher','--watch','-watcher','-watch');
 
-{$R *.res}
-
-
 {$IFDEF DEBUG}
   function CreateDebugFoldersForPlayers:Boolean;
   var
     i : integer;
+    F : string;
   begin
     Result := True;
     for i := 0 to 2 do
@@ -67,34 +65,7 @@ const
   end;
 {$ENDIF}
 
-  function GetZMQNetworkID(var AF:string):Boolean;
-  var ID : TStringList;
-  begin
-    Result := True;
-    ID := TStringList.Create;
-    if FileExists(AF) then
-      try
-        ID.LoadFromFile(AF);
-        F := ID[0];
-      finally
-        ID.Free;
-      end
-    else
-      try
-        ID.Append(Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)]));
-        ID.SaveToFile(F);
-        F := ID[0];
-      except
-        on E: Exception do
-          begin
-            ID.Free;
-            {$IFDEF DEBUG}
-            ShowMessage(E.Message);
-            {$ENDIF}
-            Result := False;
-          end;
-      end;
-  end;
+{$R *.res}
 
 begin
   Randomize;
@@ -104,10 +75,9 @@ begin
   if not CreateDebugFoldersForPlayers then Exit;
   {$ENDIF}
   Application.Initialize;
-  F := ApplicationPath+PathDelim+'id';
-  if not GetZMQNetworkID(F) then exit;
+  if not TZMQActor.GenerateID(LastID, LastIDFilename) then Exit;
+
   Application.CreateForm(TFormMatrixGame, FormMatrixGame);
-  InitParameter := '';
   if Paramcount > 0 then
     begin
       if AnsiMatchStr(lowercase(ParamStr(1)), PAdmin) then
@@ -117,7 +87,7 @@ begin
       if AnsiMatchStr(lowercase(ParamStr(1)), PWatcher) then
         InitParameter := 'w';
     end;
-  FormMatrixGame.SetID(F, InitParameter);
+  FormMatrixGame.SetID(LastID, InitParameter);
   Application.Run;
 end.
 

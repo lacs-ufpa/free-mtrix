@@ -36,6 +36,7 @@ id
 deployment/*
 !deployment/*.py
 experiment_designer/experiment_designer_linux_64bits
+experiment_runner/experiment_runner_linux_64bits_debug
 experiment_runner/experiment_runner_linux_64bits
 experiment_runner/Pesquisadores/*
 experiment_runner/Participant*/*

@@ -14,7 +14,7 @@ unit game_visual_matrix_a;
 interface
 
 uses
-  Classes, SysUtils, StdCtrls, Grids, PopupNotifier, Graphics;
+  Classes, SysUtils, StdCtrls, Grids, Graphics;
 
 type
 
@@ -27,7 +27,6 @@ type
     FConfirmationButton: TButton;
     FHasCols: Boolean;
     FHasRows: Boolean;
-    //FPopUpNotifier: TPopupNotifier;
     FRowBase: integer;
     function GetRowColor(ARow: integer): TColor;
     procedure GridDrawCell(Sender: TObject; aCol, aRow: integer;
@@ -38,7 +37,6 @@ type
     procedure SetDrawDots(AValue: Boolean);
     procedure SetHasCols(AValue: Boolean);
     procedure SetHasRowsOnly(AValue: Boolean);
-    //procedure SetPopUpNotifier(AValue: TPopupNotifier);
     procedure UpdateHeight;
     procedure UpdateWidth;
     procedure WriteGridFixedNames;
@@ -50,7 +48,6 @@ type
     function GetSelectedMatrixColorF: string;
     procedure UpdateSizeAndNames;
     property ConfirmationButton : TButton read FConfirmationButton write SetConfirmationButton;
-    // property PopUpNotifier : TPopupNotifier read FPopUpNotifier write SetPopUpNotifier;
     property DrawFilledDots : Boolean read FDrawDots write SetDrawDots;
     property DrawClearDots : Boolean read FDrawClearDots write SetDrawClearDots;
     property HasRows : Boolean read FHasRows write SetHasRowsOnly;
@@ -71,7 +68,6 @@ var
 begin
   inherited Create(AOwner);
   FConfirmationButton := nil;
-  //FPopUpNotifier := nil;
   Top := 50;
   Left := 100;
   AutoEdit:=False;
@@ -285,7 +281,6 @@ begin
   if goRowSelect in TStringGrid(Sender).Options then Exit;
   TStringGrid(Sender).Options := TStringGrid(Sender).Options+[goRowSelect];
   FConfirmationButton.Visible := True;
-  //FPopupNotifier.Visible:= False;
 end;
 
 procedure TStringGridA.SetConfirmationButton(AValue: TButton);
@@ -327,12 +322,6 @@ begin
   RowCount := 10;
   Options := [goFixedHorzLine, goHorzLine];
 end;
-
-//procedure TStringGridA.SetPopUpNotifier(AValue: TPopupNotifier);
-//begin
-//  if FPopUpNotifier=AValue then Exit;
-//  FPopUpNotifier:=AValue;
-//end;
 
 procedure TStringGridA.UpdateHeight;
 var

@@ -1,19 +1,20 @@
 object Form1: TForm1
-  Left = 309
-  Height = 683
-  Top = 467
+  Left = 445
+  Height = 742
+  Top = 162
   Width = 1190
   Caption = 'Form1'
-  ClientHeight = 683
+  ClientHeight = 742
   ClientWidth = 1190
+  OnClose = FormClose
   OnCreate = FormCreate
-  LCLVersion = '1.6.2.0'
+  LCLVersion = '2.1.0.0'
   object ButtonLogin: TButton
-    Left = 8
+    Left = 24
     Height = 25
-    Top = 576
-    Width = 96
-    Caption = 'ButtonLogin'
+    Top = 660
+    Width = 74
+    Caption = 'Login'
     OnClick = ButtonLoginClick
     TabOrder = 0
   end
@@ -22,7 +23,8 @@ object Form1: TForm1
     Height = 25
     Top = 576
     Width = 113
-    Caption = 'ButtonChoice1'
+    Caption = 'Choice1'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 1
   end
@@ -31,7 +33,8 @@ object Form1: TForm1
     Height = 25
     Top = 576
     Width = 113
-    Caption = 'ButtonChoice2'
+    Caption = 'Choice2'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 2
   end
@@ -40,7 +43,8 @@ object Form1: TForm1
     Height = 25
     Top = 576
     Width = 113
-    Caption = 'ButtonChoice3'
+    Caption = 'Choice3'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 3
   end
@@ -56,15 +60,15 @@ object Form1: TForm1
     object TabSheet1: TTabSheet
       Caption = 'Experiment'
       ClientHeight = 527
-      ClientWidth = 882
+      ClientWidth = 878
       object ListBox1: TListBox
         Left = 0
         Height = 527
         Top = 0
-        Width = 882
+        Width = 878
         Align = alClient
         ItemHeight = 0
-        ScrollWidth = 880
+        ScrollWidth = 876
         TabOrder = 0
         TopIndex = -1
       end
@@ -72,7 +76,7 @@ object Form1: TForm1
     object TabSheet2: TTabSheet
       Caption = 'Report'
       ClientHeight = 527
-      ClientWidth = 882
+      ClientWidth = 878
       object ListBox2: TListBox
         Left = 0
         Height = 527
@@ -91,7 +95,8 @@ object Form1: TForm1
     Height = 25
     Top = 576
     Width = 113
-    Caption = 'ButtonChoice4'
+    Caption = 'Choice4'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 5
   end
@@ -100,7 +105,8 @@ object Form1: TForm1
     Height = 25
     Top = 576
     Width = 113
-    Caption = 'ButtonChoice5'
+    Caption = 'Choice5'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 6
   end
@@ -109,7 +115,8 @@ object Form1: TForm1
     Height = 25
     Top = 604
     Width = 113
-    Caption = 'ButtonChoice6'
+    Caption = 'Choice6'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 7
   end
@@ -118,7 +125,8 @@ object Form1: TForm1
     Height = 25
     Top = 604
     Width = 113
-    Caption = 'ButtonChoice7'
+    Caption = 'Choice7'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 8
   end
@@ -127,7 +135,8 @@ object Form1: TForm1
     Height = 25
     Top = 604
     Width = 113
-    Caption = 'ButtonChoice8'
+    Caption = 'Choice8'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 9
   end
@@ -136,7 +145,8 @@ object Form1: TForm1
     Height = 25
     Top = 604
     Width = 113
-    Caption = 'ButtonChoice9'
+    Caption = 'Choice9'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 10
   end
@@ -145,7 +155,8 @@ object Form1: TForm1
     Height = 25
     Top = 604
     Width = 113
-    Caption = 'ButtonChoice10'
+    Caption = 'Choice10'
+    Enabled = False
     OnClick = ButtonChoice1Click
     TabOrder = 11
   end
@@ -155,6 +166,7 @@ object Form1: TForm1
     Top = 576
     Width = 75
     Caption = 'ButtonQY1'
+    Enabled = False
     OnClick = ButtonQY1Click
     TabOrder = 12
   end
@@ -164,6 +176,7 @@ object Form1: TForm1
     Top = 604
     Width = 75
     Caption = 'ButtonQY2'
+    Enabled = False
     OnClick = ButtonQY1Click
     TabOrder = 13
   end
@@ -173,6 +186,7 @@ object Form1: TForm1
     Top = 632
     Width = 75
     Caption = 'ButtonQY3'
+    Enabled = False
     OnClick = ButtonQY1Click
     TabOrder = 14
   end
@@ -182,6 +196,7 @@ object Form1: TForm1
     Top = 576
     Width = 75
     Caption = 'ButtonQN1'
+    Enabled = False
     OnClick = ButtonQY1Click
     TabOrder = 15
   end
@@ -191,6 +206,7 @@ object Form1: TForm1
     Top = 604
     Width = 75
     Caption = 'ButtonQN2'
+    Enabled = False
     OnClick = ButtonQY1Click
     TabOrder = 16
   end
@@ -200,7 +216,46 @@ object Form1: TForm1
     Top = 632
     Width = 75
     Caption = 'ButtonQN3'
+    Enabled = False
     OnClick = ButtonQY1Click
     TabOrder = 17
+  end
+  object ButtonRandomChoice: TButton
+    Left = 115
+    Height = 24
+    Top = 640
+    Width = 581
+    Caption = 'ButtonRandomChoice'
+    Enabled = False
+    OnClick = ButtonChoice1Click
+    TabOrder = 18
+  end
+  object Label1: TLabel
+    Left = 24
+    Height = 76
+    Top = 576
+    Width = 74
+    Caption = 'Click three'#10'times here'#10'to login all'#10'participants'
+    ParentColor = False
+  end
+  object Button1: TButton
+    Left = 115
+    Height = 33
+    Top = 677
+    Width = 128
+    Caption = 'X Random Choices'
+    Enabled = False
+    OnClick = Button1Click
+    TabOrder = 19
+  end
+  object SpinEdit1: TSpinEdit
+    Left = 248
+    Height = 31
+    Top = 679
+    Width = 75
+    Enabled = False
+    MinValue = 1
+    TabOrder = 20
+    Value = 1
   end
 end
