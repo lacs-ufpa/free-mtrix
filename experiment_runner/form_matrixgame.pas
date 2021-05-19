@@ -71,7 +71,6 @@ type
   private
     FGameControl : TGameControl;
     FExperimentBox : TExperimentBox;
-    FID: string;
     FInitParameter: string;
     procedure DisableConfirmationButton(Sender : TObject);
     procedure CleanMatrix(Sender: TObject; AEnabled : Boolean);
@@ -79,11 +78,10 @@ type
   public
     StringGridMatrix: TStringGrid;
     procedure LoadFromFile(FFilename : string);
-    procedure SetID(S, P : string);
+    procedure SetParameters(P : string);
     procedure SetGameActor(AValue: TGameActor);
     procedure SetFullscreen;
     property Game : TGameControl read FGameControl;
-    property ID : string read FID;
   end;
 
 var
@@ -148,13 +146,16 @@ procedure TFormMatrixGame.SetGameActor(AValue: TGameActor);
 
   procedure SetZMQAdmin;
   begin
-    FGameControl := TGameControl.Create(TZMQAdmin.Create(Self,FID),ExtractFilePath(Application.ExeName));
+    FGameControl := TGameControl.Create(
+      TZMQAdmin.Create(Self,TZMQActor.NewRandomID),
+      ExtractFilePath(Application.ExeName));
     GBAdmin.Visible:= True;
   end;
 
   procedure SetZMQPlayer;
   begin
-    FGameControl := TGameControl.Create(TZMQPlayer.Create(Self,FID));
+    FGameControl := TGameControl.Create(
+      TZMQPlayer.Create(Self, TZMQActor.NewRandomID));
     //StringGridMatrix.Enabled := True;
   end;
 
@@ -228,9 +229,8 @@ begin
   WindowState:=wsFullScreen;
 end;
 
-procedure TFormMatrixGame.SetID(S, P: string);
+procedure TFormMatrixGame.SetParameters(P: string);
 begin
-  FID := S;
   FInitParameter := P
 end;
 

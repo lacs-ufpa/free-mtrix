@@ -29,13 +29,12 @@ type
     FOnRequestReceived: TReqRecvProc;
     function GetID: string;
   protected
-    FID: string;
+    FID  : string;
     procedure MessageReceived(AMultipartMessage : TStringList);
     procedure ReplyReceived(AMultipartMessage : TStringList);
     procedure RequestReceived(var AMultipartMessage : TStringList);
   public
     constructor Create(AOwner : TComponent; AID : string); virtual; overload;
-    class function GenerateID(out AID:string; AFilename:string):Boolean; static;
     class function NewRandomID : string; static;
     procedure UpdateID(ANewID : string);
     procedure Start; virtual;
@@ -80,10 +79,6 @@ type
   public
     procedure Start; override;
   end;
-
-var
-  LastID         : string;
-  LastIDFilename : string = 'lastid';
 
 implementation
 
@@ -226,38 +221,10 @@ begin
   FID := AID;
 end;
 
-class function TZMQActor.GenerateID(out AID: string; AFilename: string): Boolean;
-var LStringList : TStringList;
-begin
-  Result := False;
-  LStringList := TStringList.Create;
-  LStringList.Clear;
-  try
-    if FileExists(AFilename) then
-      LStringList.LoadFromFile(AFilename)
-    else
-      try
-        LStringList.Append(
-          Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)]));
-        LStringList.SaveToFile(AFilename);
-      except
-        on E: Exception do
-          Result := False;
-      end;
-    AID := LStringList[0];
-    Result := True;
-  finally
-    LStringList.Free;
-  end
-end;
-
 class function TZMQActor.NewRandomID: string;
 begin
-  NewRandomID := '';
-  if GenerateID(LastID, LastIDFilename) then
-    NewRandomID := LastID
-  else
-    Exception.Create('TZMQActor.RenewID Exception');
+  Result :=
+    Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)]);
 end;
 
 procedure TZMQActor.UpdateID(ANewID: string);

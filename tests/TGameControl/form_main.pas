@@ -171,8 +171,8 @@ begin
   FExperimentBox.Top := 16;
   FExperimentBox.Parent := Self;
 
-  FServer := TGameControl.Create(TZMQAdmin.Create(Self,
-    Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)])),
+  FServer := TGameControl.Create(
+    TZMQAdmin.Create(Self, TZMQActor.NewRandomID),
     ExtractFilePath(Application.ExeName));
 
   FServer.OnInterlocking := @FExperimentBox.Interlocking;
@@ -205,14 +205,12 @@ begin
 end;
 
 procedure TForm1.ButtonLoginClick(Sender: TObject);
-var
-  ID: string;
 begin
-  ID := Format('%12X-%12X',[Random($1000000000000), Random($1000000000000)]);
   case GPlayers of
     0 :
       begin
-        FPlayer1 := TGameControl.Create(TZMQPlayer.Create(Self,ID));
+        FPlayer1 := TGameControl.Create(
+          TZMQPlayer.Create(Self,TZMQActor.NewRandomID));
         FPlayer1.GroupBoxPlayers := GBLastChoiceP1;
         FPlayer1.LabelGroup1Count := LabelGroupCountP1;
         FPlayer1.LabelPointA := LabelIndACountP1;
@@ -226,7 +224,8 @@ begin
       end;
     1 :
       begin
-        FPlayer2 := TGameControl.Create(TZMQPlayer.Create(Self,ID));
+        FPlayer2 := TGameControl.Create(
+          TZMQPlayer.Create(Self,TZMQActor.NewRandomID));
         FPlayer2.GroupBoxPlayers := GBLastChoiceP2;
         FPlayer2.LabelGroup1Count := LabelGroupCountP2;
         FPlayer2.LabelPointA := LabelIndACountP2;
@@ -240,7 +239,8 @@ begin
       end;
     2 :
       begin
-        FPlayer3 := TGameControl.Create(TZMQPlayer.Create(Self,ID));
+        FPlayer3 := TGameControl.Create(
+          TZMQPlayer.Create(Self,TZMQActor.NewRandomID));
         FPlayer3.GroupBoxPlayers := GBLastChoiceP3;
         FPlayer3.LabelGroup1Count := LabelGroupCountP3;
         FPlayer3.LabelPointA := LabelIndACountP3;

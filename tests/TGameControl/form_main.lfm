@@ -1,10 +1,10 @@
 object Form1: TForm1
-  Left = 258
-  Height = 779
-  Top = 124
+  Left = 245
+  Height = 878
+  Top = 44
   Width = 1190
   Caption = 'Form1'
-  ClientHeight = 779
+  ClientHeight = 878
   ClientWidth = 1190
   OnCreate = FormCreate
   LCLVersion = '2.1.0.0'
@@ -47,20 +47,20 @@ object Form1: TForm1
   end
   object PageControl1: TPageControl
     Left = 0
-    Height = 768
+    Height = 872
     Top = 0
     Width = 888
-    ActivePage = TabSheet6
+    ActivePage = TabSheet5
     Anchors = [akTop, akLeft, akRight]
-    TabIndex = 5
+    TabIndex = 3
     TabOrder = 4
     object TabSheet1: TTabSheet
       Caption = 'Experiment'
-      ClientHeight = 735
+      ClientHeight = 839
       ClientWidth = 878
       object ListBoxExperiment: TListBox
         Left = 0
-        Height = 677
+        Height = 781
         Top = 58
         Width = 878
         Align = alClient
@@ -88,7 +88,7 @@ object Form1: TForm1
     end
     object TabSheet3: TTabSheet
       Caption = 'Last Choices'
-      ClientHeight = 735
+      ClientHeight = 839
       ClientWidth = 878
       object GBLastChoiceServer: TGroupBox
         AnchorSideLeft.Control = TabSheet3
@@ -197,7 +197,7 @@ object Form1: TForm1
     end
     object TabSheet4: TTabSheet
       Caption = 'Count Labels'
-      ClientHeight = 735
+      ClientHeight = 839
       ClientWidth = 878
       object GBPoints: TGroupBox
         AnchorSideLeft.Side = asrBottom
@@ -217,7 +217,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 295
+        ClientHeight = 290
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -4171,7 +4171,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 295
+        ClientHeight = 290
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -8125,7 +8125,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 295
+        ClientHeight = 290
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -12079,7 +12079,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 295
+        ClientHeight = 290
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -16020,7 +16020,7 @@ object Form1: TForm1
       Caption = 'Messages'
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 2
-      ClientHeight = 735
+      ClientHeight = 839
       ClientWidth = 878
       object Label1: TLabel
         Left = 0
@@ -16040,10 +16040,10 @@ object Form1: TForm1
       end
       object ListBoxMessages: TListBox
         Left = 0
-        Height = 300
+        Height = 400
         Top = 19
         Width = 440
-        Constraints.MinHeight = 300
+        Constraints.MinHeight = 400
         Constraints.MinWidth = 440
         ItemHeight = 0
         ScrollWidth = 438
@@ -16052,10 +16052,10 @@ object Form1: TForm1
       end
       object ListBoxMessages1: TListBox
         Left = 440
-        Height = 300
+        Height = 400
         Top = 19
         Width = 440
-        Constraints.MinHeight = 300
+        Constraints.MinHeight = 400
         Constraints.MinWidth = 440
         ItemHeight = 0
         ScrollWidth = 438
@@ -16065,7 +16065,7 @@ object Form1: TForm1
       object Label3: TLabel
         Left = 0
         Height = 19
-        Top = 319
+        Top = 419
         Width = 440
         Caption = 'P2'
         ParentColor = False
@@ -16073,17 +16073,17 @@ object Form1: TForm1
       object Label4: TLabel
         Left = 440
         Height = 19
-        Top = 319
+        Top = 419
         Width = 440
         Caption = 'P3'
         ParentColor = False
       end
       object ListBoxMessages2: TListBox
         Left = 0
-        Height = 300
-        Top = 338
+        Height = 400
+        Top = 438
         Width = 440
-        Constraints.MinHeight = 300
+        Constraints.MinHeight = 400
         Constraints.MinWidth = 440
         ItemHeight = 0
         ScrollWidth = 438
@@ -16092,10 +16092,10 @@ object Form1: TForm1
       end
       object ListBoxMessages3: TListBox
         Left = 440
-        Height = 300
-        Top = 338
+        Height = 400
+        Top = 438
         Width = 440
-        Constraints.MinHeight = 300
+        Constraints.MinHeight = 400
         Constraints.MinWidth = 440
         ItemHeight = 0
         ScrollWidth = 438
@@ -16105,11 +16105,11 @@ object Form1: TForm1
     end
     object TabSheet2: TTabSheet
       Caption = 'Report'
-      ClientHeight = 735
+      ClientHeight = 839
       ClientWidth = 878
       object ListBoxReport: TListBox
         Left = 0
-        Height = 735
+        Height = 839
         Top = 0
         Width = 878
         Align = alClient
@@ -16121,11 +16121,11 @@ object Form1: TForm1
     end
     object TabSheet6: TTabSheet
       Caption = 'Old Participants'
-      ClientHeight = 735
+      ClientHeight = 839
       ClientWidth = 878
       object ListBoxOldParticipants: TListBox
         Left = 0
-        Height = 735
+        Height = 839
         Top = 0
         Width = 878
         Align = alClient

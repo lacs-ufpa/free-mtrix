@@ -32,7 +32,7 @@ uses
 
 
 var
-  ApplicationPath,
+  ApplicationPath : string;
   InitParameter : string = '';
 
 const
@@ -75,8 +75,6 @@ begin
   if not CreateDebugFoldersForPlayers then Exit;
   {$ENDIF}
   Application.Initialize;
-  if not TZMQActor.GenerateID(LastID, LastIDFilename) then Exit;
-
   Application.CreateForm(TFormMatrixGame, FormMatrixGame);
   if Paramcount > 0 then
     begin
@@ -87,7 +85,7 @@ begin
       if AnsiMatchStr(lowercase(ParamStr(1)), PWatcher) then
         InitParameter := 'w';
     end;
-  FormMatrixGame.SetID(LastID, InitParameter);
+  FormMatrixGame.SetParameters(InitParameter);
   Application.Run;
 end.
 

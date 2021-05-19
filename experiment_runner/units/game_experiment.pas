@@ -101,7 +101,6 @@ type
     procedure SetState(AValue: TExperimentState);
     procedure SetTargetInterlockingEvent;
     procedure SetContingenciesEvents;
-    procedure SetPlayersQueue(AValue: string);
   private
     FConditionMustBeUpdated: string;
     FConsequenceStringFromChoices: string;
@@ -165,6 +164,8 @@ type
     property MatrixTypeAsString : string read GetMatrixTypeAsString write SetMatrixTypeFromString;
   public // manipulation/ self awareness
     PlayerTurn : integer;
+    procedure MovePlayersQueueLeft;
+    procedure ArquiveOldPlayer(APlayer : TPlayer);
     function GlobalPoints(AGameConsequencestyle: TGameConsequenceStyle;
       AID : string = '') : integer;
     function AppendCondition : integer; overload;
@@ -202,6 +203,7 @@ type
   public // standard control
     function ShouldEndCondition:Boolean;
     function CurrentConditionAsString:string;
+    function ValidID(AID : string) : Boolean;
     procedure ForceEndCondition;
     procedure Clean;
     procedure Play;
@@ -217,7 +219,7 @@ type
     property NextTurnPlayerID : string read GetNextTurnPlayerID;
     property NextTurn : string read GetNextTurn;
     property NextCondition : string read GetNextCondition;
-    property NextGeneration: string read GetPlayerToKick write SetPlayersQueue;
+    property NextGeneration: string read GetPlayerToKick;
     property ConditionMustBeUpdated : string read FConditionMustBeUpdated write FConditionMustBeUpdated;
     property State : TExperimentState read FState write SetState;
   public // events
@@ -696,18 +698,15 @@ begin
   if Assigned(FOnTargetInterlocking) then FOnTargetInterlocking(Sender);
 end;
 
-procedure TExperiment.SetPlayersQueue(AValue: string);
+procedure TExperiment.MovePlayersQueueLeft;
 var
   i : integer;
+  P : TPlayer;
 begin
-  SetLength(FOldPlayers, Length(FOldPlayers)+1);
-  FOldPlayers[High(FOldPlayers)] := FPlayers[0];
-
-  // move left
+  P := FPlayers[0];
   for i := 0 to PlayersCount-2 do
     FPlayers[i] := FPlayers[i+1];
-
-  FPlayers[High(FPlayers)] := PlayerFromString[AValue];
+  FPlayers[High(FPlayers)] := P;
 end;
 
 function TExperiment.GetPlayerToKick: string;
@@ -1280,6 +1279,24 @@ begin
       IntToStr(Condition[CurrentConditionI].Points.OnStart.G2);
 end;
 
+function TExperiment.ValidID(AID: string): Boolean;
+var
+  P : TPlayer;
+begin
+  Result := True;
+  for P in FPlayers do
+    if P.ID = AID then begin
+      Result := False;
+      Exit;
+    end;
+
+  for P in FOldPlayers do
+    if P.ID = AID then begin
+      Result := False;
+      Exit;
+    end;
+end;
+
 procedure TExperiment.ForceEndCondition;
 begin
   if CurrentCondition.EndCriterium.ReachZero then
@@ -1302,6 +1319,12 @@ begin
   if FFilename <> '' then
     SaveExperimentToFile(Self,FFilename)
   else;
+end;
+
+procedure TExperiment.ArquiveOldPlayer(APlayer: TPlayer);
+begin
+  SetLength(FOldPlayers, Length(FOldPlayers)+1);
+  FOldPlayers[High(FOldPlayers)] := APlayer;
 end;
 
 function TExperiment.GlobalPoints(AGameConsequencestyle: TGameConsequenceStyle;

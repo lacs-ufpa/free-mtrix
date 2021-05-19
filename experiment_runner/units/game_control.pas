@@ -37,14 +37,15 @@ type
     function GetActorNicname(AID:string) : string;
     function MessageHas(const A_CONST : string; AMessage : TStringList; I:ShortInt=0): Boolean;
     procedure CreatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False);
-    procedure UpdatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False; AOldPlayerID:string = '');
+    procedure UpdatePlayerBox(P:TPlayer; Me:Boolean;Admin:Boolean = False; AOldPlayerID: string = '');
     //procedure DeletePlayerBox(AID : string);
     //procedure MovePlayerBox(AID : string);
     procedure SetMatrixType(AStringGrid : TStringGrid; AMatrixType:TGameMatrixType);
     procedure ReceiveMessage(AMessage : TStringList);
     procedure ReceiveRequest(var ARequest : TStringList);
     procedure ReceiveReply(AReply : TStringList);
-    procedure MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
+    procedure UpdatePlayerTurns(ANextTurnString : string);
+    procedure MovePlayerQueue(ANewPlayerAsString,AOldPlayerAsString:string);
   private
     function AskQuestion(AQuestion:string):string;
     function ShowConsequence(AID,S:string;IsMeta:Boolean;ShowPopUp : Boolean = True) : string;
@@ -54,7 +55,9 @@ type
     procedure EnablePlayerMatrix(AID:string; ATurn:integer; AEnabled:Boolean);
     procedure InvalidateLabels;
   private
+  {$IFDEF TEST_MODE}
     FFallbackMessages: TListBox;
+  {$ENDIF}
     FGroupBoxPlayers: TGroupBox;
     FLabelGroup1Count: TLabel;
     FLabelGroup2Count: TLabel;
@@ -79,7 +82,9 @@ type
     FSystemPopUp: TPopupNotifier;
     function GetID: string;
     procedure Interlocking(Sender: TObject);
+  {$IFDEF TEST_MODE}
     procedure SetFallbackMessages(AValue: TListBox);
+  {$ENDIF}
     procedure SetGroupBoxPlayers(AValue: TGroupBox);
     procedure SetLabelGroup1(AValue: TLabel);
     procedure SetLabelGroup1Name(AValue: TLabel);
@@ -132,7 +137,9 @@ type
     property LabelPointB : TLabel read FLabelPointBCount write SetLabelPointB;
     property LabelPointI : TLabel read FLabelPointI write SetLabelPointI;
     property ImageGroup1 : TImage read FPictureGroup1 write SetPictureGroup1;
+  {$IFDEF TEST_MODE}
     property FallbackMessages : TListBox read FFallbackMessages write SetFallbackMessages;
+  {$ENDIF}
     property LabelGroup1Name : TLabel read FLabelGroup1Name write SetLabelGroup1Name;
     property LabelGroup2Name : TLabel read FLabelGroup2Name write SetLabelGroup2Name;
     property GroupBoxPlayers : TGroupBox read FGroupBoxPlayers write SetGroupBoxPlayers;
@@ -256,11 +263,13 @@ begin
   Result := FZMQActor.ID;
 end;
 
+{$IFDEF TEST_MODE}
 procedure TGameControl.SetFallbackMessages(AValue: TListBox);
 begin
   if FFallbackMessages=AValue then Exit;
   FFallbackMessages:=AValue;
 end;
+{$ENDIF}
 
 procedure TGameControl.SetGroupBoxPlayers(AValue: TGroupBox);
 begin
@@ -480,7 +489,7 @@ begin
 end;
 
 procedure TGameControl.UpdatePlayerBox(P: TPlayer; Me: Boolean; Admin: Boolean;
-  AOldPlayerID : string);
+  AOldPlayerID: string);
 var
   LPlayerBox : TPlayerBox;
 begin
@@ -583,24 +592,61 @@ end;
 //  end;
 //end;
 
-procedure TGameControl.MovePlayerQueue(ANewPlayerString,AOldPlayerID:string);
+procedure TGameControl.MovePlayerQueue(ANewPlayerAsString,
+  AOldPlayerAsString: string);
 var
-  P : TPlayer;
+  LNewPlayer : TPlayer;
+  LOldPlayer : TPlayer;
+  S : string;
+  i : integer;
 begin
-  P := FExperiment.PlayerFromString[ANewPlayerString]; // new
-  UpdatePlayerBox(P,Self.ID = P.ID, FActor=gaAdmin);
+  LNewPlayer := FExperiment.PlayerFromString[ANewPlayerAsString];
+  LOldPlayer := FExperiment.PlayerFromString[AOldPlayerAsString];
+  FExperiment.ArquiveOldPlayer(LOldPlayer);
+  {$IFDEF TEST_MODE}
+  S :=
+    'BEFORE:' + Self.ID + LineEnding +
+    'NextTurnPlayerID: ' +FExperiment.NextTurnPlayerID + LineEnding +
+    'PlayerTurn: ' +FExperiment.PlayerTurn.ToString + LineEnding;
+
+  for i := 0 to FExperiment.PlayersCount-1 do
+    begin
+      S +=
+        'Player'+ i.ToString +'.ID: ' +FExperiment.Player[i].ID + LineEnding +
+        'Player'+ i.ToString +'.Turn: ' +FExperiment.Player[i].Turn.ToString + LineEnding;
+    end;
+  {$ENDIF}
+  LNewPlayer.Turn := LOldPlayer.Turn;
+  FExperiment.Player[LOldPlayer.ID] := LNewPlayer;
+  FExperiment.MovePlayersQueueLeft;
+
+  if Self.ID = LOldPlayer.ID then
+    FZMQActor.UpdateID(LNewPlayer.ID);
+
+  {$IFDEF TEST_MODE}
+  S += LineEnding+
+    'AFTER:' + Self.ID + LineEnding+
+    'NextTurnPlayerID: ' +FExperiment.NextTurnPlayerID + LineEnding +
+    'PlayerTurn: ' +FExperiment.PlayerTurn.ToString + LineEnding;
+
+  for i := 0 to FExperiment.PlayersCount-1 do
+    begin
+      S +=
+        'Player'+ i.ToString +'.ID: ' +FExperiment.Player[i].ID + LineEnding +
+        'Player'+ i.ToString +'.Turn: ' +FExperiment.Player[i].Turn.ToString + LineEnding;
+    end;
+  FallbackMessages.Items.Append(S);
+  {$ENDIF}
+  UpdatePlayerBox(LNewPlayer,
+    Self.ID = LNewPlayer.ID, FActor=gaAdmin, LOldPlayer.ID);
   if FExperiment.ConditionMustBeUpdated <> '' then
     begin
       NextConditionSetup(FExperiment.ConditionMustBeUpdated);
       FExperiment.ConditionMustBeUpdated := '';
     end;
-  NextGenerationSetup(P.ID);
+  NextGenerationSetup(LNewPlayer.ID);
   if FActor=gaPlayer then
-    begin
-      P.Turn := FExperiment.Player[AOldPlayerID].Turn;
-      FExperiment.Player[AOldPlayerID] := P;
-      EnablePlayerMatrix(Self.ID,0, True);
-    end;
+    EnablePlayerMatrix(Self.ID, 0, True);
 end;
 
 // many thanks to howardpc for this:
@@ -906,27 +952,23 @@ begin
   end;
 end;
 
-procedure TGameControl.EnablePlayerMatrix(AID:string; ATurn:integer; AEnabled:Boolean);
+procedure TGameControl.EnablePlayerMatrix(AID:string; ATurn:integer;
+  AEnabled:Boolean);
 const
   LMessage : string = 'It is your turn! Click at a row and confirm your choice.';
 begin
-  if FExperiment.PlayerFromID[AID].Turn = ATurn then
-    begin
-      if Assigned(OnCleanEvent) then
-        OnCleanEvent(Self, AEnabled);
+  if FExperiment.PlayerFromID[AID].Turn = ATurn then begin
+    if Assigned(OnCleanEvent) then
+      OnCleanEvent(Self, AEnabled);
 
-      if AEnabled then
-        begin
-          ShowSystemPopUp(LMessage, GLOBAL_SYSTEM_MESSAGE_INTERVAL);
-          {$IFDEF DEBUG}
-            {$IFDEF WINDOWS}
-              // todo:
-            {$ELSE}
-              FormMatrixGame.BringToFront;
-            {$ENDIF}
-          {$ENDIF}
-        end;
+    if AEnabled then begin
+      {$IFDEF TEST_MODE}
+        FallbackMessages.Items.Append(LMessage);
+      {$ELSE}
+        ShowSystemPopUp(LMessage, GLOBAL_SYSTEM_MESSAGE_INTERVAL);
+      {$ENDIF}
     end;
+  end;
 end;
 
 procedure TGameControl.InvalidateLabels;
@@ -1191,8 +1233,6 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   var
     P : TPlayer;
     FPlayerBox : TPlayerBox;
-    LIDTurn: String;
-    LCount, i: Integer;
   begin
     P := FExperiment.PlayerFromID[AMessage[1]];
     // add last responses to player box
@@ -1210,20 +1250,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             begin
               // update next turn if necessary
               if AMessage[4] <> #32 then
-                begin
-                  LCount := WordCount(AMessage[4],['+']);
-                  if LCount > 0 then
-                    for i := 1 to LCount do
-                      begin
-                        LIDTurn := ExtractDelimited(i,AMessage[4],['+']);
-                        if Self.ID = ExtractDelimited(1,LIDTurn,['|']) then
-                          begin
-                            P := FExperiment.PlayerFromID[Self.ID];
-                            P.Turn := StrToInt(ExtractDelimited(2,LIDTurn,['|']));
-                            FExperiment.PlayerFromID[Self.ID] := P;
-                          end;
-                      end;
-                end;
+                UpdatePlayerTurns(AMessage[4]);
+
               if Assigned(OnCleanEvent) then
                 OnCleanEvent(Self, False);
 
@@ -1282,17 +1310,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
         begin
           //DeletePlayerBox(AID); // old player
           if Self.ID = AID then begin
-            if FExperiment.ABPoints then
-              begin
-                Pts := FExperiment.PlayerPointsSummationFromID(Self.ID).ToString;
-                LabelPointA.Caption := '0';
-                LabelPointB.Caption := '0';
-              end
-            else
-              begin
-                Pts := LabelPointI.Caption;
-                LabelPointI.Caption := '0';
-              end;
+            Pts := FExperiment.PlayerPointsSummationFromID(Self.ID).ToString;
 
             // TODO: EXPERIMENT2, remove G2 from LMessage
             LMessage :=
@@ -1376,7 +1394,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
   procedure ResumeNextTurn;
   var
-    LPlayerBox : TPlayerBox;
+    //LPlayerBox : TPlayerBox;
     P : TPlayer;
     LMessage: String;
   begin
@@ -1395,7 +1413,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             begin
               if AMessage[1] <> #32 then
                 begin
-                  LPlayerBox := GetPlayerBox(AMessage[1]);
+                  //LPlayerBox := GetPlayerBox(AMessage[1]);
                   P := FExperiment.PlayerFromID[AMessage[1]];
                   if Assigned(OnPlayerExit) then
                     OnPlayerExit(P, AMessage[1]);
@@ -1532,7 +1550,6 @@ begin
   if MHas(K_START) then NotifyPlayers;
   if MHas(K_QUESTION) then ShowQuestion;
   if MHas(K_MOVQUEUE) then
-    if FActor = gaPlayer then
       MovePlayerQueue(AMessage[1],AMessage[2]);
 
   if MHas(K_QMESSAGE) then QuestionMessages;
@@ -1657,6 +1674,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
   var
     P : TPlayer;
     S : string;
+    T : string;
   begin
     P := FExperiment.PlayerFromID[ARequest[0]];                    // 0 = ID, 1 = #32
     P.Choice.Row:= GetRowFromString(ARequest[3]);                  // 3 row
@@ -1667,7 +1685,14 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     S := FExperiment.ConsequenceStringFromChoice[P];
 
     // update turn
-    ARequest.Append(FExperiment.NextTurn);                         // 5
+    T := FExperiment.NextTurn;
+    if T <> #32 then
+      UpdatePlayerTurns(T);
+  {$IFDEF TEST_MODE}
+    FallbackMessages.Items.Append(
+      'Experiment.Turns: '+StringReplace(T,'+',LineEnding,[rfReplaceAll]));
+  {$ENDIF}
+    ARequest.Append(T);                         // 5
 
     // individual consequences
     ARequest.Append(S);                                            // 6
@@ -1736,31 +1761,34 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
   procedure ReplyResume;// old player becomes a new player
   var
-    P : TPlayer;
-    S : string;
+    LNewPlayer : TPlayer;
+    LOldPlayer : TPlayer;
+    LN, LO : string;
   begin
-    P := FExperiment.PlayerFromID[ARequest[0]];
+    LOldPlayer := FExperiment.PlayerFromID[ARequest[0]];
     ARequest[2] := K_RESUME+K_ARRIVED;
-
-
+    LNewPlayer := C_PLAYER_TEMPLATE;
+    LNewPlayer.Data := TStringList.Create;
   {$IFDEF TEST_MODE}
-    P.Nicname := GenResourceName(-1);
+    LNewPlayer.Nicname := GenResourceName(-1);
   {$ELSE}
     if FExperiment.GenPlayersAsNeeded then
-      P.Nicname := GenResourceName(-1)
+      LNewPlayer.Nicname := GenResourceName(-1)
     else
-      P.Nicname := InputBox
+      LNewPlayer.Nicname := InputBox
         (
           'A new generation has started.',
           'A new participant replaced the oldest one. What is the nickname of the new participant?',
           GenResourceName(-1)
         );
   {$ENDIF}
-    TZMQActor.NewRandomID;
-    S := FExperiment.PlayerAsString[P];
-    FExperiment.NextGeneration := S;
-    MovePlayerQueue(S,ARequest[0]);
-    ARequest.Append(S); // 3
+    repeat
+      LNewPlayer.ID := TZMQActor.NewRandomID;
+    until FExperiment.ValidID(LNewPlayer.ID);
+    LN := FExperiment.PlayerAsString[LNewPlayer];
+    LO := FExperiment.PlayerAsString[LOldPlayer];
+    ARequest.Append(LN); // 3
+    ARequest.Append(LO); // 4
   end;
 
 begin
@@ -1900,15 +1928,39 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
 
   procedure ResumePlayer;
   begin
-    // inform all players about the new player
-    //new player,old player (self.id)
-    FZMQActor.SendMessage([K_MOVQUEUE, AReply[3],AReply[0]]);
+    // new player (AsString) and old player (AsString)
+    FZMQActor.SendMessage([K_MOVQUEUE, AReply[3],AReply[4]]);
   end;
 
 begin
   if MHas(K_RESUME+K_ARRIVED) then ResumePlayer;
   if MHas(K_LOGIN+K_ARRIVED) then LoginAccepted;
   if MHas(K_CHOICE+K_ARRIVED) then ChoiceValidated;
+end;
+
+procedure TGameControl.UpdatePlayerTurns(ANextTurnString: string);
+var
+  LCount: integer;
+  LCode : string;
+  LPlayerID : string;
+  LTurnID, i: integer;
+  P: TPlayer;
+begin
+  LCount := WordCount(ANextTurnString,['+']);
+  if LCount > 0 then
+    for i := 1 to LCount do
+      begin
+        LCode     := ExtractDelimited(i,ANextTurnString,['+']);
+        LPlayerID := ExtractDelimited(1,LCode,['|']);
+        LTurnID   := StrToInt(ExtractDelimited(2,LCode,['|']));
+        P := FExperiment.PlayerFromID[LPlayerID];
+        P.Turn := LTurnID;
+        FExperiment.PlayerFromID[LPlayerID] := P;
+        //if Self.ID = LPlayerID then
+        //  begin
+
+        //  end;
+      end;
 end;
 
 
