@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ComCtrls, ExtCtrls, PopupNotifier
+  ComCtrls, ExtCtrls, PopupNotifier, IniPropStorage
   , game_visual_experiment
   , game_control
   , game_actors
@@ -72,6 +72,7 @@ type
     ImageIndB1: TImage;
     ImageIndB2: TImage;
     ImageIndB3: TImage;
+    IniPropStorage1 : TIniPropStorage;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -158,6 +159,7 @@ uses
   game_actors_helpers
   , game_zmq_actors
   , game_resources
+  , game_report
   ;
 
 {$R *.lfm}
@@ -183,7 +185,7 @@ begin
   FServer.OnStartGeneration:= @FExperimentBox.StartGeneration;
   FServer.OnStartCondition:= @FExperimentBox.StartCondition;
   FServer.OnEndExperiment :=@FExperimentBox.EndExperiment;
-  FServer.Experiment.OnWriteReport:=@WriteReport;
+  GameReport.OnWriteReport:=@WriteReport;
   LabelExperimentNotFound.Visible := not FServer.LoadFromFile('Experiment1.ini');
   FServer.LabelGroup1Count := LabelGroupCountServer;
   FServer.LabelPointA := LabelIndACountServer;

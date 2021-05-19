@@ -78,7 +78,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="20">
+    <Units Count="22">
       <Unit0>
         <Filename Value="tgamecontrol_test.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -162,6 +162,14 @@
         <Filename Value="../../experiment_runner/units/regdata.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit19>
+      <Unit20>
+        <Filename Value="../../experiment_runner/game_report.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="../../experiment_runner/units/virtual_report.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit21>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
