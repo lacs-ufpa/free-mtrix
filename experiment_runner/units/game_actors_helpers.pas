@@ -121,6 +121,7 @@ const
 
   C_CONDITION_TEMPLATE : TCondition =
     (
+      Index : -1;
       ConditionName : '';
       Label1:'';
       Label2:'';

@@ -126,6 +126,7 @@ type
     Turn : ShortInt;
   end;
 
+  PPlayers = ^TPlayers;
   TPlayers = array of TPlayer;
 
   TPlayerEvent = procedure (P : TPlayer; AMessage : string) of object;
@@ -274,6 +275,7 @@ type
   end;
 
   TCondition = record
+    Index : integer;
     ConditionName : string;
     Label1 : string;
     Label2 : string;
@@ -302,6 +304,17 @@ type
     end;
     Prompt : TPrompt; // onEndCycle
     EndCriterium : TEndConditionCriterium; // to change from one condition to another
+  end;
+
+  PConditions = ^TConditions;
+  TConditions = array of TCondition;
+
+  PCycles = ^TCycles;
+  TCycles = record
+    Global,
+    GenerationCount,
+    GenerationValue,
+    Generations : integer;
   end;
 
 operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boolean;

@@ -185,6 +185,7 @@ implementation
 
 uses ButtonPanel,Controls, LazUTF8, Forms, Dialogs, strutils
      , game_visual_matrix_a
+     , game_report
   {$IFDEF TEST_MODE}
      { do nothing }
   {$ELSE}
@@ -1299,7 +1300,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     if Assigned(FormMatrixGame) then
       FormMatrixGame.ChatMemoRecv.Lines.Append(ALn);
     if FActor = gaAdmin then
-      FExperiment.WriteChatLn(ALn);
+      GameReport.WriteChatLn(ALn);
   end;
 
   procedure SayGoodBye(AID:string); // [player_points]
@@ -1736,7 +1737,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
       begin
         // generate messages
         LPromptConsequences := FExperiment.CurrentCondition.Prompt.AsString;
-        FExperiment.WriteReportRowPrompt;
+        GameReport.WriteRowPrompt;
         SetLength(M, 3+LPromptConsequences.Count);
         M[0] := K_QMESSAGE;
         M[1] := ARequest[4]; // generation envelop

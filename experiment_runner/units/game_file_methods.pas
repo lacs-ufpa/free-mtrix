@@ -242,6 +242,7 @@ var
         begin
           with C do
             begin
+              Index := i;
               ConditionName := ReadString(LS,KEY_COND_NAME,LS);
               Picture1:=ReadString(LS,KEY_CULTURANT1_PICTURE,LS);
               Points.Count := GetPointsFromString(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
