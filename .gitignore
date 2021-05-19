@@ -44,5 +44,6 @@ experiment_runner/lib/x86_64-linux-gtk2/*.lfm
 experiment_runner/lib/i386-win32-win32/*.lfm
 *.data
 *.chat
+*lastid
 experiment_runner/ZMQVERSION
 experiment_runner/version_info.txt
