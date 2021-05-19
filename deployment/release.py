@@ -45,6 +45,7 @@ def copy_file(src, dst):
 
 RELEASES_FOLDER = 'deployment'
 DOCS_FOLDER = 'docs'
+TEST_FOLDER = 'tests'
 
 if __name__ == "__main__":
     root_path = os.path.dirname(os.path.abspath(__file__))
@@ -102,6 +103,23 @@ if __name__ == "__main__":
         src_examples = os.path.join(root_path, DOCS_FOLDER)
         dst_examples = os.path.join(destination, 'Documentation')
         copy_folder(src_examples, dst_examples)
+
+        # copy configuration file
+        src_file = os.path.join(root_path, TEST_FOLDER)
+        src_file = os.path.join(src_file, 'TGameControl')
+        src_file = os.path.join(src_file,'Experiment1.ini')
+        dst_file = os.path.join(destination, 'Experiment1.ini')
+        copy_file(src_file, dst_file)
+
+        # copy test program
+        src_file = os.path.join(root_path, TEST_FOLDER)
+        src_file = os.path.join(src_file, 'TGameControl')
+
+
+        if 'windows' in build_name:
+            src_file = os.path.join(src_file,'tgamecontrol_test.exe')
+            dst_file = os.path.join(destination, 'tgamecontrol_test.exe')
+        copy_file(src_file, dst_file)
 
         # zip release destination 
         tag = get_tag_commit()
