@@ -1107,10 +1107,6 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
     9  : NextGeneration
     10 : Fuzzy Logic for Ending
  }
-    for i := 0 to AReply.Count-1 do begin
-      Writeln(i.ToString + ' : ' + AReply[i])
-    end;
-
     if Self.ID = AReply[0] then begin
         // inform other players about self.id choice
         FZMQActor.SendMessage(
