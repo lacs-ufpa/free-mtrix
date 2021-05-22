@@ -14,16 +14,47 @@ unit game_actors;
 interface
 
 uses
-  Classes, SysUtils, Controls, StdCtrls, ExtCtrls, Forms, PopupNotifier
+  Classes, SysUtils, Controls, ExtCtrls, Forms, PopupNotifier
   , game_actors_point
-  , game_visual_elements
   ;
 type
 
-  TGameActor = ( gaNone, gaAdmin, gaPlayer, gaWatcher );
+  TGameContext = (
+    gmcNewPlayerLogin
+  , gmcNewPlayerLoginArrived
+  , gmcNewPlayerLoggedIn
+  , gmcNewPlayerArrived
+  , gmcExperimentStart
+  , gmcExperimentEnd
+  , gmcChoiceStart
+  , gmcWaitingForServer
+
+  { requires AID of player }
+  , gmcPlayerExited
+
+  { requires AID of player }
+  , gmcPlayerExitedEnd
+  );
+
+  TGameActor = (
+    gaNone,
+    gaAdmin,
+    gaPlayer,
+    gaWatcher
+  );
+
   TGamePlayerStatus = (gpsWaiting, gpsPlaying, gpsPlayed);
 
-  TGameMatrix = (gmColors, gmRows, gmColumns, gmDots, gmClearDots,gmDotsClearDots);
+type
+
+  TGameMatrix = (
+    gmColors,
+    gmRows,
+    gmColumns,
+    gmDots,
+    gmClearDots,
+    gmDotsClearDots
+  );
 
   TGameMatrixType = set of TGameMatrix;
 
@@ -85,20 +116,49 @@ type
 
   TGameAColors = array of TGameColor;
 
-  TGameEndCondition = (gecInterlockingPorcentage,gecAbsoluteCycles,gecWhichComesFirst);
-  //TGameOperator = (goNONE, goAND, goOR);
-  TGameStyle = (gtNone, gtRowsOnly, gtColorsOnly, gtRowsAndColors, gtRowsOrColors);
+type
+
+  TGameEndCondition = (
+    gecInterlockingPorcentage,
+    gecAbsoluteCycles,
+    gecWhichComesFirst
+  );
+
+  TGameStyle = (
+    gtNone,
+    gtRowsOnly,
+    gtColorsOnly,
+    gtRowsAndColors,
+    gtRowsOrColors
+  );
 
   TGameConsequenceStyle = (
-    gscNone, gscMessage, gscBroadcastMessage,
-    gscGlobalPoints, gscVariablePoints,
-    gscA, gscB,gscG1,gscG2,gscI
+    gscNone,
+    gscMessage,
+    gscBroadcastMessage,
+    gscGlobalPoints,
+    gscVariablePoints,
+    gscA,
+    gscB,
+    gscG1,
+    gscG2,
+    gscI
   );
+
   TConsequenceStyle = set of TGameConsequenceStyle;
 
-  TGamePromptStyle = (gsNone, gsYes, gsNo, gsAll,
-                      gsMetacontingency, gsContingency,
-                      gsBasA, gsRevertPoints,gsRevertMetaPoints,gsRevertIndiPoints);
+  TGamePromptStyle = (
+    gsNone,
+    gsYes,
+    gsNo,
+    gsAll,
+    gsMetacontingency,
+    gsContingency,
+    gsBasA,
+    gsRevertPoints,
+    gsRevertMetaPoints,
+    gsRevertIndiPoints
+  );
 
   TPromptStyle = set of TGamePromptStyle;
 
@@ -128,8 +188,6 @@ type
 
   PPlayers = ^TPlayers;
   TPlayers = array of TPlayer;
-
-  TPlayerEvent = procedure (P : TPlayer; AMessage : string) of object;
 
    { TCriteria }
 
@@ -441,12 +499,13 @@ begin
 end;
 
 function TContingency.CriteriaString: string;
-var R : TGameRow;
-    C : TGameColor;
+var
+  R : TGameRow;
+  C : TGameColor;
 begin
   Result := '';
   for R in FCriteria.Rows do
-    Result += GetRowString(R) + ',';
+    Result += GetRowAsString(R) + ',';
   Result += '|';
 
   Result += GetCriteriaStyleString(FCriteria.Style);
@@ -454,7 +513,7 @@ begin
   Result += '|';
 
   for C in FCriteria.Colors do
-    Result += GetColorString(C) + ',';
+    Result += GetColorStringFromGameColor(C) + ',';
 
   Result += '|';
 end;

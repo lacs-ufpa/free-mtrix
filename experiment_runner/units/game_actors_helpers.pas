@@ -14,7 +14,7 @@ unit game_actors_helpers;
 interface
 
 uses
-  Classes, SysUtils, Graphics, StdCtrls, game_actors;
+  Classes, SysUtils, Graphics, StdCtrls, game_actors, game_zmq_actors;
 
 function Sanitize(S : string):string;
 function DeduceNicname(S : string; P : TPlayer) : string;
@@ -23,6 +23,7 @@ function GetMessagesFromPromptStyle(APromptStyle : TPromptStyle;
   AContingencies : TContingencies) : TStringList;
 function FirstDelimitedString(S : string):string;
 procedure IncLabel(ALabel : TLabel; AValue:integer=0);
+function GameActor(AZMQActor : TZMQActor) : TGameActor;
 
 const
 
@@ -302,6 +303,16 @@ begin
     ALabel.Caption := IntToStr(C)
   else
     ALabel.Caption := '0';
+end;
+
+function GameActor(AZMQActor : TZMQActor) : TGameActor;
+begin
+  if AZMQActor.ClassType = TZMQAdmin then
+    Result := gaAdmin;
+  if AZMQActor.ClassType = TZMQPlayer then
+    Result := gaPlayer;
+  if AZMQActor.ClassType = TZMQWatcher then
+    Result := gaWatcher;
 end;
 
 end.

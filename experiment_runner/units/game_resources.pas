@@ -155,6 +155,10 @@ const
     'Nicole','Luisa','Daniela','Nuria','Bruna',
     'Victoria','Alicia','Rafaela','Helena','Miriam');
 
+const
+  GA_ADMIN = 'Admin';
+  GA_PLAYER = 'Player';
+  //GA_WATCHER = 'Watcher';
 
 implementation
 

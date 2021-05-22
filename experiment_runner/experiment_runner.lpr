@@ -11,8 +11,6 @@ program experiment_runner;
 
 {$mode objfpc}{$H+}
 
-{$DEFINE DEBUG}
-
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
@@ -26,8 +24,7 @@ uses
   {$ENDIF}
   , StrUtils, Forms, Classes, SysUtils
   , helpers
-  , game_zmq_actors
-  , form_matrixgame
+  , form_matrixgame, game_control_events
   ;
 
 

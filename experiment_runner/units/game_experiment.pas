@@ -29,6 +29,7 @@ type
 
   TExperiment = class(TComponent)
   private
+    FGameReport:TGameReport;
     FGameActor : TGameActor;
     FABPoints: Boolean;
     FExperimentAim  : string;
@@ -42,7 +43,6 @@ type
     FShowChat: Boolean;
     FMatrixType: TGameMatrixType;
   private
-    FExperimentPath: string;
     FPlayers : TPlayers;
     FOldPlayers : TPlayers;
     FCurrentCondition : integer;
@@ -82,7 +82,7 @@ type
     procedure SetTargetInterlockingEvent;
     procedure SetContingenciesEvents;
   private
-    FConditionMustBeUpdated: string;
+    FConditionMustBeUpdated: Boolean;
     FConsequenceStringFromChoices: string;
     FEndCycle: Boolean;
     FOnConsequence: TNotifyEvent;
@@ -99,11 +99,13 @@ type
     FOnWriteReport: TNotifyOnWriteReport;
     FOnStartExperiment: TNotifyEvent;
     FOnTargetInterlocking: TNotifyEvent;
-    procedure Consequence(Sender : TObject);
+    function GetTurns : string;
     function GetCurrentCondition: TCondition;
     function GetFirstTurn(AValue:integer): integer;
     function GetMatrixTypeAsString: string;
+    procedure Consequence(Sender : TObject);
     procedure Interlocking(Sender : TObject);
+    procedure SetFilename(AValue : string);
     procedure SetMatrixTypeFromString(AValue: string);
     procedure SetOnStartCondition(AValue: TNotifyEvent);
     procedure SetOnStartCycle(AValue: TNotifyEvent);
@@ -112,6 +114,7 @@ type
     procedure SetOnWriteReport(AValue: TNotifyOnWriteReport);
     procedure SetOnStartExperiment(AValue: TNotifyEvent);
     procedure SetOnTargetInterlocking(AValue: TNotifyEvent);
+    procedure SetTurns(AValue : string);
     procedure TargetInterlocking(Sender : TObject);
     procedure SetOnConsequence(AValue: TNotifyEvent);
     procedure SetOnEndCondition(AValue: TNotifyEvent);
@@ -123,8 +126,6 @@ type
   public // creation/ destruction
     constructor Create(AOwner:TComponent); override;
     constructor Create(AOwner:TComponent; AActor : TGameActor); reintroduce;
-    constructor Create(AOwner:TComponent; AActor : TGameActor; AppPath:string);overload;
-    constructor Create(AOwner:TComponent; AActor : TGameActor; AFilename, AppPath:string); overload;
     destructor Destroy; override;
     function LoadFromFile(AFilename: string):Boolean;
     function LoadFromGenerator:Boolean;
@@ -143,7 +144,7 @@ type
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
     property MatrixTypeAsString : string read GetMatrixTypeAsString write SetMatrixTypeFromString;
   public // manipulation/ self awareness
-    PlayerTurn : integer;
+    function CurrentTurn : integer;
     procedure MovePlayersQueueLeft;
     procedure ArquiveOldPlayer(APlayer : TPlayer);
     function GlobalPoints(AGameConsequencestyle: TGameConsequenceStyle;
@@ -183,9 +184,11 @@ type
     function ShouldEndCondition:Boolean;
     function CurrentConditionAsString:string;
     function ValidID(AID : string) : Boolean;
+    function AsString : string;
     procedure ForceEndCondition;
     procedure Clean;
     procedure Play;
+    procedure UpdatePlayerTurns(ANextTurnString: string);
     procedure IncMetaPoints(AGameConsequenceStyle: TGameConsequenceStyle;
       AValue: integer);
     procedure IncPlayerPoints(AGameConsequenceStyle: TGameConsequenceStyle;
@@ -197,8 +200,9 @@ type
     property NextTurn : string read GetNextTurn;
     property NextCondition : string read GetNextCondition;
     property NextGeneration: string read GetPlayerToKick;
-    property ConditionMustBeUpdated : string read FConditionMustBeUpdated write FConditionMustBeUpdated;
+    property ConditionMustBeUpdated : Boolean read FConditionMustBeUpdated write FConditionMustBeUpdated;
     property State : TExperimentState read FState write SetState;
+    property Turns : string read GetTurns write SetTurns;
   public // events
     property OnConsequence : TNotifyEvent read FOnConsequence write SetOnConsequence;
     property OnEndCondition : TNotifyEvent read FOnEndCondition write SetOnEndCondition;
@@ -213,6 +217,8 @@ type
     property OnStartGeneration : TNotifyEvent read FOnStartGeneration write SetOnStartGeneration;
     property OnStartTurn : TNotifyEvent read FOnStartTurn write SetOnStartTurn;
     property OnTargetInterlocking : TNotifyEvent read FOnTargetInterlocking write SetOnTargetInterlocking;
+    property Report : TGameReport read FGameReport;
+    property Filename : string read FFilename write SetFilename;
   end;
 
 resourcestring
@@ -220,7 +226,7 @@ resourcestring
 
 implementation
 
-uses game_actors_helpers, game_file_methods, game_resources, string_methods;
+uses game_actors_helpers, game_file_methods, game_resources, string_methods, strutils;
 
 { TExperiment }
 
@@ -261,7 +267,7 @@ begin
       if Assigned(FOnEndCycle) then FOnEndCycle(Self);
       FEndCycle := True;
       FConsequenceStringFromChoices := GetConsequenceStringFromChoices;
-      GameReport.WriteRow;
+      FGameReport.WriteRow;
       FConditions[CurrentConditionI].Turn.Count := 0;
       Inc(FCycles.Global);
       Inc(FConditions[CurrentConditionI].Cycles.Count);
@@ -287,7 +293,7 @@ end;
 {
   May return:
     - Fexperiment.CurrentConditionAsString -> next condition parameters
-    - #27 -> end experiment
+    - #27 -> end FExperiment
     - #32 -> do nothing
 }
 function TExperiment.GetNextCondition: string;
@@ -310,7 +316,7 @@ begin
       //FCycles.GenerationCount:=0;
       SetTargetInterlockingEvent;
       SetContingenciesEvents;
-      GameReport.NextCondition;
+      FGameReport.NextCondition;
       if Assigned(FOnStartCondition) then FOnStartCondition(Self);
       Result := CurrentConditionAsString;     // 'end condition' envelop item
     end;
@@ -344,7 +350,7 @@ begin
           Result := FPlayers[i];
           Break;
         end;
-  // Exception.Create('TExperiment.GetPlayer Exception');
+   Exception.Create('TExperiment.GetPlayer Exception');
 end;
 
 // fewer as possible data
@@ -405,7 +411,7 @@ begin
         Break;
       end;
 
-  LContingencyResults := GameReport.Reader.ColumnOf[LContingencyName];
+  LContingencyResults := FGameReport.Reader.ColumnOf[LContingencyName];
   if LContingencyResults.Count > 0 then
     begin
       i := 0;
@@ -513,8 +519,9 @@ end;
 
 procedure TExperiment.EndExperiment;
 begin
-  State:=xsWaiting;
-  GameReport.WriteFooter;
+  State:=xsNone;
+  FGameReport.WriteFooter;
+  Clean;
   if Assigned(FOnEndExperiment) then FOnEndExperiment(Self);
 end;
 
@@ -706,6 +713,12 @@ begin
   if Assigned(FOnInterlocking) then FOnInterlocking(Sender);
 end;
 
+procedure TExperiment.SetFilename(AValue : string);
+begin
+  if FFilename = AValue then Exit;
+  FFilename := AValue;
+end;
+
 
 procedure TExperiment.SetMatrixTypeFromString(AValue: string);
 begin
@@ -754,6 +767,12 @@ begin
   FOnTargetInterlocking:=AValue;
 end;
 
+procedure TExperiment.SetTurns(AValue : string);
+begin
+  if FGameActor = gaPlayer then
+    FRandomTurns.Text := AValue;
+end;
+
 procedure TExperiment.IncMetaPoints(
   AGameConsequenceStyle: TGameConsequenceStyle; AValue: integer);
 begin
@@ -766,6 +785,7 @@ begin
       begin
         Inc(FConditions[CurrentConditionI].Points.Count.G2, AValue);
       end;
+    else { do nothing };
   end;
 end;
 
@@ -803,8 +823,15 @@ end;
 constructor TExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  Exception.Create('Wrong Create Method');
+end;
+
+constructor TExperiment.Create(AOwner:TComponent; AActor : TGameActor);
+begin
+  inherited Create(AOwner);
   FCurrentCondition := 0;
-  FGameActor := gaAdmin;
+  FGameActor := AActor;
+  FGameReport := TGameReport.Create;
   FRandomTurns := TStringList.Create;
   with FCycles do
     begin
@@ -814,71 +841,26 @@ begin
       GenerationValue:=0;
     end;
   State := xsNone;
-  PlayerTurn := 0;
-end;
-
-constructor TExperiment.Create(AOwner: TComponent; AActor : TGameActor);
-begin
-  inherited Create(AOwner);
-  FCurrentCondition := 0;
-  FGameActor := AActor;
-  FRandomTurns := TStringList.Create;
-  with FCycles do
-    begin
-      Global := 0;
-      Generations := 0;
-      GenerationCount := 0;
-      GenerationValue:=0;
-    end;
-  State := xsNone;
-  PlayerTurn := 0;
-end;
-
-constructor TExperiment.Create(AOwner: TComponent; AActor : TGameActor; AppPath:string);
-begin
-  inherited Create(AOwner);
-  FCurrentCondition := 0;
-  FGameActor := AActor;
-  FExperimentPath := AppPath;
-  FRandomTurns := TStringList.Create;
-  State := xsNone;
-  PlayerTurn := 0;
-end;
-
-constructor TExperiment.Create(AOwner:TComponent; AActor : TGameActor; AFilename,AppPath:string);
-begin
-  inherited Create(AOwner);
-  FCurrentCondition := 0;
-  FGameActor := AActor;
-  FRandomTurns := TStringList.Create;
-  if LoadExperimentFromFile(Self,AFilename) then
-    begin
-      FExperimentPath := AppPath;
-      CheckNeedForRandomTurns;
-      State := xsWaiting;
-    end;
-  PlayerTurn := 0;
 end;
 
 destructor TExperiment.Destroy;
 begin
+  FGameReport.Free;
   FRandomTurns.Free;
   inherited Destroy;
 end;
 
 function TExperiment.LoadFromFile(AFilename: string): Boolean;
-var
-  LDataPath : string;
 begin
   Result := LoadExperimentFromFile(Self, AFilename);
   if Result then
     FFilename := AFilename
-  else Exit;
+  else Exception.Create('TExperiment.LoadFromFile Exception');
 
   SetTargetInterlockingEvent;
   SetContingenciesEvents;
   CheckNeedForRandomTurns;
-  GameReport.Start(FFileName, FResearcher, FExperimentName,
+  FGameReport.Start(FFileName, FResearcher, FExperimentName,
     @FCurrentCondition, @FConditions, @FCycles, @FPlayers);
   State := xsWaiting;
 end;
@@ -976,7 +958,7 @@ begin
     begin
       Result := #32;
       if Assigned(CurrentCondition.Prompt) then
-        GameReport.WriteRowPrompt; //TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
+        FGameReport.WriteRowPrompt; //TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
       Clean;
     end;
 end;
@@ -1084,6 +1066,28 @@ begin
     end;
 end;
 
+function TExperiment.AsString : string;
+var
+  LStringList : TStringList;
+begin
+  LStringList := TStringList.Create;
+  try
+    LStringList.LoadFromFile(FFilename);
+    Result := LStringList.Text;
+  finally
+    LStringList.Free;
+  end;
+end;
+
+function TExperiment.GetTurns : string;
+begin
+  if CurrentCondition.Turn.Random then begin
+    Result := FRandomTurns.Text;
+  end else begin
+    Result := #32;
+  end;
+end;
+
 procedure TExperiment.ForceEndCondition;
 begin
   if CurrentCondition.EndCriterium.ReachZero then
@@ -1104,8 +1108,19 @@ end;
 procedure TExperiment.SaveToFile;
 begin
   if FFilename <> '' then
-    SaveExperimentToFile(Self,FFilename)
+    SaveExperimentToFile(Self, FFilename)
   else;
+end;
+
+function TExperiment.CurrentTurn : integer;
+var
+  LTurnIndex : integer;
+begin
+  LTurnIndex := CurrentCondition.Turn.Count;
+  if CurrentCondition.Turn.Random then
+    Result := StrToInt(Delimited(2,FRandomTurns[LTurnIndex]))
+  else
+    Result := LTurnIndex;
 end;
 
 procedure TExperiment.ArquiveOldPlayer(APlayer: TPlayer);
@@ -1185,15 +1200,41 @@ begin
   if Assigned(Condition[c].Prompt) then  // TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
     Condition[c].Prompt.Clean;
 
-  GameReport.Clean;
+  FGameReport.Clean;
 end;
 
 procedure TExperiment.Play;
 begin
-  FConditionMustBeUpdated := '';
   FCycles.GenerationValue := CurrentCondition.Cycles.Value;
   FState:=xsRunning;
-  if Assigned(FOnStartExperiment) then FOnStartExperiment(Self);
+
+  // only admin can send the start experiment event
+  if FGameActor = gaAdmin then
+    if Assigned(FOnStartExperiment) then FOnStartExperiment(Self);
+end;
+
+procedure TExperiment.UpdatePlayerTurns(ANextTurnString: string);
+var
+  LCount: integer;
+  LCode : string;
+  LPlayerID : string;
+  LTurnID, i: integer;
+  P: TPlayer;
+begin
+  LCount := WordCount(ANextTurnString,['+']);
+  if LCount > 0 then
+    for i := 1 to LCount do
+      begin
+        LCode     := ExtractDelimited(i,ANextTurnString,['+']);
+        if FGameActor = gaPlayer then begin
+          FRandomTurns[i-1] := LCode;
+        end;
+        LPlayerID := ExtractDelimited(1,LCode,['|']);
+        LTurnID   := StrToInt(ExtractDelimited(2,LCode,['|']));
+        P := PlayerFromID[LPlayerID];
+        P.Turn := LTurnID;
+        PlayerFromID[LPlayerID] := P;
+      end;
 end;
 
 

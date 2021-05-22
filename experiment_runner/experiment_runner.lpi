@@ -23,7 +23,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="2"/>
-      <BuildNr Value="16"/>
+      <BuildNr Value="17"/>
       <Language Value="0416"/>
       <StringTable Comments="https://github.com/lacs-ufpa/free-mtrix" CompanyName="Laboratório de Comportamento Social e Seleção Cultural" FileDescription="Experimentos livres de seleção cultural e comportamento social." LegalCopyright="Copyright (C) Carlos Rafael Fernandes Picanço, Universidade Federal do Pará." OriginalFilename="experiment_runner" ProductName="Free-mtrix" ProductVersion="0.2.0"/>
     </VersionInfo>
@@ -68,10 +68,12 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dUseCThreads"/>
-            <OtherDefines Count="2">
+            <CustomOptions Value="-dUseCThreads
+-dDEBUG"/>
+            <OtherDefines Count="3">
               <Define0 Value="UseCThreads"/>
               <Define1 Value="ZMQ_STATIC_LINK"/>
+              <Define2 Value="DEBUG"/>
             </OtherDefines>
           </Other>
         </CompilerOptions>
@@ -166,7 +168,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="23">
+    <Units Count="25">
       <Unit0>
         <Filename Value="experiment_runner.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -265,6 +267,14 @@
         <Filename Value="form_matrixgame.lfm"/>
         <IsPartOfProject Value="True"/>
       </Unit22>
+      <Unit23>
+        <Filename Value="units/game_visual_board.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit23>
+      <Unit24>
+        <Filename Value="game_control_events.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit24>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

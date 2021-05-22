@@ -51,9 +51,9 @@ object Form1: TForm1
     Height = 872
     Top = 0
     Width = 888
-    ActivePage = TabSheet1
+    ActivePage = TabSheet5
     Anchors = [akTop, akLeft, akRight]
-    TabIndex = 0
+    TabIndex = 3
     TabOrder = 4
     object TabSheet1: TTabSheet
       Caption = 'Experiment'
@@ -207,7 +207,7 @@ object Form1: TForm1
         Top = 0
         Width = 415
         AutoSize = True
-        Caption = 'Servidor'
+        Caption = 'Server'
         ChildSizing.LeftRightSpacing = 10
         ChildSizing.TopBottomSpacing = 10
         ChildSizing.HorizontalSpacing = 20
@@ -225,7 +225,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 0
-        object ImageIndA: TImage
+        object ImageServerA: TImage
           Left = 10
           Height = 60
           Top = 10
@@ -1166,7 +1166,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelIndA: TLabel
+        object LabelServerAName: TLabel
           Left = 90
           Height = 60
           Top = 10
@@ -1182,7 +1182,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelIndACountServer: TLabel
+        object LabelServerACount: TLabel
           Left = 353
           Height = 60
           Top = 10
@@ -1199,7 +1199,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object ImageIndB: TImage
+        object ImageServerB: TImage
           Left = 10
           Height = 60
           Top = 80
@@ -2152,7 +2152,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelIndB: TLabel
+        object LabelServerBName: TLabel
           Left = 90
           Height = 60
           Top = 80
@@ -2168,7 +2168,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelIndBCountServer: TLabel
+        object LabelServerBCount: TLabel
           Left = 353
           Height = 60
           Top = 80
@@ -2185,7 +2185,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object ImageInd: TImage
+        object ImageServerI: TImage
           Left = 10
           Height = 60
           Top = 150
@@ -3130,7 +3130,7 @@ object Form1: TForm1
           Stretch = True
           Visible = False
         end
-        object LabelInd: TLabel
+        object LabelServerIName: TLabel
           Left = 90
           Height = 60
           Top = 150
@@ -3147,7 +3147,7 @@ object Form1: TForm1
           Transparent = False
           Visible = False
         end
-        object LabelIndCountServer: TLabel
+        object LabelServerICount: TLabel
           Left = 353
           Height = 60
           Top = 150
@@ -3165,7 +3165,7 @@ object Form1: TForm1
           Transparent = False
           Visible = False
         end
-        object ImageGroup: TImage
+        object ImageServerGroup1: TImage
           Left = 10
           Height = 60
           Top = 220
@@ -4120,7 +4120,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelGroup: TLabel
+        object LabelServerGroup1Name: TLabel
           Left = 90
           Height = 60
           Top = 220
@@ -4136,7 +4136,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelGroupCountServer: TLabel
+        object LabelServerGroup1Count: TLabel
           Left = 353
           Height = 60
           Top = 220
@@ -4179,7 +4179,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 1
-        object ImageIndA1: TImage
+        object ImagePlayer1A: TImage
           Left = 10
           Height = 60
           Top = 10
@@ -5120,7 +5120,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelIndA1: TLabel
+        object LabelPlayer1AName: TLabel
           Left = 90
           Height = 60
           Top = 10
@@ -5136,7 +5136,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelIndACountP1: TLabel
+        object LabelPlayer1ACount: TLabel
           Left = 353
           Height = 60
           Top = 10
@@ -5153,7 +5153,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object ImageIndB1: TImage
+        object ImagePlayer1B: TImage
           Left = 10
           Height = 60
           Top = 80
@@ -6106,7 +6106,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelIndB1: TLabel
+        object LabelPlayer1BName: TLabel
           Left = 90
           Height = 60
           Top = 80
@@ -6122,7 +6122,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelIndBCountP1: TLabel
+        object LabelPlayer1BCount: TLabel
           Left = 353
           Height = 60
           Top = 80
@@ -6139,7 +6139,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object ImageInd1: TImage
+        object ImagePlayer1I: TImage
           Left = 10
           Height = 60
           Top = 150
@@ -7084,7 +7084,7 @@ object Form1: TForm1
           Stretch = True
           Visible = False
         end
-        object LabelInd1: TLabel
+        object LabelPlayer1IName: TLabel
           Left = 90
           Height = 60
           Top = 150
@@ -7101,7 +7101,7 @@ object Form1: TForm1
           Transparent = False
           Visible = False
         end
-        object LabelIndCountP1: TLabel
+        object LabelPlayer1ICount: TLabel
           Left = 353
           Height = 60
           Top = 150
@@ -7119,7 +7119,7 @@ object Form1: TForm1
           Transparent = False
           Visible = False
         end
-        object ImageGroup1: TImage
+        object ImagePlayer1Group1: TImage
           Left = 10
           Height = 60
           Top = 220
@@ -8074,7 +8074,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelGroup1: TLabel
+        object LabelPlayer1Group1Name: TLabel
           Left = 90
           Height = 60
           Top = 220
@@ -8090,7 +8090,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelGroupCountP1: TLabel
+        object LabelPlayer1Group1Count: TLabel
           Left = 353
           Height = 60
           Top = 220
@@ -8133,7 +8133,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 2
-        object ImageIndA2: TImage
+        object ImagePlayer2A: TImage
           Left = 10
           Height = 60
           Top = 10
@@ -9074,7 +9074,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelIndA2: TLabel
+        object LabelPlayer2AName: TLabel
           Left = 90
           Height = 60
           Top = 10
@@ -9090,7 +9090,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelIndACountP2: TLabel
+        object LabelPlayer2ACount: TLabel
           Left = 353
           Height = 60
           Top = 10
@@ -9107,7 +9107,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object ImageIndB2: TImage
+        object ImagePlayer2B: TImage
           Left = 10
           Height = 60
           Top = 80
@@ -10060,7 +10060,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelIndB2: TLabel
+        object LabelPlayer2BName: TLabel
           Left = 90
           Height = 60
           Top = 80
@@ -10076,7 +10076,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelIndBCountP2: TLabel
+        object LabelPlayer2BCount: TLabel
           Left = 353
           Height = 60
           Top = 80
@@ -10093,7 +10093,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object ImageInd2: TImage
+        object ImagePlayer2I: TImage
           Left = 10
           Height = 60
           Top = 150
@@ -11038,7 +11038,7 @@ object Form1: TForm1
           Stretch = True
           Visible = False
         end
-        object LabelInd2: TLabel
+        object LabelPlayer2IName: TLabel
           Left = 90
           Height = 60
           Top = 150
@@ -11055,7 +11055,7 @@ object Form1: TForm1
           Transparent = False
           Visible = False
         end
-        object LabelIndCountP2: TLabel
+        object LabelPlayer2ICount: TLabel
           Left = 353
           Height = 60
           Top = 150
@@ -11073,7 +11073,7 @@ object Form1: TForm1
           Transparent = False
           Visible = False
         end
-        object ImageGroup2: TImage
+        object ImagePlayer2Group1: TImage
           Left = 10
           Height = 60
           Top = 220
@@ -12028,7 +12028,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelGroup2: TLabel
+        object LabelPlayer2Group1Name: TLabel
           Left = 90
           Height = 60
           Top = 220
@@ -12044,7 +12044,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelGroupCountP2: TLabel
+        object LabelPlayer2Group1Count: TLabel
           Left = 353
           Height = 60
           Top = 220
@@ -12087,7 +12087,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 3
-        object ImageIndA3: TImage
+        object ImagePlayer3A: TImage
           Left = 10
           Height = 60
           Top = 10
@@ -13028,7 +13028,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelIndA3: TLabel
+        object LabelPlayer3AName: TLabel
           Left = 90
           Height = 60
           Top = 10
@@ -13044,7 +13044,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelIndACountP3: TLabel
+        object LabelPlayer3ACount: TLabel
           Left = 353
           Height = 60
           Top = 10
@@ -13061,7 +13061,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object ImageIndB3: TImage
+        object ImagePlayer3B: TImage
           Left = 10
           Height = 60
           Top = 80
@@ -14014,7 +14014,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelIndB3: TLabel
+        object LabelPlayer3BName: TLabel
           Left = 90
           Height = 60
           Top = 80
@@ -14030,7 +14030,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelIndBCountP3: TLabel
+        object LabelPlayer3BCount: TLabel
           Left = 353
           Height = 60
           Top = 80
@@ -14047,7 +14047,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object ImageInd3: TImage
+        object ImagePlayer3I: TImage
           Left = 10
           Height = 60
           Top = 150
@@ -14992,7 +14992,7 @@ object Form1: TForm1
           Stretch = True
           Visible = False
         end
-        object LabelInd3: TLabel
+        object LabelPlayer3IName: TLabel
           Left = 90
           Height = 60
           Top = 150
@@ -15009,7 +15009,7 @@ object Form1: TForm1
           Transparent = False
           Visible = False
         end
-        object LabelIndCountP3: TLabel
+        object LabelPlayer3ICount: TLabel
           Left = 353
           Height = 60
           Top = 150
@@ -15027,7 +15027,7 @@ object Form1: TForm1
           Transparent = False
           Visible = False
         end
-        object ImageGroup3: TImage
+        object ImagePlayer3Group1: TImage
           Left = 10
           Height = 60
           Top = 220
@@ -15982,7 +15982,7 @@ object Form1: TForm1
           }
           Stretch = True
         end
-        object LabelGroup3: TLabel
+        object LabelPlayer3Group1Name: TLabel
           Left = 90
           Height = 60
           Top = 220
@@ -15998,7 +15998,7 @@ object Form1: TForm1
           ParentFont = False
           Transparent = False
         end
-        object LabelGroupCountP3: TLabel
+        object LabelPlayer3Group1Count: TLabel
           Left = 353
           Height = 60
           Top = 220

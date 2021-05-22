@@ -19,9 +19,9 @@ uses
 
 type
 
-  { TExperimentBox }
+  { TGroupBoxExperiment }
 
-  TExperimentBox = class (TGroupBox)
+  TGroupBoxExperiment = class (TGroupBox)
   private
     LabelCondition,
     LabelConditionCount,
@@ -44,12 +44,6 @@ type
   private
     function GetInterlockString(Sender: TObject):string;
   published
-    //procedure EndCondition(Sender: TObject);
-    //procedure EndCycle(Sender: TObject);
-    //procedure EndExperiment(Sender: TObject);
-    //procedure EndGeneration(Sender: TObject);
-    //procedure EndTurn(Sender: TObject);
-
     procedure Interlocking(Sender: TObject);
     procedure StartCondition(Sender: TObject);
     procedure StartCycle(Sender: TObject);
@@ -77,12 +71,14 @@ resourcestring
 implementation
 
 uses
-  game_actors,
-  game_experiment;
+  game_actors
+  , game_experiment
+  , game_visual_board
+  ;
 
-{ TExperimentBox }
+{ TGroupBoxExperiment }
 
-function TExperimentBox.GetInterlockString(Sender: TObject): string;
+function TGroupBoxExperiment.GetInterlockString(Sender: TObject): string;
 var
   N: Integer;
 begin
@@ -92,7 +88,7 @@ begin
     Result := IntToStr(N) + ' %';
 end;
 
-procedure TExperimentBox.Interlocking(Sender: TObject);
+procedure TGroupBoxExperiment.Interlocking(Sender: TObject);
 var
   S : string;
 begin
@@ -101,7 +97,7 @@ begin
   LabelTargetInterlockCount.Caption := GetInterlockString(TComponent(Sender).Owner);
 end;
 
-procedure TExperimentBox.StartCondition(Sender: TObject);
+procedure TGroupBoxExperiment.StartCondition(Sender: TObject);
 begin
   LabelConditionCount.Caption := TExperiment(Sender).CurrentCondition.ConditionName;
   LabelConditionCycleCount.Caption := IntToStr(TExperiment(Sender).CurrentCondition.Cycles.Count+1);
@@ -112,7 +108,7 @@ begin
   //LabelGroup1GlobalCount.Caption := TExperiment(Sender).CurrentCondition.Points.Count.G2.ToString;
 end;
 
-procedure TExperimentBox.StartCycle(Sender: TObject);
+procedure TGroupBoxExperiment.StartCycle(Sender: TObject);
 begin
   LabelCycleCount.Caption := IntToStr(TExperiment(Sender).Cycles.Global+1);
   LabelConditionCycleCount.Caption := IntToStr(TExperiment(Sender).CurrentCondition.Cycles.Count+1);
@@ -121,7 +117,7 @@ begin
   LabelGroup1GlobalCount.Caption := TExperiment(Sender).GlobalPoints(gscG1).ToString;
 end;
 
-procedure TExperimentBox.StartExperiment(Sender: TObject);
+procedure TGroupBoxExperiment.StartExperiment(Sender: TObject);
 begin
   LabelConditionCount.Caption := TExperiment(Sender).CurrentCondition.ConditionName;
   LabelConditionCycleCount.Caption := (TExperiment(Sender).CurrentCondition.Cycles.Count+1).ToString;
@@ -138,22 +134,22 @@ begin
   LabelTargetInterlockCount.Caption := '0 %';
 end;
 
-procedure TExperimentBox.StartGeneration(Sender: TObject);
+procedure TGroupBoxExperiment.StartGeneration(Sender: TObject);
 begin
   LabelGenerationCount.Caption := IntToStr(TExperiment(Sender).Cycles.Generations+1);
 end;
 
-procedure TExperimentBox.StartTurn(Sender: TObject);
+procedure TGroupBoxExperiment.StartTurn(Sender: TObject);
 begin
   LabelTurnCount.Caption := IntToStr(TExperiment(Sender).CurrentCondition.Turn.Count+1);
 end;
 
-procedure TExperimentBox.TargetInterlocking(Sender: TObject);
+procedure TGroupBoxExperiment.TargetInterlocking(Sender: TObject);
 begin
   LabelTargetInterlockCount.Caption := GetInterlockString(TComponent(Sender).Owner);
 end;
 
-procedure TExperimentBox.EndExperiment(Sender: TObject);
+procedure TGroupBoxExperiment.EndExperiment(Sender: TObject);
 begin
   LabelConditionCount.Caption := 'NA';
   LabelGenerationCount.Caption := 'NA';
@@ -167,7 +163,7 @@ begin
   LabelGroup1GlobalCount.Caption:='NA';
 end;
 
-constructor TExperimentBox.Create(AOwner: TComponent);
+constructor TGroupBoxExperiment.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Top := 60;
@@ -259,7 +255,25 @@ begin
   LabelGroup1GlobalCount.Caption := 'NA';
   LabelGroup1GlobalCount.Parent := Self;
 
-
+  if Owner is TGameBoard then
+  begin
+    TGameBoard(Owner).OnEndExperiment := @EndExperiment;
+    TGameBoard(Owner).OnInterlocking := @Interlocking;
+    TGameBoard(Owner).OnStartCondition := @StartCondition;
+    TGameBoard(Owner).OnStartCycle := @StartCycle;
+    TGameBoard(Owner).OnStartExperiment := @StartExperiment;
+    TGameBoard(Owner).OnStartGeneration := @StartGeneration;
+    TGameBoard(Owner).OnStartTurn := @StartTurn;
+    TGameBoard(Owner).OnTargetInterlocking := @TargetInterlocking;
+    //TGameBoard(Owner).OnConsequence := @Consequence;
+    //TGameBoard(Owner).OnEndChoice := @EndChoice;
+    //TGameBoard(Owner).OnEndCondition := @EndCondition;
+    //TGameBoard(Owner).OnEndCycle := @EndCycle;
+    //TGameBoard(Owner).OnEndGeneration := @EndGeneration;
+    //TGameBoard(Owner).OnEndTurn := @EndTurn;
+    //TGameBoard(Owner).OnCleanEvent := @CleanEvent;
+    //TGameBoard(Owner).OnPlayerExit := @PlayerExit;
+  end;
 end;
 
 end.

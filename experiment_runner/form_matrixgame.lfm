@@ -1,7 +1,7 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 238
+  Left = 160
   Height = 803
-  Top = 128
+  Top = 158
   Width = 1584
   HorzScrollBar.Page = 1578
   VertScrollBar.Page = 593
@@ -11,7 +11,6 @@ object FormMatrixGame: TFormMatrixGame
   ClientWidth = 1584
   Font.Name = 'Monospace'
   OnActivate = FormActivate
-  OnCreate = FormCreate
   LCLVersion = '2.1.0.0'
   object GBPoints: TGroupBox
     AnchorSideLeft.Side = asrBottom

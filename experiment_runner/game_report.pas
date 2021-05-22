@@ -36,6 +36,7 @@ type
     FOnWriteReport: TNotifyOnWriteReport;
     procedure SetOnWriteReport(AValue: TNotifyOnWriteReport);
   public
+    constructor Create;
     destructor Destroy; override;
     procedure Clean;
     procedure NextCondition;
@@ -50,9 +51,6 @@ type
     property Reader        : TReportReader read FReportReader;
     property OnWriteReport : TNotifyOnWriteReport read FOnWriteReport write SetOnWriteReport;
   end;
-
-var
-  GameReport : TGameReport;
 
 implementation
 
@@ -195,7 +193,9 @@ begin
 
       for i:=0 to LCondition.Turn.Value-1 do
         begin
-        LRow += GetRowString(LPlayers[i].Choice.Row)+TabDelimiter+GetColorString(LPlayers[i].Choice.Color)+TabDelimiter;
+        LRow += GetRowAsString(
+          LPlayers[i].Choice.Row)+TabDelimiter+
+          GetColorStringFromGameColor(LPlayers[i].Choice.Color)+TabDelimiter;
         for j:= Low(LContingencies) to High(LContingencies) do
           if not LContingencies[j].Meta then
             if LContingencies[j].ConsequenceFromPlayerID(LPlayers[i].ID) <> '' then
@@ -226,6 +226,11 @@ procedure TGameReport.SetOnWriteReport(AValue : TNotifyOnWriteReport);
 begin
   if FOnWriteReport = AValue then Exit;
   FOnWriteReport := AValue;
+end;
+
+constructor TGameReport.Create;
+begin
+
 end;
 
 procedure TGameReport.NextCondition;
@@ -331,12 +336,6 @@ begin;
   FRegChat := TRegData.Create(nil, FReportFolder+'000.chat');
   WriteHeader(AResearcher, AExperimentName);
 end;
-
-initialization
-  GameReport := TGameReport.Create;
-
-finalization
-  GameReport.Free;
 
 end.
 

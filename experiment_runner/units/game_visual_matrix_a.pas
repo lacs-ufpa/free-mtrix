@@ -87,6 +87,8 @@ begin
   HasRows:=True;
   //HasCols:=True;
   UpdateSizeAndNames;
+  ClearSelections;
+  FocusRectVisible := False;
 end;
 
 function TStringGridA.GetSelectedRow: integer;
@@ -287,6 +289,7 @@ procedure TStringGridA.SetConfirmationButton(AValue: TButton);
 begin
   if FConfirmationButton=AValue then Exit;
   FConfirmationButton:=AValue;
+  FConfirmationButton.Visible := False;
 end;
 
 procedure TStringGridA.SetDrawClearDots(AValue: Boolean);

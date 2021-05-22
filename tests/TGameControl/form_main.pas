@@ -15,9 +15,10 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ComCtrls, ExtCtrls, PopupNotifier, IniPropStorage
+  ComCtrls, ExtCtrls, IniPropStorage
   , game_visual_experiment
   , game_control
+  , game_visual_board
   , game_actors
   ;
 
@@ -56,22 +57,22 @@ type
     GBPoints1: TGroupBox;
     GBPoints2: TGroupBox;
     GBPoints3: TGroupBox;
-    ImageGroup: TImage;
-    ImageGroup1: TImage;
-    ImageGroup2: TImage;
-    ImageGroup3: TImage;
-    ImageInd: TImage;
-    ImageInd1: TImage;
-    ImageInd2: TImage;
-    ImageInd3: TImage;
-    ImageIndA: TImage;
-    ImageIndA1: TImage;
-    ImageIndA2: TImage;
-    ImageIndA3: TImage;
-    ImageIndB: TImage;
-    ImageIndB1: TImage;
-    ImageIndB2: TImage;
-    ImageIndB3: TImage;
+    ImageServerGroup1: TImage;
+    ImagePlayer1Group1: TImage;
+    ImagePlayer2Group1: TImage;
+    ImagePlayer3Group1: TImage;
+    ImageServerI: TImage;
+    ImagePlayer1I: TImage;
+    ImagePlayer2I: TImage;
+    ImagePlayer3I: TImage;
+    ImageServerA: TImage;
+    ImagePlayer1A: TImage;
+    ImagePlayer2A: TImage;
+    ImagePlayer3A: TImage;
+    ImageServerB: TImage;
+    ImagePlayer1B: TImage;
+    ImagePlayer2B: TImage;
+    ImagePlayer3B: TImage;
     IniPropStorage1 : TIniPropStorage;
     Label1: TLabel;
     Label2: TLabel;
@@ -79,38 +80,38 @@ type
     Label4: TLabel;
     LabelRandomBias: TLabel;
     LabelExperimentNotFound: TLabel;
-    LabelGroup: TLabel;
-    LabelGroup1: TLabel;
-    LabelGroup2: TLabel;
-    LabelGroup3: TLabel;
-    LabelGroupCountServer: TLabel;
-    LabelGroupCountP1: TLabel;
-    LabelGroupCountP2: TLabel;
-    LabelGroupCountP3: TLabel;
-    LabelInd: TLabel;
-    LabelInd1: TLabel;
-    LabelInd2: TLabel;
-    LabelInd3: TLabel;
-    LabelIndA: TLabel;
-    LabelIndA1: TLabel;
-    LabelIndA2: TLabel;
-    LabelIndA3: TLabel;
-    LabelIndACountServer: TLabel;
-    LabelIndACountP1: TLabel;
-    LabelIndACountP2: TLabel;
-    LabelIndACountP3: TLabel;
-    LabelIndB: TLabel;
-    LabelIndB1: TLabel;
-    LabelIndB2: TLabel;
-    LabelIndB3: TLabel;
-    LabelIndBCountServer: TLabel;
-    LabelIndBCountP1: TLabel;
-    LabelIndBCountP2: TLabel;
-    LabelIndBCountP3: TLabel;
-    LabelIndCountServer: TLabel;
-    LabelIndCountP1: TLabel;
-    LabelIndCountP2: TLabel;
-    LabelIndCountP3: TLabel;
+    LabelServerGroup1Name: TLabel;
+    LabelPlayer1Group1Name: TLabel;
+    LabelPlayer2Group1Name: TLabel;
+    LabelPlayer3Group1Name: TLabel;
+    LabelServerGroup1Count: TLabel;
+    LabelPlayer1Group1Count: TLabel;
+    LabelPlayer2Group1Count: TLabel;
+    LabelPlayer3Group1Count: TLabel;
+    LabelServerIName: TLabel;
+    LabelPlayer1IName: TLabel;
+    LabelPlayer2IName: TLabel;
+    LabelPlayer3IName: TLabel;
+    LabelServerAName: TLabel;
+    LabelPlayer1AName: TLabel;
+    LabelPlayer2AName: TLabel;
+    LabelPlayer3AName: TLabel;
+    LabelServerACount: TLabel;
+    LabelPlayer1ACount: TLabel;
+    LabelPlayer2ACount: TLabel;
+    LabelPlayer3ACount: TLabel;
+    LabelServerBName: TLabel;
+    LabelPlayer1BName: TLabel;
+    LabelPlayer2BName: TLabel;
+    LabelPlayer3BName: TLabel;
+    LabelServerBCount: TLabel;
+    LabelPlayer1BCount: TLabel;
+    LabelPlayer2BCount: TLabel;
+    LabelPlayer3BCount: TLabel;
+    LabelServerICount: TLabel;
+    LabelPlayer1ICount: TLabel;
+    LabelPlayer2ICount: TLabel;
+    LabelPlayer3ICount: TLabel;
     LabelRandomBias1: TLabel;
     LabelRandomBias2: TLabel;
     ListBoxExperiment: TListBox;
@@ -136,15 +137,20 @@ type
     procedure FormCreate(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
-    FServer : TGameControl;
-    FPlayer1 : TGameControl;
-    FPlayer2 : TGameControl;
-    FPlayer3 : TGameControl;
-    FExperimentBox : TExperimentBox;
+    FServerGameControl : TGameControl;
+    FPlayer1GameControl : TGameControl;
+    FPlayer2GameControl : TGameControl;
+    FPlayer3GameControl : TGameControl;
+
+    FServerGameBoard   : TGameBoard;
+    FPlayer1GameBoard : TGameBoard;
+    FPlayer2GameBoard : TGameBoard;
+    FPlayer3GameBoard : TGameBoard;
     procedure WriteReport(S: string);
     procedure PlayerExit(P : TPlayer; AMessage:string);
-    procedure DisableConfirmationButton(Sender : TObject);
-    procedure CleanMatrix(Sender : TObject; B : Boolean);
+    procedure EndChoice(Sender : TObject);
+    procedure StartChoice(Sender : TObject);
+    procedure WaitForServer(Sender : TObject);
   public
     { public declarations }
   end;
@@ -157,7 +163,6 @@ implementation
 
 uses
   game_actors_helpers
-  , game_zmq_actors
   , game_resources
   , game_report
   ;
@@ -168,35 +173,53 @@ uses
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  FExperimentBox := TExperimentBox.Create(Self);
-  FExperimentBox.Left := 926;
-  FExperimentBox.Top := 16;
-  FExperimentBox.Parent := Self;
+  FServerGameControl := TGameControl.Create(Self,gaAdmin);
+  FServerGameControl.Experiment.Report.OnWriteReport:=@WriteReport;
+  LabelExperimentNotFound.Visible := not FServerGameControl.LoadFromFile('Experiment1.ini');
 
-  FServer := TGameControl.Create(
-    TZMQAdmin.Create(Self, TZMQActor.NewRandomID),
-    ExtractFilePath(Application.ExeName));
+  FServerGameBoard := TGameBoard.Create(
+    Self,FServerGameControl,gaAdmin,nil, nil,GBLastChoiceServer,nil,nil,nil);
+  with FServerGameBoard do
+    begin
+      OnPlayerExit := @Self.PlayerExit;
+      OnEndChoice := @Self.EndChoice;
+      OnStartChoice := @Self.StartChoice;
+      OnWaitForServer := @Self.WaitForServer;
 
-  FServer.OnInterlocking := @FExperimentBox.Interlocking;
-  FServer.OnTargetInterlocking:= @FExperimentBox.TargetInterlocking;
-  FServer.OnStartExperiment := @FExperimentBox.StartExperiment;
-  FServer.OnStartTurn := @FExperimentBox.StartTurn;
-  FServer.OnStartCycle := @FExperimentBox.StartCycle;
-  FServer.OnStartGeneration:= @FExperimentBox.StartGeneration;
-  FServer.OnStartCondition:= @FExperimentBox.StartCondition;
-  FServer.OnEndExperiment :=@FExperimentBox.EndExperiment;
-  GameReport.OnWriteReport:=@WriteReport;
-  LabelExperimentNotFound.Visible := not FServer.LoadFromFile('Experiment1.ini');
-  FServer.LabelGroup1Count := LabelGroupCountServer;
-  FServer.LabelPointA := LabelIndACountServer;
-  FServer.LabelPointB := LabelIndBCountServer;
-  FServer.LabelPointI := LabelIndCountServer;
-  FServer.ImageGroup1 := ImageGroup;
-  FServer.OnPlayerExit:=@PlayerExit;
-  FServer.OnEndChoice:=@DisableConfirmationButton;
-  FServer.OnCleanEvent:=@CleanMatrix;
-  FServer.GroupBoxPlayers := GBLastChoiceServer;
-  FServer.FallbackMessages := ListBoxMessages;
+      Chat := nil;
+      ChatPanel := nil;
+      Timer := nil;
+      TimerEvent := nil;
+      ImagePointI := ImageServerI;
+      LabelPointINAme := LabelServerIName;
+      LabelPointICount := LabelServerICount;
+      ListBoxOldPlayers := ListBoxOldParticipants;
+
+      ImagePointA := ImageServerA;
+      LabelPointAName := LabelServerAName;
+      LabelPointACount := LabelServerACount;
+
+      ImagePointB := ImageServerB;
+      LabelPointBName := LabelServerBName;
+      LabelPointBCount := LabelServerBCount;
+
+      ImageGroup1 := ImageServerGroup1;
+      LabelGroup1Name := LabelServerGroup1Name;
+      LabelGroup1Count := LabelServerGroup1Count;
+
+      ImageGroup2 := nil;
+      LabelGroup2Name := nil;
+      LabelGroup2Count := nil;
+      FallbackMessages := ListBoxMessages;
+      InitialSetup;
+    end;
+
+  FServerGameBoard.GroupBoxExperiment.Parent := Self;
+  FServerGameBoard.GroupBoxExperiment.Left := 926;
+  FServerGameBoard.GroupBoxExperiment.Top := 16;
+
+  FServerGameControl.GameBoard := FServerGameBoard;
+  FServerGameControl.Login;
 end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
@@ -211,50 +234,129 @@ begin
   case GPlayers of
     0 :
       begin
-        FPlayer1 := TGameControl.Create(
-          TZMQPlayer.Create(Self,TZMQActor.NewRandomID));
-        FPlayer1.GroupBoxPlayers := GBLastChoiceP1;
-        FPlayer1.LabelGroup1Count := LabelGroupCountP1;
-        FPlayer1.LabelPointA := LabelIndACountP1;
-        FPlayer1.LabelPointB := LabelIndBCountP1;
-        FPlayer1.LabelPointI := LabelIndCountP1;
-        FPlayer1.ImageGroup1 := ImageGroup1;
-        FPlayer1.OnPlayerExit:=@PlayerExit;
-        FPlayer1.OnEndChoice:=@DisableConfirmationButton;
-        FPlayer1.OnCleanEvent:=@CleanMatrix;
-        FPlayer1.FallbackMessages := ListBoxMessages1;
+        FPlayer1GameControl := TGameControl.Create(Self,gaPlayer);
+        FPlayer1GameBoard := TGameBoard.Create(
+          Self,FPlayer1GameControl,gaPlayer,nil, nil,GBLastChoiceP1,nil,nil,nil);
+        with FPlayer1GameBoard do
+          begin
+            OnPlayerExit := @Self.PlayerExit;
+            OnEndChoice := @Self.EndChoice;
+            OnStartChoice := @Self.StartChoice;
+            OnWaitForServer := @Self.WaitForServer;
+
+            Chat := nil;
+            ChatPanel := nil;
+            Timer := nil;
+            TimerEvent := nil;
+            ImagePointI := ImagePlayer1I;
+            LabelPointINAme := LabelPlayer1IName;
+            LabelPointICount := LabelPlayer1ICount;
+            ListBoxOldPlayers := nil;
+
+            ImagePointA := ImagePlayer1A;
+            LabelPointAName := LabelPlayer1AName;
+            LabelPointACount := LabelPlayer1ACount;
+
+            ImagePointB := ImagePlayer1B;
+            LabelPointBName := LabelPlayer1BName;
+            LabelPointBCount := LabelPlayer1BCount;
+
+            ImageGroup1 := ImagePlayer1Group1;
+            LabelGroup1Name := LabelPlayer1Group1Name;
+            LabelGroup1Count := LabelPlayer1Group1Count;
+
+            ImageGroup2 := nil;
+            LabelGroup2Name := nil;
+            LabelGroup2Count := nil;
+            FallbackMessages := ListBoxMessages1;
+            InitialSetup;
+          end;
+        FPlayer1GameControl.GameBoard := FPlayer1GameBoard;
+        FPlayer1GameControl.Login;
       end;
     1 :
       begin
-        FPlayer2 := TGameControl.Create(
-          TZMQPlayer.Create(Self,TZMQActor.NewRandomID));
-        FPlayer2.GroupBoxPlayers := GBLastChoiceP2;
-        FPlayer2.LabelGroup1Count := LabelGroupCountP2;
-        FPlayer2.LabelPointA := LabelIndACountP2;
-        FPlayer2.LabelPointB := LabelIndBCountP2;
-        FPlayer2.LabelPointI := LabelIndCountP2;
-        FPlayer2.ImageGroup1 := ImageGroup2;
-        FPlayer2.OnPlayerExit:=@PlayerExit;
-        FPlayer2.OnEndChoice:=@DisableConfirmationButton;
-        FPlayer2.OnCleanEvent:=@CleanMatrix;
-        FPlayer2.FallbackMessages := ListBoxMessages2;
+        FPlayer2GameControl := TGameControl.Create(Self,gaPlayer);
+        FPlayer2GameBoard := TGameBoard.Create(
+          Self,FPlayer2GameControl,gaPlayer,nil, nil,GBLastChoiceP2,nil,nil,nil);
+        with FPlayer2GameBoard do
+          begin
+            OnPlayerExit := @Self.PlayerExit;
+            OnEndChoice := @Self.EndChoice;
+            OnStartChoice := @Self.StartChoice;
+            OnWaitForServer := @Self.WaitForServer;
+
+            Chat := nil;
+            ChatPanel := nil;
+            Timer := nil;
+            TimerEvent := nil;
+            ImagePointI := ImagePlayer2I;
+            LabelPointINAme := LabelPlayer2IName;
+            LabelPointICount := LabelPlayer2ICount;
+            ListBoxOldPlayers := nil;
+
+            ImagePointA := ImagePlayer2A;
+            LabelPointAName := LabelPlayer2AName;
+            LabelPointACount := LabelPlayer2ACount;
+
+            ImagePointB := ImagePlayer2B;
+            LabelPointBName := LabelPlayer2BName;
+            LabelPointBCount := LabelPlayer2BCount;
+
+            ImageGroup1 := ImagePlayer2Group1;
+            LabelGroup1Name := LabelPlayer2Group1Name;
+            LabelGroup1Count := LabelPlayer2Group1Count;
+
+            ImageGroup2 := nil;
+            LabelGroup2Name := nil;
+            LabelGroup2Count := nil;
+            FallbackMessages := ListBoxMessages2;
+            InitialSetup;
+          end;
+        FPlayer2GameControl.GameBoard := FPlayer2GameBoard;
+        FPlayer2GameControl.Login;
       end;
     2 :
       begin
-        FPlayer3 := TGameControl.Create(
-          TZMQPlayer.Create(Self,TZMQActor.NewRandomID));
-        FPlayer3.GroupBoxPlayers := GBLastChoiceP3;
-        FPlayer3.LabelGroup1Count := LabelGroupCountP3;
-        FPlayer3.LabelPointA := LabelIndACountP3;
-        FPlayer3.LabelPointB := LabelIndBCountP3;
-        FPlayer3.LabelPointI := LabelIndCountP3;
-        FPlayer3.ImageGroup1 := ImageGroup3;
-        FPlayer3.OnPlayerExit:=@PlayerExit;
-        FPlayer3.OnEndChoice:=@DisableConfirmationButton;
-        FPlayer3.OnCleanEvent:=@CleanMatrix;
-        FPlayer3.FallbackMessages := ListBoxMessages3;
+        FPlayer3GameControl := TGameControl.Create(Self,gaPlayer);
+        FPlayer3GameBoard := TGameBoard.Create(
+          Self,FPlayer3GameControl,gaPlayer,nil, nil,GBLastChoiceP3,nil,nil,nil);
+        with FPlayer3GameBoard do
+          begin
+            OnPlayerExit := @Self.PlayerExit;
+            OnEndChoice := @Self.EndChoice;
+            OnStartChoice := @Self.StartChoice;
+            OnWaitForServer := @Self.WaitForServer;
 
-        ButtonLogin.Enabled := False;
+            Chat := nil;
+            ChatPanel := nil;
+            Timer := nil;
+            TimerEvent := nil;
+            ImagePointI := ImagePlayer3I;
+            LabelPointINAme := LabelPlayer3IName;
+            LabelPointICount := LabelPlayer3ICount;
+            ListBoxOldPlayers := nil;
+
+            ImagePointA := ImagePlayer3A;
+            LabelPointAName := LabelPlayer3AName;
+            LabelPointACount := LabelPlayer3ACount;
+
+            ImagePointB := ImagePlayer3B;
+            LabelPointBName := LabelPlayer3BName;
+            LabelPointBCount := LabelPlayer3BCount;
+
+            ImageGroup1 := ImagePlayer3Group1;
+            LabelGroup1Name := LabelPlayer3Group1Name;
+            LabelGroup1Count := LabelPlayer3Group1Count;
+
+            ImageGroup2 := nil;
+            LabelGroup2Name := nil;
+            LabelGroup2Count := nil;
+            FallbackMessages := ListBoxMessages3;
+            InitialSetup;
+          end;
+        FPlayer3GameControl.GameBoard := FPlayer3GameBoard;
+        FPlayer3GameControl.Login;
       end;
     else
       Exit;
@@ -377,11 +479,11 @@ begin
   end;
 
   if chkP1.Checked then
-    FPlayer1.SendRequest(K_CHOICE, [choice.n,choice.c])
+    FPlayer1GameControl.SendRequest(K_CHOICE, [choice.n,choice.c])
   else if chkP2.Checked then
-    FPlayer2.SendRequest(K_CHOICE, [choice.n,choice.c])
+    FPlayer2GameControl.SendRequest(K_CHOICE, [choice.n,choice.c])
   else if chkP3.Checked then
-    FPlayer3.SendRequest(K_CHOICE, [choice.n,choice.c]);
+    FPlayer3GameControl.SendRequest(K_CHOICE, [choice.n,choice.c]);
 end;
 
 procedure TForm1.WriteReport(S: string);
@@ -399,56 +501,73 @@ begin
     );
 end;
 
-procedure TForm1.DisableConfirmationButton(Sender: TObject);
+procedure TForm1.EndChoice(Sender: TObject);
 begin
-  if Sender = FServer then
+  if Sender = FServerGameControl then
     begin
-      ListBoxExperiment.Items.Append('Server.DisableConfirmationButton='+BoolToStr(False,True));
+      ListBoxExperiment.Items.Append('Server.EndChoice');
     end;
 
-  if Sender = FPlayer1 then
+  if Sender = FPlayer1GameControl then
     begin
-      ListBoxExperiment.Items.Append('P1.DisableConfirmationButton='+BoolToStr(False,True));
+      ListBoxExperiment.Items.Append('P1.EndChoice');
       chkP1.Checked:=False;
     end;
 
-  if Sender = FPlayer2 then
+  if Sender = FPlayer2GameControl then
     begin
-      ListBoxExperiment.Items.Append('P2.DisableConfirmationButton='+BoolToStr(False,True));
+      ListBoxExperiment.Items.Append('P2.EndChoice');
       chkP2.Checked:=False;
     end;
 
-  if Sender = FPlayer3 then
+  if Sender = FPlayer3GameControl then
     begin
-      ListBoxExperiment.Items.Append('P3.DisableConfirmationButton='+BoolToStr(False,True));
+      ListBoxExperiment.Items.Append('P3.EndChoice');
       chkP3.Checked:=False;
     end;
 end;
 
-procedure TForm1.CleanMatrix(Sender: TObject; B: Boolean);
+procedure TForm1.StartChoice(Sender : TObject);
 begin
-  if Sender = FServer then
-    begin
-      ListBoxExperiment.Items.Append('Server.CleanMatrix='+BoolToStr(B,True));
-    end;
+  if Sender = FServerGameControl then
+    ListBoxExperiment.Items.Append('Server.StartChoice');
 
-  if Sender = FPlayer1 then
-    begin
-      ListBoxExperiment.Items.Append('P1.CleanMatrix='+BoolToStr(B,True));
-      chkP1.Checked:=B;
-    end;
+  if Sender = FPlayer1GameControl then begin
+    ListBoxExperiment.Items.Append('P1.StartChoice');
+    chkP1.Checked:=True;
+  end;
 
-  if Sender = FPlayer2 then
-    begin
-      ListBoxExperiment.Items.Append('P2.CleanMatrix='+BoolToStr(B,True));
-      chkP2.Checked:=B;
-    end;
+  if Sender = FPlayer2GameControl then begin
+    ListBoxExperiment.Items.Append('P2.StartChoice');
+    chkP2.Checked:=True;
+  end;
 
-  if Sender = FPlayer3 then
-    begin
-      ListBoxExperiment.Items.Append('P3.CleanMatrix='+BoolToStr(B,True));
-      chkP3.Checked:=B;
-    end;
+  if Sender = FPlayer3GameControl then begin
+    ListBoxExperiment.Items.Append('P3.StartChoice');
+    chkP3.Checked:=True;
+  end;
+end;
+
+procedure TForm1.WaitForServer(Sender : TObject);
+begin
+  if Sender = FServerGameControl then
+    ListBoxExperiment.Items.Append('Server.WaitForServer');
+
+  if Sender = FPlayer1GameControl then begin
+    ListBoxExperiment.Items.Append('P1.WaitForServer');
+    chkP1.Checked:=False;
+  end;
+
+  if Sender = FPlayer2GameControl then begin
+    ListBoxExperiment.Items.Append('P2.WaitForServer');
+    chkP2.Checked:=False;
+  end;
+
+  if Sender = FPlayer3GameControl then begin
+    ListBoxExperiment.Items.Append('P3.WaitForServer');
+    chkP3.Checked:=False;
+  end;
+
 end;
 
 
