@@ -2,7 +2,7 @@
 
 /*   
   Free-mtrix - Free cultural selection and social behavior experiments.   
-  Copyright (C) 2016-2020 Carlos Rafael Fernandes Picanço.   
+  Copyright (C) 2016-2021 Carlos Rafael Fernandes Picanço.   
   Copyright (C) 2016-2020 Thais Maria Monteiro Guimarães.   
   Copyright (C) 2016-2019 Universidade Federal do Pará.
 
