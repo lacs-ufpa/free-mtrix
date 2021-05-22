@@ -241,11 +241,9 @@ begin
     ButtonConfirm.Caption:='Confirm';
     ButtonConfirm.Visible := False;
   end;
-  {$IFDEF TEST_MODE}
-    DebugMessage(LMessage);
-  {$ELSE}
-    ShowSystemPopUp(gmcWaitingForServer);
-  {$ENDIF}
+
+  ShowSystemPopUp(gmcWaitingForServer);
+
   inherited WaitForServer(Sender);
 end;
 
