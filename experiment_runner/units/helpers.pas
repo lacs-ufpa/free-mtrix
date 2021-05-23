@@ -31,17 +31,54 @@ uses
   ;
 
 procedure PrintVersions(AAplicationPath:string);
+function CreateDebugFoldersForPlayers:Boolean;
 
 
 implementation
 
-uses zmq;
+uses FileUtil, LazFileUtils, StrUtils, Forms
+    {$IFDEF LINUX}
+    , BaseUnix
+    {$ENDIF}
+    , zmq
+    ;
+
+function CreateDebugFoldersForPlayers:Boolean;
+var
+  i : integer;
+  F : string;
+  zmq : string = 'libzmq.dll';
+begin
+  Result := True;
+  for i := 0 to 2 do
+    begin
+      if Pos(('Participant'), Application.ExeName) > 0 then
+        Break;
+      F := ExtractFilePath(Application.ExeName)+'Participant'+IntToStr(i+1)+PathDelim;
+      if ForceDirectoriesUTF8(F) then // ensure we have always the newer version for tests
+        begin
+          {$IFDEF WINDOWS}
+          CopyFile(Application.ExeName,F+ApplicationName+'.exe',[cffOverwriteFile]);
+          CopyFile(ExtractFilePath(Application.ExeName)+zmq,F+zmq,[cffOverwriteFile]);
+          {$ENDIF}
+
+          {$IFDEF LINUX}
+            CopyFile(Application.ExeName,F+PathDelim+ApplicationName,[cffOverwriteFile]);
+            FpChmod(F+PathDelim+ApplicationName,S_IRWXU);
+          {$ENDIF}
+        end
+      else Result := False;
+    end;
+end;
 
 procedure PrintVersions(AAplicationPath : string);
 var
   LPatch, LMinor, LMajor: Integer;
-  S : TStringList;
   LVERSION : string;
+
+  {$IFDEF WINDOWS}
+  S : TstringList;
+  {$ENDIF}
 
   function FreeMtrixVersion : string;
   var
@@ -66,18 +103,14 @@ var
 begin
   zmq_version(LMajor,LMinor,LPatch);
   LVERSION := FreeMtrixVersion + 'ZMQ v'+IntToStr(LMajor)+'.'+IntToStr(LMinor)+'.'+IntToStr(LPatch);
-  try
+  {$IFDEF WINDOWS}
+     S := TStringList.Create;
+     S.Append(LVERSION);
+     S.SaveToFile(AAplicationPath+PathDelim+'version_info.txt');
+     S.Free;
+  {$ELSE}
     WriteLn(LVERSION);
-  except
-    on E : Exception do
-      begin
-         S := TStringList.Create;
-         S.Append(LVERSION);
-         S.SaveToFile(AAplicationPath+PathDelim+'version_info.txt');
-         S.Free;
-      end;
-  end;
+  {$ENDIF}
 end;
-
 end.
 

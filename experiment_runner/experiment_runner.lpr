@@ -37,31 +37,6 @@ const
   PPlayer : array [0..3] of string = ('--player','--play','-player','-play');
   PWatcher : array [0..3] of string = ('--watcher','--watch','-watcher','-watch');
 
-{$IFDEF DEBUG}
-  function CreateDebugFoldersForPlayers:Boolean;
-  var
-    i : integer;
-    F : string;
-  begin
-    Result := True;
-    for i := 0 to 2 do
-      begin
-        if Pos(('Participant'), Application.ExeName) > 0 then
-          Break;
-        F := ApplicationPath+'Participant'+IntToStr(i+1);
-        // WriteLn(F);
-        if ForceDirectoriesUTF8(F) then // ensure we have always the newer version for tests
-          begin
-            CopyFile(Application.ExeName,F+PathDelim+ApplicationName,[cffOverwriteFile]);
-            {$IFDEF LINUX}
-              FpChmod(F+PathDelim+ApplicationName,S_IRWXU);
-            {$ENDIF}
-          end
-        else Result := False;
-      end;
-  end;
-{$ENDIF}
-
 {$R *.res}
 
 begin

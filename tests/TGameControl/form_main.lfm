@@ -8,7 +8,7 @@ object Form1: TForm1
   ClientWidth = 1190
   OnCreate = FormCreate
   SessionProperties = 'PageControl1.ActivePage'
-  LCLVersion = '2.1.0.0'
+  LCLVersion = '2.0.12.0'
   object ButtonLogin: TButton
     Left = 936
     Height = 33
@@ -218,7 +218,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 290
+        ClientHeight = 295
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -4172,7 +4172,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 290
+        ClientHeight = 295
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -8126,7 +8126,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 290
+        ClientHeight = 295
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'
@@ -12080,7 +12080,7 @@ object Form1: TForm1
         ChildSizing.ShrinkVertical = crsHomogenousChildResize
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 3
-        ClientHeight = 290
+        ClientHeight = 295
         ClientWidth = 413
         Font.Height = -20
         Font.Name = 'Monospace'

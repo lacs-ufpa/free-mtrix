@@ -5585,29 +5585,29 @@ object FormMatrixGame: TFormMatrixGame
     TabOrder = 2
     Visible = False
     object ButtonExpStart: TButton
-      Left = 24
+      Left = 8
       Height = 25
       Top = 16
-      Width = 88
+      Width = 64
       Caption = 'Start'
       OnClick = ButtonExpStartClick
       TabOrder = 0
     end
     object ButtonExpPause: TButton
-      Left = 136
+      Left = 80
       Height = 25
-      Top = 16
-      Width = 88
+      Top = 17
+      Width = 64
       Caption = 'Pause'
       Enabled = False
       OnClick = ButtonExpPauseClick
       TabOrder = 1
     end
     object ButtonExpCancel: TButton
-      Left = 248
+      Left = 152
       Height = 25
-      Top = 16
-      Width = 88
+      Top = 17
+      Width = 64
       Caption = 'Cancel'
       Enabled = False
       OnClick = ButtonExpCancelClick
@@ -5635,6 +5635,15 @@ object FormMatrixGame: TFormMatrixGame
       Caption = 'Old Players'
       Layout = tlCenter
       ParentColor = False
+    end
+    object ButtonCreateParticipantsFolder: TButton
+      Left = 232
+      Height = 25
+      Top = 17
+      Width = 128
+      Caption = 'Create Folders'
+      OnClick = ButtonCreateParticipantsFolderClick
+      TabOrder = 4
     end
   end
   object btnConfirmRow: TButton

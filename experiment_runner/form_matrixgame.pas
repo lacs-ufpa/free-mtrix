@@ -28,6 +28,7 @@ type
 
   TFormMatrixGame = class(TForm)
     btnConfirmRow: TButton;
+    ButtonCreateParticipantsFolder : TButton;
     ButtonExpCancel: TButton;
     ButtonExpPause: TButton;
     ButtonExpStart: TButton;
@@ -59,6 +60,7 @@ type
     PopupNotifier: TPopupNotifier;
     Timer: TTimer;
     procedure btnConfirmRowClick(Sender: TObject);
+    procedure ButtonCreateParticipantsFolderClick(Sender : TObject);
     procedure ButtonExpCancelClick(Sender: TObject);
     procedure ButtonExpPauseClick(Sender: TObject);
     procedure ButtonExpStartClick(Sender: TObject);
@@ -89,6 +91,7 @@ implementation
 uses
   form_chooseactor
   , game_resources
+  , helpers
   ;
 
 {$R *.lfm}
@@ -223,6 +226,11 @@ begin
   btnConfirmRow.Enabled := False;
   S := TStringGridA(FGameBoard.StringGridMatrix);
   FGameControl.SendRequest(K_CHOICE, [S.GetSelectedRowF, S.GetSelectedMatrixColorF]);
+end;
+
+procedure TFormMatrixGame.ButtonCreateParticipantsFolderClick(Sender : TObject);
+begin
+  CreateDebugFoldersForPlayers;
 end;
 
 procedure TFormMatrixGame.ButtonExpCancelClick(Sender: TObject);
