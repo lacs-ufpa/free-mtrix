@@ -1113,14 +1113,15 @@ begin
 end;
 
 function TExperiment.CurrentTurn : integer;
-var
-  LTurnIndex : integer;
+//var
+//LTurnIndex : integer;
 begin
-  LTurnIndex := CurrentCondition.Turn.Count;
-  if CurrentCondition.Turn.Random then
-    Result := StrToInt(Delimited(2,FRandomTurns[LTurnIndex]))
-  else
-    Result := LTurnIndex;
+  //LTurnIndex := CurrentCondition.Turn.Count;
+  //if CurrentCondition.Turn.Random then
+  //  Result := StrToInt(Delimited(2,FRandomTurns[LTurnIndex]))
+  //else
+  //  Result := LTurnIndex;
+  Result := CurrentCondition.Turn.Count;
 end;
 
 procedure TExperiment.ArquiveOldPlayer(APlayer: TPlayer);
@@ -1143,13 +1144,21 @@ begin
   case AGameConsequenceStyle of
     gscG1 :
       begin
-        for i := 0 to ConditionsCount-1 do
-          Result += FConditions[i].Points.Count.G1;
+        if AID = '' then begin
+          for i := 0 to ConditionsCount-1 do
+            Result += FConditions[i].Points.Count.G1;
+        end else begin
+          Exception.Create('TExperiment.GlobalPoints Exception');
+        end;
       end;
     gscG2 :
       begin
-        for i := 0 to ConditionsCount-1 do
-          Result += FConditions[i].Points.Count.G2;
+        if AID = '' then begin
+          for i := 0 to ConditionsCount-1 do
+            Result += FConditions[i].Points.Count.G2;
+        end else begin
+          Exception.Create('TExperiment.GlobalPoints Exception');
+        end;
       end;
     gscA :
       begin
