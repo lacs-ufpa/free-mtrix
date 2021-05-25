@@ -347,7 +347,6 @@ begin
           Exit;
         end;
       Inc(FCurrentCondition);
-      FAvoidOverlapingChanges.Active := True;
       FCycles.GenerationValue := CurrentCondition.Cycles.Value;
       // may the generation count be reseted?
       //FCycles.GenerationCount:=0;
@@ -736,7 +735,6 @@ begin
     FLastGenerationCount := FCycles.GenerationCount;
     FCycles.GenerationCount := 0;
     Inc(FCycles.Generations);
-    FAvoidOverlapingChanges.Active := True;
     if Assigned(FOnStartGeneration) then FOnStartGeneration(Self);
   end else begin
     Inc(FCycles.GenerationCount);
@@ -867,7 +865,7 @@ begin
   inherited Create(AOwner);
   FCurrentCondition := 0;
   FGameActor := AActor;
-  FGameReport := TGameReport.Create;
+  FGameReport := TGameReport.Create(FGameActor);
   FRandomTurns := TStringList.Create;
   with FCycles do
     begin
@@ -1024,11 +1022,15 @@ end;
 
 procedure TExperiment.CountOverlapingCycles;
 begin
-  if FAvoidOverlapingChanges.Count >= FAvoidOverlapingChanges.Value-1 then begin
-    FAvoidOverlapingChanges.Active := False;
-    FAvoidOverlapingChanges.Count := 0;
-  end else begin
-    Inc(FAvoidOverlapingChanges.Count);
+  with FAvoidOverlapingChanges do begin
+    if Count >= Value-1 then begin
+      Active := False;
+      BlockCondition := False;
+      BlockGeneration := False;
+      Count := 0;
+    end else begin
+      Inc(Count);
+    end;
   end;
 end;
 
