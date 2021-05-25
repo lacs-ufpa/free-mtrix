@@ -396,7 +396,7 @@ var
   S : TStringList;
   IPPath: String;
 begin
-  IPPath := ExtractFilePath(Application.ExeName)+'IP';
+  IPPath := ExtractFilePath(Application.ExeName)+'IP.txt';
   if FileExists(IPPath) then
     begin
       S := TStringList.Create;
