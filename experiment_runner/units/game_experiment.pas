@@ -82,6 +82,7 @@ type
     procedure SetTargetInterlockingEvent;
     procedure SetContingenciesEvents;
   private
+    FLastGenerationCount : integer;
     FAvoidOverlapingChanges : TAvoidOverlapingChanges;
     FConditionMustBeUpdated: Boolean;
     FConsequenceStringFromChoices: string;
@@ -146,6 +147,7 @@ type
     property MatrixTypeAsString : string read GetMatrixTypeAsString write SetMatrixTypeFromString;
   public // manipulation/ self awareness
     function CurrentTurn : integer;
+    function LastGenerationCount : integer;
     procedure MovePlayersQueueLeft;
     procedure ArquiveOldPlayer(APlayer : TPlayer);
     function GlobalPoints(AGameConsequencestyle: TGameConsequenceStyle;
@@ -731,6 +733,7 @@ begin
 
     // remove the older participant
     Result := FPlayers[0].ID;
+    FLastGenerationCount := FCycles.GenerationCount;
     FCycles.GenerationCount := 0;
     Inc(FCycles.Generations);
     FAvoidOverlapingChanges.Active := True;
@@ -1174,6 +1177,11 @@ end;
 function TExperiment.CurrentTurn : integer;
 begin
   Result := CurrentCondition.Turn.Count;
+end;
+
+function TExperiment.LastGenerationCount : integer;
+begin
+  Result := FLastGenerationCount;
 end;
 
 procedure TExperiment.ArquiveOldPlayer(APlayer: TPlayer);
