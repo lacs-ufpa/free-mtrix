@@ -19,11 +19,12 @@ type
 
   TGameReport = class
   private
+    FActor               : TGameActor;
     FRegData             : TRegData;
     FRegChat             : TRegData;
     FReportReader        : TReportReader;
     FPCurrentCondition   : PInteger;
-    FPConditions          : PConditions;
+    FPConditions         : PConditions;
     FPPlayers            : PPlayers;
     FPCycles             : PCycles;
     FReportFolder        : string;
@@ -36,7 +37,7 @@ type
     FOnWriteReport: TNotifyOnWriteReport;
     procedure SetOnWriteReport(AValue: TNotifyOnWriteReport);
   public
-    constructor Create;
+    constructor Create(AGameActor: TGameActor); reintroduce;
     destructor Destroy; override;
     procedure Clean;
     procedure NextCondition;
@@ -109,64 +110,63 @@ var
   LPlayers : TPlayers;
   LNames1, LNames2 : string;
 begin
-  if Assigned(FRegData) then
+  LCondition := GetCurrentCondition;
+  LContingencies := LCondition.Contingencies;
+  LPlayers   := FPPlayers^;
+
+  // column names, line 1
+  LNames1 := 'Experiment'+TabDelimiter+TabDelimiter+TabDelimiter;
+  for i:=0 to LCondition.Turn.Value-1 do // player's response
     begin
-      LCondition := GetCurrentCondition;
-      LContingencies := LCondition.Contingencies;
-      LPlayers   := FPPlayers^;
+      LNames1 += LPlayers[i].Nicname+TabDelimiter+TabDelimiter;
 
-      // column names, line 1
-      LNames1 := 'Experiment'+TabDelimiter+TabDelimiter+TabDelimiter;
-      for i:=0 to LCondition.Turn.Value-1 do // player's response
-        begin
-          LNames1 += LPlayers[i].Nicname+TabDelimiter+TabDelimiter;
-
-          for j:= Low(LContingencies) to High(LContingencies) do
-            if not LContingencies[j].Meta then
-              LNames1 += TabDelimiter;
-        end;
-
-      LNames1 += VAL_INTERLOCKING+'s';
       for j:= Low(LContingencies) to High(LContingencies) do
-        if LContingencies[j].Meta then
+        if not LContingencies[j].Meta then
           LNames1 += TabDelimiter;
+    end;
 
-      if Assigned(LCondition.Prompt) then
-        begin
-          LNames1 += 'Responses to the question';
-          for i:=0 to LCondition.Turn.Value-1 do
-            LNames1 += TabDelimiter;
-        end;
-      LNames1 += LineEnding;
+  LNames1 += VAL_INTERLOCKING+'s';
+  for j:= Low(LContingencies) to High(LContingencies) do
+    if LContingencies[j].Meta then
+      LNames1 += TabDelimiter;
 
-      // column names, line 2
-      LNames2 := 'Condition'+TabDelimiter+'Generation'+TabDelimiter+'Cycles'+TabDelimiter;
+  if Assigned(LCondition.Prompt) then
+    begin
+      LNames1 += 'Responses to the question';
       for i:=0 to LCondition.Turn.Value-1 do
-        begin
-          LNames2 += 'Row'+TabDelimiter+'Color'+TabDelimiter;
-          for j:= Low(LContingencies) to High(LContingencies) do
-            if not LContingencies[j].Meta then
-              LNames2 += LContingencies[j].ContingencyName+TabDelimiter;
-        end;
+        LNames1 += TabDelimiter;
+    end;
+  LNames1 += LineEnding;
 
+  // column names, line 2
+  LNames2 := 'Condition'+TabDelimiter+'Generation'+TabDelimiter+'Cycles'+TabDelimiter;
+  for i:=0 to LCondition.Turn.Value-1 do
+    begin
+      LNames2 += 'Row'+TabDelimiter+'Color'+TabDelimiter;
       for j:= Low(LContingencies) to High(LContingencies) do
-        if LContingencies[j].Meta then
+        if not LContingencies[j].Meta then
           LNames2 += LContingencies[j].ContingencyName+TabDelimiter;
+    end;
 
-      if Assigned(LCondition.Prompt) then
-        for i:=0 to LCondition.Turn.Value-1 do
-          LNames2 += 'R'+IntToStr(i+1)+TabDelimiter;
-      LNames2 += LineEnding;
+  for j:= Low(LContingencies) to High(LContingencies) do
+    if LContingencies[j].Meta then
+      LNames2 += LContingencies[j].ContingencyName+TabDelimiter;
 
-      if FLastReportColNames <> LNames1+LNames2 then
-        begin
-          FLastReportColNames := LNames1+LNames2;
-          FLastReportColNames2 := LNames2;
-          FRegData.SaveData(FLastReportColNames);
-          if FReportReader.Cols = 0 then
-            FReportReader.UpdateCols(FLastReportColNames2);
-          if Assigned(FOnWriteReport) then FOnWriteReport(FLastReportColNames);
-        end;
+  if Assigned(LCondition.Prompt) then
+    for i:=0 to LCondition.Turn.Value-1 do
+      LNames2 += 'R'+IntToStr(i+1)+TabDelimiter;
+  LNames2 += LineEnding;
+
+  if FLastReportColNames <> LNames1+LNames2 then
+    begin
+      FLastReportColNames := LNames1+LNames2;
+      FLastReportColNames2 := LNames2;
+      if Assigned(FRegData) then begin
+        FRegData.SaveData(FLastReportColNames);
+      end;
+      if FReportReader.Cols = 0 then
+        FReportReader.UpdateCols(FLastReportColNames2);
+      if Assigned(FOnWriteReport) then FOnWriteReport(FLastReportColNames);
     end;
 end;
 
@@ -180,46 +180,46 @@ var
   LPlayers : TPlayers;
 begin
   WriteRowNames;
-  if Assigned(FRegData) then
+  LCondition := GetCurrentCondition;
+  LContingencies := LCondition.Contingencies;
+  LCycles := FPCycles^;
+  LPlayers := FPPlayers^;
+
+  LRow := IntToStr(LCondition.Index+1)+TabDelimiter+
+          IntToStr(LCycles.Generations+1)+TabDelimiter+
+          IntToStr(LCycles.Global+1)+TabDelimiter;
+
+  for i:=0 to LCondition.Turn.Value-1 do
     begin
-      LCondition := GetCurrentCondition;
-      LContingencies := LCondition.Contingencies;
-      LCycles := FPCycles^;
-      LPlayers := FPPlayers^;
-
-      LRow := IntToStr(LCondition.Index+1)+TabDelimiter+
-              IntToStr(LCycles.Generations+1)+TabDelimiter+
-              IntToStr(LCycles.Global+1)+TabDelimiter;
-
-      for i:=0 to LCondition.Turn.Value-1 do
-        begin
-        LRow += GetRowAsString(
-          LPlayers[i].Choice.Row)+TabDelimiter+
-          GetColorStringFromGameColor(LPlayers[i].Choice.Color)+TabDelimiter;
-        for j:= Low(LContingencies) to High(LContingencies) do
-          if not LContingencies[j].Meta then
-            if LContingencies[j].ConsequenceFromPlayerID(LPlayers[i].ID) <> '' then
-              LRow += '1'+TabDelimiter
-            else
-              LRow += '0'+TabDelimiter;
-        end;
-
-      for j:= Low(LContingencies) to High(LContingencies) do
-        if LContingencies[j].Meta then
-          if LContingencies[j].Fired then
-            LRow += '1'+TabDelimiter
-          else
-            LRow += '0'+TabDelimiter;
-
-      if Assigned(FRegData) and Assigned(LCondition.Prompt) then
-        // do nothing
-      else
-        LRow += LineEnding;
-
-      FRegData.SaveData(LRow);
-      FReportReader.Append(LRow);
-      if Assigned(FOnWriteReport) then FOnWriteReport(LRow);
+    LRow += GetRowAsString(
+      LPlayers[i].Choice.Row)+TabDelimiter+
+      GetColorStringFromGameColor(LPlayers[i].Choice.Color)+TabDelimiter;
+    for j:= Low(LContingencies) to High(LContingencies) do
+      if not LContingencies[j].Meta then
+        if LContingencies[j].ConsequenceFromPlayerID(LPlayers[i].ID) <> '' then
+          LRow += '1'+TabDelimiter
+        else
+          LRow += '0'+TabDelimiter;
     end;
+
+  for j:= Low(LContingencies) to High(LContingencies) do
+    if LContingencies[j].Meta then
+      if LContingencies[j].Fired then
+        LRow += '1'+TabDelimiter
+      else
+        LRow += '0'+TabDelimiter;
+
+  if Assigned(LCondition.Prompt) then
+    // do nothing
+  else
+    LRow += LineEnding;
+
+  if Assigned(FRegData) then begin
+    FRegData.SaveData(LRow);
+  end;
+  FReportReader.Append(LRow);
+  if Assigned(FOnWriteReport) then FOnWriteReport(LRow);
+
 end;
 
 procedure TGameReport.SetOnWriteReport(AValue : TNotifyOnWriteReport);
@@ -228,9 +228,9 @@ begin
   FOnWriteReport := AValue;
 end;
 
-constructor TGameReport.Create;
+constructor TGameReport.Create(AGameActor : TGameActor);
 begin
-
+  FActor := AGameActor;
 end;
 
 procedure TGameReport.NextCondition;
@@ -240,7 +240,9 @@ begin
   LCondition := GetCurrentCondition;
   FReportReader.Clean;
   FReportReader.SetXLastRows(LCondition.EndCriterium.LastCycles);
-  FRegData.SaveData(LineEnding);
+  if Assigned(FRegData) then begin
+    FRegData.SaveData(LineEnding);
+  end;
   WriteRowNames;
   FReportReader.UpdateCols(FLastReportColNames2);
 end;
@@ -260,7 +262,8 @@ end;
 
 procedure TGameReport.Clean;
 begin
-  FRegData.CloseAndOpen;
+  if Assigned(FRegData) then
+    FRegData.CloseAndOpen;
 end;
 
 procedure TGameReport.WriteRowPrompt;
@@ -286,7 +289,7 @@ var
   end;
 begin
   LCondition := FPConditions^[FPCurrentCondition^];
-  if Assigned(FRegData) and Assigned(LCondition.Prompt) then
+  if Assigned(LCondition.Prompt) then
     begin
       LRow := '';
       if LCondition.Prompt.ResponsesCount = LCondition.Turn.Value then
@@ -300,7 +303,9 @@ begin
         for i:=0 to LCondition.Turn.Value-1 do
           LRow += 'NA'+TabDelimiter;
       LRow += LineEnding;
-      FRegData.SaveData(LRow);
+      if Assigned(FRegData) then begin
+        FRegData.SaveData(LRow);
+      end;
       FReportReader.Extend(LRow);  // Write, i.e, extend last row
       if Assigned(FOnWriteReport) then FOnWriteReport(LRow);
     end;
@@ -332,8 +337,10 @@ begin;
   FReportReader.SetXLastRows(LCondition.EndCriterium.LastCycles);
 
   FReportFolder := ExtractFilePath(AFilename)+AExperimentName+PathDelim;
-  FRegData := TRegData.Create(nil, FReportFolder+'000.data');
-  FRegChat := TRegData.Create(nil, FReportFolder+'000.chat');
+  if FActor = gaAdmin then begin
+    FRegData := TRegData.Create(nil, FReportFolder+'000.data');
+    FRegChat := TRegData.Create(nil, FReportFolder+'000.chat');
+  end;
   WriteHeader(AResearcher, AExperimentName);
 end;
 
