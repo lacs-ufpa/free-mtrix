@@ -515,7 +515,6 @@ var
   i,
   r : integer;
   LOldRandomOrder , LNewRandomOrder: TStringList;
-
 begin
   if CurrentCondition.Turn.Random then
     begin
@@ -525,7 +524,8 @@ begin
       try
         for i:= 0 to LNumberOfPlayers-1 do
           begin
-            if Length(FPlayers) = LNumberOfPlayers then
+            if (Length(FPlayers)   = LNumberOfPlayers) and
+               (FRandomTurns.Count = LNumberOfPlayers) then
               LOldRandomOrder.Append(Delimited(2,FRandomTurns[i]))
             else
               LOldRandomOrder.Append(IntToStr(i));

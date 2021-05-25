@@ -1035,6 +1035,18 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
       //R4 := AReply[4]; // Chat Setup            ([NO CHAT] or Chat Setup)
       //R5 := AReply[5]; // New Player            (PlayerAsString)
       // 6..7            // Other Players, if any (array of PlayerAsString)
+      P := FExperiment.PlayerFromString[AReply[5]];
+      FExperiment.AppendPlayer(P);
+      FGameBoard.CreatePlayerBox(P, Self.ID = P.ID);
+
+      // lets load already logged in players, if any
+      for i:= 6 to AReply.Count -1 do
+        begin
+          LPath := AReply[i];
+          P := FExperiment.PlayerFromString[AReply[i]];
+          FExperiment.AppendPlayer(P);
+          FGameBoard.CreatePlayerBox(P, False);
+        end;
 
       // Experiment Config
       if (FExperiment.State = xsNone) then
@@ -1062,19 +1074,6 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
 
       // chat Setup
       FGameBoard.SetupChat(AReply[4]);
-
-      P := FExperiment.PlayerFromString[AReply[5]];
-      FExperiment.AppendPlayer(P);
-      FGameBoard.CreatePlayerBox(P, Self.ID = P.ID);
-
-      // lets load already logged in players, if any
-      for i:= 6 to AReply.Count -1 do
-        begin
-          LPath := AReply[i];
-          P := FExperiment.PlayerFromString[AReply[i]];
-          FExperiment.AppendPlayer(P);
-          FGameBoard.CreatePlayerBox(P, False);
-        end;
 
       // inform all players about the new player
       // self.id will ignore it
