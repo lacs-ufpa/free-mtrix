@@ -16,7 +16,6 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ComCtrls, ExtCtrls, IniPropStorage
-  , game_visual_experiment
   , game_control
   , game_visual_board
   , game_actors
@@ -478,12 +477,16 @@ begin
     choice := choices[ri];
   end;
 
-  if chkP1.Checked then
+  if chkP1.Checked then begin
+    chkP1.Checked := False;
     FPlayer1GameControl.SendRequest(K_CHOICE, [choice.n,choice.c])
-  else if chkP2.Checked then
+  end else if chkP2.Checked then begin
+    chkP2.Checked := False;
     FPlayer2GameControl.SendRequest(K_CHOICE, [choice.n,choice.c])
-  else if chkP3.Checked then
+  end else if chkP3.Checked then begin
+    chkP3.Checked := False;
     FPlayer3GameControl.SendRequest(K_CHOICE, [choice.n,choice.c]);
+  end;
 end;
 
 procedure TForm1.WriteReport(S: string);
@@ -493,12 +496,7 @@ end;
 
 procedure TForm1.PlayerExit(P: TPlayer; AMessage: string);
 begin
-  ListBoxOldParticipants.Items.Append(
-    'ID:' + AMessage + LineEnding +
-    'Name: '+ P.Nicname + LineEnding +
-    'Red Tokens:' + P.Points.A.ToString + LineEnding +
-    'Blue Tokens:' + P.Points.B.ToString
-    );
+
 end;
 
 procedure TForm1.EndChoice(Sender: TObject);
