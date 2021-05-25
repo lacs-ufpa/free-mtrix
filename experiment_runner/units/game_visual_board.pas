@@ -197,8 +197,6 @@ begin
 end;
 
 procedure TGameBoard.PlayerExit(P : TPlayer; AMessage : string);
-var
-  LCulturalToken : string;
 begin
   if Assigned(ListBoxOldPlayers) then
   begin
@@ -213,9 +211,9 @@ begin
       'Cultural Tokens (Non-sustainable):' +
         FExperiment.GlobalPoints(gscG2).ToString + LineEnding +
       'Condition Cycle:' +
-        FExperiment.CurrentCondition.Turn.Count.ToString + LineEnding +
+        FExperiment.CurrentCondition.Cycles.Count.ToString + LineEnding +
       'Cycles (Generation):' +
-        FExperiment.LastGenerationCount.ToString
+        (FExperiment.LastGenerationCount+1).ToString
     );
   end;
   inherited PlayerExit(P, AMessage);
@@ -648,6 +646,10 @@ begin
             'A new participant replaced the oldest one. ' +
             'What is the nickname of the new participant?';
         end;
+        else
+          begin
+            { do nothing }
+          end;
       end;
     {$IFDEF TEST_MODE}
       DebugMessage(
