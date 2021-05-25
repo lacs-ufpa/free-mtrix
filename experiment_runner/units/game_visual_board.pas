@@ -113,6 +113,7 @@ type
     procedure DebugMessage(AMessage : string);
   {$ENDIF}
   protected
+    procedure StartExperiment(Sender : TObject); override;
     procedure EndExperiment(Sender : TObject); override;
     procedure PlayerExit(P : TPlayer; AMessage : string); override;
     procedure StartChoice(Sender : TObject); override;
@@ -214,7 +215,7 @@ begin
       'Condition Cycle:' +
         FExperiment.CurrentCondition.Turn.Count.ToString + LineEnding +
       'Cycles (Generation):' +
-        FExperiment.LastGenerationCount.ToString;
+        FExperiment.LastGenerationCount.ToString
     );
   end;
   inherited PlayerExit(P, AMessage);
@@ -908,6 +909,18 @@ begin
   PlayerBox.PanelLastColor.Color := GetColorFromString(AColor);
   PlayerBox.PanelLastColor.Caption:='';
   PlayerBox.Invalidate;
+end;
+
+procedure TGameBoard.StartExperiment(Sender : TObject);
+begin
+  if Assigned(BackgroundForm) then begin
+    StringGridMatrix.Enabled := False;
+    StringGridMatrix.Options := StringGridMatrix.Options-[goRowSelect];
+    ButtonConfirm.Enabled:=True;
+    ButtonConfirm.Caption:='Confirm';
+    ButtonConfirm.Visible := False;
+  end;
+  inherited StartExperiment(Sender);
 end;
 
 constructor TGameBoard.Create(AOwner : TComponent; AGameEvents : TGameEvents;

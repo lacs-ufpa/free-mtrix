@@ -1,13 +1,13 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 160
-  Height = 803
-  Top = 158
+  Left = 154
+  Height = 882
+  Top = 28
   Width = 1584
   HorzScrollBar.Page = 1578
   VertScrollBar.Page = 593
   AutoScroll = True
   Caption = 'Matrix'
-  ClientHeight = 803
+  ClientHeight = 882
   ClientWidth = 1584
   Font.Name = 'Monospace'
   OnActivate = FormActivate
@@ -5552,7 +5552,7 @@ object FormMatrixGame: TFormMatrixGame
     AnchorSideBottom.Side = asrBottom
     Left = 5
     Height = 220
-    Top = 583
+    Top = 662
     Width = 702
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = True
@@ -5654,6 +5654,7 @@ object FormMatrixGame: TFormMatrixGame
     Caption = 'Confirm'
     OnClick = btnConfirmRowClick
     TabOrder = 3
+    Visible = False
   end
   object ChatPanel: TPanel
     AnchorSideLeft.Control = GBPoints
@@ -5670,6 +5671,7 @@ object FormMatrixGame: TFormMatrixGame
     ClientHeight = 386
     ClientWidth = 390
     TabOrder = 4
+    Visible = False
     object ChatMemoRecv: TMemo
       AnchorSideBottom.Control = ChatSplitter
       Left = 6

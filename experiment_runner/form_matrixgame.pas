@@ -175,25 +175,29 @@ begin
     'p': FormMatrixGame.SetGameActor(gaPlayer);
     'w': FormMatrixGame.SetGameActor(gaWatcher);
     else
-      if not Assigned(FGameControl) then
-        begin
-          FormChooseActor := TFormChooseActor.Create(Self);
-          FormChooseActor.Style := '.Arrived';
-          try
-            if FormChooseActor.ShowModal = 1 then begin
-              case FormChooseActor.GameActor of
-                gaAdmin: FormMatrixGame.SetGameActor(gaAdmin);
-                gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
-                gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
-                else Close;
-              end;
-            end else
+      if not Assigned(FGameControl) then begin
+        FormChooseActor := TFormChooseActor.Create(nil);
+        FormChooseActor.Style := '.Arrived';
+        if FormChooseActor.ShowModal = 1 then begin
+          case FormChooseActor.GameActor of
+            gaAdmin: FormMatrixGame.SetGameActor(gaAdmin);
+            gaPlayer: FormMatrixGame.SetGameActor(gaPlayer);
+            gaWatcher: FormMatrixGame.SetGameActor(gaWatcher);
+            else begin
+              FormChooseActor.Free;
               Close;
-          finally
-            FormChooseActor.Free;
+              Exit;
+            end;
           end;
-        end
+        end else begin
+          FormChooseActor.Free;
+          Close;
+          Exit;
+        end;
+        FormChooseActor.Free;
+      end;
   end;
+  TStringGridA(FGameBoard.StringGridMatrix).Enabled := False;
   OnActivate:=nil;
 end;
 
