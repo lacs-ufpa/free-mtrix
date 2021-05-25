@@ -375,6 +375,15 @@ type
     Generations : integer;
   end;
 
+  TAvoidOverlapingChanges = record
+     Enabled : Boolean;
+     Active : Boolean;
+     BlockCondition  : Boolean;
+     BlockGeneration : Boolean;
+     Count : integer;
+     Value : integer;
+  end;
+
 operator in(const AColor: TGameColor; const AArrayOfColors: TGameAColors): Boolean;
 
 implementation

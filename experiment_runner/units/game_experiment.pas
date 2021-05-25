@@ -82,6 +82,7 @@ type
     procedure SetTargetInterlockingEvent;
     procedure SetContingenciesEvents;
   private
+    FAvoidOverlapingChanges : TAvoidOverlapingChanges;
     FConditionMustBeUpdated: Boolean;
     FConsequenceStringFromChoices: string;
     FEndCycle: Boolean;
@@ -181,10 +182,12 @@ type
     property PlayerFromString[s : string]: TPlayer read AliasPlayerFromString;
     property FirstTurn[i:integer] : integer read GetFirstTurn;
   public // standard control
+    function ShouldEndGeneration:Boolean;
     function ShouldEndCondition:Boolean;
     function CurrentConditionAsString:string;
     function ValidID(AID : string) : Boolean;
     function AsString : string;
+    procedure CountOverlapingCycles;
     procedure ForceEndCondition;
     procedure Clean;
     procedure Play;
@@ -253,6 +256,29 @@ end;
 function TExperiment.GetNextTurn: string; // used during player arriving
 var
   i : integer;
+  function HasOverlappingChanges : Boolean;
+  var
+    LShouldEndCondition : Boolean;
+    LShouldEndGeneration : Boolean;
+  begin
+    Result := True;
+    LShouldEndCondition := ShouldEndCondition;
+    LShouldEndGeneration := ShouldEndGeneration;
+    if (LShouldEndCondition and LShouldEndGeneration) or
+       ((not LShouldEndCondition) and LShouldEndGeneration) then begin
+      FAvoidOverlapingChanges.BlockCondition := True;
+      FAvoidOverlapingChanges.BlockGeneration := False;
+      Exit;
+    end;
+
+    if LShouldEndCondition and (not LShouldEndGeneration) then begin
+      FAvoidOverlapingChanges.BlockCondition := False;
+      FAvoidOverlapingChanges.BlockGeneration := True;
+      Exit;
+    end;
+    Result := False;
+  end;
+
 begin
   if Assigned(FOnEndTurn) then FOnEndTurn(Self);
   Result := #32;
@@ -271,6 +297,14 @@ begin
       FConditions[CurrentConditionI].Turn.Count := 0;
       Inc(FCycles.Global);
       Inc(FConditions[CurrentConditionI].Cycles.Count);
+
+      if FAvoidOverlapingChanges.Enabled then begin
+        if FAvoidOverlapingChanges.Active then begin
+          CountOverlapingCycles;
+        end else begin
+          FAvoidOverlapingChanges.Active := HasOverlappingChanges;
+        end;
+      end;
 
       if CurrentCondition.Turn.Random then
         begin
@@ -311,6 +345,7 @@ begin
           Exit;
         end;
       Inc(FCurrentCondition);
+      FAvoidOverlapingChanges.Active := True;
       FCycles.GenerationValue := CurrentCondition.Cycles.Value;
       // may the generation count be reseted?
       //FCycles.GenerationCount:=0;
@@ -691,19 +726,17 @@ end;
 function TExperiment.GetPlayerToKick: string;
 begin
   Result := #32;
-  if CurrentCondition.Cycles.Count > 4 then
-  begin
-    if FCycles.GenerationCount < FCycles.GenerationValue -1 then
-      Inc(FCycles.GenerationCount)
-    else
-      begin
-        if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
+  if ShouldEndGeneration then begin
+    if Assigned(FOnEndGeneration) then FOnEndGeneration(Self);
 
-        Result := FPlayers[0].ID;
-        FCycles.GenerationCount := 0;
-        Inc(FCycles.Generations);
-        if Assigned(FOnStartGeneration) then FOnStartGeneration(Self);
-      end;
+    // remove the older participant
+    Result := FPlayers[0].ID;
+    FCycles.GenerationCount := 0;
+    Inc(FCycles.Generations);
+    FAvoidOverlapingChanges.Active := True;
+    if Assigned(FOnStartGeneration) then FOnStartGeneration(Self);
+  end else begin
+    Inc(FCycles.GenerationCount);
   end;
 end;
 
@@ -986,12 +1019,43 @@ begin
   Result := PlayersCount = Condition[CurrentConditionI].Turn.Value;
 end;
 
+procedure TExperiment.CountOverlapingCycles;
+begin
+  if FAvoidOverlapingChanges.Count >= FAvoidOverlapingChanges.Value-1 then begin
+    FAvoidOverlapingChanges.Active := False;
+    FAvoidOverlapingChanges.Count := 0;
+  end else begin
+    Inc(FAvoidOverlapingChanges.Count);
+  end;
+end;
+
+function TExperiment.ShouldEndGeneration : Boolean;
+  function IsEnd : Boolean;
+  begin
+    Result := FCycles.GenerationCount >= FCycles.GenerationValue -1;
+  end;
+begin
+  Result := False;
+  if FAvoidOverlapingChanges.Enabled then begin
+    if FAvoidOverlapingChanges.BlockGeneration then begin
+      Exit;
+    end;
+  end;
+  Result := IsEnd;
+end;
+
 function TExperiment.ShouldEndCondition: Boolean;
 var
   LInterlocks: Real;
   LCyclesInCurrentCondition: Integer;
 begin
   Result := False;
+  if FAvoidOverlapingChanges.Enabled then begin
+    if FAvoidOverlapingChanges.BlockCondition then begin
+      Exit;
+    end;
+  end;
+
   // interlockings in the last x cycles
   LInterlocks := InterlockingsInLastCycles;
 
@@ -1095,11 +1159,6 @@ begin
       CurrentCondition.EndCriterium.AbsoluteCyclesMax-1;
 end;
 
-//procedure TExperiment.TargetInterlocking;
-//begin
-//  SetTargetInterlocking;
-//end;
-
 procedure TExperiment.SaveToFile(AFilename: string);
 begin
   SaveExperimentToFile(Self,AFilename);
@@ -1113,14 +1172,7 @@ begin
 end;
 
 function TExperiment.CurrentTurn : integer;
-//var
-//LTurnIndex : integer;
 begin
-  //LTurnIndex := CurrentCondition.Turn.Count;
-  //if CurrentCondition.Turn.Random then
-  //  Result := StrToInt(Delimited(2,FRandomTurns[LTurnIndex]))
-  //else
-  //  Result := LTurnIndex;
   Result := CurrentCondition.Turn.Count;
 end;
 
@@ -1214,6 +1266,10 @@ end;
 
 procedure TExperiment.Play;
 begin
+  FAvoidOverlapingChanges.Enabled := True;
+  FAvoidOverlapingChanges.Active := False;
+  FAvoidOverlapingChanges.Count := 0;
+  FAvoidOverlapingChanges.Value := 5;
   FCycles.GenerationValue := CurrentCondition.Cycles.Value;
   FState:=xsRunning;
 
