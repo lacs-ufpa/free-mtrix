@@ -29,6 +29,7 @@ type
   TGameBoard = class(TGameEvents)
   private
     //FCurrentCause : TGameConsequenceStyle;
+    FCause : string;
     FActor : TGameActor;
     FButtonConfirm : TButton;
     FExperiment : TExperiment;
@@ -195,6 +196,8 @@ begin
 end;
 
 procedure TGameBoard.PlayerExit(P : TPlayer; AMessage : string);
+var
+  LCulturalToken : string;
 begin
   if Assigned(ListBoxOldPlayers) then
   begin
@@ -202,8 +205,17 @@ begin
       'ID:' + AMessage + LineEnding +
       'Name: '+ P.Nicname + LineEnding +
       'Red Tokens:' + P.Points.A.ToString + LineEnding +
-      'Blue Tokens:' + P.Points.B.ToString
-      );
+      'Blue Tokens:' + P.Points.B.ToString + LineEnding +
+      'Red+Blue:' + (P.Points.A + P.Points.B).ToString + LineEnding +
+      'Cultural Tokens (Sustainable):' +
+        FExperiment.GlobalPoints(gscG1).ToString + LineEnding +
+      'Cultural Tokens (Non-sustainable):' +
+        FExperiment.GlobalPoints(gscG2).ToString + LineEnding +
+      'Condition Cycle:' +
+        FExperiment.CurrentCondition.Turn.Count.ToString + LineEnding +
+      'Cycles (Generation):' +
+        FExperiment.LastGenerationCount.ToString;
+    );
   end;
   inherited PlayerExit(P, AMessage);
 end;
@@ -833,8 +845,6 @@ begin
 end;
 
 procedure TGameBoard.NextConditionSetup; // [player_points]
-var
-  LCause : string;
 begin
   if Assigned(LabelGroup1Name) then
     LabelGroup1Name.Caption := Sanitize(
@@ -846,10 +856,9 @@ begin
       FExperiment.CurrentCondition.Label2
     );
 
-  LCause := FExperiment.CurrentCondition.Picture1;
-
+  FCause := FExperiment.CurrentCondition.Picture1;
   if Assigned(ImageGroup1) then
-    ImageGroup1.Picture.LoadFromResourceName(HInstance, LCause);
+    ImageGroup1.Picture.LoadFromResourceName(HInstance, FCause);
 end;
 
 procedure TGameBoard.InvalidateLabels(AID : string);
