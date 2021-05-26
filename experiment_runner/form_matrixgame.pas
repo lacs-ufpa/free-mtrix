@@ -197,7 +197,7 @@ begin
         FormChooseActor.Free;
       end;
   end;
-  TStringGridA(FGameBoard.StringGridMatrix).Enabled := False;
+  FGameBoard.StringGridMatrix.Enabled := False;
   OnActivate:=nil;
 end;
 
