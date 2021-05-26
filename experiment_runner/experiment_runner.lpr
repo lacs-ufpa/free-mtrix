@@ -24,8 +24,7 @@ uses
   {$ENDIF}
   , StrUtils, Forms, Classes, SysUtils
   , helpers
-  , form_matrixgame, game_control_events
-  ;
+  , form_matrixgame;
 
 
 var
