@@ -168,7 +168,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="25">
+    <Units Count="26">
       <Unit0>
         <Filename Value="experiment_runner.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -272,9 +272,13 @@
         <IsPartOfProject Value="True"/>
       </Unit23>
       <Unit24>
-        <Filename Value="game_control_events.pas"/>
+        <Filename Value="units/game_report.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit24>
+      <Unit25>
+        <Filename Value="units/game_control_events.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit25>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -56,14 +56,14 @@ type
     GBPoints1: TGroupBox;
     GBPoints2: TGroupBox;
     GBPoints3: TGroupBox;
+    ImagePlayer1Group2 : TImage;
+    ImagePlayer2Group2 : TImage;
+    ImagePlayer3Group2 : TImage;
     ImageServerGroup1: TImage;
     ImagePlayer1Group1: TImage;
     ImagePlayer2Group1: TImage;
     ImagePlayer3Group1: TImage;
-    ImageServerI: TImage;
-    ImagePlayer1I: TImage;
-    ImagePlayer2I: TImage;
-    ImagePlayer3I: TImage;
+    ImageServerGroup2 : TImage;
     ImageServerA: TImage;
     ImagePlayer1A: TImage;
     ImagePlayer2A: TImage;
@@ -77,8 +77,15 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
+    LabelPlayer1Group2Count : TLabel;
+    LabelPlayer1Group2Name : TLabel;
+    LabelPlayer2Group2Count : TLabel;
+    LabelPlayer2Group2Name : TLabel;
+    LabelPlayer3Group2Count : TLabel;
+    LabelPlayer3Group2Name : TLabel;
     LabelRandomBias: TLabel;
     LabelExperimentNotFound: TLabel;
+    LabelServerGroup2Count : TLabel;
     LabelServerGroup1Name: TLabel;
     LabelPlayer1Group1Name: TLabel;
     LabelPlayer2Group1Name: TLabel;
@@ -87,10 +94,7 @@ type
     LabelPlayer1Group1Count: TLabel;
     LabelPlayer2Group1Count: TLabel;
     LabelPlayer3Group1Count: TLabel;
-    LabelServerIName: TLabel;
-    LabelPlayer1IName: TLabel;
-    LabelPlayer2IName: TLabel;
-    LabelPlayer3IName: TLabel;
+    LabelServerGroup2Name : TLabel;
     LabelServerAName: TLabel;
     LabelPlayer1AName: TLabel;
     LabelPlayer2AName: TLabel;
@@ -107,10 +111,6 @@ type
     LabelPlayer1BCount: TLabel;
     LabelPlayer2BCount: TLabel;
     LabelPlayer3BCount: TLabel;
-    LabelServerICount: TLabel;
-    LabelPlayer1ICount: TLabel;
-    LabelPlayer2ICount: TLabel;
-    LabelPlayer3ICount: TLabel;
     LabelRandomBias1: TLabel;
     LabelRandomBias2: TLabel;
     ListBoxExperiment: TListBox;
@@ -189,9 +189,9 @@ begin
       ChatPanel := nil;
       Timer := nil;
       TimerEvent := nil;
-      ImagePointI := ImageServerI;
-      LabelPointINAme := LabelServerIName;
-      LabelPointICount := LabelServerICount;
+      ImagePointI := nil;
+      LabelPointIName := nil;
+      LabelPointICount := nil;
       ListBoxOldPlayers := ListBoxOldParticipants;
 
       ImagePointA := ImageServerA;
@@ -206,11 +206,11 @@ begin
       LabelGroup1Name := LabelServerGroup1Name;
       LabelGroup1Count := LabelServerGroup1Count;
 
-      ImageGroup2 := nil;
-      LabelGroup2Name := nil;
-      LabelGroup2Count := nil;
+      ImageGroup2 := ImageServerGroup2;
+      LabelGroup2Name := LabelServerGroup2Name;
+      LabelGroup2Count := LabelServerGroup2Count;
       FallbackMessages := ListBoxMessages;
-      InitialSetup;
+      BeforeStartExperimentSetup;
     end;
 
   FServerGameBoard.GroupBoxExperiment.Parent := Self;
@@ -247,9 +247,9 @@ begin
             ChatPanel := nil;
             Timer := nil;
             TimerEvent := nil;
-            ImagePointI := ImagePlayer1I;
-            LabelPointINAme := LabelPlayer1IName;
-            LabelPointICount := LabelPlayer1ICount;
+            ImagePointI := nil;
+            LabelPointIName := nil;
+            LabelPointICount := nil;
             ListBoxOldPlayers := nil;
 
             ImagePointA := ImagePlayer1A;
@@ -264,11 +264,11 @@ begin
             LabelGroup1Name := LabelPlayer1Group1Name;
             LabelGroup1Count := LabelPlayer1Group1Count;
 
-            ImageGroup2 := nil;
-            LabelGroup2Name := nil;
-            LabelGroup2Count := nil;
+            ImageGroup2 := ImagePlayer1Group2;
+            LabelGroup2Name := LabelPlayer1Group2Name;
+            LabelGroup2Count := LabelPlayer1Group2Count;
             FallbackMessages := ListBoxMessages1;
-            InitialSetup;
+            BeforeStartExperimentSetup;
           end;
         FPlayer1GameControl.GameBoard := FPlayer1GameBoard;
         FPlayer1GameControl.Login;
@@ -289,9 +289,9 @@ begin
             ChatPanel := nil;
             Timer := nil;
             TimerEvent := nil;
-            ImagePointI := ImagePlayer2I;
-            LabelPointINAme := LabelPlayer2IName;
-            LabelPointICount := LabelPlayer2ICount;
+            ImagePointI := nil;
+            LabelPointIName := nil;
+            LabelPointICount := nil;
             ListBoxOldPlayers := nil;
 
             ImagePointA := ImagePlayer2A;
@@ -306,11 +306,11 @@ begin
             LabelGroup1Name := LabelPlayer2Group1Name;
             LabelGroup1Count := LabelPlayer2Group1Count;
 
-            ImageGroup2 := nil;
-            LabelGroup2Name := nil;
-            LabelGroup2Count := nil;
+            ImageGroup2 := ImagePlayer2Group2;
+            LabelGroup2Name := LabelPlayer2Group2Name;
+            LabelGroup2Count := LabelPlayer2Group2Count;
             FallbackMessages := ListBoxMessages2;
-            InitialSetup;
+            BeforeStartExperimentSetup;
           end;
         FPlayer2GameControl.GameBoard := FPlayer2GameBoard;
         FPlayer2GameControl.Login;
@@ -331,9 +331,9 @@ begin
             ChatPanel := nil;
             Timer := nil;
             TimerEvent := nil;
-            ImagePointI := ImagePlayer3I;
-            LabelPointINAme := LabelPlayer3IName;
-            LabelPointICount := LabelPlayer3ICount;
+            ImagePointI := nil;
+            LabelPointIName := nil;
+            LabelPointICount := nil;
             ListBoxOldPlayers := nil;
 
             ImagePointA := ImagePlayer3A;
@@ -348,11 +348,11 @@ begin
             LabelGroup1Name := LabelPlayer3Group1Name;
             LabelGroup1Count := LabelPlayer3Group1Count;
 
-            ImageGroup2 := nil;
-            LabelGroup2Name := nil;
-            LabelGroup2Count := nil;
+            ImageGroup2 := ImagePlayer3Group2;
+            LabelGroup2Name := LabelPlayer3Group2Name;
+            LabelGroup2Count := LabelPlayer3Group2Count;
             FallbackMessages := ListBoxMessages3;
-            InitialSetup;
+            BeforeStartExperimentSetup;
           end;
         FPlayer3GameControl.GameBoard := FPlayer3GameBoard;
         FPlayer3GameControl.Login;

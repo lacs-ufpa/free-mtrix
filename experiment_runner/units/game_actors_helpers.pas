@@ -126,7 +126,7 @@ const
       ConditionName : '';
       Label1:'';
       Label2:'';
-      Picture1:'';
+      TargetMetacontingency:'';
       Contingencies : nil;
       //Interlocks : (
       //  Count : 0;

@@ -48,9 +48,8 @@ resourcestring
   SEC_CONDITION = 'Condition.';
   KEY_COND_NAME = 'Name';
   KEY_CULTURANT1_CAPTION = 'Culturant1.Counter.Label';
-  KEY_CULTURANT1_PICTURE = 'Culturant1.Counter.Picture';
   KEY_CULTURANT2_CAPTION = 'Culturant2.Counter.Label';
-  KEY_CULTURANT2_PICTURE = 'Culturant2.Counter.Picture';
+  KEY_TARGET_CULTURANT   = 'TargetCulturant';
 
   KEY_TURN_VALUE = 'Turn.NumberOfPlayers';  // 3
   KEY_TURN_COUNT = 'Turn.StartAt';    // 1

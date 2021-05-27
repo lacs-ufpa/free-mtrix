@@ -1102,7 +1102,7 @@ begin
     Result :=
       Condition[CurrentConditionI].Label1+'|'+
       Condition[CurrentConditionI].Label2+'|'+
-      Condition[CurrentConditionI].Picture1+'|'+
+      Condition[CurrentConditionI].TargetMetacontingency+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.A)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.B)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.G1)+'|'+
@@ -1111,7 +1111,7 @@ begin
     Result:=
       Condition[CurrentConditionI].Label1+'|'+
       Condition[CurrentConditionI].Label2+'|'+
-      Condition[CurrentConditionI].Picture1+'|'+
+      Condition[CurrentConditionI].TargetMetacontingency+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.A)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.G1)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.G2);
@@ -1286,6 +1286,8 @@ begin
   // only admin can send the start experiment event
   if FGameActor = gaAdmin then
     if Assigned(FOnStartExperiment) then FOnStartExperiment(Self);
+
+  if Assigned(OnStartCondition) then OnStartCondition(Self);
 end;
 
 procedure TExperiment.UpdatePlayerTurns(ANextTurnString: string);

@@ -114,6 +114,7 @@ type
   {$ENDIF}
   protected
     procedure StartExperiment(Sender : TObject); override;
+    procedure StartCondition(Sender : TObject); override;
     procedure EndExperiment(Sender : TObject); override;
     procedure PlayerExit(P : TPlayer; AMessage : string); override;
     procedure StartChoice(Sender : TObject); override;
@@ -126,7 +127,7 @@ type
       AGroupBoxAdmin : TGroupBox; ASystemPopUp : TPopupNotifier); reintroduce;
     destructor Destroy; override;
     function PlayerSaidGoodBye(AID, AStyle : string) : Boolean;
-    procedure InitialSetup;
+    procedure BeforeStartExperimentSetup;
     procedure StartSetup;
     procedure SetupChat(ASetup : string);
     procedure FullScreen;
@@ -147,7 +148,7 @@ type
     property ImageGroup2 : TImage read FImageGroup2 write SetImageGroup2;
     property LabelPointAName : TLabel read FLabelPointAName write SetLabelPointAName;
     property LabelPointBName : TLabel read FLabelPointBName write SetLabelPointBName;
-    property LabelPointINAme : TLabel read FLabelPointIName write SetLabelPointIName;
+    property LabelPointIName : TLabel read FLabelPointIName write SetLabelPointIName;
     property LabelGroup1Name : TLabel read FLabelGroup1Name write SetLabelGroup1Name;
     property LabelGroup2Name : TLabel read FLabelGroup2Name write SetLabelGroup2Name;
     property SystemPopUp : TPopupNotifier read FSystemPopUp write SetSystemPopUp;
@@ -189,6 +190,13 @@ uses
     , popup_hack
   {$ENDIF}
   ;
+
+procedure VisibleControl(AControl : TControl; AVisible : Boolean);
+begin
+  if Assigned(AControl) then begin
+    AControl.Visible := AVisible;
+  end;
+end;
 
 procedure TGameBoard.EndExperiment(Sender : TObject);
 begin
@@ -771,8 +779,11 @@ var
   begin
     for LStyle in AConsequence.Style do
       case LStyle of
-          gscG1, gscG2 : //same visual control for both types
+          gscG1 :
             FLabelGroup1Count.Caption :=
+              FExperiment.GlobalPoints(LStyle).ToString;
+          gscG2 :
+            FLabelGroup2Count.Caption :=
               FExperiment.GlobalPoints(LStyle).ToString;
           else { do nothing };
       end;
@@ -849,19 +860,29 @@ end;
 
 procedure TGameBoard.NextConditionSetup; // [player_points]
 begin
-  if Assigned(LabelGroup1Name) then
-    LabelGroup1Name.Caption := Sanitize(
-      FExperiment.CurrentCondition.Label1
-    );
+  FCause := FExperiment.CurrentCondition.TargetMetacontingency;
+  if FActor = gaPlayer then begin
+    case FCause of
+      'SUSTAINABLE' : begin
+        VisibleControl(FImageGroup1, True);
+        VisibleControl(FLabelGroup1Name, True);
+        VisibleControl(FLabelGroup1Count, True);
 
-  if Assigned(LabelGroup2Name) then
-    LabelGroup2Name.Caption := Sanitize(
-      FExperiment.CurrentCondition.Label2
-    );
+        VisibleControl(FImageGroup2, False);
+        VisibleControl(FLabelGroup2Name, False);
+        VisibleControl(FLabelGroup2Count, False);
+      end;
 
-  FCause := FExperiment.CurrentCondition.Picture1;
-  if Assigned(ImageGroup1) then
-    ImageGroup1.Picture.LoadFromResourceName(HInstance, FCause);
+      'NON-SUSTAINABLE' : begin
+        VisibleControl(FImageGroup2, True);
+        VisibleControl(FLabelGroup2Name, True);
+        VisibleControl(FLabelGroup2Count, True);
+        VisibleControl(FImageGroup1, False);
+        VisibleControl(FLabelGroup1Name, False);
+        VisibleControl(FLabelGroup1Count, False);
+      end;
+    end;
+  end;
 end;
 
 procedure TGameBoard.InvalidateLabels(AID : string);
@@ -869,13 +890,6 @@ var
   P : TPlayer;
   PB : TPlayerBox;
 begin
-  if Assigned(FLabelGroup1Count) then
-    FLabelGroup1Count.Caption :=
-      FExperiment.CurrentCondition.Points.Count.G1.ToString;
-  if Assigned(FLabelGroup2Count) then
-    FLabelGroup2Count.Caption :=
-      FExperiment.CurrentCondition.Points.Count.G2.ToString;
-
   case FActor of
     gaAdmin:begin
         for P in FExperiment.Players do
@@ -923,6 +937,29 @@ begin
     ButtonConfirm.Visible := False;
   end;
   inherited StartExperiment(Sender);
+end;
+
+procedure TGameBoard.StartCondition(Sender : TObject);
+begin
+  if Assigned(LabelGroup1Name) then begin
+    LabelGroup1Name.Caption := Sanitize(FExperiment.CurrentCondition.Label1);
+  end;
+
+  if Assigned(LabelGroup2Name) then begin
+    LabelGroup2Name.Caption := Sanitize(FExperiment.CurrentCondition.Label2);
+  end;
+
+  if Assigned(FLabelGroup1Count) then begin
+    FLabelGroup1Count.Caption :=
+      FExperiment.GlobalPoints(gscG1).ToString;
+  end;
+
+  if Assigned(FLabelGroup2Count) then begin
+    FLabelGroup2Count.Caption :=
+      FExperiment.GlobalPoints(gscG2).ToString;
+  end;
+
+  inherited StartCondition(Sender);
 end;
 
 constructor TGameBoard.Create(AOwner : TComponent; AGameEvents : TGameEvents;
@@ -1027,30 +1064,37 @@ begin
   inherited Destroy;
 end;
 
-procedure TGameBoard.InitialSetup;
+procedure TGameBoard.BeforeStartExperimentSetup;
 begin
   case FActor of
-    gaAdmin:
+    gaAdmin: begin
       if Assigned(BackgroundForm) then begin
         GroupBoxAdmin.Visible:= True;
-        StringGridMatrix.Hide;
-        ImagePointI.Hide;
-        LabelPointINAme.Hide;
-        LabelPointICount.Hide;
-
-        ImagePointA.Hide;
-        LabelPointAName.Hide;
-        LabelPointACount.Hide;
-
-        ImagePointB.Hide;
-        LabelPointBName.Hide;
-        LabelPointBCount.Hide;
-
-        ImageGroup2.Hide;
-        LabelGroup2Name.Hide;
-        LabelGroup2Count.Hide;
+        StringGridMatrix.Visible := False;
         GroupBoxAdmin.Left := 10;
       end;
+
+      VisibleControl(FImagePointI, False);
+      VisibleControl(FLabelPointIName, False);
+      VisibleControl(FLabelPointICount, False);
+      VisibleControl(FImagePointA, False);
+      VisibleControl(FLabelPointAName, False);
+      VisibleControl(FLabelPointACount, False);
+      VisibleControl(FImagePointB, False);
+      VisibleControl(FLabelPointBName, False);
+      VisibleControl(FLabelPointBCount, False);
+    end;
+    gaPlayer: begin
+      VisibleControl(FImagePointI, False);
+      VisibleControl(FLabelPointIName, False);
+      VisibleControl(FLabelPointICount, False);
+      VisibleControl(FImageGroup1, False);
+      VisibleControl(FLabelGroup1Name, False);
+      VisibleControl(FLabelGroup1Count, False);
+      VisibleControl(FImageGroup2, False);
+      VisibleControl(FLabelGroup2Name, False);
+      VisibleControl(FLabelGroup2Count, False);
+    end;
     else { do nothing }
   end;
 end;
@@ -1102,21 +1146,22 @@ end;
 procedure TGameBoard.SetLabels;
 var
   IsPlayer : Boolean;
+  LVisible : Boolean;
 begin
   IsPlayer := FActor = gaPlayer;
-    // a b points
-  ImagePointA.Visible := FExperiment.ABPoints and IsPlayer;
-  LabelPointAName.Visible := FExperiment.ABPoints and IsPlayer;
-  LabelPointACount.Visible := FExperiment.ABPoints and IsPlayer;
 
-  ImagePointA.Visible := FExperiment.ABPoints and IsPlayer;
-  LabelPointBName.Visible := FExperiment.ABPoints and IsPlayer;
-  LabelPointBCount.Visible := FExperiment.ABPoints and IsPlayer;
+  LVisible := FExperiment.ABPoints and IsPlayer;
+  VisibleControl(FImagePointA, LVisible);
+  VisibleControl(FLabelPointAName, LVisible);
+  VisibleControl(FLabelPointACount, LVisible);
+  VisibleControl(FImagePointA, LVisible);
+  VisibleControl(FLabelPointBName, LVisible);
+  VisibleControl(FLabelPointBCount, LVisible);
 
-  // i points
-  ImagePointI.Visible := (not FExperiment.ABPoints) and IsPlayer;
-  LabelPointINAme.Visible := (not FExperiment.ABPoints) and IsPlayer;
-  LabelPointICount.Visible := (not FExperiment.ABPoints) and IsPlayer;
+  LVisible := (not FExperiment.ABPoints) and IsPlayer;
+  VisibleControl(FImagePointI, LVisible);
+  VisibleControl(FLabelPointINAme, LVisible);
+  VisibleControl(FLabelPointICount, LVisible);
 end;
 
 function TGameBoard.PlayerSaidGoodBye(AID, AStyle : string) : Boolean;

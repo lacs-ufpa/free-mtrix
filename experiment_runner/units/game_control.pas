@@ -29,7 +29,6 @@ type
   TGameControl = class(TGameEvents)
   private
     FGameBoard : TGameBoard;
-    FCurrentCause : TGameConsequenceStyle;
     FActor : TGameActor;
     FZMQActor : TZMQActor;
     FExperiment : TExperiment;
@@ -48,6 +47,7 @@ type
   protected
     function GetID : string; overload;
     procedure StartExperiment(Sender : TObject); override;
+    procedure StartCondition(Sender : TObject); override;
   public
     constructor Create(AOwner : TComponent; AActor : TGameActor); overload;
     destructor Destroy; override;
@@ -111,6 +111,13 @@ begin
     FZMQActor.SendMessage([K_START, #32, FExperiment.Turns]);
   end;
   inherited StartExperiment(Sender);
+end;
+
+procedure TGameControl.StartCondition(Sender : TObject);
+begin
+  //if Sender is then
+
+  inherited StartCondition(Sender);
 end;
 
 function TGameControl.GetActorNicname(AID: string): string;
@@ -201,23 +208,20 @@ procedure TGameControl.NextConditionSetup(IsConditionStart: Boolean);
 var
   A, B, G1, G2 : integer;
   P : TPlayer;
-  LCause : string;
 begin
   A  := FExperiment.CurrentCondition.Points.OnStart.A;
   B  := FExperiment.CurrentCondition.Points.OnStart.B;
   G1 := FExperiment.CurrentCondition.Points.OnStart.G1;
   G2 := FExperiment.CurrentCondition.Points.OnStart.G2;
-  LCause := FExperiment.CurrentCondition.Picture1;
 
-  // workaround to present points
-  // TODO: send TExperiment to player through zmq and load from configuration directly
-  if LCause = 'SUSTAINABLE' then
-    FCurrentCause := gscG1;
+  if G1 > 0 then
+    FExperiment.IncMetaPoints(gscG1, G1);
 
-  if LCause = 'NON-SUSTAINABLE' then
-    FCurrentCause := gscG2;
+  if G2 > 0 then
+    FExperiment.IncMetaPoints(gscG2, G2);
 
   if IsConditionStart then
+  begin
     for P in FExperiment.Players do
       begin
         if A > 0 then
@@ -227,11 +231,8 @@ begin
           FExperiment.IncPlayerPoints(gscB,B,P.ID);
       end;
 
-  if G1 > 0 then
-    FExperiment.IncMetaPoints(gscG1, G1);
-
-  if G2 > 0 then
-    FExperiment.IncMetaPoints(gscG2, G2);
+    //StartCondition(Self);
+  end;
 
   FGameBoard.NextConditionSetup;
   FGameBoard.InvalidateLabels(Self.ID);
@@ -507,6 +508,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
           // last turn // end cycle
           if FExperiment.IsEndCycle then begin
+            //check if we need to increment condition
+            FExperiment.NextCondition;
+
             // update players with server generated random turns
             if AMessage[4] <> #32 then
               FExperiment.UpdatePlayerTurns(AMessage[4]);

@@ -244,7 +244,7 @@ var
             begin
               Index := i;
               ConditionName := ReadString(LS,KEY_COND_NAME,LS);
-              Picture1:=ReadString(LS,KEY_CULTURANT1_PICTURE,LS);
+              TargetMetacontingency:=ReadString(LS,KEY_TARGET_CULTURANT,'NONE');
               Points.Count := GetPointsFromString(ReadString(LS, KEY_POINTS_COUNT,DEF_POINTS));
               Label1 := ReadString(LS, KEY_CULTURANT1_CAPTION, 'Items 1');
               Label2 := ReadString(LS, KEY_CULTURANT2_CAPTION, 'Items 2');

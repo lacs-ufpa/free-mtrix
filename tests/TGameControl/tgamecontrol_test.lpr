@@ -20,8 +20,7 @@ uses
   game_file_methods, game_visual_elements, game_actors_helpers, string_methods,
   game_visual_matrix_a, game_visual_experiment, game_actors_point,
   presentation_classes, helpers, game_resources, zmq_network, popup_hack,
-  game_zmq_actors, report_reader, regdata, game_report
-  { you can add units after this };
+  game_zmq_actors, report_reader, regdata, game_control_events, game_report;
 
 {$R *.res}
 

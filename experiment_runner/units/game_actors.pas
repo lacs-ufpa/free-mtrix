@@ -337,7 +337,7 @@ type
     ConditionName : string;
     Label1 : string;
     Label2 : string;
-    Picture1 : string;
+    TargetMetacontingency : string;
     Contingencies : TContingencies; // for producing points during the condition
     //Interlocks : record
     //  Count : integer; // culturant,

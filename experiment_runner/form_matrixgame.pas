@@ -155,7 +155,7 @@ begin
   FGameBoard.ImageGroup2 := ImageGroup2;
   FGameBoard.LabelGroup2Name := LabelGroup2;
   FGameBoard.LabelGroup2Count := LabelGroup2Count;
-  FGameBoard.InitialSetup;
+  FGameBoard.BeforeStartExperimentSetup;
 
   FGameControl.GameBoard := FGameBoard;
   FGameControl.Login;
