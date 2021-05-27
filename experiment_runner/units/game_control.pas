@@ -588,8 +588,6 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     case FActor of
       gaPlayer: begin
         if Self.ID = AID then begin
-          FZMQActor.Request([AID,' ',K_RESUME]);
-
           if GameBoard.PlayerSaidGoodBye(AID, K_LEFT) then begin
             FZMQActor.Request([AID,' ',K_RESUME]);
           end;

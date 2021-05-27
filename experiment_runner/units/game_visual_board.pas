@@ -1129,6 +1129,7 @@ begin
 
 {$IFDEF TEST_MODE}
   DebugMessage(LMessage);
+  Result := True;
 {$ELSE}
   if Assigned(BackgroundForm) then
     BackgroundForm.Visible := False;
