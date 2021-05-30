@@ -385,7 +385,11 @@ var
 
   function PointsString(APPoints : TPlayerPoints) : string;
   begin
-    Result := IntToStr(APPoints.A)+VV_SEP+IntToStr(APPoints.B);
+    Result :=
+      IntToStr(APPoints.A)+VV_SEP+
+      IntToStr(APPoints.B)+VV_SEP+
+      IntToStr(APPoints.G1)+VV_SEP+
+      IntToStr(APPoints.G2);
   end;
 
   function StatusString(AStatus : TGamePlayerStatus): string;
@@ -445,6 +449,7 @@ begin
     , StatusString(P.Status)
     , ChoiceString(P.Choice)
     , IntToStr(P.Turn)
+    , IntToStr(P.Index)
   ]);
   for i := 0 to Length(M)-1 do
     Result += M[i] + '|';
@@ -493,6 +498,8 @@ function GetPlayerFromString(s: string): TPlayer;
   begin
     Result.A := StrToIntDef(ExtractDelimited(1,S,[',']),0);
     Result.B := StrToIntDef(ExtractDelimited(2,S,[',']),0);
+    Result.G1 := StrToIntDef(ExtractDelimited(3,S,[',']),0);
+    Result.G2 := StrToIntDef(ExtractDelimited(4,S,[',']),0);
   end;
 
   function StatusFromString(S : string): TGamePlayerStatus;
@@ -513,13 +520,14 @@ begin
     WriteLn(ExtractDelimited(5,s,['|']));
     WriteLn(ExtractDelimited(6,s,['|']));
   {$ENDIF}
-  if WordCount(S,['|']) < 6 then Exit;
+  if WordCount(S,['|']) < 7 then Exit;
   Result.ID := ExtractDelimited(1,s,['|']);
   Result.Nicname := ExtractDelimited(2,s,['|']);
   Result.Points := PointsFromString(ExtractDelimited(3,s,['|']));
   Result.Status := StatusFromString(ExtractDelimited(4,s,['|']));
   Result.Choice := ChoiceFromString(ExtractDelimited(5,s,['|']));
   Result.Turn:=StrToInt(ExtractDelimited(6,s,['|']));
+  Result.Index:=StrToInt(ExtractDelimited(7,s,['|']));
 end;
 
 function GetPointsFromString(S: string) : TPoints;
@@ -542,6 +550,8 @@ function GetPPointsFromString(S:string) : TPlayerPoints;
 begin
   Result.A := StrToIntDef(ExtractDelimited(1,S,[',']),0);
   Result.B := StrToIntDef(ExtractDelimited(2,S,[',']),0);
+  Result.G1 := StrToIntDef(ExtractDelimited(3,S,[',']),0);
+  Result.G2 := StrToIntDef(ExtractDelimited(4,S,[',']),0);
 end;
 
 function GetPPointsString(APPoints: TPlayerPoints): string;

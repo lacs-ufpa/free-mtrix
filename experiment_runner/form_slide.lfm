@@ -1,0 +1,11 @@
+object FormSlide: TFormSlide
+  Left = 285
+  Height = 210
+  Top = 174
+  Width = 327
+  Caption = 'FormSlide'
+  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  LCLVersion = '2.1.0.0'
+end

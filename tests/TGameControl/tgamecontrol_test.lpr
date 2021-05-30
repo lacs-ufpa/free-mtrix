@@ -16,16 +16,40 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, form_main, game_actors, game_control, game_experiment,
-  game_file_methods, game_visual_elements, game_actors_helpers, string_methods,
-  game_visual_matrix_a, game_visual_experiment, game_actors_point,
-  presentation_classes, helpers, game_resources, zmq_network, popup_hack,
-  game_zmq_actors, report_reader, regdata, game_control_events, game_report;
+  Forms
+  , form_main
+  , game_actors
+  , game_control
+  , game_control_events
+  , game_experiment
+  , game_file_methods
+  , game_visual_elements
+  , game_actors_helpers
+  , game_visual_matrix_a
+  , game_visual_experiment
+  , game_actors_point
+  , game_zmq_actors
+  , game_report
+  , game_resources
+  , string_methods
+  , presentation_classes
+  , helpers
+  , zmq_network
+  , popup_hack
+  , report_reader
+  , regdata
+  , FileUtil
+  , sysutils
+  ;
 
 {$R *.res}
 
 begin
   Randomize;
+  Global.AppPath := ExtractFilePath(Application.ExeName);
+  Global.CachePath := Global.AppPath + PathDelim + 'cache' + PathDelim;
+  Global.MediaRoot := 'media' + PathDelim;
+  Global.MediaPath := Global.AppPath + Global.MediaRoot;
   RequireDerivedFormResource:=True;
   Application.Initialize;
   Application.CreateForm(TForm1, Form1);

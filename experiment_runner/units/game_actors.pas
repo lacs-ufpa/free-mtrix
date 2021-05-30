@@ -43,7 +43,7 @@ type
     gaWatcher
   );
 
-  TGamePlayerStatus = (gpsWaiting, gpsPlaying, gpsPlayed);
+  TGamePlayerStatus = (gpsWaiting, gpsPlaying, gpsPlayed, gpsFinishedReading);
 
 type
 
@@ -166,7 +166,7 @@ type
 type
 
   TPLayerPoints = record
-    A, B : integer
+    A, B, G1, G2 : integer
   end;
 
   TPlayerChoice =  record
@@ -175,14 +175,15 @@ type
   end;
 
   TPlayer = record
-    ID,
-    Nicname,
-    Login,
+    ID : string;
+    Nicname : string;
+    Login : string;
     Password : string;
     Status : TGamePlayerStatus;
     Data : TStringList;
     Choice : TPlayerChoice;
     Points : TPLayerPoints;
+    Index : ShortInt;
     Turn : ShortInt;
   end;
 
@@ -338,6 +339,8 @@ type
     Label1 : string;
     Label2 : string;
     TargetMetacontingency : string;
+    Slides : TStringArray;
+    GenerationSlides : TStringArray;
     Contingencies : TContingencies; // for producing points during the condition
     //Interlocks : record
     //  Count : integer; // culturant,

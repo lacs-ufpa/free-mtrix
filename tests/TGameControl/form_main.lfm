@@ -99,7 +99,7 @@ object Form1: TForm1
         Left = 0
         Height = 220
         Top = 8
-        Width = 878
+        Width = 882
         Anchors = [akTop, akLeft, akRight]
         AutoSize = True
         Caption = 'Server'
@@ -125,7 +125,7 @@ object Form1: TForm1
         Left = 0
         Height = 150
         Top = 240
-        Width = 878
+        Width = 882
         Anchors = [akTop, akLeft, akRight]
         AutoSize = True
         Caption = 'P1'
@@ -151,7 +151,7 @@ object Form1: TForm1
         Left = 0
         Height = 150
         Top = 408
-        Width = 878
+        Width = 882
         Anchors = [akTop, akLeft, akRight]
         AutoSize = True
         Caption = 'P2'
@@ -177,7 +177,7 @@ object Form1: TForm1
         Left = 0
         Height = 150
         Top = 576
-        Width = 878
+        Width = 882
         Anchors = [akTop, akLeft, akRight]
         AutoSize = True
         Caption = 'P3'
@@ -13994,12 +13994,12 @@ object Form1: TForm1
       ClientWidth = 882
       object ListBoxReport: TListBox
         Left = 0
-        Height = 839
+        Height = 835
         Top = 0
-        Width = 878
+        Width = 882
         Align = alClient
         ItemHeight = 0
-        ScrollWidth = 876
+        ScrollWidth = 880
         TabOrder = 0
         TopIndex = -1
       end

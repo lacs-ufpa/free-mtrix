@@ -61,6 +61,7 @@ procedure TFormChooseActor.btnAdminClick(Sender: TObject);
 begin
   FGameActor:=gaAdmin;
   FCanClose := True;
+  Close;
   ModalResult:=1;
 end;
 
@@ -68,12 +69,14 @@ procedure TFormChooseActor.btnPlayerClick(Sender: TObject);
 begin
   FGameActor:=gaPlayer;
   FCanClose := True;
+  Close;
   ModalResult:=1;
 end;
 
 procedure TFormChooseActor.btnPlayerResumeClick(Sender: TObject);
 begin
   FCanClose := True;
+  Close;
   ModalResult:=1;
 end;
 
@@ -84,7 +87,7 @@ end;
 
 procedure TFormChooseActor.FormCreate(Sender: TObject);
 begin
-  FCanClose := True;
+  FCanClose := False;
 end;
 
 procedure TFormChooseActor.ExitApplication(Sender: TObject);

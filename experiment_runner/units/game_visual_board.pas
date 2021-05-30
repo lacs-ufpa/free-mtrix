@@ -127,6 +127,9 @@ type
       AGroupBoxAdmin : TGroupBox; ASystemPopUp : TPopupNotifier); reintroduce;
     destructor Destroy; override;
     function PlayerSaidGoodBye(AID, AStyle : string) : Boolean;
+    function SayGoodByeAndShowSlides(AID, AStyle : string;
+      ASlides : TStringArray) : Boolean;
+    procedure EndSlides;
     procedure BeforeStartExperimentSetup;
     procedure StartSetup;
     procedure SetupChat(ASetup : string);
@@ -134,6 +137,7 @@ type
     procedure SetMatrix;
     procedure SetLabels;
     procedure AppendToChat(ALn : string);
+    function ShowSlides(ASlides : TStringArray) : Boolean;
     procedure ShowSystemPopUp(AGameContext: TGameContext; AID : string = '');
     function GetPlayerExitMessage(AID : string) : string;
     property LabelGroup1Count : TLabel read FLabelGroup1Count write SetLabelGroup1;
@@ -181,6 +185,7 @@ uses
   , game_control
   , game_visual_matrix_a
   , form_chooseactor
+  , form_slide
   , game_resources
   , game_actors_helpers
   , string_methods
@@ -235,6 +240,7 @@ begin
     ButtonConfirm.Enabled:=True;
     ButtonConfirm.Caption:='Confirm';
     ButtonConfirm.Visible := False;
+    BackgroundForm.Invalidate;
   end;
 
   ShowSystemPopUp(gmcChoiceStart);
@@ -247,6 +253,7 @@ begin
     StringGridMatrix.Enabled:= False;
     ButtonConfirm.Enabled:=False;
     ButtonConfirm.Caption:='OK';
+    BackgroundForm.Invalidate;
   end;
   inherited EndChoice(Sender);
 end;
@@ -259,6 +266,7 @@ begin
     ButtonConfirm.Enabled:=True;
     ButtonConfirm.Caption:='Confirm';
     ButtonConfirm.Visible := False;
+    BackgroundForm.Invalidate;
   end;
 
   ShowSystemPopUp(gmcWaitingForServer);
@@ -762,12 +770,17 @@ var
 begin
   Pts := FExperiment.PlayerPointsSummationFromID(AID).ToString;
   Result :=
-    'The task is over, thank you for your collaboration!'+LineEnding+
-    'You produced ' + Pts + ' tokens for you, ' +
+    'The task is over, thank you for your participation!'+LineEnding+
+    'You earned ' + Pts + ' tokens for yourself,' + LineEnding +
+    FExperiment.GlobalPoints(gscG1, AID).ToString +
+    ' tokens for The Consumer Energy Alliance and' + LineEnding +
+    FExperiment.GlobalPoints(gscG2, AID).ToString +
+    ' tokens for The Natural Resource Defense.' + LineEnding + LineEnding +
+    'Until now, '+ LineEnding +
     FExperiment.GlobalPoints(gscG1).ToString +
-    ' tokens for a cause and ' +
+    ' tokens will be donated for The Consumer Energy Alliance and' + LineEnding +
     FExperiment.GlobalPoints(gscG2).ToString +
-    ' tokens for another cause.';
+    ' tokens will be donated for The Natural Resource Defense.';
 end;
 
 // TODO: REFACTOR SHOW CONSEQUENCE SHOW POPUP
@@ -860,29 +873,7 @@ end;
 
 procedure TGameBoard.NextConditionSetup; // [player_points]
 begin
-  FCause := FExperiment.CurrentCondition.TargetMetacontingency;
-  if FActor = gaPlayer then begin
-    case FCause of
-      'SUSTAINABLE' : begin
-        VisibleControl(FImageGroup1, True);
-        VisibleControl(FLabelGroup1Name, True);
-        VisibleControl(FLabelGroup1Count, True);
 
-        VisibleControl(FImageGroup2, False);
-        VisibleControl(FLabelGroup2Name, False);
-        VisibleControl(FLabelGroup2Count, False);
-      end;
-
-      'NON-SUSTAINABLE' : begin
-        VisibleControl(FImageGroup2, True);
-        VisibleControl(FLabelGroup2Name, True);
-        VisibleControl(FLabelGroup2Count, True);
-        VisibleControl(FImageGroup1, False);
-        VisibleControl(FLabelGroup1Name, False);
-        VisibleControl(FLabelGroup1Count, False);
-      end;
-    end;
-  end;
 end;
 
 procedure TGameBoard.InvalidateLabels(AID : string);
@@ -957,6 +948,30 @@ begin
   if Assigned(FLabelGroup2Count) then begin
     FLabelGroup2Count.Caption :=
       FExperiment.GlobalPoints(gscG2).ToString;
+  end;
+
+  FCause := FExperiment.CurrentCondition.TargetMetacontingency;
+  if FActor = gaPlayer then begin
+    case FCause of
+      'SUSTAINABLE' : begin
+        VisibleControl(FImageGroup1, True);
+        VisibleControl(FLabelGroup1Name, True);
+        VisibleControl(FLabelGroup1Count, True);
+
+        VisibleControl(FImageGroup2, False);
+        VisibleControl(FLabelGroup2Name, False);
+        VisibleControl(FLabelGroup2Count, False);
+      end;
+
+      'NON-SUSTAINABLE' : begin
+        VisibleControl(FImageGroup2, True);
+        VisibleControl(FLabelGroup2Name, True);
+        VisibleControl(FLabelGroup2Count, True);
+        VisibleControl(FImageGroup1, False);
+        VisibleControl(FLabelGroup1Name, False);
+        VisibleControl(FLabelGroup1Count, False);
+      end;
+    end;
   end;
 
   inherited StartCondition(Sender);
@@ -1142,7 +1157,6 @@ begin
     SetMatrixType(StringGridMatrix, FExperiment.MatrixType);
 end;
 
-// TODO: REFACTOR LABELS, CREATE a unit for GroupBox
 procedure TGameBoard.SetLabels;
 var
   IsPlayer : Boolean;
@@ -1172,30 +1186,83 @@ begin
   Result := False;
   LMessage := GetPlayerExitMessage(AID);
 
-{$IFDEF TEST_MODE}
-  DebugMessage(LMessage);
-  Result := True;
-{$ELSE}
   if Assigned(BackgroundForm) then
     BackgroundForm.Visible := False;
   LActorForm := TFormChooseActor.Create(nil);
-  LActorForm.Style := AStyle;
-  LActorForm.ShowPoints(LMessage);
-
-  if LActorForm.ShowModal = 1 then begin
-    if Assigned(BackgroundForm) then
-      BackgroundForm.Visible := True;
-    Result := True;
+  try
+    LActorForm.Style := AStyle;
+    LActorForm.ShowPoints(LMessage);
+    if LActorForm.ShowModal = 1 then begin
+      if Assigned(BackgroundForm) then begin
+        BackgroundForm.Visible := True;
+      end;
+      Result := True;
+    end;
+  finally
+    FreeAndNil(LActorForm);
   end;
+end;
 
-  LActorForm.Free;
-{$ENDIF}
+function TGameBoard.SayGoodByeAndShowSlides(AID, AStyle : string;
+  ASlides : TStringArray) : Boolean;
+var
+  LActorForm : TFormChooseActor;
+  LMessage : string;
+begin
+  Result := False;
+  LMessage := GetPlayerExitMessage(AID);
+
+  if Assigned(BackgroundForm) then
+    BackgroundForm.Visible := False;
+  LActorForm := TFormChooseActor.Create(nil);
+  try
+    LActorForm.Style := AStyle;
+    LActorForm.ShowPoints(LMessage);
+    if LActorForm.ShowModal = 1 then begin
+      if ShowSlides(ASlides) then begin
+        Result := True;
+      end;
+    end;
+  finally
+    FreeAndNil(LActorForm);
+  end;
+end;
+
+procedure TGameBoard.EndSlides;
+begin
+
 end;
 
 procedure TGameBoard.AppendToChat(ALn : string);
 begin
   if Assigned(Chat) then
     Chat.Append(ALn);
+end;
+
+function TGameBoard.ShowSlides(ASlides : TStringArray) : Boolean;
+var
+  S : string;
+  LSlides : TFormSlide;
+begin
+  Result := False;
+  if Assigned(BackgroundForm) then begin
+    BackgroundForm.Visible := False;
+  end;
+  LSlides := TFormSlide.Create(nil);
+  LSlides.FullScreen;
+  for S in ASlides do
+    LSlides.Append(S);
+  //LSlides.Append('<h1>Press close and wait for your turn.</h1>');
+  try
+    if LSlides.ShowModal = 1 then begin
+      if Assigned(BackgroundForm) then begin
+        BackgroundForm.Visible := True;
+      end;
+      Result := True;
+    end;
+  finally
+    FreeAndNil(LSlides);
+  end;
 end;
 
 

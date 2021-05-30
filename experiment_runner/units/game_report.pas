@@ -23,16 +23,12 @@ type
     FRegData             : TRegData;
     FRegChat             : TRegData;
     FReportReader        : TReportReader;
-    FPCurrentCondition   : PInteger;
-    FPConditions         : PConditions;
-    FPPlayers            : PPlayers;
-    FPCycles             : PCycles;
     FReportFolder        : string;
     FLastReportColNames2 : string;
     FLastReportColNames  : string;
-    function GetCurrentCondition : TCondition;
     procedure WriteHeader(AResearcher, AExperimentName : string);
-    procedure WriteRowNames;
+    procedure WriteRowNames(ACondition : TCondition;
+  APlayers : TPlayers);
   private
     FOnWriteReport: TNotifyOnWriteReport;
     procedure SetOnWriteReport(AValue: TNotifyOnWriteReport);
@@ -40,14 +36,16 @@ type
     constructor Create(AGameActor: TGameActor); reintroduce;
     destructor Destroy; override;
     procedure Clean;
-    procedure NextCondition;
+    procedure NextCondition(ACondition : TCondition;
+      APlayers: TPlayers);
     procedure WriteFooter;
-    procedure WriteRow;
-    procedure WriteRowPrompt;
+    procedure WriteRow(ACondition : TCondition; APlayers : TPlayers;
+      ACycles : TCycles);
+    procedure WriteRowPrompt(ACondition : TCondition;
+      APlayers : TPlayers);
     procedure WriteChatLn(ALn : string);
     procedure Start(AFilename, AResearcher, AExperimentName : string;
-      ACurrentCondition: PInteger; ACondition : PConditions;
-      ACycles : PCycles; APlayers : PPLayers);
+      ACondition : TCondition; ACycles : TCycles; APlayers : TPLayers);
   public
     property Reader        : TReportReader read FReportReader;
     property OnWriteReport : TNotifyOnWriteReport read FOnWriteReport write SetOnWriteReport;
@@ -77,11 +75,6 @@ begin
   end;
 end;
 
-function TGameReport.GetCurrentCondition : TCondition;
-begin
-  Result := FPConditions^[FPCurrentCondition^];
-end;
-
 procedure TGameReport.WriteHeader(AResearcher, AExperimentName : string);
 var
   LHeader : string;
@@ -102,7 +95,8 @@ begin
   end;
 end;
 
-procedure TGameReport.WriteRowNames;
+procedure TGameReport.WriteRowNames(ACondition : TCondition;
+  APlayers : TPlayers);
 var
   j,i: integer;
   LCondition : TCondition;
@@ -110,9 +104,9 @@ var
   LPlayers : TPlayers;
   LNames1, LNames2 : string;
 begin
-  LCondition := GetCurrentCondition;
-  LContingencies := LCondition.Contingencies;
-  LPlayers   := FPPlayers^;
+  LCondition := ACondition;
+  LContingencies := ACondition.Contingencies;
+  LPlayers   := APlayers;
 
   // column names, line 1
   LNames1 := 'Experiment'+TabDelimiter+TabDelimiter+TabDelimiter;
@@ -170,7 +164,8 @@ begin
     end;
 end;
 
-procedure TGameReport.WriteRow;
+procedure TGameReport.WriteRow(ACondition : TCondition; APlayers : TPlayers;
+  ACycles : TCycles);
 var
   j,i: integer;
   LRow : string;
@@ -179,11 +174,11 @@ var
   LCycles : TCycles;
   LPlayers : TPlayers;
 begin
-  WriteRowNames;
-  LCondition := GetCurrentCondition;
-  LContingencies := LCondition.Contingencies;
-  LCycles := FPCycles^;
-  LPlayers := FPPlayers^;
+  WriteRowNames(ACondition, APlayers);
+  LCondition := ACondition;
+  LContingencies := ACondition.Contingencies;
+  LCycles := ACycles;
+  LPlayers := APlayers;
 
   LRow := IntToStr(LCondition.Index+1)+TabDelimiter+
           IntToStr(LCycles.Generations+1)+TabDelimiter+
@@ -233,17 +228,15 @@ begin
   FActor := AGameActor;
 end;
 
-procedure TGameReport.NextCondition;
-var
-  LCondition : TCondition;
+procedure TGameReport.NextCondition(ACondition : TCondition;
+  APlayers: TPlayers);
 begin
-  LCondition := GetCurrentCondition;
   FReportReader.Clean;
-  FReportReader.SetXLastRows(LCondition.EndCriterium.LastCycles);
+  FReportReader.SetXLastRows(ACondition.EndCriterium.LastCycles);
   if Assigned(FRegData) then begin
     FRegData.SaveData(LineEnding);
   end;
-  WriteRowNames;
+  WriteRowNames(ACondition, APlayers);
   FReportReader.UpdateCols(FLastReportColNames2);
 end;
 
@@ -266,7 +259,8 @@ begin
     FRegData.CloseAndOpen;
 end;
 
-procedure TGameReport.WriteRowPrompt;
+procedure TGameReport.WriteRowPrompt(ACondition : TCondition;
+  APlayers : TPlayers);
 var
   i : integer;
   LRow : string;
@@ -278,7 +272,7 @@ var
     LPlayers : TPlayers;
     i : integer;
   begin
-    LPlayers := FPPlayers^;
+    LPlayers := APlayers;
     Result := '?';
     for i := Low(LPlayers) to High(LPlayers) do
       if LPlayers[i].ID = AID then
@@ -288,7 +282,7 @@ var
         end;
   end;
 begin
-  LCondition := FPConditions^[FPCurrentCondition^];
+  LCondition := ACondition;
   if Assigned(LCondition.Prompt) then
     begin
       LRow := '';
@@ -321,20 +315,12 @@ begin
 end;
 
 procedure TGameReport.Start(AFilename, AResearcher, AExperimentName : string;
-  ACurrentCondition : PInteger; ACondition : PConditions; ACycles : PCycles;
-  APlayers : PPLayers);
-var
-  LCondition : TCondition;
+  ACondition : TCondition; ACycles : TCycles;
+  APlayers : TPLayers);
 begin;
-  FPCurrentCondition := ACurrentCondition;
-  FPConditions := ACondition;
-  FPCycles := ACycles;
-  FPPlayers := APlayers;
-
-  LCondition := GetCurrentCondition;
   FReportReader := TReportReader.Create;
   FReportReader.UseRange:=True;
-  FReportReader.SetXLastRows(LCondition.EndCriterium.LastCycles);
+  FReportReader.SetXLastRows(ACondition.EndCriterium.LastCycles);
 
   FReportFolder := ExtractFilePath(AFilename)+AExperimentName+PathDelim;
   if FActor = gaAdmin then begin

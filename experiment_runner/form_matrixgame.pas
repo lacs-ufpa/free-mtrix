@@ -60,6 +60,7 @@ type
     PopupNotifier: TPopupNotifier;
     Timer: TTimer;
     procedure btnConfirmRowClick(Sender: TObject);
+    procedure Button1Click(Sender : TObject);
     procedure ButtonCreateParticipantsFolderClick(Sender : TObject);
     procedure ButtonExpCancelClick(Sender: TObject);
     procedure ButtonExpPauseClick(Sender: TObject);
@@ -72,6 +73,8 @@ type
     FInitParameter: string;
     FGameControl : TGameControl;
     FGameBoard : TGameBoard;
+  protected
+    procedure Paint; override;
   public
     procedure LoadFromFile(FFilename : string);
     procedure SetParameters(P : string);
@@ -90,6 +93,7 @@ implementation
 
 uses
   form_chooseactor
+  , form_slide
   , game_resources
   , helpers
   ;
@@ -102,6 +106,20 @@ procedure TFormMatrixGame.TimerTimer(Sender: TObject);
 begin
   Timer.Enabled:=False;
   PopupNotifier.Visible:=False;
+end;
+
+procedure TFormMatrixGame.Paint;
+begin
+  inherited Paint;
+  if Assigned(FGameBoard) then begin
+    if Assigned(FGameBoard.StringGridMatrix) then begin
+      if FGameBoard.StringGridMatrix.Enabled then begin
+        Canvas.Pen.Width := 5;
+        Canvas.Pen.Color := $00268C26;
+        Canvas.Rectangle(FGameBoard.StringGridMatrix.BoundsRect);
+      end;
+    end;
+  end;
 end;
 
 procedure TFormMatrixGame.LoadFromFile(FFilename: string);
@@ -230,6 +248,19 @@ begin
   btnConfirmRow.Enabled := False;
   S := TStringGridA(FGameBoard.StringGridMatrix);
   FGameControl.SendRequest(K_CHOICE, [S.GetSelectedRowF, S.GetSelectedMatrixColorF]);
+end;
+
+procedure TFormMatrixGame.Button1Click(Sender : TObject);
+begin
+  FormSlide := TFormSlide.Create(nil);
+  FormSlide.Append('<h1>Teste1</h1>');
+  FormSlide.Append('<h1>Teste2</h1>');
+
+  if FormSlide.ShowModal = 1 then begin
+
+  end else begin
+    FormSlide.Close;
+  end;
 end;
 
 procedure TFormMatrixGame.ButtonCreateParticipantsFolderClick(Sender : TObject);

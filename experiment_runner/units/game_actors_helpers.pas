@@ -25,6 +25,9 @@ function FirstDelimitedString(S : string):string;
 procedure IncLabel(ALabel : TLabel; AValue:integer=0);
 function GameActor(AZMQActor : TZMQActor) : TGameActor;
 
+var
+  FStart : cardinal;
+
 const
 
   C_PLAYER_TEMPLATE : TPlayer = (
@@ -35,7 +38,8 @@ const
     Status : gpsWaiting;
     Data : nil;
     Choice : (Row:grNone; Color:gcNone;);
-    Points : (A:0; B:0);
+    Points : (A:0; B:0; G1:0; G2:0);
+    Index : -1;
     Turn : -1;
   );
 
@@ -127,6 +131,8 @@ const
       Label1:'';
       Label2:'';
       TargetMetacontingency:'';
+      Slides : nil;
+      GenerationSlides : nil;
       Contingencies : nil;
       //Interlocks : (
       //  Count : 0;

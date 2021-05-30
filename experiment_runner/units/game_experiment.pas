@@ -134,6 +134,7 @@ type
     procedure SaveToFile(AFilename: string); overload;
     procedure SaveToFile; overload;
   public // global configuration
+    procedure WriteRowPrompt;
     property ExperimentAim : string read FExperimentAim write FExperimentAim;
     property ExperimentName : string read FExperimentName write FExperimentName;
     property ABPoints :  Boolean read FABPoints write FABPoints;
@@ -146,8 +147,15 @@ type
     property MatrixType : TGameMatrixType read FMatrixType write SetMatrixType;
     property MatrixTypeAsString : string read GetMatrixTypeAsString write SetMatrixTypeFromString;
   public // manipulation/ self awareness
+    function ConditionSlides : TStringArray;
+    function GenerationSlides : TStringArray;
+    function HasGenerationSlidesToShow : Boolean;
+    function HasSlidesToShow : Boolean;
+    function IsStartCondition : Boolean;
+    function LastParticipantReadSlides : Boolean;
     function CurrentTurn : integer;
     function LastGenerationCount : integer;
+    function PlayerRootFolderFromID(AID : string) : string;
     procedure MovePlayersQueueLeft;
     procedure ArquiveOldPlayer(APlayer : TPlayer);
     function GlobalPoints(AGameConsequencestyle: TGameConsequenceStyle;
@@ -295,7 +303,13 @@ begin
       if Assigned(FOnEndCycle) then FOnEndCycle(Self);
       FEndCycle := True;
       FConsequenceStringFromChoices := GetConsequenceStringFromChoices;
-      FGameReport.WriteRow;
+      FGameReport.WriteRow(CurrentCondition,FPlayers, FCycles);
+      for i := Low(FConditions[CurrentConditionI].Contingencies) to
+               High(FConditions[CurrentConditionI].Contingencies) do
+      begin
+        FConditions[CurrentConditionI].Contingencies[i].Clean;
+      end;
+
       FConditions[CurrentConditionI].Turn.Count := 0;
       Inc(FCycles.Global);
       Inc(FConditions[CurrentConditionI].Cycles.Count);
@@ -352,7 +366,7 @@ begin
       //FCycles.GenerationCount:=0;
       SetTargetInterlockingEvent;
       SetContingenciesEvents;
-      FGameReport.NextCondition;
+      FGameReport.NextCondition(CurrentCondition, FPlayers);
       if Assigned(FOnStartCondition) then FOnStartCondition(Self);
       Result := CurrentConditionAsString;     // 'end condition' envelop item
     end;
@@ -375,6 +389,7 @@ var
     Data : nil;
     Choice : (Row:grNone; Color:gcNone);
     Points : (A:0; B:0);
+    Index : -1;
     Turn : -1;
   );
 begin
@@ -809,15 +824,23 @@ end;
 
 procedure TExperiment.IncMetaPoints(
   AGameConsequenceStyle: TGameConsequenceStyle; AValue: integer);
+var
+  i : integer;
 begin
   case AGameConsequenceStyle of
     gscG1 :
       begin
         Inc(FConditions[CurrentConditionI].Points.Count.G1, AValue);
+        for i := Low(FPlayers) to High(FPlayers) do begin
+          Inc(FPlayers[i].Points.G1, AValue);
+        end;
       end;
     gscG2 :
       begin
         Inc(FConditions[CurrentConditionI].Points.Count.G2, AValue);
+        for i := Low(FPlayers) to High(FPlayers) do begin
+          Inc(FPlayers[i].Points.G2, AValue);
+        end;
       end;
     else { do nothing };
   end;
@@ -895,7 +918,7 @@ begin
   SetContingenciesEvents;
   CheckNeedForRandomTurns;
   FGameReport.Start(FFileName, FResearcher, FExperimentName,
-    @FCurrentCondition, @FConditions, @FCycles, @FPlayers);
+    CurrentCondition, FCycles, FPlayers);
   State := xsWaiting;
 end;
 
@@ -992,7 +1015,7 @@ begin
     begin
       Result := #32;
       if Assigned(CurrentCondition.Prompt) then
-        FGameReport.WriteRowPrompt; //TODO: FIND WHY OPTIMIZATION 3 GENERATES BUG HERE
+        FGameReport.WriteRowPrompt(CurrentCondition, FPlayers);
       Clean;
     end;
 end;
@@ -1176,6 +1199,53 @@ begin
   else;
 end;
 
+procedure TExperiment.WriteRowPrompt;
+begin
+  FGameReport.WriteRowPrompt(CurrentCondition, FPlayers);
+end;
+
+function TExperiment.ConditionSlides : TStringArray;
+begin
+  Result := CurrentCondition.Slides;
+end;
+
+function TExperiment.GenerationSlides : TStringArray;
+begin
+  Result := CurrentCondition.GenerationSlides;
+end;
+
+function TExperiment.HasGenerationSlidesToShow : Boolean;
+begin
+  Result := Length(CurrentCondition.GenerationSlides) > 0;
+end;
+
+function TExperiment.HasSlidesToShow : Boolean;
+begin
+  Result := Length(CurrentCondition.Slides) > 0;
+end;
+
+function TExperiment.IsStartCondition : Boolean;
+begin
+  Result := CurrentCondition.Cycles.Count = 0;
+end;
+
+function TExperiment.LastParticipantReadSlides : Boolean;
+var
+  P : TPlayer;
+  i : integer;
+begin
+  Result := False;
+  for P in FPlayers do begin
+    if P.Status <> gpsFinishedReading then begin
+      Exit;
+    end;
+  end;
+  for i := Low(FPlayers) to High(FPlayers) do begin
+    FPlayers[i].Status := gpsPlaying;
+  end;
+  Result := True;
+end;
+
 function TExperiment.CurrentTurn : integer;
 begin
   Result := CurrentCondition.Turn.Count;
@@ -1184,6 +1254,11 @@ end;
 function TExperiment.LastGenerationCount : integer;
 begin
   Result := FLastGenerationCount;
+end;
+
+function TExperiment.PlayerRootFolderFromID(AID : string) : string;
+begin
+ Result := 'P'+(PlayerFromID[AID].Index+1).ToString + PathDelim
 end;
 
 procedure TExperiment.ArquiveOldPlayer(APlayer: TPlayer);
@@ -1210,7 +1285,8 @@ begin
           for i := 0 to ConditionsCount-1 do
             Result += FConditions[i].Points.Count.G1;
         end else begin
-          Exception.Create('TExperiment.GlobalPoints Exception');
+          P := PlayerFromID[AID];
+          Result := P.Points.G1;
         end;
       end;
     gscG2 :
@@ -1219,7 +1295,8 @@ begin
           for i := 0 to ConditionsCount-1 do
             Result += FConditions[i].Points.Count.G2;
         end else begin
-          Exception.Create('TExperiment.GlobalPoints Exception');
+          P := PlayerFromID[AID];
+          Result := P.Points.G2;
         end;
       end;
     gscA :

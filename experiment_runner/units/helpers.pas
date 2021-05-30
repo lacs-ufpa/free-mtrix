@@ -33,6 +33,16 @@ uses
 procedure PrintVersions(AAplicationPath:string);
 function CreateDebugFoldersForPlayers:Boolean;
 
+type
+  TGlobalContainer = record
+    AppPath : string;
+    MediaPath : string;
+    CachePath : string;
+    MediaRoot : string;
+  end;
+
+var
+  Global : TGlobalContainer;
 
 implementation
 

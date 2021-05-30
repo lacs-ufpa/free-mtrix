@@ -78,6 +78,8 @@ resourcestring
 
   KEY_CONTINGENCY = 'Contingency.';
   KEY_METACONTINGENCY = 'Metacontingency.';
+  KEY_SLIDE = 'Slide.';
+  KEY_GENERATION_SLIDE = 'Generations.Slide.';
 
   // ROW,COLOR,OPCODE
   KEY_CONT_NAME = '.Name';

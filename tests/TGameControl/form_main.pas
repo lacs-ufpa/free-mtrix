@@ -172,6 +172,7 @@ uses
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  FStart := GetTickCount64;
   FServerGameControl := TGameControl.Create(Self,gaAdmin);
   FServerGameControl.Experiment.Report.OnWriteReport:=@WriteReport;
   LabelExperimentNotFound.Visible := not FServerGameControl.LoadFromFile('Experiment1.ini');

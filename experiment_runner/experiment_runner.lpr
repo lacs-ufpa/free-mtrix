@@ -28,7 +28,6 @@ uses
 
 
 var
-  ApplicationPath : string;
   InitParameter : string = '';
 
 const
@@ -40,8 +39,12 @@ const
 
 begin
   Randomize;
-  ApplicationPath := ExtractFilePath(Application.ExeName);
-  PrintVersions(ApplicationPath);
+  Global.AppPath := ExtractFilePath(Application.ExeName);
+  Global.CachePath := Global.AppPath + PathDelim + 'cache' + PathDelim;
+  Global.MediaRoot := 'media' + PathDelim;
+  Global.MediaPath := Global.AppPath + Global.MediaRoot;
+
+  PrintVersions(Global.AppPath);
   {$IFDEF DEBUG}
   if not CreateDebugFoldersForPlayers then Exit;
   {$ENDIF}

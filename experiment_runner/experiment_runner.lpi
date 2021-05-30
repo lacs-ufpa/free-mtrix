@@ -70,10 +70,9 @@
           <Other>
             <CustomOptions Value="-dUseCThreads
 -dDEBUG"/>
-            <OtherDefines Count="3">
+            <OtherDefines Count="2">
               <Define0 Value="UseCThreads"/>
               <Define1 Value="ZMQ_STATIC_LINK"/>
-              <Define2 Value="DEBUG"/>
             </OtherDefines>
           </Other>
         </CompilerOptions>
@@ -160,15 +159,18 @@
         <Mode0 Name="default"/>
       </Modes>
     </RunParams>
-    <RequiredPackages Count="2">
+    <RequiredPackages Count="3">
       <Item1>
-        <PackageName Value="FCL"/>
+        <PackageName Value="TurboPowerIPro"/>
       </Item1>
       <Item2>
-        <PackageName Value="LCL"/>
+        <PackageName Value="FCL"/>
       </Item2>
+      <Item3>
+        <PackageName Value="LCL"/>
+      </Item3>
     </RequiredPackages>
-    <Units Count="26">
+    <Units Count="29">
       <Unit0>
         <Filename Value="experiment_runner.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -279,6 +281,21 @@
         <Filename Value="units/game_control_events.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit25>
+      <Unit26>
+        <Filename Value="form_slide.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormSlide"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit26>
+      <Unit27>
+        <Filename Value="units/game_slide.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit27>
+      <Unit28>
+        <Filename Value="form_slide.lfm"/>
+        <IsPartOfProject Value="True"/>
+      </Unit28>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
