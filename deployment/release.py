@@ -14,6 +14,9 @@
 from subprocess import check_output, CalledProcessError, STDOUT
 import os
 import shutil
+import ntpath
+
+from glob import glob
 
 def get_tag_commit():
     """
@@ -31,6 +34,12 @@ def get_tag_commit():
         logger.error('Could not call git, is it installed? error msg: "{}"'.format(e))
         return None
 
+
+def get_files(src_directory):
+    target_filters = ['*.html']
+    glob_lists = [glob(os.path.join(src_directory, tf)) for tf in target_filters]
+    return [sorted(glob_list) for glob_list in glob_lists][0]
+
 def compress_folder(src_dir, dst_filename):
     shutil.make_archive(dst_filename, 'zip', src_dir)
 
@@ -46,7 +55,8 @@ def copy_file(src, dst):
 RELEASES_FOLDER = 'deployment'
 DOCS_FOLDER = 'docs'
 TEST_FOLDER = 'tests'
-
+SRC_MEDIA_FOLDER = os.path.join('experiment_runner', 'media')
+DST_MEDIA_FOLDER = 'media'
 if __name__ == "__main__":
     root_path = os.path.dirname(os.path.abspath(__file__))
     root_path = os.path.dirname(root_path)
@@ -77,8 +87,10 @@ if __name__ == "__main__":
         if os.path.exists(destination):
             delete_folder(destination)
             os.makedirs(destination)
+            os.makedirs(os.path.join(destination, DST_MEDIA_FOLDER))
         else:
             os.makedirs(destination)
+            os.makedirs(os.path.join(destination, DST_MEDIA_FOLDER))
 
         # copy build.exe as app_name.exe
         APPLICATION_FILENAME = os.path.dirname(build_name)
@@ -111,6 +123,14 @@ if __name__ == "__main__":
         dst_file = os.path.join(destination, 'Experiment1.ini')
         copy_file(src_file, dst_file)
 
+        # copy relevant media files
+        src_file = os.path.join(root_path, SRC_MEDIA_FOLDER)
+        src_files = get_files(src_file)
+        dest_folder = os.path.join(destination, DST_MEDIA_FOLDER)
+        for src in src_files:
+            dst = os.path.join(dest_folder, ntpath.basename(src))
+            copy_file(src, dst)
+            
         # copy test program
         src_file = os.path.join(root_path, TEST_FOLDER)
         src_file = os.path.join(src_file, 'TGameControl')
@@ -120,6 +140,7 @@ if __name__ == "__main__":
             src_file = os.path.join(src_file,'tgamecontrol_test.exe')
             dst_file = os.path.join(destination, 'tgamecontrol_test.exe')
         copy_file(src_file, dst_file)
+        
 
         # zip release destination 
         tag = get_tag_commit()
