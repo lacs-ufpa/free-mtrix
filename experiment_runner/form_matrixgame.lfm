@@ -3847,7 +3847,7 @@ object FormMatrixGame: TFormMatrixGame
       Width = 200
       Alignment = taCenter
       AutoSize = False
-      Caption = 'Sustainable'
+      Caption = 'Non-Sustainable'
       Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
@@ -4392,7 +4392,7 @@ object FormMatrixGame: TFormMatrixGame
       Width = 200
       Alignment = taCenter
       AutoSize = False
-      Caption = 'Non-Sustainable'
+      Caption = 'Sustainable'
       Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200

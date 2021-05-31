@@ -767,20 +767,24 @@ end;
 function TGameBoard.GetPlayerExitMessage(AID : string) : string;
 var
   Pts : String;
+  Name1 : string;
+  Name2 : string;
 begin
+  Name1 := 'The Consumer Energy Alliance';
+  Name2 := 'Natural Resource Defence Council';
   Pts := FExperiment.PlayerPointsSummationFromID(AID).ToString;
   Result :=
     'The task is over, thank you for your participation!'+LineEnding+
     'You earned ' + Pts + ' tokens for yourself,' + LineEnding +
     FExperiment.GlobalPoints(gscG1, AID).ToString +
-    ' tokens for The Consumer Energy Alliance and' + LineEnding +
+    ' tokens for '+Name1+' and' + LineEnding +
     FExperiment.GlobalPoints(gscG2, AID).ToString +
-    ' tokens for The Natural Resource Defense.' + LineEnding + LineEnding +
-    'Until now, '+ LineEnding +
+    ' tokens for '+Name2+'.'+ LineEnding +
+    'So far the group has donated '+ LineEnding +
     FExperiment.GlobalPoints(gscG1).ToString +
-    ' tokens will be donated for The Consumer Energy Alliance and' + LineEnding +
+    ' tokens for '+Name1+' and' + LineEnding +
     FExperiment.GlobalPoints(gscG2).ToString +
-    ' tokens will be donated for The Natural Resource Defense.';
+    ' tokens for '+Name2+'.';
 end;
 
 // TODO: REFACTOR SHOW CONSEQUENCE SHOW POPUP
