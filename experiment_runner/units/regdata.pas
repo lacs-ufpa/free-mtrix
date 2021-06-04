@@ -48,12 +48,6 @@ implementation
    use writeln instead.
    }
 
-{$ifdef DEBUG}
-  uses Dialogs
-    , debug_logger
-    ;
-{$endif}
-
 procedure TRegData.Close;
 begin
   if FFilename <> '' then
@@ -94,7 +88,7 @@ begin
         AssignFile(FFile, AFilename);
         Rewrite(FFile);
         {$ifdef DEBUG}
-          WriteLn(FFile, mt_Debug + 'Saving data to:' + AFilename );
+          WriteLn(FFile, 'Saving data to:' + AFilename );
         {$endif}
         Result := AFilename;
      end;

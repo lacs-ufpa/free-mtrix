@@ -24,6 +24,7 @@ function GetMessagesFromPromptStyle(APromptStyle : TPromptStyle;
 function FirstDelimitedString(S : string):string;
 procedure IncLabel(ALabel : TLabel; AValue:integer=0);
 function GameActor(AZMQActor : TZMQActor) : TGameActor;
+function PointsToMoney(APoints : integer; AFactor :integer) : string;
 
 var
   FStart : cardinal;
@@ -132,7 +133,8 @@ const
       Label2:'';
       TargetMetacontingency:'';
       Slides : nil;
-      GenerationSlides : nil;
+      GenerationSlidesLogIn : nil;
+      GenerationSlidesLogOut : nil;
       Contingencies : nil;
       //Interlocks : (
       //  Count : 0;
@@ -186,6 +188,22 @@ begin
   Result := S;
   if (Pos('$NICNAME',S) > 0) and (P.Nicname <> '') then
      Result := ReplaceStr(S,'$NICNAME', P.Nicname);
+end;
+
+function PointsToMoney(APoints : integer; AFactor :integer) : string;
+
+  function FormatMoney : string;
+  begin
+    Result := FormatCurr('$#0.00', (APoints*AFactor)/100);
+  end;
+
+begin
+  case APoints of
+    0 : Result := '$0.00';
+    1..9: Result := FormatMoney + ' cents';
+    10 : Result := FormatMoney + ' dollar';
+    else Result := FormatMoney + ' dollars';
+  end;
 end;
 
 function GetColorFromCode(ACode: TGameColor): TColor;

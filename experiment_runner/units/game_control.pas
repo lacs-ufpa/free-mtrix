@@ -43,7 +43,7 @@ type
       ShowPopUp : Boolean = True) : string;
 
     //procedure NextConditionSetup;
-    procedure NextGenerationSetup(AID : string);
+    //procedure NextGenerationSetup(AID : string);
   protected
     function GetID : string; overload;
     procedure StartExperiment(Sender : TObject); override;
@@ -216,6 +216,25 @@ procedure TGameControl.MovePlayerQueue(ANewPlayerAsString,
 var
   LNewPlayer : TPlayer;
   LOldPlayer : TPlayer;
+  procedure IncrementOnStartPoints(APlayerID : string);
+  var
+    P  : TPlayer;
+    A : integer;
+    B : integer;
+  begin
+    with FExperiment.CurrentCondition.Points do begin
+      A := OnStart.A;
+      B := OnStart.B;
+    end;
+
+    P := FExperiment.PlayerFromID[APlayerID];
+    if A > 0 then
+      Inc(P.Points.A, A);
+
+    if B > 0 then
+      Inc(P.Points.B, B);
+    FExperiment.PlayerFromID[APlayerID] := P;
+  end;
 begin
   LNewPlayer := FExperiment.PlayerFromString[ANewPlayerAsString];
   LOldPlayer := FExperiment.PlayerFromString[AOldPlayerAsString];
@@ -242,14 +261,29 @@ begin
   //  FExperiment.ConditionMustBeUpdated := False;
   //  NextConditionSetup;
   //end;
-  NextGenerationSetup(LNewPlayer.ID);
-  if FActor = gaPlayer then begin
-    if Self.AsPlayer.Turn = FExperiment.CurrentTurn then begin
-      if Assigned(OnStartChoice) then begin
-        OnStartChoice(Self);
+  case FActor of
+    gaPlayer: begin
+      if Self.ID = LNewPlayer.ID then begin
+        IncrementOnStartPoints(Self.ID);
+        if FExperiment.HasGenerationSlidesToShow then begin
+          if FGameBoard.ShowSlidesAndSayHello(LNewPlayer.ID,
+            FExperiment.GenerationSlidesLogIn) then begin
+              FZMQActor.SendMessage([K_RESUME]);
+            end;
+        end else begin
+          FZMQActor.SendMessage([K_RESUME]);
+        end;
       end;
     end;
+
+    gaAdmin: begin
+      IncrementOnStartPoints(LNewPlayer.ID);
+    end;
+
+    else
+      { do nothing };
   end;
+  FGameBoard.InvalidateLabels(Self.ID);
 end;
 
 procedure TGameControl.SetGameBoard(AValue : TGameBoard);
@@ -281,48 +315,6 @@ begin
 
   FGameBoard.ShowConsequence(Self.ID, AID, LConsequence, IsMeta, ShowPopUp);
   LConsequence.Free;
-end;
-
-procedure TGameControl.NextGenerationSetup(AID: string); // [player_points]
-var
-  A : integer;
-  B : integer;
-
-  procedure IncrementOnStartPoints(APlayerID : string; AA, AB : integer);
-  var
-    P  : TPlayer;
-  begin
-    P := FExperiment.PlayerFromID[AID];
-    if AA > 0 then
-      Inc(P.Points.A, AA);
-
-    if AB > 0 then
-      Inc(P.Points.B, AB);
-    FExperiment.PlayerFromID[AID] := P;
-  end;
-
-begin
-  with FExperiment.CurrentCondition.Points do
-    begin
-      A := OnStart.A;
-      B := OnStart.B;
-    end;
-
-  case FActor of
-    gaPlayer: begin
-      if Self.ID = AID then begin
-        IncrementOnStartPoints(AID, A, B);
-      end;
-    end;
-
-    gaAdmin: begin
-      IncrementOnStartPoints(AID, A, B);
-    end;
-
-    else
-      { do nothing };
-  end;
-  FGameBoard.InvalidateLabels(AID);
 end;
 
 function TGameControl.GetID: string;
@@ -563,8 +555,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   procedure ReceiveChoice;
   var
     P : TPlayer;
-    LCondition : string;
-    LGeneration : string;
+    //LCondition : string;
+    //LGeneration : string;
   begin
     P := FExperiment.PlayerFromID[AMessage[1]];
 
@@ -580,9 +572,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           // last turn // end cycle
           if FExperiment.IsEndCycle then begin
 
-            // check if we need to increment condition
-            LGeneration := FExperiment.NextGeneration;
-            Lcondition := FExperiment.NextCondition;
+            // check if we need to increment condition and generation
+            FExperiment.NextGeneration;
+            FExperiment.NextCondition;
 
             // update players with server generated random turns
             if AMessage[4] <> #32 then
@@ -703,8 +695,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
         if Self.ID = AID then begin
           if FExperiment.HasGenerationSlidesToShow then begin
             if GameBoard.SayGoodByeAndShowSlides(AID,
-              K_LEFT, FExperiment.GenerationSlides) then begin
-              FZMQActor.Request([AID,' ',K_GENERATION]);
+              FExperiment.GenerationSlidesLogOut) then begin
+                FZMQActor.Request([AID,' ',K_GENERATION]);
             end;
           end else begin
             if GameBoard.PlayerSaidGoodBye(AID, K_LEFT) then begin
@@ -967,7 +959,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
     LConsequenceS : string;
     LTurns : string;
     LConsequence : TConsequence;
-    LQuestion   : string;
+    //LQuestion   : string;
     LGeneration : string;
     LCondition  : string;
     LAnnouncer : TIntervalarAnnouncer;

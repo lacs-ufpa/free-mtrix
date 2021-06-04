@@ -215,7 +215,8 @@ begin
     end;
 
   FServerGameBoard.GroupBoxExperiment.Parent := Self;
-  FServerGameBoard.GroupBoxExperiment.Left := 926;
+  FServerGameBoard.GroupBoxExperiment.Left :=
+    PageControl1.ClientRect.Right+10;
   FServerGameBoard.GroupBoxExperiment.Top := 16;
 
   FServerGameControl.GameBoard := FServerGameBoard;

@@ -127,9 +127,10 @@ type
       AGroupBoxAdmin : TGroupBox; ASystemPopUp : TPopupNotifier); reintroduce;
     destructor Destroy; override;
     function PlayerSaidGoodBye(AID, AStyle : string) : Boolean;
-    function SayGoodByeAndShowSlides(AID, AStyle : string;
-      ASlides : TStringArray) : Boolean;
-    procedure EndSlides;
+    function SayGoodByeAndShowSlides(AID : string;
+      AGoodByeSlides : TStringArray) : Boolean;
+    function ShowSlidesAndSayHello(AID : string;
+      AWelcomeSlides : TStringArray) : Boolean;
     procedure BeforeStartExperimentSetup;
     procedure StartSetup;
     procedure SetupChat(ASetup : string);
@@ -189,6 +190,7 @@ uses
   , game_resources
   , game_actors_helpers
   , string_methods
+  , strutils
   {$IFDEF TEST_MODE}
     { do nothing }
   {$ELSE}
@@ -204,21 +206,32 @@ begin
 end;
 
 procedure TGameBoard.EndExperiment(Sender : TObject);
+var
+  LPath : string;
 begin
   ShowSystemPopUp(gmcExperimentEnd);
+  if FActor = gaAdmin then begin
+    if Assigned(ListBoxOldPlayers) then begin
+      LPath := FExperiment.Report.FileName+'.generations.txt';
+      ListBoxOldPlayers.Items.SaveToFile(LPath);
+    end;
+  end;
   inherited EndExperiment(Sender);
 end;
 
 procedure TGameBoard.PlayerExit(P : TPlayer; AMessage : string);
+var
+  LMessage : string;
 begin
   if Assigned(ListBoxOldPlayers) then
   begin
-    ListBoxOldPlayers.Items.Append(
+    LMessage :=
       'ID:' + AMessage + LineEnding +
       'Name: '+ P.Nicname + LineEnding +
       'Red Tokens:' + P.Points.A.ToString + LineEnding +
       'Blue Tokens:' + P.Points.B.ToString + LineEnding +
       'Red+Blue:' + (P.Points.A + P.Points.B).ToString + LineEnding +
+      'Money:' + PointsToMoney(P.Points.A + P.Points.B, 10) + LineEnding +
       'Cultural Tokens (Sustainable):' +
         FExperiment.GlobalPoints(gscG1).ToString + LineEnding +
       'Cultural Tokens (Non-sustainable):' +
@@ -226,8 +239,8 @@ begin
       'Condition Cycle:' +
         FExperiment.CurrentCondition.Cycles.Count.ToString + LineEnding +
       'Cycles (Generation):' +
-        (FExperiment.LastGenerationCount+1).ToString
-    );
+        (FExperiment.LastGenerationCount+1).ToString;
+    ListBoxOldPlayers.Items.Append(LMessage);
   end;
   inherited PlayerExit(P, AMessage);
 end;
@@ -476,10 +489,6 @@ function TGameBoard.GetPlayerNicname(AGameContext : TGameContext) : string;
 var
   LCaption , LPrompt: String;
 begin
-{$IFDEF TEST_MODE}
-  ShowSystemPopUp(AGameContext);
-  Result := GenResourceName;
-{$ELSE}
   case AGameContext of
     gmcNewPlayerLogin : begin
       LCaption := 'A new participant arrived.';
@@ -492,12 +501,14 @@ begin
         'A new participant replaced the oldest one. ' +
         'What is the nickname of the new participant?';
     end;
+
+    else
+      { do nothing };
   end;
   if Experiment.GenPlayersAsNeeded then
     Result := GenResourceName
   else
     Result := InputBox(LCaption, LPrompt, GenResourceName);
-{$ENDIF}
 end;
 
 {$IFNDEF TEST_MODE}
@@ -771,7 +782,7 @@ var
   Name2 : string;
 begin
   Name1 := 'The Consumer Energy Alliance';
-  Name2 := 'Natural Resource Defence Council';
+  Name2 := 'Natural Resource Defense Council';
   Pts := FExperiment.PlayerPointsSummationFromID(AID).ToString;
   Result :=
     'The task is over, thank you for your participation!'+LineEnding+
@@ -1207,34 +1218,76 @@ begin
   end;
 end;
 
-function TGameBoard.SayGoodByeAndShowSlides(AID, AStyle : string;
-  ASlides : TStringArray) : Boolean;
+function TGameBoard.SayGoodByeAndShowSlides(AID: string;
+  AGoodByeSlides : TStringArray) : Boolean;
 var
-  LActorForm : TFormChooseActor;
+  P : TPlayer;
   LMessage : string;
-begin
-  Result := False;
-  LMessage := GetPlayerExitMessage(AID);
+  i : integer;
+  function ReplacePlaceholders(P: TPlayer; S : string) : string;
+  var
+    LS : string;
+  begin
+    Result := S;
+    if (Pos('$NICNAME', S) > 0) and (P.Nicname <> '') then begin
+      Result := ReplaceStr(S,'$NICNAME', P.Nicname);
+    end;
 
+    if (Pos('$PLAYER_POINTS_SUM', S) > 0) then begin
+      LS := (P.Points.A+P.Points.B).ToString;
+      Result := ReplaceStr(Result, '$PLAYER_POINTS_SUM', LS);
+    end;
+
+    if (Pos('$PLAYER_MONEY_SUM', S) > 0) then begin
+      LS := PointsToMoney((P.Points.A+P.Points.B), 10);
+      Result := ReplaceStr(Result, '$PLAYER_MONEY_SUM', LS);
+    end;
+
+    if (Pos('$GROUP_POINTS_1', S) > 0) then begin
+      LS := (FExperiment.GlobalPoints(gscG1).ToString);
+      Result := ReplaceStr(Result, '$GROUP_POINTS_1', LS);
+    end;
+
+    if (Pos('$GROUP_POINTS_2', S) > 0) then begin
+      LS := (FExperiment.GlobalPoints(gscG2).ToString);
+      Result := ReplaceStr(Result, '$GROUP_POINTS_2', LS);
+    end;
+
+    if (Pos('$PLAYER_GROUP_POINTS_1', S) > 0) then begin
+      LS := (FExperiment.GlobalPoints(gscG1, P.ID).ToString);
+      Result := ReplaceStr(Result, '$PLAYER_GROUP_POINTS_1', LS);
+    end;
+
+    if (Pos('$PLAYER_GROUP_POINTS_2', S) > 0) then begin
+      LS := (FExperiment.GlobalPoints(gscG2, P.ID).ToString);
+      Result := ReplaceStr(Result, '$PLAYER_GROUP_POINTS_2', LS);
+    end;
+  end;
+begin
+  P := FExperiment.PlayerFromID[AID];
+  for i := Low(AGoodByeSlides) to High(AGoodByeSlides) do begin
+    AGoodByeSlides[i] := ReplacePlaceholders(P, AGoodByeSlides[i]);
+  end;
+
+  Result := False;
   if Assigned(BackgroundForm) then
     BackgroundForm.Visible := False;
-  LActorForm := TFormChooseActor.Create(nil);
-  try
-    LActorForm.Style := AStyle;
-    LActorForm.ShowPoints(LMessage);
-    if LActorForm.ShowModal = 1 then begin
-      if ShowSlides(ASlides) then begin
-        Result := True;
-      end;
-    end;
-  finally
-    FreeAndNil(LActorForm);
+
+  if ShowSlides(AGoodByeSlides) then begin
+    Result := True;
   end;
 end;
 
-procedure TGameBoard.EndSlides;
+function TGameBoard.ShowSlidesAndSayHello(AID : string;
+  AWelcomeSlides : TStringArray) : Boolean;
 begin
+  Result := False;
+  if Assigned(BackgroundForm) then
+    BackgroundForm.Visible := False;
 
+  if ShowSlides(AWelcomeSlides) then begin
+    Result := True;
+  end;
 end;
 
 procedure TGameBoard.AppendToChat(ALn : string);

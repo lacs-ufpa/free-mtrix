@@ -338,7 +338,6 @@ var
         end;
       end;
     end;
-
   begin
     LS := SEC_CONDITION+IntToStr(AConditionIndex+1);
     LS := LIniFile.ReadString(LS, LCK, '');
@@ -415,13 +414,24 @@ var
                       ReadSlide(i,KEY_SLIDE+IntToStr(j+1));
                   end;
 
-              LCount := ReadSlidesCount(i,KEY_GENERATION_SLIDE);
+              LCount := ReadSlidesCount(i,KEY_GENERATION_LOGOUT_SLIDE);
               if LCount > 0 then
                 for j := 0 to LCount-1 do
                   begin
-                    SetLength(GenerationSlides,Length(GenerationSlides)+1);
-                    GenerationSlides[Length(GenerationSlides)-1] :=
-                      ReadSlide(i,KEY_GENERATION_SLIDE+IntToStr(j+1));
+                    SetLength(GenerationSlidesLogOut,
+                      Length(GenerationSlidesLogOut)+1);
+                    GenerationSlidesLogOut[Length(GenerationSlidesLogOut)-1] :=
+                      ReadSlide(i,KEY_GENERATION_LOGOUT_SLIDE+IntToStr(j+1));
+                  end;
+
+              LCount := ReadSlidesCount(i,KEY_GENERATION_LOGIN_SLIDE);
+              if LCount > 0 then
+                for j := 0 to LCount-1 do
+                  begin
+                    SetLength(GenerationSlidesLogIn,
+                     Length(GenerationSlidesLogIn)+1);
+                    GenerationSlidesLogIn[Length(GenerationSlidesLogIn)-1] :=
+                      ReadSlide(i,KEY_GENERATION_LOGIN_SLIDE+IntToStr(j+1));
                   end;
 
               LCount := ReadCount(i,KEY_CONTINGENCY);

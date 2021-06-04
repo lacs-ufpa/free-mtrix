@@ -340,7 +340,8 @@ type
     Label2 : string;
     TargetMetacontingency : string;
     Slides : TStringArray;
-    GenerationSlides : TStringArray;
+    GenerationSlidesLogIn : TStringArray;
+    GenerationSlidesLogOut : TStringArray;
     Contingencies : TContingencies; // for producing points during the condition
     //Interlocks : record
     //  Count : integer; // culturant,

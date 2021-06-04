@@ -79,7 +79,8 @@ resourcestring
   KEY_CONTINGENCY = 'Contingency.';
   KEY_METACONTINGENCY = 'Metacontingency.';
   KEY_SLIDE = 'Slide.';
-  KEY_GENERATION_SLIDE = 'Generations.Slide.';
+  KEY_GENERATION_LOGOUT_SLIDE = 'Generations.Logout.Slide.';
+  KEY_GENERATION_LOGIN_SLIDE = 'Generations.Login.Slide.';
 
   // ROW,COLOR,OPCODE
   KEY_CONT_NAME = '.Name';

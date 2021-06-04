@@ -148,7 +148,8 @@ type
     property MatrixTypeAsString : string read GetMatrixTypeAsString write SetMatrixTypeFromString;
   public // manipulation/ self awareness
     function ConditionSlides : TStringArray;
-    function GenerationSlides : TStringArray;
+    function GenerationSlidesLogIn : TStringArray;
+    function GenerationSlidesLogOut : TStringArray;
     function HasGenerationSlidesToShow : Boolean;
     function HasSlidesToShow : Boolean;
     function IsStartCondition : Boolean;
@@ -1209,14 +1210,22 @@ begin
   Result := CurrentCondition.Slides;
 end;
 
-function TExperiment.GenerationSlides : TStringArray;
+function TExperiment.GenerationSlidesLogIn : TStringArray;
 begin
-  Result := CurrentCondition.GenerationSlides;
+  Result := CurrentCondition.GenerationSlidesLogIn;
 end;
+
+function TExperiment.GenerationSlidesLogOut : TStringArray;
+begin
+  Result := CurrentCondition.GenerationSlidesLogOut;
+end;
+
 
 function TExperiment.HasGenerationSlidesToShow : Boolean;
 begin
-  Result := Length(CurrentCondition.GenerationSlides) > 0;
+  Result :=
+    (Length(CurrentCondition.GenerationSlidesLogIn) > 0) and
+    (Length(CurrentCondition.GenerationSlidesLogOut) > 0);
 end;
 
 function TExperiment.HasSlidesToShow : Boolean;

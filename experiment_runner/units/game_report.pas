@@ -31,6 +31,7 @@ type
   APlayers : TPlayers);
   private
     FOnWriteReport: TNotifyOnWriteReport;
+    function GetFileName : string;
     procedure SetOnWriteReport(AValue: TNotifyOnWriteReport);
   public
     constructor Create(AGameActor: TGameActor); reintroduce;
@@ -49,6 +50,7 @@ type
   public
     property Reader        : TReportReader read FReportReader;
     property OnWriteReport : TNotifyOnWriteReport read FOnWriteReport write SetOnWriteReport;
+    property FileName : string read GetFileName;
   end;
 
 implementation
@@ -221,6 +223,11 @@ procedure TGameReport.SetOnWriteReport(AValue : TNotifyOnWriteReport);
 begin
   if FOnWriteReport = AValue then Exit;
   FOnWriteReport := AValue;
+end;
+
+function TGameReport.GetFileName : string;
+begin
+  Result := FRegData.FileName;
 end;
 
 constructor TGameReport.Create(AGameActor : TGameActor);

@@ -2,15 +2,15 @@ object Form1: TForm1
   Left = 258
   Height = 878
   Top = 126
-  Width = 1190
+  Width = 1431
   Caption = 'Form1'
   ClientHeight = 878
-  ClientWidth = 1190
+  ClientWidth = 1431
   OnCreate = FormCreate
   SessionProperties = 'PageControl1.ActivePage'
   LCLVersion = '2.1.0.0'
   object ButtonLogin: TButton
-    Left = 936
+    Left = 1072
     Height = 29
     Top = 336
     Width = 187
@@ -20,7 +20,7 @@ object Form1: TForm1
     TabOrder = 0
   end
   object ButtonChoice1: TButton
-    Left = 896
+    Left = 1032
     Height = 20
     Top = 544
     Width = 129
@@ -29,7 +29,7 @@ object Form1: TForm1
     TabOrder = 1
   end
   object ButtonChoice2: TButton
-    Left = 1040
+    Left = 1176
     Height = 20
     Top = 544
     Width = 129
@@ -38,7 +38,7 @@ object Form1: TForm1
     TabOrder = 2
   end
   object ButtonChoice3: TButton
-    Left = 896
+    Left = 1032
     Height = 20
     Top = 570
     Width = 129
@@ -50,15 +50,14 @@ object Form1: TForm1
     Left = 0
     Height = 872
     Top = 0
-    Width = 888
+    Width = 960
     ActivePage = TabSheet4
-    Anchors = [akTop, akLeft, akRight]
     TabIndex = 2
     TabOrder = 4
     object TabSheet1: TTabSheet
       Caption = 'Experiment'
       ClientHeight = 835
-      ClientWidth = 882
+      ClientWidth = 954
       object ListBoxExperiment: TListBox
         Left = 0
         Height = 781
@@ -90,7 +89,7 @@ object Form1: TForm1
     object TabSheet3: TTabSheet
       Caption = 'Last Choices'
       ClientHeight = 835
-      ClientWidth = 882
+      ClientWidth = 954
       object GBLastChoiceServer: TGroupBox
         AnchorSideLeft.Control = TabSheet3
         AnchorSideRight.Control = TabSheet3
@@ -199,7 +198,7 @@ object Form1: TForm1
     object TabSheet4: TTabSheet
       Caption = 'Count Labels'
       ClientHeight = 835
-      ClientWidth = 882
+      ClientWidth = 954
       object GBPoints: TGroupBox
         AnchorSideLeft.Side = asrBottom
         Left = 8
@@ -3627,7 +3626,7 @@ object Form1: TForm1
       end
       object GBPoints1: TGroupBox
         AnchorSideLeft.Side = asrBottom
-        Left = 432
+        Left = 480
         Height = 316
         Top = 0
         Width = 417
@@ -10477,7 +10476,7 @@ object Form1: TForm1
       end
       object GBPoints3: TGroupBox
         AnchorSideLeft.Side = asrBottom
-        Left = 432
+        Left = 480
         Height = 316
         Top = 320
         Width = 417
@@ -13906,7 +13905,7 @@ object Form1: TForm1
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 2
       ClientHeight = 835
-      ClientWidth = 882
+      ClientWidth = 954
       object Label1: TLabel
         Left = 0
         Height = 19
@@ -13991,7 +13990,7 @@ object Form1: TForm1
     object TabSheet2: TTabSheet
       Caption = 'Report'
       ClientHeight = 835
-      ClientWidth = 882
+      ClientWidth = 954
       object ListBoxReport: TListBox
         Left = 0
         Height = 835
@@ -14007,7 +14006,7 @@ object Form1: TForm1
     object TabSheet6: TTabSheet
       Caption = 'Old Participants'
       ClientHeight = 835
-      ClientWidth = 882
+      ClientWidth = 954
       object ListBoxOldParticipants: TListBox
         Left = 0
         Height = 839
@@ -14022,7 +14021,7 @@ object Form1: TForm1
     end
   end
   object ButtonChoice4: TButton
-    Left = 1040
+    Left = 1176
     Height = 20
     Top = 570
     Width = 129
@@ -14031,7 +14030,7 @@ object Form1: TForm1
     TabOrder = 5
   end
   object ButtonChoice5: TButton
-    Left = 896
+    Left = 1032
     Height = 20
     Top = 596
     Width = 129
@@ -14040,7 +14039,7 @@ object Form1: TForm1
     TabOrder = 6
   end
   object ButtonChoice6: TButton
-    Left = 1040
+    Left = 1176
     Height = 20
     Top = 596
     Width = 129
@@ -14049,7 +14048,7 @@ object Form1: TForm1
     TabOrder = 7
   end
   object ButtonChoice7: TButton
-    Left = 896
+    Left = 1032
     Height = 20
     Top = 622
     Width = 129
@@ -14058,7 +14057,7 @@ object Form1: TForm1
     TabOrder = 8
   end
   object ButtonChoice8: TButton
-    Left = 1040
+    Left = 1176
     Height = 20
     Top = 622
     Width = 129
@@ -14067,7 +14066,7 @@ object Form1: TForm1
     TabOrder = 9
   end
   object ButtonChoice9: TButton
-    Left = 896
+    Left = 1032
     Height = 20
     Top = 648
     Width = 129
@@ -14076,7 +14075,7 @@ object Form1: TForm1
     TabOrder = 10
   end
   object ButtonChoice10: TButton
-    Left = 1040
+    Left = 1176
     Height = 20
     Top = 648
     Width = 129
@@ -14085,7 +14084,7 @@ object Form1: TForm1
     TabOrder = 11
   end
   object ButtonQY1: TButton
-    Left = 960
+    Left = 1096
     Height = 20
     Top = 686
     Width = 75
@@ -14095,7 +14094,7 @@ object Form1: TForm1
     Visible = False
   end
   object ButtonQY2: TButton
-    Left = 960
+    Left = 1096
     Height = 20
     Top = 706
     Width = 75
@@ -14105,7 +14104,7 @@ object Form1: TForm1
     Visible = False
   end
   object ButtonQY3: TButton
-    Left = 960
+    Left = 1096
     Height = 20
     Top = 732
     Width = 75
@@ -14115,7 +14114,7 @@ object Form1: TForm1
     Visible = False
   end
   object ButtonQN1: TButton
-    Left = 1040
+    Left = 1176
     Height = 20
     Top = 686
     Width = 75
@@ -14125,7 +14124,7 @@ object Form1: TForm1
     Visible = False
   end
   object ButtonQN2: TButton
-    Left = 1040
+    Left = 1176
     Height = 20
     Top = 706
     Width = 75
@@ -14135,7 +14134,7 @@ object Form1: TForm1
     Visible = False
   end
   object ButtonQN3: TButton
-    Left = 1040
+    Left = 1176
     Height = 20
     Top = 732
     Width = 75
@@ -14145,7 +14144,7 @@ object Form1: TForm1
     Visible = False
   end
   object chkP1: TCheckBox
-    Left = 896
+    Left = 1032
     Height = 21
     Top = 480
     Width = 70
@@ -14154,7 +14153,7 @@ object Form1: TForm1
     TabOrder = 18
   end
   object chkP2: TCheckBox
-    Left = 1000
+    Left = 1136
     Height = 21
     Top = 480
     Width = 70
@@ -14163,7 +14162,7 @@ object Form1: TForm1
     TabOrder = 19
   end
   object chkP3: TCheckBox
-    Left = 1096
+    Left = 1232
     Height = 21
     Top = 480
     Width = 70
@@ -14172,7 +14171,7 @@ object Form1: TForm1
     TabOrder = 20
   end
   object CheckBoxAutoPlay: TCheckBox
-    Left = 896
+    Left = 1032
     Height = 21
     Top = 456
     Width = 218
@@ -14184,7 +14183,7 @@ object Form1: TForm1
     AnchorSideLeft.Control = LabelRandomBias1
     AnchorSideTop.Control = LabelRandomBias1
     AnchorSideTop.Side = asrBottom
-    Left = 896
+    Left = 1032
     Height = 40
     Top = 411
     Width = 276
@@ -14197,7 +14196,7 @@ object Form1: TForm1
     AnchorSideTop.Control = LabelRandomBias1
     AnchorSideRight.Control = TrackBarRandomBias
     AnchorSideRight.Side = asrBottom
-    Left = 1146
+    Left = 1282
     Height = 19
     Top = 392
     Width = 26
@@ -14208,7 +14207,7 @@ object Form1: TForm1
   end
   object LabelRandomBias1: TLabel
     AnchorSideRight.Side = asrBottom
-    Left = 896
+    Left = 1032
     Height = 19
     Top = 392
     Width = 30
@@ -14220,7 +14219,7 @@ object Form1: TForm1
     AnchorSideLeft.Side = asrCenter
     AnchorSideTop.Control = LabelRandomBias1
     AnchorSideRight.Side = asrBottom
-    Left = 993
+    Left = 1129
     Height = 19
     Top = 392
     Width = 82
@@ -14228,7 +14227,7 @@ object Form1: TForm1
     ParentColor = False
   end
   object ButtonRandom: TButton
-    Left = 896
+    Left = 1032
     Height = 20
     Top = 512
     Width = 273

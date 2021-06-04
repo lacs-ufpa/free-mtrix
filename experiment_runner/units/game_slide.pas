@@ -82,6 +82,7 @@ begin
       '<meta http-equiv="content-type" content="text/html; charset=UTF-8">' +
       '<style type="text/css">' +
         '.container {text-align: left;}' +
+        '.nospacing {line-height: 1.2; margin-bottom: 0px;}' +
       '</style>' +
     '</head>' +
     '<body><div class=container>'+AMessage+'</div></body>' +
