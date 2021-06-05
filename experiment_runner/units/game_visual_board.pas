@@ -60,6 +60,7 @@ type
     FImageGroup1      : TImage;
     FImageGroup2      : TImage;
     FSystemPopUp      : TPopupNotifier;
+    procedure VisibleEarningsBeforeGenerationChange(AValue : Boolean);
     procedure SetBackgroundForm(AValue : TForm);
     procedure SetButtonConfirm(AValue : TButton);
     procedure SetChat(AValue : TStrings);
@@ -968,7 +969,7 @@ begin
   FCause := FExperiment.CurrentCondition.TargetMetacontingency;
   if FActor = gaPlayer then begin
     case FCause of
-      'SUSTAINABLE' : begin
+      'NON-SUSTAINABLE' : begin
         VisibleControl(FImageGroup1, True);
         VisibleControl(FLabelGroup1Name, True);
         VisibleControl(FLabelGroup1Count, True);
@@ -978,7 +979,7 @@ begin
         VisibleControl(FLabelGroup2Count, False);
       end;
 
-      'NON-SUSTAINABLE' : begin
+      'SUSTAINABLE' : begin
         VisibleControl(FImageGroup2, True);
         VisibleControl(FLabelGroup2Name, True);
         VisibleControl(FLabelGroup2Count, True);
@@ -1129,6 +1130,41 @@ begin
   end;
 end;
 
+procedure TGameBoard.VisibleEarningsBeforeGenerationChange(AValue : Boolean);
+begin
+  if AValue then begin
+    case FCause of
+      'NON-SUSTAINABLE' : begin
+        VisibleControl(FImageGroup1, AValue);
+        VisibleControl(FLabelGroup1Name, AValue);
+        VisibleControl(FLabelGroup1Count, AValue);
+      end;
+
+      'SUSTAINABLE' : begin
+        VisibleControl(FImageGroup2, AValue);
+        VisibleControl(FLabelGroup2Name, AValue);
+        VisibleControl(FLabelGroup2Count, AValue);
+      end;
+    end;
+  end else begin
+    VisibleControl(FImageGroup1, AValue);
+    VisibleControl(FLabelGroup1Name, AValue);
+    VisibleControl(FLabelGroup1Count, AValue);
+
+    VisibleControl(FImageGroup2, AValue);
+    VisibleControl(FLabelGroup2Name, AValue);
+    VisibleControl(FLabelGroup2Count, AValue);
+  end;
+
+  VisibleControl(FImagePointA, AValue);
+  VisibleControl(FLabelPointAName, AValue);
+  VisibleControl(FLabelPointACount, AValue);
+
+  VisibleControl(FImagePointB, AValue);
+  VisibleControl(FLabelPointBName, AValue);
+  VisibleControl(FLabelPointBCount, AValue);
+end;
+
 procedure TGameBoard.StartSetup;
 begin
   SetMatrix;
@@ -1264,6 +1300,8 @@ var
     end;
   end;
 begin
+  VisibleEarningsBeforeGenerationChange(False);
+
   P := FExperiment.PlayerFromID[AID];
   for i := Low(AGoodByeSlides) to High(AGoodByeSlides) do begin
     AGoodByeSlides[i] := ReplacePlaceholders(P, AGoodByeSlides[i]);
@@ -1286,6 +1324,7 @@ begin
     BackgroundForm.Visible := False;
 
   if ShowSlides(AWelcomeSlides) then begin
+    VisibleEarningsBeforeGenerationChange(True);
     Result := True;
   end;
 end;
