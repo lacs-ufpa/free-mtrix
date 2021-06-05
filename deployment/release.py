@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+    """
   Free-mtrix - Free cultural selection and social behavior experiments.
   Copyright (C) 2016-2017 Carlos Rafael Fernandes Picanço, Universidade Federal do Pará.
 
@@ -119,9 +119,14 @@ if __name__ == "__main__":
         # copy configuration file
         src_file = os.path.join(root_path, TEST_FOLDER)
         src_file = os.path.join(src_file, 'TGameControl')
-        src_file = os.path.join(src_file,'Experiment1.ini')
-        dst_file = os.path.join(destination, 'Experiment1.ini')
-        copy_file(src_file, dst_file)
+        filename = 'Experiment1-ABAB.ini'
+        src = os.path.join(src_file, filename)
+        dst = os.path.join(destination, filename)
+        copy_file(src, dst)
+        filename = 'Experiment1-BABA.ini'
+        src = os.path.join(src_file, filename)
+        dst = os.path.join(destination, filename)
+        copy_file(src, dst)
 
         # copy relevant media files
         src_file = os.path.join(root_path, SRC_MEDIA_FOLDER)
