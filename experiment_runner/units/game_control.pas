@@ -723,12 +723,20 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
 
         if Self.ID = AID then begin
           //FZMQActor.Request([AID,' ',K_END]);
+          if FExperiment.HasGenerationSlidesToShow then begin
+            if GameBoard.SayGoodByeAndShowSlides(AID,
+              FExperiment.GenerationSlidesLogOut) then begin
+              { do nothing }
+            end;
+          end else begin
+            if GameBoard.PlayerSaidGoodBye(AID, K_END) then begin
+              { do nothing }
+            end;
+          end;
 
-          if GameBoard.PlayerSaidGoodBye(AID, K_END) then
-            { do nothing };
-
-          if Assigned(OnEndExperiment) then
+          if Assigned(OnEndExperiment) then begin
             OnEndExperiment(Self);
+          end;
 
         end else begin
           GameBoard.ShowSystemPopUp(gmcPlayerExitedEnd, AID);
@@ -1215,7 +1223,7 @@ procedure TGameControl.ReceiveReply(AReply: TStringList);
 
   procedure EndExperiment;
   begin
-
+    { do nothing }
   end;
 
 begin
