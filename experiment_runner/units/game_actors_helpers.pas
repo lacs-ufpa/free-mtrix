@@ -200,9 +200,9 @@ function PointsToMoney(APoints : integer; AFactor :integer) : string;
 begin
   case APoints of
     0 : Result := '$0.00';
-    1..9: Result := FormatMoney + ' cents';
-    10 : Result := FormatMoney + ' dollar';
-    else Result := FormatMoney + ' dollars';
+    1..9: Result := FormatMoney;
+    10 : Result := FormatMoney;
+    else Result := FormatMoney;
   end;
 end;
 
