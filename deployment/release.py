@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-    """
+"""
   Free-mtrix - Free cultural selection and social behavior experiments.
   Copyright (C) 2016-2017 Carlos Rafael Fernandes Picanço, Universidade Federal do Pará.
 
