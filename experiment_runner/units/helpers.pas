@@ -39,6 +39,7 @@ type
     MediaPath : string;
     CachePath : string;
     MediaRoot : string;
+    PlayerRoot : string;
   end;
 
 var

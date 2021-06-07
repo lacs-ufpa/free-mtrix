@@ -474,9 +474,14 @@ begin
 end;
 
 procedure TGameControl.Cancel;
+var
+  P : TPlayer;
 begin
   FExperiment.SaveToFile(FExperiment.Filename+'.calceled');
-  FZMQActor.SendMessage([K_END, Self.ID]);
+  for P in FExperiment.Players do begin
+    Sleep(50);
+    FZMQActor.SendMessage([K_END, P.ID]);
+  end;
 end;
 
 // Here FActor can be TZMQPlayer or TZMQAdmin
@@ -621,12 +626,12 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
       gaPlayer: begin
         // setup a different root folder for each participant
         LRootFolder := FExperiment.PlayerRootFolderFromID(Self.ID);
-
+        Global.PlayerRoot := LRootFolder;
         // if there are any slides save them to cache
         LCount := StrToIntDef(AMessage[2], 0);
         if LCount > 0 then begin
           for i := 0 to LCount - 1 do begin
-            LFilename := LRootFolder + 'media';
+            LFilename := LRootFolder + 'media'+ PathDelim;
             SaveToCache(
               LFilename+ExtractDelimited(1,AMessage[i+3],['|']),
               ExtractDelimited(2,AMessage[i+3],['|']));

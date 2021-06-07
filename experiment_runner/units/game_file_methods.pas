@@ -324,6 +324,10 @@ var
     begin
       Result := '';
       with Global do begin
+        if FileExists(CachePath + PlayerRoot + MediaRoot + AFilename) then begin
+          Result := CachePath + PlayerRoot + MediaRoot + AFilename;
+          Exit;
+        end;
         if FileExists(MediaPath + AFilename) then begin
           Result := MediaPath + AFilename;
           Exit;
