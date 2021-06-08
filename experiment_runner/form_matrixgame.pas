@@ -60,6 +60,7 @@ type
     PopupNotifier: TPopupNotifier;
     Timer: TTimer;
     procedure btnConfirmRowClick(Sender: TObject);
+    procedure EndExperiment(Sender: TObject);
     procedure Button1Click(Sender : TObject);
     procedure ButtonCreateParticipantsFolderClick(Sender : TObject);
     procedure ButtonExpCancelClick(Sender: TObject);
@@ -176,6 +177,7 @@ begin
   FGameBoard.BeforeStartExperimentSetup;
 
   FGameControl.GameBoard := FGameBoard;
+  FGameBoard.OnEndExperiment := @EndExperiment;
   FGameControl.Login;
 end;
 
@@ -248,6 +250,13 @@ begin
   btnConfirmRow.Enabled := False;
   S := TStringGridA(FGameBoard.StringGridMatrix);
   FGameControl.SendRequest(K_CHOICE, [S.GetSelectedRowF, S.GetSelectedMatrixColorF]);
+end;
+
+procedure TFormMatrixGame.EndExperiment(Sender : TObject);
+begin
+  if FGameControl.Actor = gaPlayer then begin
+    Close;
+  end;
 end;
 
 procedure TFormMatrixGame.Button1Click(Sender : TObject);

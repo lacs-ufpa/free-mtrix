@@ -477,11 +477,11 @@ procedure TGameControl.Cancel;
 var
   P : TPlayer;
 begin
-  FExperiment.SaveToFile(FExperiment.Filename+'.calceled');
   for P in FExperiment.Players do begin
     Sleep(50);
     FZMQActor.SendMessage([K_END, P.ID]);
   end;
+  FExperiment.SaveToFile(FExperiment.Filename+'.calceled');
 end;
 
 // Here FActor can be TZMQPlayer or TZMQAdmin
@@ -966,6 +966,7 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
   procedure ValidateChoice;
   var
+    P       : TPlayer;
     i       : integer;
     LCount  : integer;
     LPlayer : TPlayer;
@@ -1032,7 +1033,9 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
 
       if LCondition = #27 then begin
         // end experiment
-        LAnnouncer.Append([K_END, ARequest[0]]);
+        for P in FExperiment.Players do begin
+          LAnnouncer.Append([K_END, P.ID]);
+        end;
       end else begin
 
         if LGeneration = #32 then begin
