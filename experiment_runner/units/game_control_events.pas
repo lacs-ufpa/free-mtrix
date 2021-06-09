@@ -22,6 +22,7 @@ type
 
   TGameEvents = class(TComponent)
   protected
+    procedure Close(Sender : TObject); virtual;
     procedure Consequence(Sender : TObject); virtual;
     procedure EndChoice(Sender : TObject); virtual;
     procedure EndCondition(Sender : TObject); virtual;
@@ -40,6 +41,7 @@ type
     procedure TargetInterlocking(Sender : TObject); virtual;
     procedure WaitForServer(Sender : TObject); virtual;
   private
+    FOnClose : TNotifyEvent;
     FOnConsequence : TNotifyEvent;
     FOnEndChoice : TNotifyEvent;
     FOnEndCondition : TNotifyEvent;
@@ -57,6 +59,7 @@ type
     FOnStartTurn : TNotifyEvent;
     FOnTargetInterlocking : TNotifyEvent;
     FOnWaitForServer : TNotifyEvent;
+    procedure SetOnClose(AValue : TNotifyEvent);
     procedure SetOnConsequence(AValue : TNotifyEvent);
     procedure SetOnEndChoice(AValue : TNotifyEvent);
     procedure SetOnEndCondition(AValue : TNotifyEvent);
@@ -94,11 +97,19 @@ type
     property OnWaitForServer : TNotifyEvent read FOnWaitForServer write SetOnWaitForServer;
   public
     property OnPlayerExit : TPlayerEvent read FOnPlayerExit write SetOnPlayerExit;
+    property OnClose : TNotifyEvent read FOnClose write SetOnClose;
   end;
 
 implementation
 
 { TGameEvents }
+
+procedure TGameEvents.Close(Sender : TObject);
+begin
+  { do something }
+    if Assigned(OnClose) then
+      OnClose(Sender);
+end;
 
 procedure TGameEvents.Consequence(Sender : TObject);
 begin
@@ -225,6 +236,12 @@ begin
   FOnConsequence := AValue;
 end;
 
+procedure TGameEvents.SetOnClose(AValue : TNotifyEvent);
+begin
+  if FOnClose = AValue then Exit;
+  FOnClose := AValue;
+end;
+
 procedure TGameEvents.SetOnEndChoice(AValue : TNotifyEvent);
 begin
   if FOnEndChoice = AValue then Exit;
@@ -341,6 +358,7 @@ begin
   OnStartTurn := nil;
   OnTargetInterlocking := nil;
   OnWaitForServer := nil;
+  OnClose := nil;
 end;
 
 end.

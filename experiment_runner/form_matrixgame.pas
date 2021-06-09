@@ -60,7 +60,7 @@ type
     PopupNotifier: TPopupNotifier;
     Timer: TTimer;
     procedure btnConfirmRowClick(Sender: TObject);
-    procedure EndExperiment(Sender: TObject);
+    procedure DoClose(Sender: TObject);
     procedure Button1Click(Sender : TObject);
     procedure ButtonCreateParticipantsFolderClick(Sender : TObject);
     procedure ButtonExpCancelClick(Sender: TObject);
@@ -177,7 +177,7 @@ begin
   FGameBoard.BeforeStartExperimentSetup;
 
   FGameControl.GameBoard := FGameBoard;
-  FGameBoard.OnEndExperiment := @EndExperiment;
+  FGameControl.OnClose := @DoClose;
   FGameControl.Login;
 end;
 
@@ -252,7 +252,7 @@ begin
   FGameControl.SendRequest(K_CHOICE, [S.GetSelectedRowF, S.GetSelectedMatrixColorF]);
 end;
 
-procedure TFormMatrixGame.EndExperiment(Sender : TObject);
+procedure TFormMatrixGame.DoClose(Sender : TObject);
 begin
   if FGameControl.Actor = gaPlayer then begin
     Close;

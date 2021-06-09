@@ -359,6 +359,7 @@ begin
     OnStartGeneration := @Self.StartGeneration;
     OnStartTurn := @Self.StartTurn;
     OnTargetInterlocking := @Self.TargetInterlocking;
+    OnClose := @Self.Close;
     //OnCleanEvent := @CleanEvent;
     //OnPlayerExit := @PlayerExit;
   end;
@@ -739,8 +740,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             end;
           end;
 
-          if Assigned(OnEndExperiment) then begin
-            OnEndExperiment(Self);
+          if Assigned(OnClose) then begin
+            OnClose(Self);
           end;
 
         end else begin
