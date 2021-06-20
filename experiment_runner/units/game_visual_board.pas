@@ -60,6 +60,7 @@ type
     FImageGroup1      : TImage;
     FImageGroup2      : TImage;
     FSystemPopUp      : TPopupNotifier;
+    FSystemMessage : TLabel;
     procedure VisibleEarningsBeforeGenerationChange(AValue : Boolean);
     procedure SetBackgroundForm(AValue : TForm);
     procedure SetButtonConfirm(AValue : TButton);
@@ -141,6 +142,8 @@ type
     procedure AppendToChat(ALn : string);
     function ShowSlides(ASlides : TStringArray) : Boolean;
     procedure ShowSystemPopUp(AGameContext: TGameContext; AID : string = '');
+    procedure ShowSystemMessage(AGameContext: TGameContext; AID : string = '');
+    procedure HideSystemMessage;
     function GetPlayerExitMessage(AID : string) : string;
     property LabelGroup1Count : TLabel read FLabelGroup1Count write SetLabelGroup1;
     property LabelGroup2Count : TLabel read FLabelGroup2Count write SetLabelGroup2;
@@ -776,6 +779,41 @@ begin
 {$ENDIF}
 end;
 
+procedure TGameBoard.ShowSystemMessage(AGameContext : TGameContext; AID : string
+  );
+var
+  LMessage : String;
+begin
+  case AGameContext of
+    gmcPlayerExited : begin
+      LMessage := FExperiment.PlayerFromID[AID].Nicname +
+        ' exited. Please, wait while your group member is replaced.';
+    end;
+  else
+    { do nothing };
+  end;
+  if Assigned(BackgroundForm) then begin
+    StringGridMatrix.Visible := False;
+    GroupBoxPlayers.Visible := False;
+    GroupBoxPoints.Visible := False;
+    FSystemMessage.Caption := LMessage;
+    FSystemMessage.Visible := True;
+  end;
+end;
+
+procedure TGameBoard.HideSystemMessage;
+begin
+  if Assigned(BackgroundForm) then begin
+    if FSystemMessage.Visible then begin
+      FSystemMessage.Visible := False;
+      FSystemMessage.Caption := '';
+      StringGridMatrix.Visible := True;
+      GroupBoxPlayers.Visible := True;
+      GroupBoxPoints.Visible := True;
+    end;
+  end;
+end;
+
 function TGameBoard.GetPlayerExitMessage(AID : string) : string;
 var
   Pts : String;
@@ -1065,6 +1103,21 @@ begin
     L.BorderSpacing.Bottom:=26;
     L.OnClick := SystemPopUp.vNotifierForm.OnClick;
     L.Parent := SystemPopUp.vNotifierForm;
+
+    FSystemMessage := TLabel.Create(BackgroundForm);
+    with FSystemMessage do begin
+      Name := 'LabelGoodBye';
+      Align:=alClient;
+      Caption:= '';
+      Alignment := taCenter;
+      Anchors := [akLeft,akRight];
+      Layout := tlCenter;
+      WordWrap := True;
+      Font.Size := 30;
+      BringToFront;
+      Visible := False;
+      Parent:=BackgroundForm;
+    end;
   end;
 
   if AGameEvents is TGameControl then
@@ -1325,6 +1378,7 @@ begin
     BackgroundForm.Visible := False;
 
   if ShowSlides(AWelcomeSlides) then begin
+    InvalidateLabels(AID);
     VisibleEarningsBeforeGenerationChange(True);
     Result := True;
   end;

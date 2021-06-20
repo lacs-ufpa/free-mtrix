@@ -496,6 +496,7 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
   begin
     case FActor of
       gaPlayer: begin
+        GameBoard.HideSystemMessage;
         // player next choice
         if Self.AsPlayer.Turn = FExperiment.CurrentTurn then begin
           if Assigned(OnStartChoice) then begin
@@ -710,7 +711,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
             end;
           end;
         end else begin
-          GameBoard.ShowSystemPopUp(gmcPlayerExited, AID);
+          GameBoard.ShowSystemMessage(gmcPlayerExited, AID);
+          //GameBoard.ShowSystemPopUp(gmcPlayerExited, AID);
         end;
       end;
 
