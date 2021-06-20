@@ -734,18 +734,15 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           if FExperiment.HasGenerationSlidesToShow then begin
             if GameBoard.SayGoodByeAndShowSlides(AID,
               FExperiment.GenerationSlidesLogOut) then begin
-              { do nothing }
+              if Assigned(OnClose) then begin
+                OnClose(Self);
+              end;
             end;
           end else begin
             if GameBoard.PlayerSaidGoodBye(AID, K_END) then begin
               { do nothing }
             end;
           end;
-
-          if Assigned(OnClose) then begin
-            OnClose(Self);
-          end;
-
         end else begin
           GameBoard.ShowSystemPopUp(gmcPlayerExitedEnd, AID);
         end;
