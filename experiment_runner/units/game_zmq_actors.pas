@@ -117,7 +117,7 @@ end;
 procedure TZMQAdmin.Request(ARequest: array of string);
 begin
   {$IFDEF DEBUG}
-  WriteLn('WARNING:'+ClassType.ClassName+':'+'CannotSendRequests:'+ARequest[2]);
+  WriteLn('WARNING:'+ClassType.ClassName+':'+'CannotSendRequests');
   {$ENDIF}
 end;
 
@@ -245,7 +245,7 @@ var i : integer;
 {$ENDIF}
 begin
   {$IFDEF DEBUG}
-  WriteLn(ClassType.ClassName+':'+'SendingMessage:'+AMessage[1]);
+  WriteLn(ClassType.ClassName+':'+'SendingMessage');
   for i:= 0 to Length(AMessage)-1 do
     WriteLn(i,':',AMessage[i]);
   {$ENDIF}
@@ -257,7 +257,7 @@ var i : integer;
 {$ENDIF}
 begin
   {$IFDEF DEBUG}
-  WriteLn(ClassType.ClassName+':'+'SendingRequest:'+ARequest[2]);
+  WriteLn(ClassType.ClassName+':'+'SendingRequest');
   for i:= 0 to Length(ARequest)-1 do
     WriteLn(i,':',ARequest[i]);
   {$ENDIF}
