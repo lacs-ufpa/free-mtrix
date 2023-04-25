@@ -1140,7 +1140,7 @@ begin
       OnStartTurn := @Self.StartTurn;
       OnTargetInterlocking := @Self.TargetInterlocking;
       OnWaitForServer := @Self.WaitForServer;
-      OnClose := @Self.Close;
+      //OnClose := @Self.Close;
     end;
 end;
 
