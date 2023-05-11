@@ -60,6 +60,10 @@ type
       property OnEndSlides : TNotifyEvent read FOnEndSlides write SetOnEndSlides;
   end;
 
+resourcestring
+  CAP_CONTINUE = 'Continue';
+  CAP_CLOSE    = 'Close;
+
 implementation
 
 uses Forms;
@@ -129,7 +133,7 @@ begin
 
   FEndButton := TButton.Create(Self);
   with FEndButton do begin
-    Caption := 'Continue';
+    Caption := CAP_CONTINUE;
     AutoSize := False;
     Font.Name:='Times New Roman';
     Font.Size := 30;
@@ -152,7 +156,7 @@ end;
 
 procedure TGameSlide.ChangeEndButton;
 begin
-  FEndButton.Caption := 'Close';
+  FEndButton.Caption := CAP_CLOSE;
 end;
 
 procedure TGameSlide.LoadFromString(AString : string);

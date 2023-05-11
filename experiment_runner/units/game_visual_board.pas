@@ -180,6 +180,39 @@ type
     {$ENDIF}
   end;
 
+resourcestring
+  CAP_ID = 'ID';
+  CAP_NAME = 'Name';
+  CAP_RED_TOKENS = 'Red Tokens';
+  CAP_BLUE_TOKENS = 'Blue Tokens';
+  CAP_TOKENS_SUM = 'Red+Blue';
+  CAP_TOKENS_MONEY = 'Money';
+  CAP_G1 = 'Cultural Tokens (Sustainable)';
+  CAP_G2 = 'Cultural Tokens (Non-sustainable)';
+  CAP_CONDITION_CYCLE = 'Condition Cycle';
+  CAP_CYCLES_GENERATION = 'Cycles (Generation)';
+  CAP_PARTICIPANT_ARRIVED_CAPTION = 'A new participant arrived.';
+  CAP_PARTICIPANT_ARRIVED_PROMPT = 'What is his/her nickname?';
+  CAP_NEW_GENERATION_CAPTION = 'A new generation has started.';
+  CAP_NEW_GENERATION_PROMPT =
+    'A new participant replaced the oldest one. ' +
+    'What is the nickname of the new participant?';
+  CAP_NEW_PARTICIPANT_LOGGED_IN = 'New participant logged in.';
+  CAP_WELCOME = 'Welcome';
+  CAP_EXPERIMENT_START_PLAYER = 'It is started! Wait for your turn.';
+  CAP_EXPERIMENT_START_ADMIN = 'It is started!';
+  CAP_CHOICE_START = 'It is your turn! Click at a row and confirm your choice.';
+  CAP_PLAYER_EXITED_PLAYER = 'exited. Please, wait while your group member is replaced.';
+  CAP_PLAYER_EXITED_ADMIN = 'exited. Waiting...';
+  CAP_PLAYER_EXITED_END = ' exited the game.';
+  CAP_EXPERIMENT_END = 'The experiment ended.';
+  CAP_WAITING_FOR_SERVER = 'Waiting for server...';
+  CAP_CONFIRM = 'Confirm';
+  CAP_OK = 'OK';
+  CAP_YOU = 'You';
+  CAP_YES = 'Yes';
+  CAP_NO  = 'No';
+
 implementation
 
 uses
@@ -226,23 +259,31 @@ end;
 procedure TGameBoard.PlayerExit(P : TPlayer; AMessage : string);
 var
   LMessage : string;
+const
+  SEP : string = ': ';
 begin
   if Assigned(ListBoxOldPlayers) then
   begin
     LMessage :=
-      'ID:' + AMessage + LineEnding +
-      'Name: '+ P.Nicname + LineEnding +
-      'Red Tokens:' + P.Points.A.ToString + LineEnding +
-      'Blue Tokens:' + P.Points.B.ToString + LineEnding +
-      'Red+Blue:' + (P.Points.A + P.Points.B).ToString + LineEnding +
-      'Money:' + PointsToMoney(P.Points.A + P.Points.B, 10) + LineEnding +
-      'Cultural Tokens (Sustainable):' +
+      CAP_ID + SEP +
+        AMessage + LineEnding +
+      CAP_NAME + SEP +
+        P.Nicname + LineEnding +
+      CAP_RED_TOKENS + SEP +
+        P.Points.A.ToString + LineEnding +
+      CAP_BLUE_TOKENS + SEP +
+        P.Points.B.ToString + LineEnding +
+      CAP_TOKENS_SUM + SEP +
+        (P.Points.A + P.Points.B).ToString + LineEnding +
+      CAP_TOKENS_MONEY + SEP +
+        PointsToMoney(P.Points.A + P.Points.B, 10) + LineEnding +
+      CAP_G1 + SEP +
         FExperiment.GlobalPoints(gscG1).ToString + LineEnding +
-      'Cultural Tokens (Non-sustainable):' +
+      CAP_G2 + SEP +
         FExperiment.GlobalPoints(gscG2).ToString + LineEnding +
-      'Condition Cycle:' +
+      CAP_CONDITION_CYCLE + SEP +
         FExperiment.CurrentCondition.Cycles.Count.ToString + LineEnding +
-      'Cycles (Generation):' +
+      CAP_CYCLES_GENERATION + SEP +
         (FExperiment.LastGenerationCount+1).ToString;
     ListBoxOldPlayers.Items.Append(LMessage);
   end;
@@ -255,7 +296,7 @@ begin
     StringGridMatrix.Enabled := True;
     StringGridMatrix.Options := StringGridMatrix.Options-[goRowSelect];
     ButtonConfirm.Enabled:=True;
-    ButtonConfirm.Caption:='Confirm';
+    ButtonConfirm.Caption:=CAP_CONFIRM;
     ButtonConfirm.Visible := False;
     BackgroundForm.Invalidate;
   end;
@@ -269,7 +310,7 @@ begin
   if Assigned(BackgroundForm) then begin
     StringGridMatrix.Enabled:= False;
     ButtonConfirm.Enabled:=False;
-    ButtonConfirm.Caption:='OK';
+    ButtonConfirm.Caption:=CAP_OK;
     BackgroundForm.Invalidate;
   end;
   inherited EndChoice(Sender);
@@ -281,7 +322,7 @@ begin
     StringGridMatrix.Enabled := False;
     StringGridMatrix.Options := StringGridMatrix.Options-[goRowSelect];
     ButtonConfirm.Enabled:=True;
-    ButtonConfirm.Caption:='Confirm';
+    ButtonConfirm.Caption:=CAP_CONFIRM;
     ButtonConfirm.Visible := False;
     BackgroundForm.Invalidate;
   end;
@@ -495,15 +536,13 @@ var
 begin
   case AGameContext of
     gmcNewPlayerLogin : begin
-      LCaption := 'A new participant arrived.';
-      LPrompt  := 'What is his/her nickname?';
+      LCaption := CAP_PARTICIPANT_ARRIVED_CAPTION;
+      LPrompt  := CAP_PARTICIPANT_ARRIVED_PROMPT;
     end;
 
     gmcNewPlayerArrived : begin
-      LCaption := 'A new generation has started.';
-      LPrompt  :=
-        'A new participant replaced the oldest one. ' +
-        'What is the nickname of the new participant?';
+      LCaption := CAP_NEW_GENERATION_CAPTION;
+      LPrompt  := CAP_NEW_GENERATION_PROMPT;
     end;
 
     else
@@ -534,7 +573,7 @@ var i1 : integer = 0;
 begin
   with TPlayerBox.Create(GroupBoxPlayers,P.ID,Admin) do begin
     if Me then begin
-      Caption := P.Nicname+SysToUtf8(' (You)' );
+      Caption := P.Nicname+SysToUtf8(' ('+ CAP_YOU +')' );
     end else begin
       Caption := P.Nicname;
     end;
@@ -543,7 +582,7 @@ begin
     if i1 > 0 then begin
       LabelLastRowCount.Caption := Format('%-*.*d', [1,2,i1])
     end else begin
-      LabelLastRowCount.Caption := 'NA';
+      LabelLastRowCount.Caption := CAP_NA;
     end;
 
     PanelLastColor.Color := GetColorFromCode(P.Choice.Color);
@@ -566,7 +605,7 @@ begin
 
   with LPlayerBox do begin
     if Me then begin
-      Caption := P.Nicname+SysToUtf8(' (You)' )
+      Caption := P.Nicname+SysToUtf8(' ('+CAP_YOU+')' )
     end else begin
       Caption := P.Nicname;
     end;
@@ -575,7 +614,7 @@ begin
       LabelPointsRedCount.Caption := '0';
       LabelPointsBlueCount.Caption := '0';
     end else begin
-      LabelLastRowCount.Caption := 'NA';
+      LabelLastRowCount.Caption := CAP_NA;
       PanelLastColor.Color := GetColorFromCode(P.Choice.Color);
     end;
   end;
@@ -616,8 +655,8 @@ begin
         with ButtonPanel do
           begin
             ButtonOrder:=boCloseOKCancel;
-            OKButton.Caption:='Yes';
-            CancelButton.Caption:='No';
+            OKButton.Caption:=CAP_YES;
+            CancelButton.Caption:=CAP_NO;
             ShowButtons:=[pbOK, pbCancel];
             ShowBevel:=True;
             ShowGlyphs:=[];
@@ -667,15 +706,13 @@ begin
     gmcNewPlayerLogin, gmcNewPlayerArrived: begin
       case AGameContext of
         gmcNewPlayerLogin : begin
-          LCaption := 'A new participant arrived.';
-          LMessage  := 'What is his/her nickname?';
+          LCaption := CAP_PARTICIPANT_ARRIVED_CAPTION;
+          LMessage  := CAP_PARTICIPANT_ARRIVED_PROMPT;
         end;
 
         gmcNewPlayerArrived : begin
-          LCaption := 'A new generation has started.';
-          LMessage  :=
-            'A new participant replaced the oldest one. ' +
-            'What is the nickname of the new participant?';
+          LCaption := CAP_NEW_GENERATION_CAPTION;
+          LMessage  := CAP_NEW_GENERATION_PROMPT;
         end;
         else
           begin
@@ -692,21 +729,21 @@ begin
       Exit;
     end;
     gmcNewPlayerLoginArrived : begin
-      LMessage  := 'New participant logged in.';
+      LMessage  := CAP_NEW_PARTICIPANT_LOGGED_IN;
     end;
 
     gmcNewPlayerLoggedIn : begin
-      LMessage  := 'Welcome ' + FExperiment.PlayerFromID[AID].Nicname;
+      LMessage  := CAP_WELCOME + #32 + FExperiment.PlayerFromID[AID].Nicname;
     end;
 
     gmcExperimentStart : begin
       case FActor of
         gaPlayer : begin
-          LMessage := 'It is started! Wait for your turn.';
+          LMessage := CAP_EXPERIMENT_START_PLAYER;
         end;
 
         gaAdmin  : begin
-          LMessage := 'It is started!';
+          LMessage := CAP_EXPERIMENT_START_ADMIN;
         end;
 
         else
@@ -715,19 +752,19 @@ begin
     end;
 
     gmcChoiceStart : begin
-      LMessage := 'It is your turn! Click at a row and confirm your choice.';
+      LMessage := CAP_CHOICE_START;
     end;
 
     gmcPlayerExited : begin
       case FActor of
         gaPlayer : begin
-          LMessage := FExperiment.PlayerFromID[AID].Nicname +
-            ' exited. Please, wait for someone else to arrive.';
+          LMessage := FExperiment.PlayerFromID[AID].Nicname + #32 +
+            CAP_PLAYER_EXITED_PLAYER;
         end;
 
         gaAdmin : begin
-          LMessage := FExperiment.PlayerFromID[AID].Nicname +
-            ' exited. Waiting...';
+          LMessage := FExperiment.PlayerFromID[AID].Nicname + #32 +
+            CAP_PLAYER_EXITED_ADMIN;
         end;
 
         else
@@ -737,15 +774,15 @@ begin
 
     gmcPlayerExitedEnd : begin
       LMessage := FExperiment.PlayerFromID[AID].Nicname +
-        ' exited the game.';
+        CAP_PLAYER_EXITED_END;
     end;
 
     gmcExperimentEnd : begin
-      LMessage := 'The experiment ended.';
+      LMessage := CAP_EXPERIMENT_END;
     end;
 
     gmcWaitingForServer : begin
-      LMessage := 'Waiting for server...';
+      LMessage := CAP_WAITING_FOR_SERVER;
     end;
   end;
 {$IFDEF TEST_MODE}
@@ -786,8 +823,8 @@ var
 begin
   case AGameContext of
     gmcPlayerExited : begin
-      LMessage := FExperiment.PlayerFromID[AID].Nicname +
-        ' exited. Please, wait while your group member is replaced.';
+      LMessage := FExperiment.PlayerFromID[AID].Nicname + #32 +
+        CAP_PLAYER_EXITED_PLAYER;
     end;
   else
     { do nothing };
@@ -947,7 +984,7 @@ begin
           if FExperiment.ABPoints then begin
             { do nothing }
           end else begin
-            PB.LabelPointsBlueCount.Caption := 'NA';
+            PB.LabelPointsBlueCount.Caption := CAP_NA;
           end;
         end;
     end;
@@ -978,7 +1015,7 @@ begin
     StringGridMatrix.Enabled := False;
     StringGridMatrix.Options := StringGridMatrix.Options-[goRowSelect];
     ButtonConfirm.Enabled:=True;
-    ButtonConfirm.Caption:='Confirm';
+    ButtonConfirm.Caption:=CAP_CONFIRM;
     ButtonConfirm.Visible := False;
   end;
   inherited StartExperiment(Sender);
@@ -1246,13 +1283,15 @@ procedure TGameBoard.FullScreen;
 begin
   if Assigned(BackgroundForm) then
     with BackgroundForm do begin
-      BorderStyle:=bsNone;
-      {$IFDEF WINDOWS}
-      BoundsRect := Monitor.BoundsRect;
-      {$ENDIF}
       Position:=poDesigned;
       FormStyle:=fsNormal;
+      {$IFDEF MSWINDOWS}
+      BorderStyle:=bsNone;
+      BoundsRect := Monitor.BoundsRect;
+      {$ENDIF}
+      {$IFDEF LINUX}
       WindowState:=wsFullScreen;
+      {$ENDIF}
     end;
 end;
 

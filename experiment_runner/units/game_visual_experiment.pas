@@ -66,6 +66,9 @@ resourcestring
   CAP_GENERATION = 'Generation';
   CAP_COND_CYCLE = 'Cycle (Condition)';
   CAP_CYCLES = 'Cycle (Global)';
+  CAP_NA = 'NA';
+  CAP_GROUP_POINTS_GLOBAL = 'Group Points (Global)';
+  CAP_GROUP_POINTS_CONDITION =  'Group Points (Condition)';
   HINT_GENERATION_A = 'Inside parentheses, it is the number of cycles of the current generation.';
 
 implementation
@@ -151,16 +154,16 @@ end;
 
 procedure TGroupBoxExperiment.EndExperiment(Sender: TObject);
 begin
-  LabelConditionCount.Caption := 'NA';
-  LabelGenerationCount.Caption := 'NA';
-  LabelCycleCount.Caption := 'NA';
-  LabelTurnCount.Caption := 'NA';
-  LabelInterlockCount.Caption := 'NA';
-  LabelTargetInterlockCount.Caption := 'NA';
-  LabelConditionCycle.Caption := 'NA';
-  LabelConditionCycleCount.Caption:= 'NA';
-  LabelGroup1Count.Caption:='NA';
-  LabelGroup1GlobalCount.Caption:='NA';
+  LabelConditionCount.Caption := CAP_NA;
+  LabelGenerationCount.Caption := CAP_NA;
+  LabelCycleCount.Caption := CAP_NA;
+  LabelTurnCount.Caption := CAP_NA;
+  LabelInterlockCount.Caption := CAP_NA;
+  LabelTargetInterlockCount.Caption := CAP_NA;
+  LabelConditionCycle.Caption := CAP_NA;
+  LabelConditionCycleCount.Caption:= CAP_NA;
+  LabelGroup1Count.Caption:=CAP_NA;
+  LabelGroup1GlobalCount.Caption:=CAP_NA;
 end;
 
 constructor TGroupBoxExperiment.Create(AOwner: TComponent);
@@ -186,7 +189,7 @@ begin
   LabelCondition.Parent := Self;
 
   LabelConditionCount := TLabel.Create(Self);
-  LabelConditionCount.Caption := 'NA';
+  LabelConditionCount.Caption := CAP_NA;
   LabelConditionCount.Parent := Self;
 
   LabelGeneration := TLabel.Create(Self);
@@ -196,7 +199,7 @@ begin
   LabelGeneration.Parent := Self;
 
   LabelGenerationCount := TLabel.Create(Self);
-  LabelGenerationCount.Caption := 'NA';
+  LabelGenerationCount.Caption := CAP_NA;
   LabelGenerationCount.Parent := Self;
 
   LabelCycle := TLabel.Create(Self);
@@ -204,7 +207,7 @@ begin
   LabelCycle.Parent := Self;
 
   LabelCycleCount := TLabel.Create(Self);
-  LabelCycleCount.Caption := 'NA';
+  LabelCycleCount.Caption := CAP_NA;
   LabelCycleCount.Parent := Self;
 
   LabelConditionCycle:= TLabel.Create(Self);
@@ -212,7 +215,7 @@ begin
   LabelConditionCycle.Parent:=Self;
 
   LabelConditionCycleCount:= TLabel.Create(Self);
-  LabelConditionCycleCount.Caption:= 'NA';
+  LabelConditionCycleCount.Caption:= CAP_NA;
   LabelConditionCycleCount.Parent:=Self;
 
   LabelTurn := TLabel.Create(Self);
@@ -220,7 +223,7 @@ begin
   LabelTurn.Parent := Self;
 
   LabelTurnCount := TLabel.Create(Self);
-  LabelTurnCount.Caption := 'NA';
+  LabelTurnCount.Caption := CAP_NA;
   LabelTurnCount.Parent := Self;
 
   LabelInterlock := TLabel.Create(Self);
@@ -228,7 +231,7 @@ begin
   LabelInterlock.Parent := Self;
 
   LabelInterlockCount := TLabel.Create(Self);
-  LabelInterlockCount.Caption := 'NA';
+  LabelInterlockCount.Caption := CAP_NA;
   LabelInterlockCount.Parent := Self;
 
   LabelTargetInterlock := TLabel.Create(Self);
@@ -236,23 +239,23 @@ begin
   LabelTargetInterlock.Parent := Self;
 
   LabelTargetInterlockCount := TLabel.Create(Self);
-  LabelTargetInterlockCount.Caption := 'NA';
+  LabelTargetInterlockCount.Caption := CAP_NA;
   LabelTargetInterlockCount.Parent := Self;
 
   LabelGroup1 := TLabel.Create(Self);
-  LabelGroup1.Caption := 'Group Points (Condition)';
+  LabelGroup1.Caption := CAP_GROUP_POINTS_CONDITION;
   LabelGroup1.Parent := Self;
 
   LabelGroup1Count := TLabel.Create(Self);
-  LabelGroup1Count.Caption := 'NA';
+  LabelGroup1Count.Caption := CAP_NA;
   LabelGroup1Count.Parent := Self;
 
   LabelGroup1Global := TLabel.Create(Self);
-  LabelGroup1Global.Caption := 'Group Points (Global)';
+  LabelGroup1Global.Caption := CAP_GROUP_POINTS_GLOBAL;
   LabelGroup1Global.Parent := Self;
 
   LabelGroup1GlobalCount := TLabel.Create(Self);
-  LabelGroup1GlobalCount.Caption := 'NA';
+  LabelGroup1GlobalCount.Caption := CAP_NA;
   LabelGroup1GlobalCount.Parent := Self;
 
   if Owner is TGameBoard then
