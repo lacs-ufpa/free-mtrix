@@ -557,7 +557,7 @@ end;
 function TContingency.ResponseMeetsCriteriaG(Players: TPlayers): Boolean; // must be called from admin only
 var
   i : integer;
-  Cs : TGameAColors;
+  LChosenColors : TGameAColors;
   Rs : array of TGameRow;
   //C : TGameColor;
   R : TGameRow;
@@ -580,13 +580,13 @@ const
       for j := i to Len-1 do
         case AComparisonType of
           0:
-            if (Cs[i] <> Cs[j]) and (i <> j) then
+            if (LChosenColors[i] <> LChosenColors[j]) and (i <> j) then
               begin
                 Result := not Result;
                 Exit;
               end;
           1:
-            if (Cs[i] = Cs[j]) and (i <> j) then
+            if (LChosenColors[i] = LChosenColors[j]) and (i <> j) then
               begin
                 Result := not Result;
                 Exit;
@@ -789,12 +789,40 @@ const
   //  Result := not RelationExists(LEQUL) or RelationExists(LEQUL,True);
   //end;
 
+  function GetUniqueColors(const GameColors : TGameAColors): TGameAColors;
+  var
+    i, j: Integer;
+    IsDuplicate: Boolean;
+  begin
+    SetLength(Result, 0);
+    for i := Low(GameColors) to High(GameColors) do
+    begin
+      IsDuplicate := False;
+      for j := Low(Result) to High(Result) do
+      begin
+        if GameColors[i] = Result[j] then
+        begin
+          IsDuplicate := True;
+          Break;
+        end;
+      end;
+
+      if not IsDuplicate then
+      begin
+        SetLength(Result, Length(Result) + 1);
+        Result[High(Result)] := GameColors[i];
+      end;
+    end;
+  end;
+
   function ColorsResult: Boolean;
   var
     i : integer;
     j : integer;
+    LCount : integer;
     LColorSet : TGameAColors;
     LColorCriteria : TGameAColors;
+    LUniqueChosenColors : TGameAColors;
   begin
     if gcDiff in Criteria.Colors then
       if gcNot in Criteria.Colors then
@@ -828,21 +856,30 @@ const
           LColorCriteria[Len-1] := Criteria.Colors[i];
         end;
 
-      j := fact(Length(Cs));
+      LUniqueChosenColors := GetUniqueColors(LChosenColors);
+      Len := Length(LColorCriteria);
+      LCount := 0;
       Result := False;
-      for i := 0 to j-1 do
-        Result := Result or EqualAColors(GetCombination(Cs, i, j), LColorCriteria);
+      for i := Low(LColorCriteria) to High(LColorCriteria) do begin
+        for j := Low(LUniqueChosenColors) to High(LUniqueChosenColors) do begin
+          if LUniqueChosenColors[j] = LColorCriteria[i] then begin
+            Inc(LCount);
+          end;
+        end;
+      end;
+      if LCount >= Len then
+        Result := True;
     end;
   end;
 
 begin
   Result := False;
   Len := Length(Players);
-  SetLength(Cs,Len);
+  SetLength(LChosenColors,Len);
   SetLength(Rs,Len);
 
   for i :=0 to Length(Players)-1 do
-    Cs[i] := Players[i].Choice.Color;
+    LChosenColors[i] := Players[i].Choice.Color;
 
   for i :=0 to Length(Players)-1 do
     Rs[i] := Players[i].Choice.Row;
