@@ -890,24 +890,37 @@ end;
 function TGameBoard.GetPlayerExitMessage(AID : string) : string;
 var
   Pts : String;
-  Name1 : string;
-  Name2 : string;
+  //Name1 : string;
+  //Name2 : string;
 begin
-  Name1 := 'The Consumer Energy Alliance';
-  Name2 := 'Natural Resource Defense Council';
+  //Name1 := 'The Consumer Energy Alliance';
+  //Name2 := 'Natural Resource Defense Council';
+  //Pts := FExperiment.PlayerPointsSummationFromID(AID).ToString;
+  //Result :=
+  //  'The task is over, thank you for your participation!'+LineEnding+
+  //  'You earned ' + Pts + ' tokens for yourself,' + LineEnding +
+  //  FExperiment.GlobalPoints(gscG1, AID).ToString +
+  //  ' tokens for '+Name1+' and' + LineEnding +
+  //  FExperiment.GlobalPoints(gscG2, AID).ToString +
+  //  ' tokens for '+Name2+'.'+ LineEnding +
+  //  'So far the group has donated '+ LineEnding +
+  //  FExperiment.GlobalPoints(gscG1).ToString +
+  //  ' tokens for '+Name1+' and' + LineEnding +
+  //  FExperiment.GlobalPoints(gscG2).ToString +
+  //  ' tokens for '+Name2+'.';
   Pts := FExperiment.PlayerPointsSummationFromID(AID).ToString;
   Result :=
-    'The task is over, thank you for your participation!'+LineEnding+
-    'You earned ' + Pts + ' tokens for yourself,' + LineEnding +
+    'O estudo chegou ao fim, obrigado por sua participação!'+LineEnding+
+    'Você ganhou ' + Pts + ' fichas para você mesmo,' + LineEnding +
     FExperiment.GlobalPoints(gscG1, AID).ToString +
-    ' tokens for '+Name1+' and' + LineEnding +
+    ' itens escolares e' + LineEnding +
     FExperiment.GlobalPoints(gscG2, AID).ToString +
-    ' tokens for '+Name2+'.'+ LineEnding +
-    'So far the group has donated '+ LineEnding +
+    ' fichas coletivas.'+ LineEnding +
+    'Ao todo, o grupo conseguiu o total de'+ LineEnding +
     FExperiment.GlobalPoints(gscG1).ToString +
-    ' tokens for '+Name1+' and' + LineEnding +
+    ' itens escolares e' + LineEnding +
     FExperiment.GlobalPoints(gscG2).ToString +
-    ' tokens for '+Name2+'.';
+    ' fichas coletivas.';
 end;
 
 // TODO: REFACTOR SHOW CONSEQUENCE SHOW POPUP

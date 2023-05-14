@@ -127,13 +127,13 @@ function TGamePoint.PointMessage(APrepend,
 
   procedure ReadBuiltInGroupMessage;
   begin
-    Result := 'You';
+    Result := 'Juntos, vocês';
     case FResult of
-      -MaxInt..-2: Result += #32+'removed'+#32+Self.AsString+#32+'toys for donation to children at cancer hospitals';
-     -1 : Result += #32+'removed'+#32+Self.AsString+#32+'toy for donation to children at cancer hospitals';
-      0 : Result += #32+'do not added nor removed any toy for donation to children at cancer hospitals';
-      1 : Result += #32+'added'+#32+Self.AsString+#32+'toy for donation to children at cancer hospitals';
-      2..MaxInt: Result += #32+'added'+#32+Self.AsString+#32+'toys for donation to children at cancer hospitals';
+      -MaxInt..-2: Result += #32+'removeram'+#32+Self.AsString+#32+'itens para doação a crianças de escola pública';
+     -1 : Result += #32+'removeram'+#32+Self.AsString+#32+'item para doação a crianças de escola pública';
+      0 : Result += #32+'não adicionaram nem removeram itens para doação a crianças de escola pública';
+      1 : Result += #32+'adicionaram'+#32+Self.AsString+#32+'item para doação a crianças de escola pública';
+      2..MaxInt: Result += #32+'adicionaram'+#32+Self.AsString+#32+'itens para doação a crianças de escola pública';
     end;
     Result += '.';
   end;
@@ -142,11 +142,11 @@ function TGamePoint.PointMessage(APrepend,
   begin
     Result := '$NICNAME';
     case FResult of
-      -MaxInt..-2: Result += #32+'lost'+#32+Self.AsString+#32+'tokens';
-     -1 : Result += #32+'lost'+#32+Self.AsString+#32+'token';
-      0 : Result += #32+'do not lost nor earned any token';
-      1 : Result += #32+'earned'+#32+Self.AsString+#32+'token';
-      2..MaxInt: Result += #32+'earned'+#32+Self.AsString+#32+'tokens';
+      -MaxInt..-2: Result += #32+'perdeu'+#32+Self.AsString+#32+'fichas';
+     -1 : Result += #32+'perdeu'+#32+Self.AsString+#32+'ficha';
+      0 : Result += #32+'não perdeu nem ganhou fichas';
+      1 : Result += #32+'ganhou'+#32+Self.AsString+#32+'ficha';
+      2..MaxInt: Result += #32+'ganhou'+#32+Self.AsString+#32+'fichas';
     end;
     Result += '.';
   end;
