@@ -943,12 +943,19 @@ var
   end;
 
   procedure PresentPointsPlayer;
+  var
+    PointA : string;
   begin
     for LStyle in AConsequence.Style do
       case LStyle of
-          gscA :
-            FLabelPointACount.Caption :=
-              FExperiment.PlayerPointsFromID(ACallerID).A.ToString;
+          gscA : begin
+            PointA := FExperiment.PlayerPointsFromID(ACallerID).A.ToString;
+            if FExperiment.ABPoints then begin
+              FLabelPointACount.Caption := PointA;
+            end else begin
+              FLabelPointICount.Caption := PointA;
+            end;
+          end;
 
           gscB :
             FLabelPointBCount.Caption :=
