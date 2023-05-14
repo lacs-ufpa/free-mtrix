@@ -62,7 +62,7 @@ type
 
 resourcestring
   CAP_CONTINUE = 'Continue';
-  CAP_CLOSE    = 'Close;
+  CAP_CLOSE    = 'Close';
 
 implementation
 
