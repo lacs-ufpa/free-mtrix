@@ -22,7 +22,7 @@ type
 
   TGameEvents = class(TComponent)
   protected
-    procedure Close(Sender : TObject); virtual;
+    //procedure Close(Sender : TObject); virtual;
     procedure Consequence(Sender : TObject); virtual;
     procedure EndChoice(Sender : TObject); virtual;
     procedure EndCondition(Sender : TObject); virtual;
@@ -97,19 +97,19 @@ type
     property OnWaitForServer : TNotifyEvent read FOnWaitForServer write SetOnWaitForServer;
   public
     property OnPlayerExit : TPlayerEvent read FOnPlayerExit write SetOnPlayerExit;
-    property OnClose : TNotifyEvent read FOnClose write SetOnClose;
+    //property OnClose : TNotifyEvent read FOnClose write SetOnClose;
   end;
 
 implementation
 
 { TGameEvents }
 
-procedure TGameEvents.Close(Sender : TObject);
-begin
-  { do something }
-    if Assigned(OnClose) then
-      OnClose(Sender);
-end;
+//procedure TGameEvents.Close(Sender : TObject);
+//begin
+//  { do something }
+//  if Assigned(OnClose) then
+//    OnClose(Self);
+//end;
 
 procedure TGameEvents.Consequence(Sender : TObject);
 begin
@@ -358,7 +358,7 @@ begin
   OnStartTurn := nil;
   OnTargetInterlocking := nil;
   OnWaitForServer := nil;
-  OnClose := nil;
+  //OnClose := nil;
 end;
 
 end.
