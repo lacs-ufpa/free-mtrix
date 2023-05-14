@@ -61,8 +61,10 @@ type
   end;
 
 resourcestring
-  CAP_CONTINUE = 'Continue';
-  CAP_CLOSE    = 'Close';
+  //CAP_CONTINUE = 'Continue';
+  //CAP_CLOSE    = 'Close';
+  CAP_CONTINUE = 'Continuar';
+  CAP_CLOSE    = 'Fechar';
 
 implementation
 

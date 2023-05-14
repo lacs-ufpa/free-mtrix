@@ -24,13 +24,22 @@ uses
   procedure SaveExperimentToFile(AExperiment: TExperiment; AFilename : string);
   function FindMediaFiles : TStringArray;
   function SaveToCache(AFilename : string; AContent : string) : string;
+
 resourcestring
-  ERROR_SECTION_NOT_FOUND = 'Section not found: ';
-  ERROR_FILE_NOT_FOUND = 'File not found:';
-  ERROR_NO_CONTINGENCIES = 'Contingencies not found: ';
-  ERROR_NO_CONDITIONS = 'Conditions not found.';
-  WARN_CONDITION_WITH_NO_END = 'Condition end criterium not found: ';
-  WARN_END = ' will be used.';
+  //ERROR_SECTION_NOT_FOUND = 'Section not found: ';
+  //ERROR_FILE_NOT_FOUND = 'File not found:';
+  //ERROR_NO_CONTINGENCIES = 'Contingencies not found: ';
+  //ERROR_NO_CONDITIONS = 'Conditions not found.';
+  //ERROR_FILENAME_NOT_FOUND = 'filename was not found in default folders.';
+  //WARN_CONDITION_WITH_NO_END = 'Condition end criterium not found: ';
+  //WARN_END = ' will be used.';
+  ERROR_SECTION_NOT_FOUND = 'Seção não encontrada: ';
+  ERROR_FILE_NOT_FOUND = 'Arquivo não encontrado:';
+  ERROR_NO_CONTINGENCIES = 'Contingências não encontradas: ';
+  ERROR_NO_CONDITIONS = 'Condições não encontradas.';
+  ERROR_FILENAME_NOT_FOUND = 'arquivo não encontrado na pasta padrão.';
+  WARN_CONDITION_WITH_NO_END = 'Critério de finalização da condição não encontrado: ';
+  WARN_END = ' será usado.';
 
 implementation
 
@@ -348,7 +357,7 @@ var
 
     LFilename := SearchFilenameInDefaultFolders(LS);
     if LFilename = '' then begin
-      Exception.Create(LS + 'filename was not found in default folders.');
+      Exception.Create(LS + ERROR_FILENAME_NOT_FOUND);
       Exit;
     end;
     LStringList := TStringList.Create;

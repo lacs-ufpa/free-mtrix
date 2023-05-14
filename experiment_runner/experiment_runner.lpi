@@ -18,6 +18,7 @@
     </General>
     <i18n>
       <EnableI18N LFM="False"/>
+      <OutDir Value="translations"/>
     </i18n>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
@@ -330,10 +331,6 @@
     <Other>
       <CustomOptions Value="-dUseCThreads
 -dZMQ_STATIC_LINK"/>
-      <OtherDefines Count="2">
-        <Define0 Value="UseCThreads"/>
-        <Define1 Value="ZMQ_STATIC_LINK"/>
-      </OtherDefines>
     </Other>
   </CompilerOptions>
   <Debugging>

@@ -236,7 +236,8 @@ type
   end;
 
 resourcestring
-  WARN_CANNOT_SAVE = 'The experiment could not be saved.';
+  //WARN_CANNOT_SAVE = 'The experiment could not be saved.';
+  WARN_CANNOT_SAVE = 'O experimento não pode ser salvo.';
 
 implementation
 
@@ -1106,9 +1107,7 @@ begin
       begin
         if LCyclesInCurrentCondition < CurrentCondition.EndCriterium.AbsoluteCyclesMin then
           Exit;
-
-        if LCyclesInCurrentCondition = CurrentCondition.EndCriterium.AbsoluteCyclesMin then
-          Result := True;
+        Result := True;
       end;
 
     gecInterlockingPorcentage:

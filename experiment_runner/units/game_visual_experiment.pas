@@ -58,18 +58,30 @@ type
   end;
 
 resourcestring
-  CAP_EXPERIMENT = 'Experiment';
-  CAP_INTERLOCK = 'Interlockings';
-  CAP_TARGET_INTERLOCK = 'Target interlock';
-  CAP_CONDITION = 'Condition';
-  CAP_TURN = 'Turn';
-  CAP_GENERATION = 'Generation';
-  CAP_COND_CYCLE = 'Cycle (Condition)';
-  CAP_CYCLES = 'Cycle (Global)';
+  //CAP_EXPERIMENT = 'Experiment';
+  //CAP_INTERLOCK = 'Interlockings';
+  //CAP_TARGET_INTERLOCK = 'Target interlock';
+  //CAP_CONDITION = 'Condition';
+  //CAP_TURN = 'Turn';
+  //CAP_GENERATION = 'Generation';
+  //CAP_COND_CYCLE = 'Cycle (Condition)';
+  //CAP_CYCLES = 'Cycle (Global)';
+  //CAP_NA = 'NA';
+  //CAP_GROUP_POINTS_GLOBAL = 'Group Points (Global)';
+  //CAP_GROUP_POINTS_CONDITION =  'Group Points (Condition)';
+  //HINT_GENERATION_A = 'Inside parentheses, it is the number of cycles of the current generation.';
+  CAP_EXPERIMENT = 'Experimento';
+  CAP_INTERLOCK = 'Entrelaçamentos';
+  CAP_TARGET_INTERLOCK = 'Entrelaçamento alvo';
+  CAP_CONDITION = 'Condição';
+  CAP_TURN = 'Turno';
+  CAP_GENERATION = 'Generação';
+  CAP_COND_CYCLE = 'Ciclo (Condição)';
+  CAP_CYCLES = 'Ciclo (Global)';
   CAP_NA = 'NA';
-  CAP_GROUP_POINTS_GLOBAL = 'Group Points (Global)';
-  CAP_GROUP_POINTS_CONDITION =  'Group Points (Condition)';
-  HINT_GENERATION_A = 'Inside parentheses, it is the number of cycles of the current generation.';
+  CAP_GROUP_POINTS_GLOBAL = 'Pontos do grupo (Global)';
+  CAP_GROUP_POINTS_CONDITION =  'Pontos do grupo (Condição)';
+  HINT_GENERATION_A = 'Número de ciclos na geração atual entre parênteses.';
 
 implementation
 

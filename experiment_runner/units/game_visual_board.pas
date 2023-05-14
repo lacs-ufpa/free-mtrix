@@ -181,37 +181,69 @@ type
   end;
 
 resourcestring
+  //CAP_ID = 'ID';
+  //CAP_NAME = 'Name';
+  //CAP_RED_TOKENS = 'Red Tokens';
+  //CAP_BLUE_TOKENS = 'Blue Tokens';
+  //CAP_TOKENS_SUM = 'Red+Blue';
+  //CAP_TOKENS_MONEY = 'Money';
+  //CAP_G1 = 'Cultural Tokens (Sustainable)';
+  //CAP_G2 = 'Cultural Tokens (Non-sustainable)';
+  //CAP_CONDITION_CYCLE = 'Condition Cycle';
+  //CAP_CYCLES_GENERATION = 'Cycles (Generation)';
+  //CAP_PARTICIPANT_ARRIVED_CAPTION = 'A new participant arrived.';
+  //CAP_PARTICIPANT_ARRIVED_PROMPT = 'What is his/her nickname?';
+  //CAP_NEW_GENERATION_CAPTION = 'A new generation has started.';
+  //CAP_NEW_GENERATION_PROMPT =
+  //  'A new participant replaced the oldest one. ' +
+  //  'What is the nickname of the new participant?';
+  //CAP_NEW_PARTICIPANT_LOGGED_IN = 'New participant logged in.';
+  //CAP_WELCOME = 'Welcome';
+  //CAP_EXPERIMENT_START_PLAYER = 'It is started! Wait for your turn.';
+  //CAP_EXPERIMENT_START_ADMIN = 'It is started!';
+  //CAP_CHOICE_START = 'It is your turn! Click at a row and confirm your choice.';
+  //CAP_PLAYER_EXITED_PLAYER = 'exited. Please, wait while your group member is replaced.';
+  //CAP_PLAYER_EXITED_ADMIN = 'exited. Waiting...';
+  //CAP_PLAYER_EXITED_END = ' exited the game.';
+  //CAP_EXPERIMENT_END = 'The experiment ended.';
+  //CAP_WAITING_FOR_SERVER = 'Waiting for server...';
+  //CAP_CONFIRM = 'Confirm';
+  //CAP_OK = 'OK';
+  //CAP_YOU = 'You';
+  //CAP_YES = 'Yes';
+  //CAP_NO  = 'No';
   CAP_ID = 'ID';
-  CAP_NAME = 'Name';
-  CAP_RED_TOKENS = 'Red Tokens';
-  CAP_BLUE_TOKENS = 'Blue Tokens';
-  CAP_TOKENS_SUM = 'Red+Blue';
-  CAP_TOKENS_MONEY = 'Money';
-  CAP_G1 = 'Cultural Tokens (Sustainable)';
-  CAP_G2 = 'Cultural Tokens (Non-sustainable)';
-  CAP_CONDITION_CYCLE = 'Condition Cycle';
-  CAP_CYCLES_GENERATION = 'Cycles (Generation)';
-  CAP_PARTICIPANT_ARRIVED_CAPTION = 'A new participant arrived.';
-  CAP_PARTICIPANT_ARRIVED_PROMPT = 'What is his/her nickname?';
-  CAP_NEW_GENERATION_CAPTION = 'A new generation has started.';
+  CAP_NAME = 'Nome';
+  CAP_RED_TOKENS = 'Fichas Vermelhas';
+  CAP_BLUE_TOKENS = 'Fichas Azuis';
+  CAP_TOKENS_SUM = 'Vermelhas+Azuis';
+  CAP_TOKENS_MONEY = 'Dinheiro';
+  CAP_G1 = 'Fichas Culturais (G1)';
+  CAP_G2 = 'Fichas Culturais (G2)';
+  CAP_CONDITION_CYCLE = 'Ciclo da Condição';
+  CAP_CYCLES_GENERATION = 'Ciclos (Geração)';
+  CAP_PARTICIPANT_ARRIVED_CAPTION = 'Um novo participante chegou.';
+  CAP_PARTICIPANT_ARRIVED_PROMPT = 'Qual o nome dele?';
+  CAP_NEW_GENERATION_CAPTION = 'Uma nova geração foi iniciada.';
   CAP_NEW_GENERATION_PROMPT =
-    'A new participant replaced the oldest one. ' +
-    'What is the nickname of the new participant?';
-  CAP_NEW_PARTICIPANT_LOGGED_IN = 'New participant logged in.';
-  CAP_WELCOME = 'Welcome';
-  CAP_EXPERIMENT_START_PLAYER = 'It is started! Wait for your turn.';
-  CAP_EXPERIMENT_START_ADMIN = 'It is started!';
-  CAP_CHOICE_START = 'It is your turn! Click at a row and confirm your choice.';
-  CAP_PLAYER_EXITED_PLAYER = 'exited. Please, wait while your group member is replaced.';
-  CAP_PLAYER_EXITED_ADMIN = 'exited. Waiting...';
-  CAP_PLAYER_EXITED_END = ' exited the game.';
-  CAP_EXPERIMENT_END = 'The experiment ended.';
-  CAP_WAITING_FOR_SERVER = 'Waiting for server...';
-  CAP_CONFIRM = 'Confirm';
+    'Um novo participante substituiu aquele mais antigo. ' +
+    'Qual o nome do novo participante?';
+  CAP_NEW_PARTICIPANT_LOGGED_IN = 'Um novo participante entrou.';
+  CAP_WELCOME = 'Seja bem vind@';
+  CAP_EXPERIMENT_START_PLAYER = 'Começou! Aguarde por seu turno.';
+  CAP_EXPERIMENT_START_ADMIN = 'Começou!';
+  CAP_CHOICE_START = 'É seu turno! Clique em uma linha e confirme sua escolha.';
+  CAP_PLAYER_EXITED_PLAYER = 'saiu. Por favor, aguarde enquanto o membro do seu grupo é substituido.';
+  CAP_PLAYER_EXITED_ADMIN = 'saiu. Aguardando...';
+  CAP_PLAYER_EXITED_END = 'saiu do jogo.';
+  CAP_EXPERIMENT_END = 'O experimentou finalizou.';
+  CAP_WAITING_FOR_SERVER = 'Aguardando o servidor...';
+  CAP_CONFIRM = 'Confirmar';
   CAP_OK = 'OK';
-  CAP_YOU = 'You';
-  CAP_YES = 'Yes';
-  CAP_NO  = 'No';
+  CAP_YOU = 'Você';
+  CAP_YES = 'Sim';
+  CAP_NO  = 'Não';
+
 
 implementation
 
@@ -774,7 +806,7 @@ begin
     end;
 
     gmcPlayerExitedEnd : begin
-      LMessage := FExperiment.PlayerFromID[AID].Nicname +
+      LMessage := FExperiment.PlayerFromID[AID].Nicname + #32 +
         CAP_PLAYER_EXITED_END;
     end;
 

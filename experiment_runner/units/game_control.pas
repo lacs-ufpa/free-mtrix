@@ -63,8 +63,6 @@ type
     property Experiment : TExperiment read FExperiment write FExperiment;
   end;
 
-// TODO: PUT NORMAL STRING MESSAGES IN RESOURCESTRING INSTEAD
-
 const
   K_ARRIVED    = '.Arrived';
   K_CHAT_M     = '.ChatM';

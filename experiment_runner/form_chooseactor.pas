@@ -51,6 +51,12 @@ type
 var
   FormChooseActor: TFormChooseActor;
 
+resourcestring
+  //CAP_ENTER = 'Enter';
+  //CAP_EXIT  = 'Exit';
+  CAP_ENTER = 'Entrar';
+  CAP_EXIT  = 'Sair';
+
 implementation
 
 {$R *.lfm}
@@ -136,8 +142,8 @@ begin
     Font.Size := 30;
     OnClick := @ShowResumeButton;
     case FStyle of
-      '.Left': btnPlayerResume.Caption := 'Enter';
-      '.EndX': btnPlayerResume.Caption := 'Exit';
+      '.Left': btnPlayerResume.Caption := CAP_ENTER;
+      '.EndX': btnPlayerResume.Caption := CAP_EXIT;
     end;
   end;
 end;

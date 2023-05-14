@@ -39,12 +39,19 @@ type
   end;
 
 resourcestring
-  CAP_ROW = 'Row:';
-  CAP_COLOR = 'Color:';
-  CAP_POINTS_RED  = 'RTokens:';
-  CAP_POINTS_BLUE = 'BTokens:';
+  //CAP_ROW = 'Row:';
+  //CAP_COLOR = 'Color:';
+  //CAP_POINTS_RED  = 'RTokens:';
+  //CAP_POINTS_BLUE = 'BTokens:';
+  //CAP_NA = 'NA';
+  //CAP_WAINTING_FOR_PLAYER = 'Waiting for player...';
+  CAP_ROW = 'Linha:';
+  CAP_COLOR = 'Cor:';
+  CAP_POINTS_RED  = 'Fichas(1):';
+  CAP_POINTS_BLUE = 'Fichas(2):';
   CAP_NA = 'NA';
-  CAP_WAINTING_FOR_PLAYER = 'Waiting for player...';
+  CAP_WAINTING_FOR_PLAYER = 'Aguardando participantes...';
+
 
 implementation
 

@@ -86,10 +86,14 @@ var
   FormMatrixGame: TFormMatrixGame;
 
 resourcestring
-  CAPTION_RESUME = 'Resume';
-  CAPTION_START = 'Start';
-  CAPTION_RUNNING = 'Running';
-
+  //CAPTION_RESUME = 'Resume';
+  //CAPTION_START = 'Start';
+  //CAPTION_RUNNING = 'Running';
+  //CAP_NOT_IMPLEMENTED_YET = 'Not implemented yet.';
+  CAPTION_RESUME = 'Resumir';
+  CAPTION_START = 'Iniciar';
+  CAPTION_RUNNING = 'Rodando';
+  CAP_NOT_IMPLEMENTED_YET = 'Ainda não implementado.';
 implementation
 
 uses
@@ -290,7 +294,7 @@ end;
 
 procedure TFormMatrixGame.ButtonExpPauseClick(Sender: TObject);
 begin
-  ShowMessage('Not implemented yet.');
+  ShowMessage(CAP_NOT_IMPLEMENTED_YET);
 end;
 
 procedure TFormMatrixGame.ButtonExpStartClick(Sender: TObject);

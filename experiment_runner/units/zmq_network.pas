@@ -101,7 +101,8 @@ type
   end;
 
 resourcestring
-  ERROR_RECV_TIMEOUT = 'Server time-out. The program is being terminated.';
+  //ERROR_RECV_TIMEOUT = 'Server time-out. The program is being terminated.';
+  ERROR_RECV_TIMEOUT = 'Time-out do servidor. O programa está sendo encerrado.';
 
 implementation
 
