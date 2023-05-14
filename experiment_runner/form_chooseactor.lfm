@@ -5,7 +5,7 @@ object FormChooseActor: TFormChooseActor
   Width = 320
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
-  Caption = 'Actor'
+  Caption = 'Ator'
   ClientHeight = 240
   ClientWidth = 320
   FormStyle = fsStayOnTop
@@ -26,7 +26,7 @@ object FormChooseActor: TFormChooseActor
     Align = alCustom
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Around = 50
-    Caption = 'Sign-in'
+    Caption = 'Entrar'
     Font.Height = -53
     Font.Name = 'Noto Mono'
     OnClick = btnPlayerResumeClick
@@ -42,7 +42,7 @@ object FormChooseActor: TFormChooseActor
     Align = alTop
     AutoSize = True
     BorderSpacing.Top = 50
-    Caption = 'Researcher'
+    Caption = 'Pesquisador'
     Font.Height = -27
     Font.Name = 'Noto Mono'
     OnClick = btnAdminClick
@@ -56,7 +56,7 @@ object FormChooseActor: TFormChooseActor
     Width = 320
     Align = alTop
     BorderSpacing.Top = 50
-    Caption = 'Participant'
+    Caption = 'Participante'
     Font.Height = -27
     Font.Name = 'Noto Mono'
     OnClick = btnPlayerClick

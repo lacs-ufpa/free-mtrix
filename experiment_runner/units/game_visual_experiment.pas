@@ -75,7 +75,7 @@ resourcestring
   CAP_TARGET_INTERLOCK = 'Entrelaçamento alvo';
   CAP_CONDITION = 'Condição';
   CAP_TURN = 'Turno';
-  CAP_GENERATION = 'Generação';
+  CAP_GENERATION = 'Geração';
   CAP_COND_CYCLE = 'Ciclo (Condição)';
   CAP_CYCLES = 'Ciclo (Global)';
   CAP_NA = 'NA';

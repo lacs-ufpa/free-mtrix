@@ -721,11 +721,10 @@ end;
 
 procedure TGameBoard.ShowSystemPopUp(AGameContext : TGameContext; AID : string);
 var
-  LCaption : string;
   LMessage : string;
   LInterval : integer;
 {$IFDEF TEST_MODE}
-  { do nothing }
+  LCaption : string;
 {$ELSE}
   PopUpPos : TPoint;
   // temporary hack
@@ -739,12 +738,16 @@ begin
     gmcNewPlayerLogin, gmcNewPlayerArrived: begin
       case AGameContext of
         gmcNewPlayerLogin : begin
+          {$IFDEF TEST_MODE}
           LCaption := CAP_PARTICIPANT_ARRIVED_CAPTION;
+          {$ENDIF}
           LMessage  := CAP_PARTICIPANT_ARRIVED_PROMPT;
         end;
 
         gmcNewPlayerArrived : begin
+          {$IFDEF TEST_MODE}
           LCaption := CAP_NEW_GENERATION_CAPTION;
+          {$ENDIF}
           LMessage  := CAP_NEW_GENERATION_PROMPT;
         end;
         else
@@ -1074,26 +1077,44 @@ begin
       FExperiment.GlobalPoints(gscG2).ToString;
   end;
 
+  VisibleControl(FImagePointA, False);
+  VisibleControl(FLabelPointAName, False);
+  VisibleControl(FLabelPointACount, False);
+
+  VisibleControl(FImagePointB, False);
+  VisibleControl(FLabelPointBName, False);
+  VisibleControl(FLabelPointBCount, False);
   FCause := FExperiment.CurrentCondition.TargetMetacontingency;
   if FActor = gaPlayer then begin
     case FCause of
-      'NON-SUSTAINABLE' : begin
+      'A' : begin
+        VisibleControl(FImageGroup1, False);
+        VisibleControl(FLabelGroup1Name, False);
+        VisibleControl(FLabelGroup1Count, False);
+
+        VisibleControl(FImageGroup2, True);
+        VisibleControl(FLabelGroup2Name, True);
+        VisibleControl(FLabelGroup2Count, True);
+      end;
+
+      'B' : begin
+        VisibleControl(FImageGroup2, False);
+        VisibleControl(FLabelGroup2Name, False);
+        VisibleControl(FLabelGroup2Count, False);
+
+        VisibleControl(FImageGroup1, True);
+        VisibleControl(FLabelGroup1Name, True);
+        VisibleControl(FLabelGroup1Count, True);
+      end;
+
+      'C' : begin
         VisibleControl(FImageGroup1, True);
         VisibleControl(FLabelGroup1Name, True);
         VisibleControl(FLabelGroup1Count, True);
 
-        VisibleControl(FImageGroup2, False);
-        VisibleControl(FLabelGroup2Name, False);
-        VisibleControl(FLabelGroup2Count, False);
-      end;
-
-      'SUSTAINABLE' : begin
         VisibleControl(FImageGroup2, True);
         VisibleControl(FLabelGroup2Name, True);
         VisibleControl(FLabelGroup2Count, True);
-        VisibleControl(FImageGroup1, False);
-        VisibleControl(FLabelGroup1Name, False);
-        VisibleControl(FLabelGroup1Count, False);
       end;
     end;
   end;
@@ -1258,13 +1279,22 @@ procedure TGameBoard.VisibleEarningsBeforeGenerationChange(AValue : Boolean);
 begin
   if AValue then begin
     case FCause of
-      'NON-SUSTAINABLE' : begin
+      'C' : begin
+        VisibleControl(FImageGroup1, AValue);
+        VisibleControl(FLabelGroup1Name, AValue);
+        VisibleControl(FLabelGroup1Count, AValue);
+        VisibleControl(FImageGroup2, AValue);
+        VisibleControl(FLabelGroup2Name, AValue);
+        VisibleControl(FLabelGroup2Count, AValue);
+      end;
+
+      'B' : begin
         VisibleControl(FImageGroup1, AValue);
         VisibleControl(FLabelGroup1Name, AValue);
         VisibleControl(FLabelGroup1Count, AValue);
       end;
 
-      'SUSTAINABLE' : begin
+      'A' : begin
         VisibleControl(FImageGroup2, AValue);
         VisibleControl(FLabelGroup2Name, AValue);
         VisibleControl(FLabelGroup2Count, AValue);

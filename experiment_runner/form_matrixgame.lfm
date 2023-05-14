@@ -987,6 +987,7 @@ object FormMatrixGame: TFormMatrixGame
         F9F3EEF9F3EEF9F3EEF9F3EEF8F3EEFAF0EC
       }
       Stretch = True
+      Visible = False
     end
     object LabelIndA: TLabel
       Left = 130
@@ -1005,6 +1006,7 @@ object FormMatrixGame: TFormMatrixGame
       ParentColor = False
       ParentFont = False
       Transparent = False
+      Visible = False
     end
     object LabelIndACount: TLabel
       Left = 350
@@ -1021,6 +1023,7 @@ object FormMatrixGame: TFormMatrixGame
       ParentColor = False
       ParentFont = False
       Transparent = False
+      Visible = False
     end
     object ImageIndB: TImage
       Left = 10
@@ -1960,6 +1963,7 @@ object FormMatrixGame: TFormMatrixGame
         0000
       }
       Stretch = True
+      Visible = False
     end
     object LabelIndB: TLabel
       Left = 130
@@ -1978,6 +1982,7 @@ object FormMatrixGame: TFormMatrixGame
       ParentColor = False
       ParentFont = False
       Transparent = False
+      Visible = False
     end
     object LabelIndBCount: TLabel
       Left = 350
@@ -1994,6 +1999,7 @@ object FormMatrixGame: TFormMatrixGame
       ParentColor = False
       ParentFont = False
       Transparent = False
+      Visible = False
     end
     object ImageInd: TImage
       Left = 10
@@ -2936,7 +2942,6 @@ object FormMatrixGame: TFormMatrixGame
         F9F4F5F8F7F7
       }
       Stretch = True
-      Visible = False
     end
     object LabelInd: TLabel
       Left = 130
@@ -2955,7 +2960,6 @@ object FormMatrixGame: TFormMatrixGame
       ParentColor = False
       ParentFont = False
       Transparent = False
-      Visible = False
     end
     object LabelIndCount: TLabel
       Left = 350
@@ -2972,7 +2976,6 @@ object FormMatrixGame: TFormMatrixGame
       ParentColor = False
       ParentFont = False
       Transparent = False
-      Visible = False
     end
     object ImageGroup1: TImage
       Left = 10
