@@ -56,9 +56,13 @@ type
     GBPoints1: TGroupBox;
     GBPoints2: TGroupBox;
     GBPoints3: TGroupBox;
+    ImagePlayer1A1: TImage;
     ImagePlayer1Group2 : TImage;
+    ImagePlayer2A1: TImage;
     ImagePlayer2Group2 : TImage;
+    ImagePlayer3A1: TImage;
     ImagePlayer3Group2 : TImage;
+    ImageServerA1: TImage;
     ImageServerGroup1: TImage;
     ImagePlayer1Group1: TImage;
     ImagePlayer2Group1: TImage;
@@ -77,14 +81,23 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
+    LabelPlayer1ACount1: TLabel;
+    LabelPlayer1AName1: TLabel;
     LabelPlayer1Group2Count : TLabel;
     LabelPlayer1Group2Name : TLabel;
+    LabelPlayer2ACount1: TLabel;
+    LabelPlayer2AName1: TLabel;
     LabelPlayer2Group2Count : TLabel;
     LabelPlayer2Group2Name : TLabel;
+    LabelPlayer3ACount1: TLabel;
+    LabelPlayer3AName: TLabel;
+    LabelPlayer3AName1: TLabel;
     LabelPlayer3Group2Count : TLabel;
     LabelPlayer3Group2Name : TLabel;
     LabelRandomBias: TLabel;
     LabelExperimentNotFound: TLabel;
+    LabelServerACount1: TLabel;
+    LabelServerAName1: TLabel;
     LabelServerGroup2Count : TLabel;
     LabelServerGroup1Name: TLabel;
     LabelPlayer1Group1Name: TLabel;
@@ -98,7 +111,6 @@ type
     LabelServerAName: TLabel;
     LabelPlayer1AName: TLabel;
     LabelPlayer2AName: TLabel;
-    LabelPlayer3AName: TLabel;
     LabelServerACount: TLabel;
     LabelPlayer1ACount: TLabel;
     LabelPlayer2ACount: TLabel;
@@ -150,6 +162,7 @@ type
     procedure EndChoice(Sender : TObject);
     procedure StartChoice(Sender : TObject);
     procedure WaitForServer(Sender : TObject);
+    procedure Close(Sender : TObject);
   public
     { public declarations }
   end;
@@ -174,6 +187,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
   FStart := GetTickCount64;
   FServerGameControl := TGameControl.Create(Self,gaAdmin);
+  //FServerGameControl.OnClose := @Self.Close;
   FServerGameControl.Experiment.Report.OnWriteReport:=@WriteReport;
   LabelExperimentNotFound.Visible := not FServerGameControl.LoadFromFile('Experiment1.ini');
 
@@ -190,9 +204,9 @@ begin
       ChatPanel := nil;
       Timer := nil;
       TimerEvent := nil;
-      ImagePointI := nil;
-      LabelPointIName := nil;
-      LabelPointICount := nil;
+      ImagePointI := ImageServerA1;
+      LabelPointIName := LabelServerAName1;
+      LabelPointICount := LabelServerACount1;
       ListBoxOldPlayers := ListBoxOldParticipants;
 
       ImagePointA := ImageServerA;
@@ -249,9 +263,9 @@ begin
             ChatPanel := nil;
             Timer := nil;
             TimerEvent := nil;
-            ImagePointI := nil;
-            LabelPointIName := nil;
-            LabelPointICount := nil;
+            ImagePointI := ImagePlayer1A1;
+            LabelPointIName := LabelPlayer1AName1;
+            LabelPointICount := LabelPlayer1ACount1;
             ListBoxOldPlayers := nil;
 
             ImagePointA := ImagePlayer1A;
@@ -291,9 +305,9 @@ begin
             ChatPanel := nil;
             Timer := nil;
             TimerEvent := nil;
-            ImagePointI := nil;
-            LabelPointIName := nil;
-            LabelPointICount := nil;
+            ImagePointI := ImagePlayer2A1;
+            LabelPointIName := LabelPlayer2AName1;
+            LabelPointICount := LabelPlayer2ACount1;
             ListBoxOldPlayers := nil;
 
             ImagePointA := ImagePlayer2A;
@@ -333,9 +347,9 @@ begin
             ChatPanel := nil;
             Timer := nil;
             TimerEvent := nil;
-            ImagePointI := nil;
-            LabelPointIName := nil;
-            LabelPointICount := nil;
+            ImagePointI := ImagePlayer3A1;
+            LabelPointIName := LabelPlayer3AName1;
+            LabelPointICount := LabelPlayer3ACount1;
             ListBoxOldPlayers := nil;
 
             ImagePointA := ImagePlayer3A;
@@ -568,6 +582,11 @@ begin
     chkP3.Checked:=False;
   end;
 
+end;
+
+procedure TForm1.Close(Sender: TObject);
+begin
+  ShowMessage('End.');
 end;
 
 
