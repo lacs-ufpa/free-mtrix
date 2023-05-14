@@ -228,6 +228,7 @@ uses
   , game_actors_helpers
   , string_methods
   , strutils
+  , Helpers.Fullscreen
   {$IFDEF TEST_MODE}
     { do nothing }
   {$ELSE}
@@ -1283,15 +1284,7 @@ procedure TGameBoard.FullScreen;
 begin
   if Assigned(BackgroundForm) then
     with BackgroundForm do begin
-      Position:=poDesigned;
-      FormStyle:=fsNormal;
-      {$IFDEF MSWINDOWS}
-      BorderStyle:=bsNone;
-      BoundsRect := Monitor.BoundsRect;
-      {$ENDIF}
-      {$IFDEF LINUX}
-      WindowState:=wsFullScreen;
-      {$ENDIF}
+      SetFullscreen(BackgroundForm);
     end;
 end;
 

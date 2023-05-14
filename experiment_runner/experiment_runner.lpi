@@ -170,7 +170,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="29">
+    <Units Count="30">
       <Unit0>
         <Filename Value="experiment_runner.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -296,6 +296,11 @@
         <Filename Value="form_slide.lfm"/>
         <IsPartOfProject Value="True"/>
       </Unit28>
+      <Unit29>
+        <Filename Value="units/helpers.fullscreen.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Helpers.Fullscreen"/>
+      </Unit29>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -313,6 +318,9 @@
       <TargetOS Value="linux"/>
     </CodeGeneration>
     <Linking>
+      <Debugging>
+        <DebugInfoType Value="dsDwarf3"/>
+      </Debugging>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>

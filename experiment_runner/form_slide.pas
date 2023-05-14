@@ -34,6 +34,7 @@ implementation
 
 {$R *.lfm}
 
+uses Helpers.Fullscreen;
 { TFormSlide }
 
 procedure TFormSlide.FormCloseQuery(Sender : TObject; var CanClose : Boolean);
@@ -69,15 +70,7 @@ end;
 
 procedure TFormSlide.FullScreen;
 begin
-  with Self do begin
-    BorderStyle:=bsNone;
-    {$IFDEF WINDOWS}
-    BoundsRect := Monitor.BoundsRect;
-    {$ENDIF}
-    Position:=poDesigned;
-    FormStyle:=fsNormal;
-    WindowState:=wsFullScreen;
-  end;
+  SetFullscreen(Self);
 end;
 
 function TFormSlide.ShowModal : integer;
