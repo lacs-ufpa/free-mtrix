@@ -912,15 +912,13 @@ begin
   Result :=
     'O estudo chegou ao fim, obrigado por sua participação!'+LineEnding+
     'Você ganhou ' + Pts + ' fichas para você mesmo,' + LineEnding +
-    FExperiment.GlobalPoints(gscG1, AID).ToString +
-    ' itens escolares e' + LineEnding +
-    FExperiment.GlobalPoints(gscG2, AID).ToString +
-    ' fichas coletivas.'+ LineEnding +
+    (FExperiment.GlobalPoints(gscG1, AID) +
+    FExperiment.GlobalPoints(gscG2, AID)).ToString +
+    ' itens escolares para doação.'+ LineEnding +
     'Ao todo, o grupo conseguiu o total de'+ LineEnding +
-    FExperiment.GlobalPoints(gscG1).ToString +
-    ' itens escolares e' + LineEnding +
-    FExperiment.GlobalPoints(gscG2).ToString +
-    ' fichas coletivas.';
+    (FExperiment.GlobalPoints(gscG1) +
+    FExperiment.GlobalPoints(gscG2)).ToString +
+    ' itens escolares para doação.';
 end;
 
 // TODO: REFACTOR SHOW CONSEQUENCE SHOW POPUP
@@ -1097,13 +1095,16 @@ begin
       FExperiment.GlobalPoints(gscG2).ToString;
   end;
 
-  VisibleControl(FImagePointA, False);
-  VisibleControl(FLabelPointAName, False);
-  VisibleControl(FLabelPointACount, False);
+  if FExperiment.ABPoints then begin
+    VisibleControl(FImagePointA, True);
+    VisibleControl(FLabelPointAName, True);
+    VisibleControl(FLabelPointACount, True);
 
-  VisibleControl(FImagePointB, False);
-  VisibleControl(FLabelPointBName, False);
-  VisibleControl(FLabelPointBCount, False);
+    VisibleControl(FImagePointB, True);
+    VisibleControl(FLabelPointBName, True);
+    VisibleControl(FLabelPointBCount, True);
+  end;
+
   FCause := FExperiment.CurrentCondition.TargetMetacontingency;
   if FActor = gaPlayer then begin
     case FCause of
