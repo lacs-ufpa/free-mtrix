@@ -177,7 +177,7 @@ begin
   FGameBoard.BeforeStartExperimentSetup;
 
   FGameControl.GameBoard := FGameBoard;
-  FGameControl.OnClose := @DoClose;
+  //FGameControl.OnClose := @DoClose;
   FGameControl.Login;
 end;
 

@@ -359,7 +359,7 @@ begin
     OnStartGeneration := @Self.StartGeneration;
     OnStartTurn := @Self.StartTurn;
     OnTargetInterlocking := @Self.TargetInterlocking;
-    OnClose := @Self.Close;
+    //OnClose := @Self.Close;
     //OnCleanEvent := @CleanEvent;
     //OnPlayerExit := @PlayerExit;
   end;
@@ -734,9 +734,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
           if FExperiment.HasGenerationSlidesToShow then begin
             if GameBoard.SayGoodByeAndShowSlides(AID,
               FExperiment.GenerationSlidesLogOut) then begin
-              if Assigned(OnClose) then begin
-                OnClose(Self);
-              end;
+              //if Assigned(OnClose) then begin
+              //  OnClose(Self);
+              //end;
             end;
           end else begin
             if GameBoard.PlayerSaidGoodBye(AID, K_END) then begin

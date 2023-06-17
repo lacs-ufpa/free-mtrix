@@ -97,7 +97,7 @@ type
     property OnWaitForServer : TNotifyEvent read FOnWaitForServer write SetOnWaitForServer;
   public
     property OnPlayerExit : TPlayerEvent read FOnPlayerExit write SetOnPlayerExit;
-    property OnClose : TNotifyEvent read FOnClose write SetOnClose;
+    //property OnClose : TNotifyEvent read FOnClose write SetOnClose;
   end;
 
 implementation
@@ -107,8 +107,8 @@ implementation
 procedure TGameEvents.Close(Sender : TObject);
 begin
   { do something }
-    if Assigned(OnClose) then
-      OnClose(Sender);
+  //if Assigned(OnClose) then
+  //  OnClose(Sender);
 end;
 
 procedure TGameEvents.Consequence(Sender : TObject);
@@ -358,7 +358,7 @@ begin
   OnStartTurn := nil;
   OnTargetInterlocking := nil;
   OnWaitForServer := nil;
-  OnClose := nil;
+  //OnClose := nil;
 end;
 
 end.
