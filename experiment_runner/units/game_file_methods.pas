@@ -386,6 +386,8 @@ var
               Points.OnStart.B := ReadInteger(LS, KEY_POINTS_ONSTART_B,0);
               Points.OnStart.G1 := ReadInteger(LS, KEY_POINTS_ONSTART_G1,0);
               Points.OnStart.G2 := ReadInteger(LS, KEY_POINTS_ONSTART_G2,0);
+              Points.OnNewPlayer.A := ReadInteger(LS, KEY_POINTS_NEWPLAYER_A,0);
+              Points.OnNewPlayer.B := ReadInteger(LS, KEY_POINTS_NEWPLAYER_B,0);
               Turn.Count := ReadInteger(LS, KEY_TURN_COUNT,0);
               Turn.Value := ReadInteger(LS, KEY_TURN_VALUE,2);
               Turn.Random := ReadBool(LS, KEY_TURN_RANDOM,False);

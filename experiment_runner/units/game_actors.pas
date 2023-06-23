@@ -351,6 +351,7 @@ type
     Points : record
       Count : TPoints; // sum of points produced during the condition
       OnStart : TPoints; // points to add at the beginning of the condition
+      OnNewPlayer : TPoints;
     end;
 
     Turn : record // for changing cycles

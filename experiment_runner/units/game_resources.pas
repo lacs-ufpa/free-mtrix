@@ -61,6 +61,8 @@ resourcestring
   KEY_POINTS_ONSTART_I = 'Points.OnConditionStartSum.I';
   KEY_POINTS_ONSTART_G1 = 'Points.OnConditionStartSum.C1';
   KEY_POINTS_ONSTART_G2 = 'Points.OnConditionStartSum.C2';
+  KEY_POINTS_NEWPLAYER_A = 'Points.OnNewPlayerSum.A';
+  KEY_POINTS_NEWPLAYER_B = 'Points.OnNewPlayerSum.B';
 
   KEY_CYCLES_VALUE = 'Cycles.ForGeneration';
   KEY_CYCLES_COUNT = 'Cycles.OnRestart';

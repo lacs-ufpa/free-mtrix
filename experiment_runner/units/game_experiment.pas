@@ -1130,7 +1130,9 @@ begin
       IntToStr(Condition[CurrentConditionI].Points.OnStart.A)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.B)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.G1)+'|'+
-      IntToStr(Condition[CurrentConditionI].Points.OnStart.G2)
+      IntToStr(Condition[CurrentConditionI].Points.OnStart.G2)+'|'+
+      IntToStr(Condition[CurrentConditionI].Points.OnNewPlayer.A)+'|'+
+      IntToStr(Condition[CurrentConditionI].Points.OnNewPlayer.B)
   else
     Result:=
       Condition[CurrentConditionI].Label1+'|'+
@@ -1138,7 +1140,8 @@ begin
       Condition[CurrentConditionI].TargetMetacontingency+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.A)+'|'+
       IntToStr(Condition[CurrentConditionI].Points.OnStart.G1)+'|'+
-      IntToStr(Condition[CurrentConditionI].Points.OnStart.G2);
+      IntToStr(Condition[CurrentConditionI].Points.OnStart.G2)+'|'+
+      IntToStr(Condition[CurrentConditionI].Points.OnNewPlayer.A);
 end;
 
 function TExperiment.ValidID(AID: string): Boolean;

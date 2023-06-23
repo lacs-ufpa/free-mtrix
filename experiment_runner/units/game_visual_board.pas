@@ -572,8 +572,8 @@ begin
     end;
 
     if Admin then begin
-      LabelPointsRedCount.Caption := '0';
       LabelPointsBlueCount.Caption := '0';
+      LabelPointsRedCount.Caption := '0';
     end else begin
       LabelLastRowCount.Caption := 'NA';
       PanelLastColor.Color := GetColorFromCode(P.Choice.Color);
@@ -881,13 +881,13 @@ var
           gscA :
             begin
               PB := GetPlayerBox(AID);
-              PB.LabelPointsRedCount.Caption :=
+              PB.LabelPointsBlueCount.Caption :=
                 FExperiment.PlayerPointsFromID(AID).A.ToString;
             end;
           gscB :
             begin
               PB := GetPlayerBox(AID);
-              PB.LabelPointsBlueCount.Caption :=
+              PB.LabelPointsRedCount.Caption :=
                 FExperiment.PlayerPointsFromID(AID).B.ToString;
             end;
 
@@ -940,14 +940,14 @@ begin
         for P in FExperiment.Players do
         begin
           PB := GetPlayerBox(P.ID);
-          PB.LabelPointsRedCount.Caption :=
-            FExperiment.PlayerFromID[P.ID].Points.A.ToString;
           PB.LabelPointsBlueCount.Caption :=
+            FExperiment.PlayerFromID[P.ID].Points.A.ToString;
+          PB.LabelPointsRedCount.Caption :=
             FExperiment.PlayerFromID[P.ID].Points.B.ToString;
           if FExperiment.ABPoints then begin
             { do nothing }
           end else begin
-            PB.LabelPointsBlueCount.Caption := 'NA';
+            PB.LabelPointsRedCount.Caption := 'NA';
           end;
         end;
     end;

@@ -26,9 +26,9 @@ type
     LabelLastRow : TLabel;
     LabelLastRowCount : TLabel;
     LabelPointsRed : TLabel;
-    LabelPointsRedCount : TLabel;
-    LabelPointsBlue : TLabel;
     LabelPointsBlueCount : TLabel;
+    LabelPointsBlue : TLabel;
+    LabelPointsRedCount : TLabel;
   private
     FID: string;
   public

@@ -1,21 +1,21 @@
 object FormMatrixGame: TFormMatrixGame
-  Left = 258
+  Left = 41
   Height = 882
-  Top = 77
+  Top = 21
   Width = 1584
   HorzScrollBar.Page = 1571
-  VertScrollBar.Page = 594
+  VertScrollBar.Page = 597
   AutoScroll = True
   Caption = 'Matrix'
   ClientHeight = 882
   ClientWidth = 1584
   Font.Name = 'Monospace'
   OnActivate = FormActivate
-  LCLVersion = '2.1.0.0'
+  LCLVersion = '2.3.0.0'
   object GBPoints: TGroupBox
     AnchorSideLeft.Side = asrBottom
     Left = 712
-    Height = 586
+    Height = 589
     Top = 8
     Width = 464
     AutoSize = True
@@ -996,7 +996,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = 'Blue Tokens'
-      Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
       Font.Height = -16
@@ -1015,7 +1014,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = '0'
-      Color = clDefault
       Constraints.MinWidth = 100
       Font.Height = -20
       Font.Name = 'Monospace'
@@ -1971,7 +1969,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = 'Red Tokens'
-      Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
       Font.Height = -16
@@ -1990,7 +1987,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = '0'
-      Color = clDefault
       Constraints.MinWidth = 50
       Font.Height = -20
       Font.Name = 'Monospace'
@@ -2950,7 +2946,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = 'Tokens'
-      Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
       Font.Height = -16
@@ -2970,7 +2965,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = '0'
-      Color = clDefault
       Constraints.MinWidth = 50
       Font.Height = -20
       Font.Name = 'Monospace'
@@ -3848,7 +3842,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = 'Non-Sustainable'
-      Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
       Font.Height = -16
@@ -3867,7 +3860,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = '0'
-      Color = clDefault
       Constraints.MinWidth = 50
       Font.Height = -20
       Font.Name = 'Monospace'
@@ -4393,7 +4385,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = 'Sustainable'
-      Color = clDefault
       Constraints.MinHeight = 100
       Constraints.MinWidth = 200
       Font.Height = -16
@@ -4412,7 +4403,6 @@ object FormMatrixGame: TFormMatrixGame
       Alignment = taCenter
       AutoSize = False
       Caption = '0'
-      Color = clDefault
       Constraints.MinWidth = 50
       Font.Height = -20
       Font.Name = 'Monospace'
@@ -4457,7 +4447,7 @@ object FormMatrixGame: TFormMatrixGame
     Top = 8
     Width = 656
     Caption = 'Researcher'
-    ClientHeight = 367
+    ClientHeight = 366
     ClientWidth = 652
     TabOrder = 2
     Visible = False
@@ -4501,7 +4491,6 @@ object FormMatrixGame: TFormMatrixGame
       ScrollWidth = 254
       TabOrder = 3
       TabStop = False
-      TopIndex = -1
     end
     object LabelOldPlayers: TLabel
       Left = 376

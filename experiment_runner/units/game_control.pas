@@ -243,7 +243,8 @@ begin
   // copy immutable vars
   LNewPlayer.Turn := LOldPlayer.Turn;
   LNewPlayer.Index := LOldPlayer.Index;
-
+  LNewPlayer.Points.A := FExperiment.CurrentCondition.Points.OnNewPlayer.A;
+  LNewPlayer.Points.B := FExperiment.CurrentCondition.Points.OnNewPlayer.B;
   // override mutable vars
   FExperiment.Player[LOldPlayer.ID] := LNewPlayer;
 
@@ -929,8 +930,8 @@ procedure TGameControl.ReceiveRequest(var ARequest: TStringList);
           // set new player data
           i := FExperiment.AppendPlayer;
           P.Nicname := FGameBoard.GetPlayerNicname(gmcNewPlayerLogin);
-          P.Points.A:=0;
-          P.Points.B:=0;
+          P.Points.A := FExperiment.CurrentCondition.Points.OnNewPlayer.A;
+          P.Points.B := FExperiment.CurrentCondition.Points.OnNewPlayer.B;
           P.Points.G1:=0;
           P.Points.G2:=0;
           P.Data := nil;

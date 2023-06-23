@@ -37,7 +37,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/6/"/>
+            <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/6"/>
             <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
             <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
           </SearchPaths>
@@ -94,6 +94,9 @@
             <TargetOS Value="win32"/>
           </CodeGeneration>
           <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf3"/>
+            </Debugging>
             <Options>
               <Win32>
                 <GraphicApplication Value="True"/>
@@ -101,8 +104,7 @@
             </Options>
           </Linking>
           <Other>
-            <CustomOptions Value="-dZMQ_STATIC_LINK
--Fo/home/rafael/Downloads/zeromq-3.2.5/src/"/>
+            <CustomOptions Value="-Fo/home/rafael/Downloads/zeromq-3.2.5/src/"/>
           </Other>
         </CompilerOptions>
       </Item3>
@@ -305,7 +307,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9/"/>
+      <Libraries Value="/usr/lib/gcc/x86_64-linux-gnu/4.9"/>
       <OtherUnitFiles Value="units;../dependencies/fpc-zmq"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)"/>
     </SearchPaths>
