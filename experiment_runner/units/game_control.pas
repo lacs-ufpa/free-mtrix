@@ -567,6 +567,8 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     //LGeneration : string;
   begin
     P := FExperiment.PlayerFromID[AMessage[1]];
+    P.Choice.Row:= GetRowFromString(AMessage[2]);
+    P.Choice.Color:= GetGameColorFromString(AMessage[3]);
 
     // add last responses to player box
     FGameBoard.InvalidatePlayerBox(P.ID, AMessage[2], AMessage[3]);
@@ -574,6 +576,9 @@ procedure TGameControl.ReceiveMessage(AMessage: TStringList);
     case FActor of
       gaPlayer:
         begin
+        // generate individual consequences and update player
+          FExperiment.ConsequenceStringFromChoice[P];
+
           // syncronize counters internally for players
           FExperiment.NextTurn;
 

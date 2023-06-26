@@ -820,7 +820,7 @@ var
   Name1 : string;
   Name2 : string;
 begin
-  Name1 := 'The Consumer Energy Alliance';
+  Name1 := 'The Western Energy Alliance';
   Name2 := 'Natural Resource Defense Council';
   Pts := FExperiment.PlayerPointsSummationFromID(AID).ToString;
   Result :=
